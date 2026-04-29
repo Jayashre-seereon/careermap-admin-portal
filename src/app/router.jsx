@@ -32,7 +32,7 @@ import EntranceExamPage from "../features/entranceexam/EntranceExamPage";
 import InstitutionPage from "../features/institution/InstitutionPage";
 import ScholarshipPage from "../features/scholarship/ScholarshipPage";
 import CareerPlanPage from "../features/careerplan/CareerPlanPage";
-import AllOrder from "../features/AllOrders/AllOrder";
+import AllOrder from "../features/allOrders/AllOrder";
 import ApprovedOrder from "../features/allOrders/ApprovedOrder";
 import PendingOrder from "../features/allOrders/PendngOrder";
 import SupportTickets from "../features/supportTickets/SupportTickets";
