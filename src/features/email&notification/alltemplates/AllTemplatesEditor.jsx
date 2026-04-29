@@ -1,62 +1,78 @@
-import { Switch, Input } from "antd";
+import { Button, Form, Input, Switch } from "antd";
+import { useEffect } from "react";
+import RichTextEditor from "../../../components/editor/RichTextEditor";
 
-export default function AllTemplatesEditor() {
+export default function AllTemplatesEditor({ initialValues, onSubmit }) {
+  const [form] = Form.useForm();
+
+  useEffect(() => {
+    if (initialValues) {
+      form.setFieldsValue(initialValues);
+    } else {
+      form.resetFields();
+    }
+  }, [form, initialValues]);
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <Form
+      form={form}
+      layout="vertical"
+      initialValues={initialValues}
+      onFinish={onSubmit}
+    >
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-      {/* EMAIL TEMPLATE */}
-      <div className="bg-white rounded-xl border p-5">
-        <h3 className="text-[#9a2119] font-semibold mb-4">
-          Email Template
-        </h3>
+        {/* EMAIL TEMPLATE */}
+        <div className="bg-white rounded-xl border p-5">
+          <h3 className="text-[#9a2119] font-semibold mb-4">
+            Email Template
+          </h3>
 
-        <div className="mb-4 flex items-center gap-3">
-          <span>Status</span>
-          <Switch defaultChecked />
+          <Form.Item
+            name="emailStatus"
+            label="Status"
+            valuePropName="checked"
+          >
+            <Switch />
+          </Form.Item>
+
+          <Form.Item name="subject" label="Subject">
+            <Input placeholder="Your Account has been Credited" />
+          </Form.Item>
+
+          <Form.Item name="emailMessage" label="Message">
+            <RichTextEditor height={240} />
+          </Form.Item>
         </div>
 
-        <div className="mb-4">
-          <label className="block mb-1 font-medium">Subject</label>
-          <Input placeholder="Your Account has been Credited" />
-        </div>
+        {/* SMS TEMPLATE */}
+        <div className="bg-white rounded-xl border p-5">
+          <h3 className="text-[#9a2119] font-semibold mb-4">
+            SMS Template
+          </h3>
 
-        <div>
-          <label className="block mb-1 font-medium">Message</label>
-          <textarea
-            rows={6}
-            className="w-full border rounded-md p-3"
-            defaultValue={`{{amount}} {{site_currency}} has been added to your account.
-Transaction Number : {{trx}}
-Your Current Balance is : {{post_balance}} {{site_currency}}
+          <Form.Item
+            name="smsStatus"
+            label="Status"
+            valuePropName="checked"
+          >
+            <Switch />
+          </Form.Item>
 
-Admin note: {{remark}}`}
-          />
-        </div>
-      </div>
-
-      {/* SMS TEMPLATE */}
-      <div className="bg-white rounded-xl border p-5">
-        <h3 className="text-[#9a2119] font-semibold mb-4">
-          SMS Template
-        </h3>
-
-        <div className="mb-4 flex items-center gap-3">
-          <span>Status</span>
-          <Switch />
-        </div>
-
-        <div>
-          <label className="block mb-1 font-medium">Message</label>
-          <textarea
-            rows={8}
-            className="w-full border rounded-md p-3"
-            defaultValue={`{{amount}} {{site_currency}} credited in your account.
-Balance: {{post_balance}}
-Transaction: {{trx}}
-Admin note: {{remark}}`}
-          />
+          <Form.Item name="smsMessage" label="Message">
+            <Input.TextArea rows={10} />
+          </Form.Item>
         </div>
       </div>
-    </div>
+
+      <div className="flex justify-end mt-4">
+        <Button
+          htmlType="submit"
+          className="bg-[#9a2119] text-white"
+        >
+          Save
+        </Button>
+      </div>
+    </Form>
   );
 }

@@ -61,14 +61,16 @@ export default function Category2Page() {
   };
 
   const handleDelete = (id) => {
-    setData(data.filter((item) => item.id !== id));
+    setData((prev) => prev.filter((item) => item.id !== id));
   };
 
   const handleSubmit = (values) => {
     if (mode === "edit") {
-      setData(data.map((d) => (d.id === selected.id ? { ...d, ...values } : d)));
+      setData((prev) =>
+        prev.map((item) => (item.id === selected.id ? { ...item, ...values } : item))
+      );
     } else {
-      setData([...data, { ...values, id: Date.now() }]);
+      setData((prev) => [...prev, { ...values, id: Date.now() }]);
     }
     setOpen(false);
   };

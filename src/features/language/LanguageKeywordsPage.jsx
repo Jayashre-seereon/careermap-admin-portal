@@ -178,14 +178,14 @@ export default function LanguageKeywordsPage() {
       align: "right",
       render: (_, record) => (
         <div className="flex justify-end gap-2">
-          <button
+          <Button
             type="button"
             onClick={() => handleEdit(record)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#d8a9a4] text-[#9a2119] transition hover:bg-[#fdf2f1]"
+             className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md" 
             title="Edit keyword"
           >
             <EditOutlined />
-          </button>
+          </Button>
           <Popconfirm
             title="Delete this keyword?"
             description="This translation value will be removed."
@@ -193,13 +193,7 @@ export default function LanguageKeywordsPage() {
             cancelText="Cancel"
             onConfirm={() => handleDelete(record.key)}
           >
-            <button
-              type="button"
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-red-200 text-red-500 transition hover:bg-red-50"
-              title="Delete keyword"
-            >
-              <DeleteOutlined />
-            </button>
+            <Button danger icon={<DeleteOutlined />} title="Delete keyword" />
           </Popconfirm>
         </div>
       ),
@@ -255,7 +249,7 @@ export default function LanguageKeywordsPage() {
             dataSource={filteredKeywords}
             pagination={{ pageSize: 8 }}
             scroll={{ x: 720 }}
-            rowClassName="hover:bg-[#fff8f7]"
+           
           />
         </div>
       </section>

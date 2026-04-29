@@ -117,9 +117,12 @@ export default function SocialCredentialPage() {
 
         return (
           <div className="flex justify-end gap-2">
-            <button onClick={() => openEditModal(record)} className="btn-action">
+            <Button
+              onClick={() => openEditModal(record)}
+              className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
+            >
               <EditOutlined />
-            </button>
+            </Button>
             <Popconfirm
               title={`${nextStatus} credential?`}
               description={`Are you sure you want to ${nextStatus.toLowerCase()} ${record.title}?`}
@@ -127,13 +130,16 @@ export default function SocialCredentialPage() {
               okText={nextStatus}
               cancelText="Cancel"
             >
-              <button className="btn-action">
+              <Button className="w-8 h-8 border border-red-500 text-red-500 rounded-md">
                 <StopOutlined />
-              </button>
+              </Button>
             </Popconfirm>
-            <button onClick={() => setHelpRecord(record)} className="btn-action">
+            <Button
+              onClick={() => setHelpRecord(record)}
+              className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
+            >
               <QuestionCircleOutlined />
-            </button>
+            </Button>
           </div>
         );
       },

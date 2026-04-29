@@ -1,9 +1,14 @@
 import { Tabs } from "antd";
+import { useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import NotificationToUser from "./tabs/NotificationToUser";
+import UserDetails from "./tabs/UserDetails";
 
 export default function AllUsers() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [notificationUser, setNotificationUser] = useState(null);
 
   // map URL → tab key
   const pathToKey = {
@@ -29,6 +34,26 @@ export default function AllUsers() {
   };
 
   const activeKey = pathToKey[location.pathname] || "1";
+  const isNotificationRoute = location.pathname === "/all_users/notification";
+
+  const handleTabChange = (key) => {
+    setSelectedUser(null);
+
+    if (key !== "9") {
+      setNotificationUser(null);
+    }
+
+    navigate(keyToPath[key]);
+  };
+
+  const handleBackFromDetails = () => {
+    setSelectedUser(null);
+  };
+
+  const handleNotifyUser = (user) => {
+    setNotificationUser(user);
+    navigate("/all_users/notification");
+  };
 
   const items = [
     { label: "All Users", key: "1" },
@@ -50,12 +75,28 @@ export default function AllUsers() {
       <Tabs
         className="custom-tabs"
         activeKey={activeKey}
-        onChange={(key) => navigate(keyToPath[key])}
+        onChange={handleTabChange}
         items={items}
       />
 
-      {/* THIS RENDERS TAB CONTENT */}
-      <Outlet />
+      {selectedUser ? (
+        <UserDetails
+          user={selectedUser}
+          onBack={handleBackFromDetails}
+          onNotify={handleNotifyUser}
+        />
+      ) : isNotificationRoute ? (
+        <NotificationToUser user={notificationUser} />
+      ) : (
+        <Outlet
+          context={{
+            setSelectedUser,
+            selectedUser,
+            notificationUser,
+            setNotificationUser,
+          }}
+        />
+      )}
     </div>
   );
 }

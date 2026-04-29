@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Form, Input, Modal, Popconfirm, Select, Table, message } from "antd";
+import { Form, Input, Modal, Popconfirm, Select, Table, message ,Button} from "antd";
 import {
   ArrowLeftOutlined,
   DeleteOutlined,
@@ -193,14 +193,14 @@ export default function QuizQuestionsPage() {
       align: "right",
       render: (_, record) => (
         <div className="flex justify-end gap-3">
-          <button
+          <Button
             type="button"
             onClick={() => handleEdit(record)}
-            className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#d7d7d7] bg-white text-[#222] transition hover:border-[#9a2119] hover:text-[#9a2119]"
-            title="Edit question"
+            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
+        title="Edit question"
           >
             <EditOutlined />
-          </button>
+          </Button>
           <Popconfirm
             title="Delete this question?"
             description="This quiz question will be removed."
@@ -208,13 +208,13 @@ export default function QuizQuestionsPage() {
             cancelText="Cancel"
             onConfirm={() => handleDelete(record.id)}
           >
-            <button
+            <Button danger
               type="button"
-              className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#ff4d4f] bg-white text-[#ff4d4f] transition hover:bg-[#fff1f0]"
-              title="Delete question"
+              className="w-8 h-8 border border-red-500 text-red-500 hover:bg-red-50"
+      title="Delete question"
             >
               <DeleteOutlined />
-            </button>
+            </Button>
           </Popconfirm>
         </div>
       ),

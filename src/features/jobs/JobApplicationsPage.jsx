@@ -79,9 +79,10 @@ export default function JobApplicationsPage() {
       title: <span className="text-[#9a2119] font-semibold">Action</span>,
       align: "right",
       render: (_, record) => (
-        <button onClick={() => openCv(record.cvUrl)} className="btn-view">
+        <Button onClick={() => openCv(record.cvUrl)}  className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"   >
+          
           <EyeOutlined />
-        </button>
+        </Button>
       ),
     },
   ];

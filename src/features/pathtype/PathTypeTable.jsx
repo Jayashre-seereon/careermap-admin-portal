@@ -1,4 +1,4 @@
-import { Table, Input } from "antd";
+import { Table, Input, Button, Popconfirm } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -6,33 +6,17 @@ import {
   SearchOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
-import { useState } from "react";
-
-const initialData = [
-  { key: "1", title: "Path 1" },
-  { key: "2", title: "Path 2" },
-  { key: "3", title: "Path 3" },
-  { key: "4", title: "Path 4" },
-  { key: "5", title: "Path 5" },
-  { key: "6", title: "Path 6" },
-  { key: "7", title: "Path 7" },
-];
 
 export default function PathTypeTable({
+  data,
   onView,
   onEdit,
   onDelete,
   onAdd,
+  onSearch,
+  search,
 }) {
-  const [search, setSearch] = useState("");
-  const [data, setData] = useState(initialData);
-
-  // Search Filter
-  const filteredData = data.filter((item) =>
-    item.title.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const handleReset = () => setSearch("");
+  const handleReset = () => onSearch("");
 
   const columns = [
     {
@@ -58,12 +42,12 @@ export default function PathTypeTable({
           {/* View */}
           <button
             onClick={() => onView(record)}
-            className="w-9 h-9 flex items-center justify-center rounded-md
-                       border border-[#9a2119]
+           className="w-8 h-8 flex items-center justify-center rounded-md 
+                       border border-[#9a2119] 
                        text-[#9a2119]
                        hover:border-[#e57373]
                        hover:text-[#e57373]
-                       transition"
+                      "
           >
             <EyeOutlined />
           </button>
@@ -71,31 +55,27 @@ export default function PathTypeTable({
           {/* Edit */}
           <button
             onClick={() => onEdit(record)}
-            className="w-9 h-9 flex items-center justify-center rounded-md
-                       border border-[#9a2119]
+           className="w-8 h-8 flex items-center justify-center rounded-md 
+                       border border-[#9a2119] 
                        text-[#9a2119]
                        hover:border-[#e57373]
                        hover:text-[#e57373]
-                       transition"
+                      "
           >
             <EditOutlined />
           </button>
 
           {/* Delete */}
-          <button
-            onClick={() => {
-              const updated = data.filter((d) => d.key !== record.key);
-              setData(updated);
-              onDelete && onDelete(record);
-            }}
-            className="w-9 h-9 flex items-center justify-center rounded-md
-                       border border-red-500
-                       text-red-500
-                       hover:bg-red-50
-                       transition"
+          <Popconfirm
+            title="Delete?"
+            description="Are you sure you want to delete this path type?"
+            okText="Yes"
+            cancelText="No"
+            onConfirm={() => onDelete && onDelete(record)}
           >
-            <DeleteOutlined />
-          </button>
+            <Button danger icon={<DeleteOutlined />} />
+          </Popconfirm>
+          
         </div>
       ),
     },
@@ -116,7 +96,7 @@ export default function PathTypeTable({
             value={search}
             prefix={<SearchOutlined className="text-[#9a2119]" />}
             className="w-64 h-9 rounded-md border-[#9a2119]"
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => onSearch(e.target.value)}
           />
 
           <button
@@ -148,7 +128,7 @@ export default function PathTypeTable({
       {/* TABLE */}
       <Table
         columns={columns}
-        dataSource={filteredData}
+        dataSource={data}
         pagination={{ pageSize: 5 }}
         rowClassName="hover:bg-gray-50"
         className="[&_.ant-table-cell]:align-middle"

@@ -1,4 +1,4 @@
-import { Table, Input } from "antd";
+import { Table, Input, Button, Popconfirm } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -8,44 +8,14 @@ import {
 } from "@ant-design/icons";
 import { useState } from "react";
 
-const initialData = [
-  {
-    key: "1",
-    module: "Career Library",
-    category: "Railways",
-    exam: "RRC Level 1 Exam (Group D posts)",
-    issueDate: "February 2025",
-    lastDate: "March 2025",
-    url: "https://www.rrbcdg.gov.in/",
-  },
-  {
-    key: "2",
-    module: "Career Library",
-    category: "Railways",
-    exam: "RRB Assistant Station Master Exam",
-    issueDate: "July 2025",
-    lastDate: "August 2025",
-    url: "https://www.rrbcdg.gov.in/",
-  },
-  {
-    key: "3",
-    module: "Career Library",
-    category: "Railways",
-    exam: "RRB Ministerial & Isolated Categories Exam",
-    issueDate: "April 2025",
-    lastDate: "May 2025",
-    url: "https://www.rrbcdg.gov.in/",
-  },
-];
-
 export default function EntranceExamTable({
+  data,
   onView,
   onEdit,
   onDelete,
   onAdd,
 }) {
   const [search, setSearch] = useState("");
-  const [data, setData] = useState(initialData);
 
   const filteredData = data.filter((item) =>
     item.exam.toLowerCase().includes(search.toLowerCase())
@@ -94,41 +64,39 @@ export default function EntranceExamTable({
       align: "right",
       render: (_, record) => (
         <div className="flex justify-end gap-2">
-          <button
+          <Button
             onClick={() => onView(record)}
-            className="w-9 h-9 flex items-center justify-center rounded-md
-                       border border-[#9a2119]
+            className="w-8 h-8 flex items-center justify-center rounded-md 
+                       border border-[#9a2119] 
                        text-[#9a2119]
                        hover:border-[#e57373]
-                       hover:text-[#e57373]"
+                       hover:text-[#e57373]
+                      "
           >
             <EyeOutlined />
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => onEdit(record)}
-            className="w-9 h-9 flex items-center justify-center rounded-md
-                       border border-[#9a2119]
+ className="w-8 h-8 flex items-center justify-center rounded-md 
+                       border border-[#9a2119] 
                        text-[#9a2119]
                        hover:border-[#e57373]
-                       hover:text-[#e57373]"
+                       hover:text-[#e57373]
+                      "
           >
             <EditOutlined />
-          </button>
+          </Button>
 
-          <button
-            onClick={() => {
-              const updated = data.filter((d) => d.key !== record.key);
-              setData(updated);
-              onDelete && onDelete(record);
-            }}
-            className="w-9 h-9 flex items-center justify-center rounded-md
-                       border border-red-500
-                       text-red-500
-                       hover:bg-red-50"
+          <Popconfirm
+            title="Delete?"
+            description="Are you sure you want to delete this entrance exam?"
+            okText="Yes"
+            cancelText="No"
+            onConfirm={() => onDelete && onDelete(record)}
           >
-            <DeleteOutlined />
-          </button>
+            <Button danger icon={<DeleteOutlined />} />
+          </Popconfirm>
         </div>
       ),
     },

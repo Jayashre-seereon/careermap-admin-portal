@@ -1,6 +1,12 @@
 import { Input } from "antd";
+import { useState } from "react";
+import RichTextEditor from "../../../components/editor/RichTextEditor";
 
 export default function GlobalTemplatePage() {
+  const [emailBody, setEmailBody] = useState(`Hi {{fullname}} ({{username}}),
+
+{{message}}`);
+
   return (
     <div className="w-full">
 
@@ -74,12 +80,10 @@ export default function GlobalTemplatePage() {
               <label className="block mb-1 font-medium">
                 Email Body
               </label>
-              <textarea
-                rows={7}
-                className="w-full border rounded-md p-3"
-                defaultValue={`Hi {{fullname}} ({{username}}),
-
-{{message}}`}
+              <RichTextEditor
+                value={emailBody}
+                onChange={setEmailBody}
+                height={240}
               />
             </div>
           </div>

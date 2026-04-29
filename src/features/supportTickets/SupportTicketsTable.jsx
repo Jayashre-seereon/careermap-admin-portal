@@ -1,4 +1,4 @@
-import { Table, Input } from "antd";
+import { Table, Input ,Button} from "antd";
 import { EyeOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -59,12 +59,13 @@ export default function SupportTicketsTable({ title, data }) {
     {
       title: <span className="text-[#9a2119] font-semibold">Action</span>,
       render: (_, record) => (
-        <button
+        <Button
           onClick={() => navigate(`/support_tickets/${record.id}`)}
-          className="w-9 h-9 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#c4392e] hover:text-[#c4392e] transition duration-200"
-        >
+          className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md" 
+            >
+               
           <EyeOutlined />
-        </button>
+        </Button>
       ),
     },
   ];

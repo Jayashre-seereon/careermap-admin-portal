@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Modal } from "antd";
 import SalaryTable from "./SalaryTable";
 import SalaryForm from "./SalaryForm";
@@ -32,10 +32,18 @@ const initialData = [
 
 function SalaryPage() {
   const [data, setData] = useState(initialData);
-  const [filteredData, setFilteredData] = useState(initialData);
+  const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState(null);
   const [viewMode, setViewMode] = useState(false);
+
+  const filteredData = useMemo(
+    () =>
+      data.filter((item) =>
+        item.subcategory.toLowerCase().includes(search.toLowerCase())
+      ),
+    [data, search]
+  );
 
   // Add / Update
   const handleSubmit = (values) => {
@@ -46,7 +54,7 @@ function SalaryPage() {
         )
       );
     } else {
-      setData([...data, { id: Date.now(), ...values }]);
+      setData((prev) => [...prev, { id: Date.now(), ...values }]);
     }
 
     setOpen(false);
@@ -55,15 +63,7 @@ function SalaryPage() {
 
   // Delete
   const handleDelete = (record) => {
-    setData(data.filter((item) => item.id !== record.id));
-  };
-
-  // Search
-  const handleSearch = (value) => {
-    const filtered = data.filter((item) =>
-      item.subcategory.toLowerCase().includes(value.toLowerCase())
-    );
-    setFilteredData(filtered);
+    setData((prev) => prev.filter((item) => item.id !== record.id));
   };
 
   return (
@@ -93,7 +93,8 @@ function SalaryPage() {
           setViewMode(false);
         }}
         onDelete={handleDelete}
-        onSearch={handleSearch}
+        search={search}
+        onSearch={setSearch}
       />
 
       {/* Modal */}

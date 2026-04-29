@@ -1,4 +1,4 @@
-import { Table, Input, Tooltip } from "antd";
+import { Table, Input, Tooltip, Button, Popconfirm } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -8,41 +8,14 @@ import {
 } from "@ant-design/icons";
 import { useState } from "react";
 
-const initialData = [
-  {
-    key: "1",
-    type: "State",
-    class: "11th-12th",
-    name: "Test Scholarship",
-    desc: "Description",
-    url: "#",
-  },
-  {
-    key: "2",
-    type: "Private",
-    class: "N/A",
-    name: "Tata Capital Pankh Scholarship",
-    desc: "About The Program The Tata Capital Pankh Scholarship aims to support...",
-    url: "https://www.buddy4study.com/page/",
-  },
-  {
-    key: "3",
-    type: "Private",
-    class: "N/A",
-    name: "SOF International Hindi Olympiad",
-    desc: "About The Program SOF International Hindi Olympiad encourages students...",
-    url: "https://www.hindiolympiad.com/",
-  },
-];
-
 export default function ScholarshipTable({
+  data,
   onView,
   onEdit,
   onDelete,
   onAdd,
 }) {
   const [search, setSearch] = useState("");
-  const [data, setData] = useState(initialData);
 
   const filteredData = data.filter((item) =>
     item.name.toLowerCase().includes(search.toLowerCase())
@@ -101,31 +74,38 @@ export default function ScholarshipTable({
       fixed: "right",
       width: 140,
       render: (_, record) => (
+        
         <div className="flex justify-end gap-2">
-          <button
+          <Button
             onClick={() => onView && onView(record)}
-            className="w-9 h-9 border border-[#9a2119] text-[#9a2119] rounded-md"
+            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
           >
             <EyeOutlined />
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => onEdit && onEdit(record)}
-            className="w-9 h-9 border border-[#9a2119] text-[#9a2119] rounded-md"
+            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
           >
             <EditOutlined />
-          </button>
+          </Button>
 
-          <button
-            onClick={() => {
-              const updated = data.filter((d) => d.key !== record.key);
-              setData(updated);
-              onDelete && onDelete(record);
-            }}
+          <Button
+            onClick={() => onDelete && onDelete(record)}
             className="w-9 h-9 border border-red-500 text-red-500 rounded-md"
           >
             <DeleteOutlined />
-          </button>
+          </Button>
+
+          <Popconfirm
+            title="Delete?"
+            description="Are you sure you want to delete this scholarship?"
+            okText="Yes"
+            cancelText="No"
+            onConfirm={() => onDelete && onDelete(record)}
+          >
+            <Button danger icon={<DeleteOutlined />} />
+          </Popconfirm>
         </div>
       ),
     },
@@ -176,6 +156,7 @@ export default function ScholarshipTable({
         <Table
           columns={columns}
           dataSource={filteredData}
+          rowKey="key"
           pagination={{ pageSize: 5 }}
           scroll={{ x: 1200 }}
         />
