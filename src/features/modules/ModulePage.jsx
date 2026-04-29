@@ -44,9 +44,9 @@ export default function ModulePage() {
   };
 
   const handleUpdate = (data) => {
-    const updated = [...modules];
-    updated[editIndex] = data;
-    setModules(updated);
+    setModules((prev) =>
+      prev.map((item, index) => (index === editIndex ? data : item))
+    );
     setOpen(false);
   };
 

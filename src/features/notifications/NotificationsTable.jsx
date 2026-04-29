@@ -1,8 +1,5 @@
-import { Table, Input, Tag, Button, Popconfirm } from "antd";
+import { Table, Input, Tag } from "antd";
 import {
-  EyeOutlined,
-  EditOutlined,
-  DeleteOutlined,
   SearchOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
@@ -30,9 +27,6 @@ const initialData = [
 ];
 
 export default function NotificationsTable({
-  onView,
-  onEdit,
-  onDelete,
   onAdd,
 }) {
   const [search, setSearch] = useState("");
@@ -85,39 +79,6 @@ export default function NotificationsTable({
     {
       title: <span className="text-[#9a2119] font-semibold">Date</span>,
       dataIndex: "date",
-    },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Action</span>,
-      align: "right",
-      render: (_, record) => (
-        <div className="flex justify-end gap-2">
-          <Button
-            onClick={() => onView(record)}
-            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
-          >
-            <EyeOutlined />
-          </Button>
-          <Button
-            onClick={() => onEdit(record)}
-            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
-          >
-            <EditOutlined />
-          </Button>
-          <Popconfirm
-            title="Delete?"
-            description="Are you sure you want to delete this item?"
-            okText="Yes"
-            cancelText="No"
-            onConfirm={() => {
-              const updated = data.filter((d) => d.key !== record.key);
-              setData(updated);
-              onDelete && onDelete(record);
-            }}
-          >
-            <Button danger icon={<DeleteOutlined />} />
-          </Popconfirm>
-        </div>
-      ),
     },
   ];
 

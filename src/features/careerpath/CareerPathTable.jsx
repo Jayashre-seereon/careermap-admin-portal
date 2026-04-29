@@ -1,4 +1,4 @@
-import { Table, Input ,Button} from "antd";
+import { Table, Input, Button, Popconfirm } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -8,50 +8,14 @@ import {
 } from "@ant-design/icons";
 import { useState } from "react";
 
-const initialData = [
-  {
-    key: "1",
-    module: "Career Library",
-    category: "Medical",
-    path: "Path 1",
-    stream: "12th [PCB, PCMB, PCB(M), PCM(B)]",
-    graduation: "MBBS",
-    afterGrad: "M.D / M.S",
-    postGrad: "DM-MCH : SS",
-    other: "POST DOC",
-  },
-  {
-    key: "2",
-    module: "Career Library",
-    category: "Lecturer/Professor",
-    path: "Path 1",
-    stream: "12th",
-    graduation: "Graduation in any stream",
-    afterGrad: "Post graduation in any discipline",
-    postGrad: "Ph.D",
-    other: "N/A",
-  },
-  {
-    key: "3",
-    module: "Career Library",
-    category: "Journalism & Mass communication",
-    path: "Path 1",
-    stream: "12th pass in any stream",
-    graduation: "UG(J/JMC) / PG Diploma",
-    afterGrad: "Ph.D",
-    postGrad: "N/A",
-    other: "N/A",
-  },
-];
-
 export default function CareerPathTable({
+  data,
   onView,
   onEdit,
   onDelete,
   onAdd,
 }) {
   const [search, setSearch] = useState("");
-  const [data, setData] = useState(initialData);
 
   const filteredData = data.filter((item) =>
     item.module.toLowerCase().includes(search.toLowerCase())
@@ -136,15 +100,15 @@ export default function CareerPathTable({
           </Button>
 
           {/* Delete */}
-           <Button
-            danger
-            icon={<DeleteOutlined />}
-             onClick={() => {
-              const updated = data.filter((d) => d.key !== record.key);
-              setData(updated);
-              onDelete && onDelete(record);
-            }}
-          />
+          <Popconfirm
+            title="Delete?"
+            description="Are you sure you want to delete this career path?"
+            okText="Yes"
+            cancelText="No"
+            onConfirm={() => onDelete && onDelete(record)}
+          >
+            <Button danger icon={<DeleteOutlined />} />
+          </Popconfirm>
         </div>
       ),
     },

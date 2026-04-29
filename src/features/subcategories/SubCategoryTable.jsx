@@ -1,5 +1,5 @@
 import React from "react";
-import { Table, Button } from "antd";
+import { Table, Button, Popconfirm } from "antd";
 import { EyeOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 
 function SubCategoryTable({ data, onAdd, onView, onEdit, onDelete, search, setSearch }) {
@@ -51,7 +51,15 @@ function SubCategoryTable({ data, onAdd, onView, onEdit, onDelete, search, setSe
                        hover:border-[#e57373]
                        hover:text-[#e57373]
                       " icon={<EditOutlined />} onClick={() => onEdit(record)} />
-          <Button danger icon={<DeleteOutlined />} onClick={() => onDelete(record.id)} />
+          <Popconfirm
+            title="Delete?"
+            description="Are you sure you want to delete this item?"
+            okText="Yes"
+            cancelText="No"
+            onConfirm={() => onDelete(record.id)}
+          >
+            <Button danger icon={<DeleteOutlined />} />
+          </Popconfirm>
         </div>
       ),
     },

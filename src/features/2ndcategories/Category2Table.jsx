@@ -1,5 +1,5 @@
 import React from "react";
-import { Table, Button, Space, Input } from "antd";
+import { Table, Button, Space, Input, Popconfirm } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -61,11 +61,15 @@ export default function Category2Table({
                        hover:border-[#e57373]
                        hover:text-[#e57373]
                       " icon={<EditOutlined />} onClick={() => onEdit(record)} />
-          <Button
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => onDelete(record.id)}
-          />
+          <Popconfirm
+            title="Delete?"
+            description="Are you sure you want to delete this item?"
+            okText="Yes"
+            cancelText="No"
+            onConfirm={() => onDelete(record.id)}
+          >
+            <Button danger icon={<DeleteOutlined />} />
+          </Popconfirm>
         </Space>
       ),
     },

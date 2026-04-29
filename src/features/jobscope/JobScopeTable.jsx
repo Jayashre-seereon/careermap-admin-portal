@@ -1,8 +1,8 @@
 import React from "react";
-import { Table, Button } from "antd";
+import { Table, Button, Popconfirm } from "antd";
 import { EyeOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 
-function JobScopeTable({ data, onAdd, onView, onEdit, onDelete, onSearch }) {
+function JobScopeTable({ data, onAdd, onView, onEdit, onDelete, onSearch, search }) {
   const columns = [
     {
       title: "SL",
@@ -30,11 +30,15 @@ function JobScopeTable({ data, onAdd, onView, onEdit, onDelete, onSearch }) {
                        hover:border-[#e57373]
                        hover:text-[#e57373]
                       " icon={<EditOutlined />} onClick={() => onEdit(record)} />
-          <Button
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => onDelete(record)}
-          />
+          <Popconfirm
+            title="Delete?"
+            description="Are you sure you want to delete this job scope?"
+            okText="Yes"
+            cancelText="No"
+            onConfirm={() => onDelete(record)}
+          >
+            <Button danger icon={<DeleteOutlined />} />
+          </Popconfirm>
         </div>
       ),
     },
@@ -47,6 +51,7 @@ function JobScopeTable({ data, onAdd, onView, onEdit, onDelete, onSearch }) {
       <div className="flex justify-between items-center mb-4">
         <input
           placeholder="Search..."
+          value={search}
           onChange={(e) => onSearch(e.target.value)}
           className="border px-3 py-2 rounded-md w-64"
         />

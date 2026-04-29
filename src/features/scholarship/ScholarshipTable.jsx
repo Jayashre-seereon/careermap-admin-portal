@@ -1,4 +1,4 @@
-import { Table, Input, Tooltip, Button } from "antd";
+import { Table, Input, Tooltip, Button, Popconfirm } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -8,41 +8,14 @@ import {
 } from "@ant-design/icons";
 import { useState } from "react";
 
-const initialData = [
-  {
-    key: "1",
-    type: "State",
-    class: "11th-12th",
-    name: "Test Scholarship",
-    desc: "Description",
-    url: "#",
-  },
-  {
-    key: "2",
-    type: "Private",
-    class: "N/A",
-    name: "Tata Capital Pankh Scholarship",
-    desc: "About The Program The Tata Capital Pankh Scholarship aims to support...",
-    url: "https://www.buddy4study.com/page/",
-  },
-  {
-    key: "3",
-    type: "Private",
-    class: "N/A",
-    name: "SOF International Hindi Olympiad",
-    desc: "About The Program SOF International Hindi Olympiad encourages students...",
-    url: "https://www.hindiolympiad.com/",
-  },
-];
-
 export default function ScholarshipTable({
+  data,
   onView,
   onEdit,
   onDelete,
   onAdd,
 }) {
   const [search, setSearch] = useState("");
-  const [data, setData] = useState(initialData);
 
   const filteredData = data.filter((item) =>
     item.name.toLowerCase().includes(search.toLowerCase())
@@ -116,15 +89,15 @@ export default function ScholarshipTable({
             <EditOutlined />
           </Button>
 
-          <Button
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => {
-              const updated = data.filter((d) => d.key !== record.key);
-              setData(updated);
-              onDelete && onDelete(record);
-            }}
-          />
+          <Popconfirm
+            title="Delete?"
+            description="Are you sure you want to delete this scholarship?"
+            okText="Yes"
+            cancelText="No"
+            onConfirm={() => onDelete && onDelete(record)}
+          >
+            <Button danger icon={<DeleteOutlined />} />
+          </Popconfirm>
         </div>
       ),
     },

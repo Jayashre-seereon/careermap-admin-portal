@@ -49,9 +49,9 @@ export default function StreamPage() {
 
   // UPDATE
   const handleUpdate = (data) => {
-    const updated = [...streams];
-    updated[editIndex] = data;
-    setStreams(updated);
+    setStreams((prev) =>
+      prev.map((item, index) => (index === editIndex ? data : item))
+    );
     setOpen(false);
   };
 
