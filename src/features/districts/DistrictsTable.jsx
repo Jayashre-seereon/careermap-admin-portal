@@ -1,4 +1,4 @@
-import { Table, Input } from "antd";
+import { Table, Input, Button, Popconfirm } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -51,30 +51,34 @@ export default function DistrictsTable({
       render: (_, record) => (
         <div className="flex justify-end gap-3">
 
-          <button
+          <Button
             onClick={() => onView(record)}
-            className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#9a2119] text-[#9a2119] hover:bg-[#9a2119] hover:text-white"
-          >
+            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"  
+           >
             <EyeOutlined />
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => onEdit(record)}
-            className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#9a2119] text-[#9a2119] hover:bg-[#9a2119] hover:text-white"
-          >
+            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"  
+             >
+             
             <EditOutlined />
-          </button>
+          </Button>
 
-          <button
-            onClick={() => {
+          <Popconfirm
+            title="Delete?"
+            description="Are you sure you want to delete this item?"
+            okText="Yes"
+            cancelText="No"
+            onConfirm={() => {
               const updated = data.filter((d) => d.key !== record.key);
               setData(updated);
               onDelete && onDelete(record);
             }}
-            className="w-10 h-10 flex items-center justify-center rounded-lg border border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
           >
-            <DeleteOutlined />
-          </button>
+            <Button danger icon={<DeleteOutlined />} />
+          </Popconfirm>
 
         </div>
       ),

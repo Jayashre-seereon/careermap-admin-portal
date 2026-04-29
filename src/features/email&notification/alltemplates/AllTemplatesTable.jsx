@@ -1,4 +1,4 @@
-import { Table } from "antd";
+import { Table,Button } from "antd";
 import { EditOutlined } from "@ant-design/icons";
 
 const initialData = [
@@ -48,13 +48,12 @@ export default function AllTemplatesTable({ onEdit }) {
       title: <span className="text-[#9a2119] font-semibold">Action</span>,
       align: "right",
       render: (_, record) => (
-        <button
+        <Button
           onClick={() => onEdit(record)}
-          className="w-9 h-9 flex items-center justify-center rounded-md
-                     bg-[#9a2119] text-white hover:bg-[#c0392b]"
-        >
+           className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md" 
+           >
           <EditOutlined />
-        </button>
+        </Button>
       ),
     },
   ];

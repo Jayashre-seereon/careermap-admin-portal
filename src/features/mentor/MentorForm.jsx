@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Form, Input, Button, Select, Upload } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
+import RichTextEditor from "../../components/ui/RichTextEditor";
 
 const { Option } = Select;
 
@@ -73,12 +74,12 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
         </Form.Item>
 
         {/* Skills (MULTI SELECT) */}
-        <Form.Item name="skills" label="My Skills">
-          <Select mode="multiple" disabled={disabled} placeholder="Select skills">
-            <Option value="React">React</Option>
-            <Option value="Laravel">Laravel</Option>
-            <Option value="UI/UX">UI/UX</Option>
-          </Select>
+        <Form.Item name="skills" label="My Skills" className="lg:col-span-2">
+          <RichTextEditor
+            disabled={disabled}
+            placeholder="Enter mentor skills"
+            height={160}
+          />
         </Form.Item>
 
         {/* Experience */}
@@ -115,7 +116,11 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
           label="Description"
           className="lg:col-span-3"
         >
-          <Input.TextArea rows={4} disabled={disabled} />
+          <RichTextEditor
+            disabled={disabled}
+            placeholder="Enter mentor description"
+            height={180}
+          />
         </Form.Item>
 
       </div>

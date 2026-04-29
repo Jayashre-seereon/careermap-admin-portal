@@ -1,4 +1,5 @@
 import { Form, Input, Select, Button } from "antd";
+import RichTextEditor from "../../components/ui/RichTextEditor";
 
 const { Option } = Select;
 
@@ -39,7 +40,11 @@ export default function PlansForm({ onSubmit, initialValues, viewMode }) {
         label="Features"
         className="col-span-2"
       >
-        <Input.TextArea rows={5} disabled={viewMode} />
+        <RichTextEditor
+          disabled={viewMode}
+          placeholder="Enter plan features"
+          height={200}
+        />
       </Form.Item>
 
       {!viewMode && (

@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Form, Input, Select, Upload, Button } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
+import RichTextEditor from "../../components/ui/RichTextEditor";
 
 const { Option } = Select;
 
@@ -40,6 +41,22 @@ export default function Category2Form({ onSubmit, initialValues, mode }) {
 
         <Form.Item name="description" label="Description" className="col-span-3">
           <Input.TextArea rows={4} disabled={isView} />
+        </Form.Item>
+
+        <Form.Item name="specialisation" label="Specialisation" className="col-span-3">
+          <RichTextEditor
+            disabled={isView}
+            placeholder="Enter specialisation"
+            height={160}
+          />
+        </Form.Item>
+
+        <Form.Item name="importantFacts" label="Important Facts" className="col-span-3">
+          <RichTextEditor
+            disabled={isView}
+            placeholder="Enter important facts"
+            height={160}
+          />
         </Form.Item>
 
       </div>

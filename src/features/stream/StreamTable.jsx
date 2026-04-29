@@ -27,9 +27,19 @@ function StreamTable({ data, onAddClick, onView, onEdit, onDelete }) {
       title: "Action",
       render: (_, record, index) => (
         <Space>
-          <Button icon={<EyeOutlined />} onClick={() => onView(record)} />
-          <Button icon={<EditOutlined />} onClick={() => onEdit(record, index)} />
-          <Popconfirm title="Delete?" onConfirm={() => onDelete(index)}>
+          <Button className="w-8 h-8 flex items-center justify-center rounded-md 
+                       border border-[#9a2119] 
+                       text-[#9a2119]
+                       hover:border-[#e57373]
+                       hover:text-[#e57373]
+                      " icon={<EyeOutlined />} onClick={() => onView(record)} />
+          <Button className="w-8 h-8 flex items-center justify-center rounded-md 
+                       border border-[#9a2119] 
+                       text-[#9a2119]
+                       hover:border-[#e57373]
+                       hover:text-[#e57373]
+                      " icon={<EditOutlined />} onClick={() => onEdit(record, index)} />
+          <Popconfirm title="Are you sure you want to delete this stream?" onConfirm={() => onDelete(index)}>
             <Button danger icon={<DeleteOutlined />} />
           </Popconfirm>
         </Space>

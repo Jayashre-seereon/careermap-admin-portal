@@ -31,9 +31,11 @@ function SubCategoryPage() {
 
   const handleSubmit = (values) => {
     if (editData) {
-      setData(data.map((d) => (d.id === editData.id ? { ...d, ...values } : d)));
+      setData((prev) =>
+        prev.map((item) => (item.id === editData.id ? { ...item, ...values } : item))
+      );
     } else {
-      setData([...data, { ...values, id: Date.now() }]);
+      setData((prev) => [...prev, { ...values, id: Date.now() }]);
     }
     setOpen(false);
     setEditData(null);
@@ -41,7 +43,7 @@ function SubCategoryPage() {
   };
 
   const handleDelete = (id) => {
-    setData(data.filter((d) => d.id !== id));
+    setData((prev) => prev.filter((item) => item.id !== id));
   };
 
   return (

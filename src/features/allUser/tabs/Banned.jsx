@@ -1,10 +1,11 @@
-import { Table, Input } from "antd";
+import { Table, Input ,Button} from "antd";
 import {
   EyeOutlined,
   SearchOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
 import { useState } from "react";
+import { useOutletContext } from "react-router-dom";
 
 const data = [
   {
@@ -43,8 +44,9 @@ const data = [
   },
 ];
 
-export default function Banned({ setSelectedUser }) {
+export default function Banned() {
   const [search, setSearch] = useState("");
+  const { setSelectedUser } = useOutletContext();
 
   const filteredData = data.filter((item) =>
     item.user.toLowerCase().includes(search.toLowerCase())
@@ -77,17 +79,17 @@ export default function Banned({ setSelectedUser }) {
       title: <span className="text-[#9a2119] font-semibold">Action</span>,
     render: (_, record) => (
   <div className="flex gap-2">
-    <button
-      onClick={() => setSelectedUser(record)}
-      className="w-9 h-9 flex items-center justify-center rounded-md 
-                 border border-[#9a2119] 
-                 text-[#9a2119]
-                 hover:border-[#e57373]
-                 hover:text-[#e57373]
-                 transition duration-200"
-    >
-      <EyeOutlined />
-    </button>
+   <Button
+            onClick={() => setSelectedUser(record)} // ✅ pass full user object
+            className="w-8 h-8 flex items-center justify-center rounded-md 
+                       border border-[#9a2119] 
+                       text-[#9a2119]
+                       hover:border-[#e57373]
+                       hover:text-[#e57373]
+                      "
+          >
+            <EyeOutlined />
+          </Button>
   </div>
 ),
     },

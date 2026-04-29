@@ -1,35 +1,43 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Modal } from "antd";
 import PathTypeTable from "./PathTypeTable";
 import PathTypeForm from "./PathTypeForm";
 
 const initialData = [
-  { id: 1, title: "Path 1" },
-  { id: 2, title: "Path 2" },
-  { id: 3, title: "Path 3" },
-  { id: 4, title: "Path 4" },
-  { id: 5, title: "Path 5" },
-  { id: 6, title: "Path 6" },
-  { id: 7, title: "Path 7" },
+  { key: "1", title: "Path 1" },
+  { key: "2", title: "Path 2" },
+  { key: "3", title: "Path 3" },
+  { key: "4", title: "Path 4" },
+  { key: "5", title: "Path 5" },
+  { key: "6", title: "Path 6" },
+  { key: "7", title: "Path 7" },
 ];
 
 function PathTypePage() {
   const [data, setData] = useState(initialData);
-  const [filteredData, setFilteredData] = useState(initialData);
+  const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState(null);
   const [viewMode, setViewMode] = useState(false);
+
+  const filteredData = useMemo(
+    () =>
+      data.filter((item) =>
+        item.title.toLowerCase().includes(search.toLowerCase())
+      ),
+    [data, search]
+  );
 
   // Submit
   const handleSubmit = (values) => {
     if (current) {
       setData((prev) =>
         prev.map((item) =>
-          item.id === current.id ? { ...item, ...values } : item
+          item.key === current.key ? { ...item, ...values } : item
         )
       );
     } else {
-      setData([...data, { id: Date.now(), ...values }]);
+      setData((prev) => [...prev, { key: `${Date.now()}`, ...values }]);
     }
 
     setOpen(false);
@@ -38,15 +46,7 @@ function PathTypePage() {
 
   // Delete
   const handleDelete = (record) => {
-    setData(data.filter((item) => item.id !== record.id));
-  };
-
-  // Search
-  const handleSearch = (value) => {
-    const filtered = data.filter((item) =>
-      item.title.toLowerCase().includes(value.toLowerCase())
-    );
-    setFilteredData(filtered);
+    setData((prev) => prev.filter((item) => item.key !== record.key));
   };
 
   return (
@@ -76,7 +76,9 @@ function PathTypePage() {
           setViewMode(false);
         }}
         onDelete={handleDelete}
-        onSearch={handleSearch}
+        data={filteredData}
+        search={search}
+        onSearch={setSearch}
       />
 
       {/* Modal */}
