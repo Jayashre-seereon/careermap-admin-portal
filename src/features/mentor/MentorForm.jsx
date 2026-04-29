@@ -24,16 +24,17 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
         {/* Category */}
         <Form.Item name="category" label="Category" rules={[{ required: true }]}>
           <Select disabled={disabled} placeholder="Select Category">
-            <Option value="IT">IT</Option>
-            <Option value="Management">Management</Option>
+            <Option value="Medical">Medical</Option>
+            <Option value="Engineering">Engineering</Option>
+            <Option value="Commercial Pilot">Commercial Pilot</Option>
+            <Option value="Merchant Navy">Merchant Navy</Option>
           </Select>
         </Form.Item>
 
         {/* Subcategory */}
         <Form.Item name="subcategory" label="Subcategory">
           <Select disabled={disabled} placeholder="Select Subcategory">
-            <Option value="Frontend">Frontend</Option>
-            <Option value="Backend">Backend</Option>
+            <Option value="Frontend">Select Subcategory</Option>
           </Select>
         </Form.Item>
 
@@ -74,11 +75,7 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
 
         {/* Skills (MULTI SELECT) */}
         <Form.Item name="skills" label="My Skills">
-          <Select mode="multiple" disabled={disabled} placeholder="Select skills">
-            <Option value="React">React</Option>
-            <Option value="Laravel">Laravel</Option>
-            <Option value="UI/UX">UI/UX</Option>
-          </Select>
+          <Input disabled={disabled} />
         </Form.Item>
 
         {/* Experience */}
