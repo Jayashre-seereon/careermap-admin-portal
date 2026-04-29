@@ -1,4 +1,4 @@
-import { Table, Input, Tag, Modal } from "antd";
+import { Table, Input, Tag, Modal,Button } from "antd";
 import {
   EyeOutlined,
   SearchOutlined,
@@ -83,19 +83,16 @@ export default function BookingTable() {
       align: "right",
       render: (_, record) => (
         <div className="flex justify-end">
-          <button
+          <Button
             onClick={() => {
               setSelected(record);
               setOpen(true);
             }}
-            className="w-9 h-9 flex items-center justify-center rounded-md
-                       border border-[#9a2119]
-                       text-[#9a2119]
-                       hover:border-[#e57373]
-                       hover:text-[#e57373]"
+            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
+       
           >
             <EyeOutlined />
-          </button>
+          </Button>
         </div>
       ),
     },

@@ -98,11 +98,7 @@ export default function TransactionsTable({ onView }) {
         <div className="flex justify-end gap-3">
           <button
             onClick={() => onView && onView(record)}
-            className="w-10 h-10 flex items-center justify-center rounded-lg
-                       border border-[#9a2119]
-                       text-[#9a2119]
-                       hover:bg-[#9a2119]
-                       hover:text-white"
+            className="w-8 h-8 flex items-center justify-center rounded-md border border-red-500 text-red-500 hover:bg-red-50"
           >
             <EyeOutlined />
           </button>

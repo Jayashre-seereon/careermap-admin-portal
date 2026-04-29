@@ -50,8 +50,7 @@ export default function AllTemplatesTable({ onEdit }) {
       render: (_, record) => (
         <button
           onClick={() => onEdit(record)}
-          className="w-9 h-9 flex items-center justify-center rounded-md
-                     bg-[#9a2119] text-white hover:bg-[#c0392b]"
+          className="w-8 h-8 flex items-center justify-center rounded-md border border-red-500 text-red-500 hover:bg-red-50"
         >
           <EditOutlined />
         </button>

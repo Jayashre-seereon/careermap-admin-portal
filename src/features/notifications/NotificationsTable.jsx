@@ -1,4 +1,4 @@
-import { Table, Input, Tag } from "antd";
+import { Table, Input, Tag, Button, Popconfirm } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -91,22 +91,31 @@ export default function NotificationsTable({
       align: "right",
       render: (_, record) => (
         <div className="flex justify-end gap-2">
-          <button onClick={() => onView(record)} className="btn-view">
+          <button
+            onClick={() => onView(record)}
+            className="w-8 h-8 flex items-center justify-center rounded-md border border-red-500 text-red-500 hover:bg-red-50"
+          >
             <EyeOutlined />
           </button>
-          <button onClick={() => onEdit(record)} className="btn-view">
+          <button
+            onClick={() => onEdit(record)}
+            className="w-8 h-8 flex items-center justify-center rounded-md border border-red-500 text-red-500 hover:bg-red-50"
+          >
             <EditOutlined />
           </button>
-          <button
-            onClick={() => {
+          <Popconfirm
+            title="Delete?"
+            description="Are you sure you want to delete this item?"
+            okText="Yes"
+            cancelText="No"
+            onConfirm={() => {
               const updated = data.filter((d) => d.key !== record.key);
               setData(updated);
               onDelete && onDelete(record);
             }}
-            className="btn-delete"
           >
-            <DeleteOutlined />
-          </button>
+            <Button danger icon={<DeleteOutlined />} />
+          </Popconfirm>
         </div>
       ),
     },
@@ -162,20 +171,6 @@ export default function NotificationsTable({
           padding: 0 16px;
           height: 40px;
           border-radius: 8px;
-        }
-        .btn-view {
-          width: 36px;
-          height: 36px;
-          border: 1px solid #9a2119;
-          color: #9a2119;
-          border-radius: 6px;
-        }
-        .btn-delete {
-          width: 36px;
-          height: 36px;
-          border: 1px solid red;
-          color: red;
-          border-radius: 6px;
         }
       `}</style>
     </div>

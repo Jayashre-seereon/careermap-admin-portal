@@ -193,7 +193,7 @@ export default function LanguagePage() {
           <button
             type="button"
             onClick={() => handleEdit(record)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#d8a9a4] text-[#9a2119] transition hover:bg-[#fdf2f1]"
+            className="w-8 h-8 flex items-center justify-center rounded-md border border-red-500 text-red-500 hover:bg-red-50"
             title="Edit language"
           >
             <EditOutlined />
@@ -205,13 +205,7 @@ export default function LanguagePage() {
             cancelText="Cancel"
             onConfirm={() => handleDelete(record)}
           >
-            <button
-              type="button"
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-red-200 text-red-500 transition hover:bg-red-50"
-              title="Delete language"
-            >
-              <DeleteOutlined />
-            </button>
+            <Button danger icon={<DeleteOutlined />} title="Delete language" />
           </Popconfirm>
         </div>
       ),
