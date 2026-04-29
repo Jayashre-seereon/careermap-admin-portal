@@ -84,7 +84,7 @@ export default function AllUsers({ setSelectedUser }) {
                        text-[#9a2119]
                        hover:border-[#e57373]
                        hover:text-[#e57373]
-                       transition duration-200"
+                      "
           >
             <EyeOutlined />
           </button>

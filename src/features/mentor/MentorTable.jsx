@@ -32,8 +32,16 @@ function MentorTable({ data, onAddClick, onView, onEdit, onDelete }) {
       title: "Action",
       render: (_, record, index) => (
         <Space>
-          <Button icon={<EyeOutlined />} onClick={() => onView(record)} />
-          <Button icon={<EditOutlined />} onClick={() => onEdit(record, index)} />
+          <Button className="
+                       border border-[#9a2119] 
+                       text-[#9a2119]
+                       hover:border-[#e57373]
+                       hover:text-[#e57373]" icon={<EyeOutlined />} onClick={() => onView(record)} />
+          <Button className=" 
+                       border border-[#9a2119] 
+                       text-[#9a2119]
+                       hover:border-[#e57373]
+                       hover:text-[#e57373]" icon={<EditOutlined />} onClick={() => onEdit(record, index)} />
           <Popconfirm
             title="Delete?"
             onConfirm={() => onDelete(index)}
