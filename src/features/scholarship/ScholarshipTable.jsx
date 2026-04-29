@@ -1,4 +1,4 @@
-import { Table, Input, Tooltip ,Button} from "antd";
+import { Table, Input, Tooltip, Button } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -124,9 +124,7 @@ export default function ScholarshipTable({
               setData(updated);
               onDelete && onDelete(record);
             }}
-                    >
-           
-          </Button>
+          />
         </div>
       ),
     },
