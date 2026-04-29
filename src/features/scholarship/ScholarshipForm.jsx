@@ -1,9 +1,18 @@
 import { Form, Input, Select, Switch, Button } from "antd";
+import { useEffect } from "react";
 
 const { Option } = Select;
 
 export default function ScholarshipForm({ onSubmit, initialValues, viewMode }) {
   const [form] = Form.useForm();
+
+  useEffect(() => {
+    if (initialValues) {
+      form.setFieldsValue(initialValues);
+    } else {
+      form.resetFields();
+    }
+  }, [form, initialValues]);
 
   return (
     <Form
@@ -18,6 +27,10 @@ export default function ScholarshipForm({ onSubmit, initialValues, viewMode }) {
           <Option value="State">State</Option>
           <Option value="Private">Private</Option>
         </Select>
+      </Form.Item>
+
+      <Form.Item name="class" label="Class">
+        <Input disabled={viewMode} />
       </Form.Item>
 
       <Form.Item name="name" label="Name">
@@ -37,7 +50,7 @@ export default function ScholarshipForm({ onSubmit, initialValues, viewMode }) {
       </Form.Item>
 
       <Form.Item
-        name="description"
+        name="desc"
         label="Long Description"
         className="col-span-2"
       >

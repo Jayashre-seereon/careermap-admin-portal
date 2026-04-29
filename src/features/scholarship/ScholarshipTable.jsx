@@ -8,41 +8,14 @@ import {
 } from "@ant-design/icons";
 import { useState } from "react";
 
-const initialData = [
-  {
-    key: "1",
-    type: "State",
-    class: "11th-12th",
-    name: "Test Scholarship",
-    desc: "Description",
-    url: "#",
-  },
-  {
-    key: "2",
-    type: "Private",
-    class: "N/A",
-    name: "Tata Capital Pankh Scholarship",
-    desc: "About The Program The Tata Capital Pankh Scholarship aims to support...",
-    url: "https://www.buddy4study.com/page/",
-  },
-  {
-    key: "3",
-    type: "Private",
-    class: "N/A",
-    name: "SOF International Hindi Olympiad",
-    desc: "About The Program SOF International Hindi Olympiad encourages students...",
-    url: "https://www.hindiolympiad.com/",
-  },
-];
-
 export default function ScholarshipTable({
+  data,
   onView,
   onEdit,
   onDelete,
   onAdd,
 }) {
   const [search, setSearch] = useState("");
-  const [data, setData] = useState(initialData);
 
   const filteredData = data.filter((item) =>
     item.name.toLowerCase().includes(search.toLowerCase())
@@ -117,11 +90,7 @@ export default function ScholarshipTable({
           </button>
 
           <button
-            onClick={() => {
-              const updated = data.filter((d) => d.key !== record.key);
-              setData(updated);
-              onDelete && onDelete(record);
-            }}
+            onClick={() => onDelete && onDelete(record)}
             className="w-9 h-9 border border-red-500 text-red-500 rounded-md"
           >
             <DeleteOutlined />
@@ -176,6 +145,7 @@ export default function ScholarshipTable({
         <Table
           columns={columns}
           dataSource={filteredData}
+          rowKey="key"
           pagination={{ pageSize: 5 }}
           scroll={{ x: 1200 }}
         />
