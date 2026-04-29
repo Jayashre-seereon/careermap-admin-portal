@@ -1,5 +1,6 @@
 import { Form, Input, Upload, Button, Select } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
+import RichTextEditor from "../../components/ui/RichTextEditor";
 
 export default function ServicesForm({ onSubmit, initialValues, viewMode }) {
   const [form] = Form.useForm();
@@ -33,7 +34,11 @@ export default function ServicesForm({ onSubmit, initialValues, viewMode }) {
       </Form.Item>
 
       <Form.Item name="description" label="Description" className="col-span-2">
-        <Input.TextArea rows={4} disabled={viewMode} />
+        <RichTextEditor
+          disabled={viewMode}
+          placeholder="Enter service description"
+          height={180}
+        />
       </Form.Item>
 
       <Form.Item name="status" label="Status">

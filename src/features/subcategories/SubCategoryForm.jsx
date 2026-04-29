@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Form, Input, Select, Upload, Button } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
+import RichTextEditor from "../../components/ui/RichTextEditor";
 
 const { Option } = Select;
 
@@ -101,10 +102,10 @@ function SubCategoryForm({ onSubmit, initialValues, viewMode }) {
         label="Specialisation"
         className="col-span-2"
       >
-        <Input.TextArea
-          rows={4}
+        <RichTextEditor
           disabled={viewMode}
           placeholder="Specialisation"
+          height={180}
         />
       </Form.Item>
 
@@ -114,10 +115,10 @@ function SubCategoryForm({ onSubmit, initialValues, viewMode }) {
         label="Important Facts"
         className="col-span-2"
       >
-        <Input.TextArea
-          rows={4}
+        <RichTextEditor
           disabled={viewMode}
           placeholder="Important Facts"
+          height={180}
         />
       </Form.Item>
 
