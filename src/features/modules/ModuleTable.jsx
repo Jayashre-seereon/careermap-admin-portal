@@ -56,7 +56,7 @@ function ModuleTable({ data, onAddClick, onView, onEdit, onDelete }) {
                        hover:border-[#e57373]
                        hover:text-[#e57373]
                       " icon={<EditOutlined />} onClick={() => onEdit(record, index)} />
-          <Popconfirm title="Delete?" onConfirm={() => onDelete(index)}>
+          <Popconfirm title="Are you sure you want to delete this module?" onConfirm={() => onDelete(index)}>
             <Button danger icon={<DeleteOutlined />} />
           </Popconfirm>
         </Space>

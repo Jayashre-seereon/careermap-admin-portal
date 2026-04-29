@@ -48,7 +48,7 @@ export default function CategoryTable({ data, onAddClick, onView, onEdit, onDele
                        hover:border-[#e57373]
                        hover:text-[#e57373]
                       " icon={<EditOutlined />} onClick={() => onEdit(record, index)} />
-          <Popconfirm title="Delete?" onConfirm={() => onDelete(index)}>
+          <Popconfirm title="Are you sure you want to delete this category?" onConfirm={() => onDelete(index)}>
             <Button danger icon={<DeleteOutlined />} />
           </Popconfirm>
         </Space>
