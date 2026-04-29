@@ -39,8 +39,18 @@ function SubCategoryTable({ data, onAdd, onView, onEdit, onDelete, search, setSe
       title: "Action",
       render: (_, record) => (
         <div className="flex gap-2">
-          <Button icon={<EyeOutlined />} onClick={() => onView(record)} />
-          <Button icon={<EditOutlined />} onClick={() => onEdit(record)} />
+          <Button className="w-8 h-8 flex items-center justify-center rounded-md 
+                       border border-[#9a2119] 
+                       text-[#9a2119]
+                       hover:border-[#e57373]
+                       hover:text-[#e57373]
+                      " icon={<EyeOutlined />} onClick={() => onView(record)} />
+          <Button className="w-8 h-8 flex items-center justify-center rounded-md 
+                       border border-[#9a2119] 
+                       text-[#9a2119]
+                       hover:border-[#e57373]
+                       hover:text-[#e57373]
+                      " icon={<EditOutlined />} onClick={() => onEdit(record)} />
           <Button danger icon={<DeleteOutlined />} onClick={() => onDelete(record.id)} />
         </div>
       ),

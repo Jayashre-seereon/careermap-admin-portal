@@ -1,4 +1,4 @@
-import { Table, Input } from "antd";
+import { Table, Input ,Button} from "antd";
 import {
   EyeOutlined,
   SearchOutlined,
@@ -77,9 +77,9 @@ export default function AllUsers({ setSelectedUser }) {
       title: <span className="text-[#9a2119] font-semibold">Action</span>,
       render: (_, record) => (
         <div className="flex gap-2">
-          <button
+          <Button
             onClick={() => setSelectedUser(record)} // ✅ pass full user object
-            className="w-9 h-9 flex items-center justify-center rounded-md 
+            className="w-8 h-8 flex items-center justify-center rounded-md 
                        border border-[#9a2119] 
                        text-[#9a2119]
                        hover:border-[#e57373]
@@ -87,7 +87,7 @@ export default function AllUsers({ setSelectedUser }) {
                       "
           >
             <EyeOutlined />
-          </button>
+          </Button>
         </div>
       ),
     },
@@ -105,13 +105,13 @@ export default function AllUsers({ setSelectedUser }) {
             className="w-64 h-9 rounded-md border-[#9a2119]"
             onChange={(e) => setSearch(e.target.value)}
           />
-          <button
+          <Button
             onClick={handleReset}
             className="flex items-center gap-2 px-4 h-9 rounded-md bg-[#9a2119] text-white hover:bg-[#c4392e] transition"
           >
             <ReloadOutlined />
             Reset
-          </button>
+          </Button>
         </div>
       </div>
 

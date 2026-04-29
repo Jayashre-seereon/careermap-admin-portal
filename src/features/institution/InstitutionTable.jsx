@@ -1,4 +1,4 @@
-import { Table, Input, Tooltip } from "antd";
+import { Table, Input, Tooltip,Button } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -137,30 +137,43 @@ export default function InstitutionTable({
       width: 140,
       render: (_, record) => (
         <div className="flex justify-end gap-2">
-          <button
+          <Button
             onClick={() => onView && onView(record)}
-            className="w-9 h-9 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
+            className="w-8 h-8 flex items-center justify-center rounded-md 
+                       border border-[#9a2119] 
+                       text-[#9a2119]
+                       hover:border-[#e57373]
+                       hover:text-[#e57373]
+                      "
           >
             <EyeOutlined />
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => onEdit && onEdit(record)}
-            className="w-9 h-9 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
+            className="w-8 h-8 flex items-center justify-center rounded-md 
+                       border border-[#9a2119] 
+                       text-[#9a2119]
+                       hover:border-[#e57373]
+                       hover:text-[#e57373]
+                      "
           >
             <EditOutlined />
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => {
               const updated = data.filter((d) => d.key !== record.key);
               setData(updated);
               onDelete && onDelete(record);
             }}
-            className="w-9 h-9 flex items-center justify-center rounded-md border border-red-500 text-red-500 hover:bg-red-50"
+            className="w-8 h-8 flex items-center justify-center rounded-md 
+                       border border-red-500
+                       text-red-500
+                       hover:bg-red-50"
           >
             <DeleteOutlined />
-          </button>
+          </Button>
         </div>
       ),
     },

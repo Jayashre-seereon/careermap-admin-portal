@@ -1,4 +1,4 @@
-import { Table, Input } from "antd";
+import { Table, Input,Button } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -58,12 +58,12 @@ export default function PathTypeTable({
           {/* View */}
           <button
             onClick={() => onView(record)}
-            className="w-9 h-9 flex items-center justify-center rounded-md
-                       border border-[#9a2119]
+           className="w-8 h-8 flex items-center justify-center rounded-md 
+                       border border-[#9a2119] 
                        text-[#9a2119]
                        hover:border-[#e57373]
                        hover:text-[#e57373]
-                       transition"
+                      "
           >
             <EyeOutlined />
           </button>
@@ -71,31 +71,27 @@ export default function PathTypeTable({
           {/* Edit */}
           <button
             onClick={() => onEdit(record)}
-            className="w-9 h-9 flex items-center justify-center rounded-md
-                       border border-[#9a2119]
+           className="w-8 h-8 flex items-center justify-center rounded-md 
+                       border border-[#9a2119] 
                        text-[#9a2119]
                        hover:border-[#e57373]
                        hover:text-[#e57373]
-                       transition"
+                      "
           >
             <EditOutlined />
           </button>
 
           {/* Delete */}
-          <button
+           <Button
+            danger
+            icon={<DeleteOutlined />}
             onClick={() => {
               const updated = data.filter((d) => d.key !== record.key);
               setData(updated);
               onDelete && onDelete(record);
             }}
-            className="w-9 h-9 flex items-center justify-center rounded-md
-                       border border-red-500
-                       text-red-500
-                       hover:bg-red-50
-                       transition"
-          >
-            <DeleteOutlined />
-          </button>
+          />
+          
         </div>
       ),
     },

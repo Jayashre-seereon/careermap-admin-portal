@@ -1,4 +1,4 @@
-import { Table, Input } from "antd";
+import { Table, Input ,Button} from "antd";
 import {
   EyeOutlined,
   SearchOutlined,
@@ -77,17 +77,17 @@ export default function EmailUnverified({ setSelectedUser }) {
       title: <span className="text-[#9a2119] font-semibold">Action</span>,
     render: (_, record) => (
   <div className="flex gap-2">
-    <button
-      onClick={() => setSelectedUser(record)}
-      className="w-9 h-9 flex items-center justify-center rounded-md 
-                 border border-[#9a2119] 
-                 text-[#9a2119]
-                 hover:border-[#e57373]
-                 hover:text-[#e57373]
-                 transition duration-200"
-    >
-      <EyeOutlined />
-    </button>
+   <Button
+            onClick={() => setSelectedUser(record)} // ✅ pass full user object
+            className="w-8 h-8 flex items-center justify-center rounded-md 
+                       border border-[#9a2119] 
+                       text-[#9a2119]
+                       hover:border-[#e57373]
+                       hover:text-[#e57373]
+                      "
+          >
+            <EyeOutlined />
+          </Button>
   </div>
 ),
     },
