@@ -91,18 +91,18 @@ export default function NotificationsTable({
       align: "right",
       render: (_, record) => (
         <div className="flex justify-end gap-2">
-          <button
+          <Button
             onClick={() => onView(record)}
-            className="w-8 h-8 flex items-center justify-center rounded-md border border-red-500 text-red-500 hover:bg-red-50"
+            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
           >
             <EyeOutlined />
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => onEdit(record)}
-            className="w-8 h-8 flex items-center justify-center rounded-md border border-red-500 text-red-500 hover:bg-red-50"
+            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
           >
             <EditOutlined />
-          </button>
+          </Button>
           <Popconfirm
             title="Delete?"
             description="Are you sure you want to delete this item?"

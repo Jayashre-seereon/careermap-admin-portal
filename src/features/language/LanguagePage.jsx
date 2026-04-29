@@ -182,22 +182,22 @@ export default function LanguagePage() {
       align: "right",
       render: (_, record) => (
         <div className="flex justify-end gap-2">
-          <button
+          <Button
             type="button"
             onClick={() => navigate(`/language/${record.id}/keywords`)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#d8a9a4] text-[#9a2119] transition hover:bg-[#fdf2f1]"
-            title="Language keywords"
+             className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md" 
+          title="Language keywords"
           >
             <KeyOutlined />
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={() => handleEdit(record)}
-            className="w-8 h-8 flex items-center justify-center rounded-md border border-red-500 text-red-500 hover:bg-red-50"
-            title="Edit language"
+             className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md" 
+          title="Edit language"
           >
             <EditOutlined />
-          </button>
+          </Button>
           <Popconfirm
             title="Delete this language?"
             description="Its mock keywords will also be removed."
@@ -257,7 +257,7 @@ export default function LanguagePage() {
             dataSource={filteredLanguages}
             pagination={{ pageSize: 6 }}
             scroll={{ x: 760 }}
-            rowClassName="hover:bg-[#fff8f7]"
+            
           />
         </div>
       </section>

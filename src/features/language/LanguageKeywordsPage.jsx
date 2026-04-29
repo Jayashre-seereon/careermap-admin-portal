@@ -178,14 +178,14 @@ export default function LanguageKeywordsPage() {
       align: "right",
       render: (_, record) => (
         <div className="flex justify-end gap-2">
-          <button
+          <Button
             type="button"
             onClick={() => handleEdit(record)}
-            className="w-8 h-8 flex items-center justify-center rounded-md border border-red-500 text-red-500 hover:bg-red-50"
+             className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md" 
             title="Edit keyword"
           >
             <EditOutlined />
-          </button>
+          </Button>
           <Popconfirm
             title="Delete this keyword?"
             description="This translation value will be removed."
@@ -249,7 +249,7 @@ export default function LanguageKeywordsPage() {
             dataSource={filteredKeywords}
             pagination={{ pageSize: 8 }}
             scroll={{ x: 720 }}
-            rowClassName="hover:bg-[#fff8f7]"
+           
           />
         </div>
       </section>

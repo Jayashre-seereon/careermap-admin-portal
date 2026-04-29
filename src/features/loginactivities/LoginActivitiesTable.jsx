@@ -1,4 +1,4 @@
-import { Table, Input, Tag } from "antd";
+import { Table, Input, Tag ,Button} from "antd";
 import {
   EyeOutlined,
   SearchOutlined,
@@ -92,12 +92,12 @@ export default function LoginActivitiesTable({ onView }) {
       align: "right",
       render: (_, record) => (
         <div className="flex justify-end">
-          <button
+          <Button
             onClick={() => onView(record)}
-            className="w-8 h-8 flex items-center justify-center rounded-md border border-red-500 text-red-500 hover:bg-red-50"
+            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
           >
             <EyeOutlined />
-          </button>
+          </Button>
         </div>
       ),
     },

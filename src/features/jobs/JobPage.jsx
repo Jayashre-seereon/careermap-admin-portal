@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Input, message, Popconfirm, Table, Tag } from "antd";
+import { useMemo, useState, } from "react";
+import { Input, message, Popconfirm, Table, Tag ,Button} from "antd";
 import {
   DeleteOutlined,
   EditOutlined,
@@ -72,8 +72,9 @@ export default function JobPage() {
         <div className="flex justify-end gap-2">
           <button
             onClick={() => navigate(`/jobs/${record.id}/edit`)}
-            className="btn-view"
-          >
+            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"   >
+          
+          
             <EditOutlined />
           </button>
           <Popconfirm
@@ -83,9 +84,8 @@ export default function JobPage() {
             okText="Delete"
             cancelText="Cancel"
           >
-            <button className="btn-delete">
-              <DeleteOutlined />
-            </button>
+            <Button danger icon={<DeleteOutlined />} />
+              
           </Popconfirm>
         </div>
       ),
