@@ -1,23 +1,17 @@
-import { useState } from "react";
-import { Modal } from "antd";
+import { message } from "antd";
 import NotificationsTable from "./NotificationsTable";
-import NotificationsForm from "./NotificationsForm";
 
 export default function NotificationsPage() {
-  const [open, setOpen] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
 
-  const handleAdd = () => {
-    setOpen(true);
+  const handleMarkAsRead = () => {
+    messageApi.success("All notifications marked as read successfully.");
   };
 
   return (
     <>
-      <NotificationsTable onAdd={handleAdd} />
-
-      {/* ADD MODAL */}
-      <Modal open={open} onCancel={() => setOpen(false)} footer={null}>
-        <NotificationsForm onSubmit={() => setOpen(false)} />
-      </Modal>
+      {contextHolder}
+      <NotificationsTable onMarkAsRead={handleMarkAsRead} />
     </>
   );
 }

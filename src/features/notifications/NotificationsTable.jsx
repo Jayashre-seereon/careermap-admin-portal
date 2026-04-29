@@ -27,7 +27,7 @@ const initialData = [
 ];
 
 export default function NotificationsTable({
-  onAdd,
+  onMarkAsRead,
 }) {
   const [search, setSearch] = useState("");
   const [data, setData] = useState(initialData);
@@ -37,6 +37,10 @@ export default function NotificationsTable({
   );
 
   const handleReset = () => setSearch("");
+  const handleMarkAsReadClick = () => {
+    setData((prev) => prev.map((item) => ({ ...item, status: "Read" })));
+    onMarkAsRead && onMarkAsRead();
+  };
 
   const columns = [
     {
@@ -71,7 +75,7 @@ export default function NotificationsTable({
       title: <span className="text-[#9a2119] font-semibold">Status</span>,
       dataIndex: "status",
       render: (status) => (
-        <Tag color={status === "Active" ? "green" : "red"}>
+        <Tag color={status === "Active" ? "green" : "blue"}>
           {status}
         </Tag>
       ),
@@ -109,8 +113,8 @@ export default function NotificationsTable({
               <ReloadOutlined /> Reset
             </button>
 
-            <button onClick={onAdd} className="btn-main">
-              + Add
+            <button onClick={handleMarkAsReadClick} className="btn-main">
+              Mark as Read
             </button>
           </div>
         </div>
