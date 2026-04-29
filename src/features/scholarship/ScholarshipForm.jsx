@@ -1,5 +1,6 @@
 import { Form, Input, Select, Switch, Button } from "antd";
 import { useEffect } from "react";
+import RichTextEditor from "../../components/editor/RichTextEditor";
 
 const { Option } = Select;
 
@@ -54,7 +55,7 @@ export default function ScholarshipForm({ onSubmit, initialValues, viewMode }) {
         label="Long Description"
         className="col-span-2"
       >
-        <Input.TextArea rows={4} disabled={viewMode} />
+        <RichTextEditor height={220} readOnly={viewMode} />
       </Form.Item>
 
       {!viewMode && (

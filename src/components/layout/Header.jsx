@@ -44,10 +44,7 @@ export default function Header({ activePage }) {
           <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#9a2119]" />
         </button>
 
-        {/* SETTINGS */}
-        <button className="flex h-9 w-9 items-center justify-center text-[#9a2119] transition hover:scale-110">
-          <Settings size={18} />
-        </button>
+       
 
         {/* LOGOUT */}
         <button
