@@ -2,6 +2,7 @@ import { Input, Button } from "antd";
 import { useState } from "react";
 import { useQuill } from "react-quilljs";
 import Quill from "quill";
+import { useOutletContext } from "react-router-dom";
 
 import "quill/dist/quill.snow.css";
 
@@ -25,6 +26,8 @@ icons["redo"] = `
 // ✅ Accepts user prop from index.jsx when coming from UserDetails
 export default function NotificationToUser({ user = null }) {
   const [subject, setSubject] = useState("");
+  const outletContext = useOutletContext();
+  const targetUser = user || outletContext?.notificationUser || null;
 
   const { quill, quillRef } = useQuill({
     theme: "snow",
@@ -60,8 +63,8 @@ export default function NotificationToUser({ user = null }) {
   const handleSend = () => {
     const messageContent = quill?.root.innerHTML;
     console.log({
-      userId: user?.id,
-      userEmail: user?.email,
+      userId: targetUser?.id,
+      userEmail: targetUser?.email,
       subject,
       message: messageContent,
     });
@@ -71,17 +74,17 @@ export default function NotificationToUser({ user = null }) {
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
 
       {/* ✅ Recipient badge — only shown when a specific user is targeted */}
-      {user && (
+      {targetUser && (
         <div className="flex items-center gap-3 mb-5 p-3 bg-gray-50 rounded-lg border border-gray-200">
           <div className="w-9 h-9 rounded-full bg-[#9a2119] text-white flex items-center justify-center font-semibold text-sm flex-shrink-0">
-            {user.user?.charAt(0)}
+            {targetUser.user?.charAt(0)}
           </div>
           <div>
-            <p className="font-medium text-sm">{user.user}</p>
-            <p className="text-xs text-gray-400">{user.email}</p>
+            <p className="font-medium text-sm">{targetUser.user}</p>
+            <p className="text-xs text-gray-400">{targetUser.email}</p>
           </div>
           <span className="ml-auto text-xs bg-[#9a2119] text-white px-2 py-0.5 rounded">
-            {user.id}
+            {targetUser.id}
           </span>
         </div>
       )}
@@ -115,7 +118,7 @@ export default function NotificationToUser({ user = null }) {
           onClick={handleSend}
           className="px-6 h-10 rounded-md bg-[#9a2119] text-white hover:bg-[#c0392b] border-none"
         >
-          {user ? `Send to ${user.user}` : "Send Notification"}
+          {targetUser ? `Send to ${targetUser.user}` : "Send Notification"}
         </Button>
       </div>
     </div>

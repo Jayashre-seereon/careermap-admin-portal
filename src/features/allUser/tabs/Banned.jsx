@@ -5,6 +5,7 @@ import {
   ReloadOutlined,
 } from "@ant-design/icons";
 import { useState } from "react";
+import { useOutletContext } from "react-router-dom";
 
 const data = [
   {
@@ -43,8 +44,9 @@ const data = [
   },
 ];
 
-export default function Banned({ setSelectedUser }) {
+export default function Banned() {
   const [search, setSearch] = useState("");
+  const { setSelectedUser } = useOutletContext();
 
   const filteredData = data.filter((item) =>
     item.user.toLowerCase().includes(search.toLowerCase())
