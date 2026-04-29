@@ -87,6 +87,11 @@ export default function ScholarshipTable({
             className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
           >
             <EditOutlined />
+          </button>
+
+          <button
+            onClick={() => onDelete && onDelete(record)}
+            className="w-9 h-9 border border-red-500 text-red-500 rounded-md"
           </Button>
 
           <Popconfirm
@@ -148,6 +153,7 @@ export default function ScholarshipTable({
         <Table
           columns={columns}
           dataSource={filteredData}
+          rowKey="key"
           pagination={{ pageSize: 5 }}
           scroll={{ x: 1200 }}
         />

@@ -198,6 +198,7 @@ export default function Header({ activePage }) {
           )}
         </div>
 
+       
         <button className="flex h-9 w-9 items-center justify-center text-[#9a2119] transition hover:scale-110">
           <Settings size={18} />
         </button>

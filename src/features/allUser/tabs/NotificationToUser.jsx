@@ -1,31 +1,13 @@
-import { Input, Button } from "antd";
+import { Button, Input } from "antd";
 import { useState } from "react";
+import RichTextEditor from "../../../components/editor/RichTextEditor";
 import { useQuill } from "react-quilljs";
 import Quill from "quill";
 import { useOutletContext } from "react-router-dom";
 
-import "quill/dist/quill.snow.css";
-
-/* 👉 ADD CUSTOM ICONS */
-const icons = Quill.import("ui/icons");
-
-icons["undo"] = `
-  <svg viewBox="0 0 18 18">
-    <polygon class="ql-fill ql-stroke" points="6 10 2 6 6 2"></polygon>
-    <path class="ql-stroke" d="M2,6h9a5,5 0 1,1 0,10h-1"></path>
-  </svg>
-`;
-
-icons["redo"] = `
-  <svg viewBox="0 0 18 18">
-    <polygon class="ql-fill ql-stroke" points="12 10 16 6 12 2"></polygon>
-    <path class="ql-stroke" d="M16,6H7a5,5 0 1,0 0,10h1"></path>
-  </svg>
-`;
-
-// ✅ Accepts user prop from index.jsx when coming from UserDetails
 export default function NotificationToUser({ user = null }) {
   const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
   const outletContext = useOutletContext();
   const targetUser = user || outletContext?.notificationUser || null;
 
@@ -61,17 +43,17 @@ export default function NotificationToUser({ user = null }) {
   });
 
   const handleSend = () => {
-    const messageContent = quill?.root.innerHTML;
     console.log({
       userId: targetUser?.id,
       userEmail: targetUser?.email,
       subject,
-      message: messageContent,
+      message,
     });
   };
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+      {user && (
 
       {/* ✅ Recipient badge — only shown when a specific user is targeted */}
       {targetUser && (
@@ -89,7 +71,6 @@ export default function NotificationToUser({ user = null }) {
         </div>
       )}
 
-      {/* SUBJECT */}
       <div className="mb-5">
         <label className="block text-sm font-semibold mb-2 text-[#9a2119]">
           Subject <span className="text-red-500">*</span>
@@ -102,17 +83,13 @@ export default function NotificationToUser({ user = null }) {
         />
       </div>
 
-      {/* MESSAGE */}
       <div className="mb-6">
         <label className="block text-sm font-semibold mb-2 text-[#9a2119]">
           Message
         </label>
-        <div className="border rounded-md overflow-hidden">
-          <div ref={quillRef} style={{ height: "200px" }} />
-        </div>
+        <RichTextEditor value={message} onChange={setMessage} height={200} />
       </div>
 
-      {/* SEND */}
       <div className="flex justify-end">
         <Button
           onClick={handleSend}
