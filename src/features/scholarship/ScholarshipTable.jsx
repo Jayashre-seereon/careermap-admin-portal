@@ -74,6 +74,7 @@ export default function ScholarshipTable({
       fixed: "right",
       width: 140,
       render: (_, record) => (
+        
         <div className="flex justify-end gap-2">
           <Button
             onClick={() => onView && onView(record)}
@@ -87,11 +88,13 @@ export default function ScholarshipTable({
             className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
           >
             <EditOutlined />
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => onDelete && onDelete(record)}
             className="w-9 h-9 border border-red-500 text-red-500 rounded-md"
+          >
+            <DeleteOutlined />
           </Button>
 
           <Popconfirm
