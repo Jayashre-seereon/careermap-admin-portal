@@ -1,0 +1,327 @@
+@import url("https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   🎨 THEME TOKENS
+   ============================================================ */
+:root {
+  --brand-primary:       #C0392B;
+  --brand-primary-dark:  #9B1C1C;
+  --brand-primary-light: #E05444;
+  --brand-accent:        #FF6B5B;
+
+  --bg-base:             #0C0808;
+  --bg-surface:          #130D0D;
+  --bg-elevated:         #1C1212;
+  --bg-hover:            #241616;
+
+  --bg-border:           rgba(192, 57, 43, 0.12);
+  --bg-border-strong:    rgba(192, 57, 43, 0.28);
+
+  --text-primary:        #000;
+  --text-secondary:      #D1C5C5;
+  --text-muted:          #7A6060;
+  --text-hint:           #4A3535;
+
+  --glow-primary:        rgba(192, 57, 43, 0.35);
+  --glow-soft:           rgba(192, 57, 43, 0.12);
+
+  --color-success:       #22C55E;
+  --color-warning:       #F59E0B;
+  --color-info:          #60A5FA;
+  --color-danger:        #F87171;
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+@layer base {
+  * { box-sizing: border-box; }
+
+  body {
+    background-color: #fff;
+    color: var(--text-primary);
+    font-family: "DM Sans", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(192, 57, 43, 0.25);
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(192, 57, 43, 0.5);
+  }
+}
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+@layer utilities {
+  .font-display { font-family: "DM Sans", sans-serif; }
+  .font-body { font-family: "DM Sans", sans-serif; }
+
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .card-base {
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--bg-border);
+    border-radius: 16px;
+  }
+
+  .card-accent {
+    background: rgba(192, 57, 43, 0.08);
+    border: 1px solid var(--bg-border-strong);
+    border-radius: 16px;
+  }
+
+  .btn-brand {
+    background: var(--brand-primary);
+    color: #fff;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+
+  .btn-brand:hover {
+    background: var(--brand-accent);
+    box-shadow: 0 0 18px var(--glow-primary);
+  }
+
+  .nav-glow {
+    box-shadow: 0 0 8px 2px var(--glow-primary);
+  }
+}
+
+/* ============================================================
+   BACKGROUND FX
+   ============================================================ */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(192, 57, 43, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(192, 57, 43, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  top: -180px;
+  left: 80px;
+  width: 560px;
+  height: 560px;
+  background: radial-gradient(circle, rgba(192, 57, 43, 0.07) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================================
+   ANT TABLE CLEAN UI
+   ============================================================ */
+.ant-table-thead > tr > th {
+  background: #f9f9f9 !important;
+  font-weight: 600;
+  color: #333 !important;
+}
+
+.ant-table-tbody > tr > td {
+  border-bottom: 1px solid #f0f0f0 !important;
+}
+
+.ant-table {
+  border-radius: 12px !important;
+}
+
+/* ============================================================
+   ✅ POPCONFIRM FULL FIX (IMPORTANT)
+   ============================================================ */
+
+/* Container */
+.ant-popconfirm {
+  font-family: "DM Sans", sans-serif;
+}
+
+/* YES button */
+.ant-popconfirm .ant-btn-primary {
+  background: var(--brand-primary) !important;
+  border-color: var(--brand-primary) !important;
+  color: #fff !important;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+/* YES hover */
+.ant-popconfirm .ant-btn-primary:hover {
+  background: var(--brand-accent) !important;
+  border-color: var(--brand-accent) !important;
+  box-shadow: 0 0 10px var(--glow-primary);
+}
+
+/* NO button */
+.ant-popconfirm .ant-btn-default {
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+/* NO hover */
+.ant-popconfirm .ant-btn-default:hover {
+  color: var(--brand-primary) !important;
+  border-color: var(--brand-primary) !important;
+}
+
+/* Overlay fix */
+.ant-popover {
+  z-index: 9999 !important;
+}
+/* ============================================================
+   🔥 FINAL ANT TABS FIX (NO BLUE, NO BG, BOLD TEXT)
+   ============================================================ */
+
+/* Remove default blue focus/active outline */
+.custom-tabs .ant-tabs-tab-btn:focus,
+.custom-tabs .ant-tabs-tab-btn:active {
+  color: #9a2119 !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* All tabs (default state) */
+.custom-tabs .ant-tabs-tab {
+  font-weight: 700 !important; /* always bold */
+  color: #9a2119 !important;
+  background: transparent !important;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+/* Hover (light effect only) */
+.custom-tabs .ant-tabs-tab:hover {
+  color: #c4392e !important;
+  background: rgba(154, 33, 25, 0.06); /* light hover */
+}
+
+/* Active tab (NO background) */
+.custom-tabs .ant-tabs-tab-active {
+  background: transparent !important;
+}
+
+/* Active text */
+.custom-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #9a2119 !important;
+  font-weight: 700 !important;
+}
+
+/* Remove blue ink bar flash */
+.custom-tabs .ant-tabs-ink-bar {
+  background: #9a2119 !important;
+  height: 3px;
+  border-radius: 10px;
+}
+
+/* Remove weird blue on click (important fix) */
+.ant-tabs-tab-btn:focus-visible {
+  outline: none !important;
+}
+
+/* Optional spacing */
+.custom-tabs .ant-tabs-nav-list {
+  gap: 10px;
+}
+
+@keyframes authFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes authPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 247, 242, 0.35);
+  }
+  70% {
+    box-shadow: 0 0 0 16px rgba(255, 247, 242, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 247, 242, 0);
+  }
+}
+
+.auth-float {
+  animation: authFloat 4.4s ease-in-out infinite;
+}
+
+.auth-pulse {
+  animation: authPulse 3.2s ease-out infinite;
+}
+
+.auth-float-delay-1 {
+  animation-delay: 0.2s;
+}
+
+.auth-float-delay-2 {
+  animation-delay: 0.9s;
+}
+
+.auth-float-delay-3 {
+  animation-delay: 1.4s;
+}
+
+.auth-float-delay-4 {
+  animation-delay: 2s;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+    opacity: 0.1;
+  }
+  50% {
+    transform: translateY(-15px);
+    opacity: 0.25;
+  }
+  100% {
+    transform: translateY(0px);
+    opacity: 0.1;
+  }
+}
+
+.animate-float {
+  animation: float infinite ease-in-out;
+}
+
+@keyframes floatY {
+  0% {
+    transform: translateY(0px);
+    opacity: 0.1;
+  }
+  50% {
+    transform: translateY(-18px); /* same as RN */
+    opacity: 0.15;
+  }
+  100% {
+    transform: translateY(0px);
+    opacity: 0.1;
+  }
+}
