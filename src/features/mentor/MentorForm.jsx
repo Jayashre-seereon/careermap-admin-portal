@@ -74,9 +74,6 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
           <Input disabled={disabled} />
         </Form.Item>
 
-        {/* Skills (MULTI SELECT) */}
-        <Form.Item name="skills" label="My Skills">
-          <Input disabled={disabled} />
         <Form.Item name="skills" label="My Skills" className="lg:col-span-2">
           <RichTextEditor
             disabled={disabled}

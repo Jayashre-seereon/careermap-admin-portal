@@ -1,46 +1,13 @@
 import { Button, Input } from "antd";
 import { useState } from "react";
-import RichTextEditor from "../../../components/editor/RichTextEditor";
-import { useQuill } from "react-quilljs";
-import Quill from "quill";
 import { useOutletContext } from "react-router-dom";
+import RichTextEditor from "../../../components/ui/RichTextEditor";
 
 export default function NotificationToUser({ user = null }) {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const outletContext = useOutletContext();
   const targetUser = user || outletContext?.notificationUser || null;
-
-  const { quill, quillRef } = useQuill({
-    theme: "snow",
-    modules: {
-      toolbar: {
-        container: [
-          ["undo", "redo"],
-          [{ header: [1, 2, 3, false] }],
-          ["bold", "italic", "underline"],
-          [{ list: "ordered" }, { list: "bullet" }],
-          [{ indent: "-1" }, { indent: "+1" }],
-          [{ align: [] }],
-          ["link", "image"],
-          ["clean"],
-        ],
-        handlers: {
-          undo: function () {
-            this.quill.history.undo();
-          },
-          redo: function () {
-            this.quill.history.redo();
-          },
-        },
-      },
-      history: {
-        delay: 1000,
-        maxStack: 50,
-        userOnly: true,
-      },
-    },
-  });
 
   const handleSend = () => {
     console.log({
@@ -53,9 +20,6 @@ export default function NotificationToUser({ user = null }) {
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-      {user && (
-
-      {/* ✅ Recipient badge — only shown when a specific user is targeted */}
       {targetUser && (
         <div className="flex items-center gap-3 mb-5 p-3 bg-gray-50 rounded-lg border border-gray-200">
           <div className="w-9 h-9 rounded-full bg-[#9a2119] text-white flex items-center justify-center font-semibold text-sm flex-shrink-0">
@@ -87,7 +51,12 @@ export default function NotificationToUser({ user = null }) {
         <label className="block text-sm font-semibold mb-2 text-[#9a2119]">
           Message
         </label>
-        <RichTextEditor value={message} onChange={setMessage} height={200} />
+        <RichTextEditor
+          value={message}
+          onChange={setMessage}
+          height={200}
+          placeholder="Write your message"
+        />
       </div>
 
       <div className="flex justify-end">
