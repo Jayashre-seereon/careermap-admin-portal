@@ -1,8 +1,5 @@
 import { Table, Input, Tag } from "antd";
 import {
-  EyeOutlined,
-  EditOutlined,
-  DeleteOutlined,
   SearchOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
@@ -30,10 +27,7 @@ const initialData = [
 ];
 
 export default function NotificationsTable({
-  onView,
-  onEdit,
-  onDelete,
-  onAdd,
+  onMarkAsRead,
 }) {
   const [search, setSearch] = useState("");
   const [data, setData] = useState(initialData);
@@ -43,6 +37,10 @@ export default function NotificationsTable({
   );
 
   const handleReset = () => setSearch("");
+  const handleMarkAsReadClick = () => {
+    setData((prev) => prev.map((item) => ({ ...item, status: "Read" })));
+    onMarkAsRead && onMarkAsRead();
+  };
 
   const columns = [
     {
@@ -77,7 +75,7 @@ export default function NotificationsTable({
       title: <span className="text-[#9a2119] font-semibold">Status</span>,
       dataIndex: "status",
       render: (status) => (
-        <Tag color={status === "Active" ? "green" : "red"}>
+        <Tag color={status === "Active" ? "green" : "blue"}>
           {status}
         </Tag>
       ),
@@ -85,30 +83,6 @@ export default function NotificationsTable({
     {
       title: <span className="text-[#9a2119] font-semibold">Date</span>,
       dataIndex: "date",
-    },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Action</span>,
-      align: "right",
-      render: (_, record) => (
-        <div className="flex justify-end gap-2">
-          <button onClick={() => onView(record)} className="btn-view">
-            <EyeOutlined />
-          </button>
-          <button onClick={() => onEdit(record)} className="btn-view">
-            <EditOutlined />
-          </button>
-          <button
-            onClick={() => {
-              const updated = data.filter((d) => d.key !== record.key);
-              setData(updated);
-              onDelete && onDelete(record);
-            }}
-            className="btn-delete"
-          >
-            <DeleteOutlined />
-          </button>
-        </div>
-      ),
     },
   ];
 
@@ -139,8 +113,8 @@ export default function NotificationsTable({
               <ReloadOutlined /> Reset
             </button>
 
-            <button onClick={onAdd} className="btn-main">
-              + Add
+            <button onClick={handleMarkAsReadClick} className="btn-main">
+              Mark as Read
             </button>
           </div>
         </div>
@@ -162,20 +136,6 @@ export default function NotificationsTable({
           padding: 0 16px;
           height: 40px;
           border-radius: 8px;
-        }
-        .btn-view {
-          width: 36px;
-          height: 36px;
-          border: 1px solid #9a2119;
-          color: #9a2119;
-          border-radius: 6px;
-        }
-        .btn-delete {
-          width: 36px;
-          height: 36px;
-          border: 1px solid red;
-          color: red;
-          border-radius: 6px;
         }
       `}</style>
     </div>

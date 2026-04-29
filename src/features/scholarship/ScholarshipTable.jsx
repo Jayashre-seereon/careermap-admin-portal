@@ -1,4 +1,4 @@
-import { Table, Input, Tooltip } from "antd";
+import { Table, Input, Tooltip, Button, Popconfirm } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -75,16 +75,16 @@ export default function ScholarshipTable({
       width: 140,
       render: (_, record) => (
         <div className="flex justify-end gap-2">
-          <button
+          <Button
             onClick={() => onView && onView(record)}
-            className="w-9 h-9 border border-[#9a2119] text-[#9a2119] rounded-md"
+            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
           >
             <EyeOutlined />
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => onEdit && onEdit(record)}
-            className="w-9 h-9 border border-[#9a2119] text-[#9a2119] rounded-md"
+            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
           >
             <EditOutlined />
           </button>
@@ -92,9 +92,17 @@ export default function ScholarshipTable({
           <button
             onClick={() => onDelete && onDelete(record)}
             className="w-9 h-9 border border-red-500 text-red-500 rounded-md"
+          </Button>
+
+          <Popconfirm
+            title="Delete?"
+            description="Are you sure you want to delete this scholarship?"
+            okText="Yes"
+            cancelText="No"
+            onConfirm={() => onDelete && onDelete(record)}
           >
-            <DeleteOutlined />
-          </button>
+            <Button danger icon={<DeleteOutlined />} />
+          </Popconfirm>
         </div>
       ),
     },

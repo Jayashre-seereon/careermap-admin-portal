@@ -2,10 +2,15 @@ const AUTH_USER_KEY = "careermap_admin_user";
 const AUTH_SESSION_KEY = "careermap_admin_session";
 const AUTH_RESET_CODES_KEY = "careermap_admin_reset_codes";
 
+const emitAuthChange = () => {
+  window.dispatchEvent(new Event("careermap-auth-changed"));
+};
+
 const defaultAdmin = {
   name: "Admin User",
   email: "admin@careermap.io",
   password: "Admin@123",
+  avatar: "",
 };
 
 const readUsers = () => {
@@ -71,8 +76,9 @@ export const loginUser = ({ email, password }) => {
     throw new Error("Invalid email or password.");
   }
 
-  const sessionUser = { name: user.name, email: user.email };
+  const sessionUser = { name: user.name, email: user.email, avatar: user.avatar || "" };
   localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(sessionUser));
+  emitAuthChange();
   return sessionUser;
 };
 
@@ -93,8 +99,9 @@ export const signupUser = ({ name, email, password }) => {
   writeUsers([...users, nextUser]);
   localStorage.setItem(
     AUTH_SESSION_KEY,
-    JSON.stringify({ name: nextUser.name, email: nextUser.email })
+    JSON.stringify({ name: nextUser.name, email: nextUser.email, avatar: nextUser.avatar || "" })
   );
+  emitAuthChange();
   return nextUser;
 };
 
@@ -177,4 +184,93 @@ export const resetPasswordWithCode = ({ email, code, password }) => {
 
 export const logoutUser = () => {
   localStorage.removeItem(AUTH_SESSION_KEY);
+  emitAuthChange();
+};
+
+export const updateCurrentUserProfile = ({ name, email, avatar = "" }) => {
+  const sessionUser = getCurrentUser();
+
+  if (!sessionUser) {
+    throw new Error("No active session found.");
+  }
+
+  const users = readUsers();
+  const normalizedEmail = email.toLowerCase().trim();
+  const currentEmail = sessionUser.email.toLowerCase().trim();
+
+  const duplicate = users.find(
+    (item) =>
+      item.email.toLowerCase().trim() === normalizedEmail &&
+      item.email.toLowerCase().trim() !== currentEmail
+  );
+
+  if (duplicate) {
+    throw new Error("Another account already uses this email.");
+  }
+
+  const updatedUsers = users.map((item) =>
+    item.email.toLowerCase().trim() === currentEmail
+      ? {
+          ...item,
+          name: name.trim(),
+          email: normalizedEmail,
+          avatar,
+        }
+      : item
+  );
+
+  writeUsers(updatedUsers);
+
+  const nextSessionUser = {
+    name: name.trim(),
+    email: normalizedEmail,
+    avatar,
+  };
+
+  localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(nextSessionUser));
+  emitAuthChange();
+  return nextSessionUser;
+};
+
+export const changeCurrentUserPassword = ({
+  currentPassword,
+  newPassword,
+  confirmPassword,
+}) => {
+  const sessionUser = getCurrentUser();
+
+  if (!sessionUser) {
+    throw new Error("No active session found.");
+  }
+
+  if (newPassword !== confirmPassword) {
+    throw new Error("New password and confirm password do not match.");
+  }
+
+  if (newPassword.length < 6) {
+    throw new Error("New password must be at least 6 characters long.");
+  }
+
+  const users = readUsers();
+  const currentEmail = sessionUser.email.toLowerCase().trim();
+  const userIndex = users.findIndex(
+    (item) => item.email.toLowerCase().trim() === currentEmail
+  );
+
+  if (userIndex === -1) {
+    throw new Error("User account not found.");
+  }
+
+  if (users[userIndex].password !== currentPassword) {
+    throw new Error("Current password is incorrect.");
+  }
+
+  const updatedUsers = [...users];
+  updatedUsers[userIndex] = {
+    ...updatedUsers[userIndex],
+    password: newPassword,
+  };
+
+  writeUsers(updatedUsers);
+  return true;
 };

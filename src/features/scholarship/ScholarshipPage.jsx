@@ -68,6 +68,10 @@ export default function ScholarshipPage() {
     setData((prev) => prev.filter((item) => item.key !== record.key));
   };
 
+  const handleDelete = (record) => {
+    setData((prev) => prev.filter((item) => item.key !== record.key));
+  };
+
   return (
     <>
       <ScholarshipTable

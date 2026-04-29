@@ -29,12 +29,12 @@ export default function CategoryPage() {
   const [editIndex, setEditIndex] = useState(null);
 
   const handleAdd = (values) => {
-    setData([...data, values]);
+    setData((prev) => [...prev, values]);
     setOpen(false);
   };
 
   const handleDelete = (index) => {
-    setData(data.filter((_, i) => i !== index));
+    setData((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleView = (record) => {
@@ -51,9 +51,9 @@ export default function CategoryPage() {
   };
 
   const handleUpdate = (values) => {
-    const updated = [...data];
-    updated[editIndex] = values;
-    setData(updated);
+    setData((prev) =>
+      prev.map((item, index) => (index === editIndex ? values : item))
+    );
     setOpen(false);
   };
 

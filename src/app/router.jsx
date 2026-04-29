@@ -65,6 +65,7 @@ import LanguagePage from "../features/language/LanguagePage";
 import LanguageKeywordsPage from "../features/language/LanguageKeywordsPage";
 import SeoPage from "../features/seo/SeoPage";
 import SocialCredentialPage from "../features/socialcredential/SocialCredentialPage";
+import ProfilePage from "../features/profile/ProfilePage";
 
 export const router = createBrowserRouter([
   {
@@ -160,6 +161,7 @@ export const router = createBrowserRouter([
           { path: "quiz", element: <QuizPage /> },
           { path: "quiz/:quizId/questions", element: <QuizQuestionsPage /> },
           { path: "globalsettings", element: <GlobalSettingsPage /> },
+          { path: "profile", element: <ProfilePage /> },
           { path: "language", element: <LanguagePage /> },
           { path: "language/:languageId/keywords", element: <LanguageKeywordsPage /> },
           { path: "seo", element: <SeoPage /> },

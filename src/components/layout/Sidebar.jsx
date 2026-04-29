@@ -36,12 +36,13 @@ import {
   Users,
   Wrench,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getCurrentUser } from "../../features/auth/authStorage";
 import logoFull from "../../assets/logo_white.png";
 import logoCompact from "../../assets/logo_white_small.png";
 
-const navSections = [
+export const navSections = [
   {
     label: "MAIN",
     items: [{ icon: LayoutDashboard, name: "Dashboard", path: "/dashboard" }],
@@ -142,8 +143,18 @@ const navSections = [
 
 export default function Sidebar({ activePage, setActivePage, collapsed, setCollapsed }) {
   const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
   // Track which accordion items are open by their name
   const [openAccordions, setOpenAccordions] = useState({ "Email & Notification": true });
+
+  useEffect(() => {
+    const handleAuthChange = () => {
+      setCurrentUser(getCurrentUser());
+    };
+
+    window.addEventListener("careermap-auth-changed", handleAuthChange);
+    return () => window.removeEventListener("careermap-auth-changed", handleAuthChange);
+  }, []);
 
   const toggleAccordion = (name) => {
     setOpenAccordions((prev) => ({ ...prev, [name]: !prev[name] }));
@@ -301,8 +312,8 @@ export default function Sidebar({ activePage, setActivePage, collapsed, setColla
               A
             </div>
             <div>
-              <p className="text-sm font-semibold">Admin</p>
-              <p className="text-xs text-gray-400">admin@careermap.io</p>
+              <p className="text-sm font-semibold">{currentUser?.name || "Admin"}</p>
+              <p className="text-xs text-gray-400">{currentUser?.email || "admin@careermap.io"}</p>
             </div>
           </div>
         </div>
