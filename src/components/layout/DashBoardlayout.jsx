@@ -37,6 +37,7 @@ const pageNameMap = {
   "/job-applications": "Job Application",
   "/quiz": "Quiz",
   "/globalsettings": "Global Settings",
+  "/profile": "Profile",
   "/language": "Language",
   "/seo": "SEO",
   "/social-credential": "Social Credential",
