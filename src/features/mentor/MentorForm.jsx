@@ -2,6 +2,11 @@ import React, { useEffect } from "react";
 import { Form, Input, Button, Select, Upload } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import RichTextEditor from "../../components/ui/RichTextEditor";
+import {
+  getValueFromInput,
+  inputSanitizers,
+  validationRules,
+} from "../../utils/formValidation";
 
 const { Option } = Select;
 
@@ -14,10 +19,15 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
     } else {
       form.resetFields();
     }
-  }, [initialValues]);
+  }, [form, initialValues]);
 
   return (
-    <Form layout="vertical" form={form} onFinish={onSubmit}>
+    <Form
+      layout="vertical"
+      form={form}
+      onFinish={onSubmit}
+      validateTrigger={["onChange", "onBlur"]}
+    >
       
       {/* GRID 3 COLUMNS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -40,38 +50,67 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
         </Form.Item>
 
         {/* Name */}
-        <Form.Item name="name" label="Name" rules={[{ required: true }]}>
-          <Input disabled={disabled} />
+        <Form.Item
+          name="name"
+          label="Name"
+          rules={[
+            validationRules.required("Name"),
+            validationRules.charactersOnly("Name"),
+          ]}
+        >
+          <Input disabled={disabled} placeholder="Enter mentor name" />
         </Form.Item>
 
         {/* Email */}
-        <Form.Item name="email" label="Email">
-          <Input disabled={disabled} />
+        <Form.Item
+          name="email"
+          label="Email"
+          rules={[validationRules.email("Email")]}
+        >
+          <Input disabled={disabled} placeholder="Enter email address" />
         </Form.Item>
 
         {/* Phone */}
-        <Form.Item name="phone" label="Phone Number">
-          <Input disabled={disabled} />
+        <Form.Item
+          name="phone"
+          label="Phone Number"
+          rules={[validationRules.phone("Phone number")]}
+        >
+          <Input disabled={disabled} placeholder="Enter phone number" />
         </Form.Item>
 
         {/* Designation */}
-        <Form.Item name="designation" label="Designation">
-          <Input disabled={disabled} />
+        <Form.Item
+          name="designation"
+          label="Designation"
+          rules={[validationRules.charactersOnly("Designation")]}
+        >
+          <Input disabled={disabled} placeholder="Enter designation" />
         </Form.Item>
 
         {/* Place of Work */}
         <Form.Item name="workplace" label="Place of Work">
-          <Input disabled={disabled} />
+          <Input disabled={disabled} placeholder="Enter place of work" />
         </Form.Item>
 
         {/* LinkedIn */}
-        <Form.Item name="linkedin" label="LinkedIn">
-          <Input disabled={disabled} />
+        <Form.Item
+          name="linkedin"
+          label="LinkedIn"
+          getValueFromEvent={getValueFromInput(inputSanitizers.url)}
+          rules={[validationRules.url("LinkedIn URL")]}
+        >
+          <Input disabled={disabled} placeholder="Enter LinkedIn profile link" />
         </Form.Item>
 
         {/* Facebook */}
-        <Form.Item name="facebook" label="Facebook">
-          <Input disabled={disabled} />
+        <Form.Item
+          name="facebook"
+          label="Facebook"
+          getValueFromEvent={getValueFromInput(inputSanitizers.url)}
+          rules={[validationRules.url("Facebook URL")]}
+        >
+          <Input disabled={disabled} placeholder="Enter Facebook profile link" />
         </Form.Item>
 
         <Form.Item name="skills" label="My Skills" className="lg:col-span-2">
@@ -83,13 +122,21 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
         </Form.Item>
 
         {/* Experience */}
-        <Form.Item name="experience" label="Experience (Years)">
-          <Input disabled={disabled} />
+        <Form.Item
+          name="experience"
+          label="Experience (Years)"
+          rules={[validationRules.numbersOnly("Experience")]}
+        >
+          <Input disabled={disabled} placeholder="Enter years of experience" />
         </Form.Item>
 
         {/* Fees */}
-        <Form.Item name="fees" label="Mentor Fees">
-          <Input disabled={disabled} />
+        <Form.Item
+          name="fees"
+          label="Mentor Fees"
+          rules={[validationRules.decimal("Mentor fees")]}
+        >
+          <Input disabled={disabled} placeholder="Enter mentor fees" />
         </Form.Item>
 
         {/* Image Upload */}
