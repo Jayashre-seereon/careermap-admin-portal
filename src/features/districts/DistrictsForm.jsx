@@ -28,7 +28,7 @@ export default function DistrictsForm({
       <Form.Item
         name="name"
         label="District Name"
-        rules={[validationRules.required("District name")]}
+        rules={[validationRules.required("District name"), validationRules.charactersOnly("District name")]}
       >
         <Input disabled={viewMode} />
       </Form.Item>

@@ -28,7 +28,7 @@ export default function StatesForm({
       <Form.Item
         name="name"
         label="State Name"
-        rules={[validationRules.required("State name")]}
+        rules={[validationRules.required("State name"), validationRules.charactersOnly("State name")]}
       >
         <Input disabled={viewMode} />
       </Form.Item>
