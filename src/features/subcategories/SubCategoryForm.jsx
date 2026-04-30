@@ -53,8 +53,7 @@ function SubCategoryForm({ onSubmit, initialValues, viewMode }) {
       <Form.Item
         name="title"
         label="Title"
-        rules={[validationRules.required("Title"), validationRules.charactersOnly("Title")]}
-      >
+              >
         <Input size="large" disabled={viewMode} placeholder="Title" />
       </Form.Item>
 
@@ -62,10 +61,7 @@ function SubCategoryForm({ onSubmit, initialValues, viewMode }) {
       <Form.Item
         name="howToBecome"
         label="How to Become Title"
-        rules={[
-          validationRules.required("How to become title"),
-          validationRules.charactersOnly("How to become title"),
-        ]}
+       
       >
         <Input
           size="large"

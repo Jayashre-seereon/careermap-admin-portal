@@ -33,16 +33,14 @@ export default function CategoryForm({ onSubmit, initialValues, disabled }) {
         <Form.Item
           name="title"
           label="Title"
-          rules={[validationRules.required("Title"), validationRules.charactersOnly("Title")]}
-        >
+             >
           <Input disabled={disabled} />
         </Form.Item>
 
         <Form.Item
           name="howToBecome"
           label="How to Become Title"
-          rules={[validationRules.charactersOnly("How to become title")]}
-        >
+               >
           <Input disabled={disabled} />
         </Form.Item>
 

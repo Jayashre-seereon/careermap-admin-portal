@@ -76,24 +76,18 @@ export default function Category2Table({
   ];
 
   return (
-    <div className="bg-white p-5 rounded-2xl shadow border">
-      
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
-        
-        <h2 className="text-lg font-semibold text-[#9a2119]">
-          Category List
-        </h2>
+  <div className="bg-white p-6 rounded-2xl shadow border">
 
-        <div className="flex gap-2 items-center">
-          
+      {/* Top Bar */}
+      <div className="flex justify-between mb-4">  
           {/* 🔍 SEARCH */}
           <Input
             placeholder="Search category..."
             prefix={<SearchOutlined />}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-64"
+             className="border px-3 py-2 rounded-md w-[250px]"
+       
           />
 
           {/* ➕ ADD BUTTON */}
@@ -104,7 +98,7 @@ export default function Category2Table({
           >
             + Add Category
           </Button>
-        </div>
+       
       </div>
 
       <Table columns={columns} dataSource={data} rowKey="id" />

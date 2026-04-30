@@ -76,7 +76,15 @@ export default function Category2Page() {
   };
 
   return (
-    <div className="p-5">
+   <div className="w-full"> {/* ✅ FIXED ALIGNMENT */}
+
+      {/* Page Title */}
+      <h2 className="text-xl font-semibold text-[#9a2119] mb-5">
+        Secondary Category Management
+      </h2>
+
+      {/* Table Section */}
+      <div className="w-full">
       <Category2Table
         data={filteredData}
         onAdd={handleAdd}
@@ -86,7 +94,7 @@ export default function Category2Page() {
         search={search}
         setSearch={setSearch}
       />
-
+</div>
       <Modal
         open={open}
         onCancel={() => setOpen(false)}

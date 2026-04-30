@@ -31,7 +31,9 @@ export default function EntranceExamForm({
       </Form.Item>
 
       <Form.Item name="stream" label="Stream" rules={[validationRules.charactersOnly("Stream")]}>
-        <Input disabled={viewMode} />
+        <Select disabled={viewMode} placeholder="Select Stream">
+          <Option value="Science">Science</Option>
+        </Select>
       </Form.Item>
 
       <Form.Item name="category" label="Select Category">
@@ -41,11 +43,17 @@ export default function EntranceExamForm({
       </Form.Item>
 
       <Form.Item name="secondCategory" label="2nd Category">
-        <Input disabled={viewMode} />
+        <Select disabled={viewMode} placeholder="Select 2nd Category">
+          <Option value="GENERAL COURSES/DEGREES">
+            GENERAL COURSES/DEGREES
+          </Option>
+        </Select>
       </Form.Item>
 
       <Form.Item name="subcategory" label="Select Subcategory">
-        <Input disabled={viewMode} />
+        <Select disabled={viewMode} placeholder="Select Subcategory">
+          <Option value="MBBS">MBBS</Option>
+        </Select>
       </Form.Item>
 
       <Form.Item name="exam" label="Exam Name" rules={[validationRules.required("Exam name")]}>

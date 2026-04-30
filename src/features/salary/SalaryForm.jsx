@@ -60,9 +60,10 @@ function SalaryForm({ onSubmit, initialValues, viewMode }) {
         name="salary"
         label="Salary Range"
         className="col-span-2"
-        rules={[validationRules.required("Salary range")]}
-      >
-        <Input.TextArea rows={2} disabled={viewMode} />
+        rules={[ validationRules.required("Salary Range")]}
+             
+           >
+        <Input rows={2} disabled={viewMode} />
       </Form.Item>
 
       {/* Submit */}

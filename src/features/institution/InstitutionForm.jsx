@@ -58,7 +58,7 @@ function InstitutionForm({ onSubmit, initialValues, viewMode }) {
 
       {/* Date */}
       <Form.Item name="date" label="Tentative Date">
-        <Input placeholder="July 2025" disabled={viewMode} />
+        <DatePicker placeholder="July 2025" disabled={viewMode} />
       </Form.Item>
 
       {/* URL */}

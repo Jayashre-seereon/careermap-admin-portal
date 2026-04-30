@@ -29,16 +29,14 @@ function ModuleForm({ onSubmit, initialValues, disabled }) {
         <Form.Item
           name="title"
           label="Title"
-          rules={[validationRules.required("Title"), validationRules.charactersOnly("Title")]}
-        >
+          >
           <Input disabled={disabled} />
         </Form.Item>
 
         <Form.Item
           name="btnText"
           label="Btn Text"
-          rules={[validationRules.charactersOnly("Btn text")]}
-        >
+            >
           <Input disabled={disabled} />
         </Form.Item>
 

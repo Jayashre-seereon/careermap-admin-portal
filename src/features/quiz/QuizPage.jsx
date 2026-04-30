@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Form, Input, message, Modal, Popconfirm, Select, Table,Button } from "antd";
+import { Form, Input, message, Modal, Popconfirm, Select, Table,Button ,DatePicker} from "antd";
 import {
   DeleteOutlined,
   EditOutlined,
@@ -208,7 +208,7 @@ export default function QuizPage() {
             name="from"
             rules={[{ required: true, message: "Please select start date." }]}
           >
-            <Input type="date" />
+            <DatePicker />
           </Form.Item>
 
           <Form.Item
@@ -216,7 +216,7 @@ export default function QuizPage() {
             name="to"
             rules={[{ required: true, message: "Please select end date." }]}
           >
-            <Input type="date" />
+            <DatePicker />
           </Form.Item>
         </Form>
 
