@@ -1,6 +1,11 @@
 import { Input } from "antd";
 import { useState } from "react";
 import RichTextEditor from "../../../components/editor/RichTextEditor";
+import {
+  getValueFromInput,
+  inputSanitizers,
+  validationRules,
+} from "../../../utils/formValidation";
 
 export default function GlobalTemplatePage() {
   const [emailBody, setEmailBody] = useState(`Hi {{fullname}} ({{username}}),
