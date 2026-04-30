@@ -47,17 +47,18 @@ export default function SubscriptionsPage() {
       render: (_, __, index) => index + 1,
       width: 70,
     },
-    { title: "User", dataIndex: "user" },
-    { title: "Plan Name", dataIndex: "planName" },
-    { title: "Time", dataIndex: "time" },
+    { title: "User", dataIndex: "user", width: 220, ellipsis: true },
+    { title: "Plan Name", dataIndex: "planName", width: 260, ellipsis: true },
+    { title: "Time", dataIndex: "time", width: 140 },
     {
       title: "Status",
       dataIndex: "status",
       render: (value) => (
         <Tag color={value === "Active" ? "red" : "default"}>{value}</Tag>
       ),
+      width: 130,
     },
-    { title: "Expiry Date", dataIndex: "expiryDate" },
+    { title: "Expiry Date", dataIndex: "expiryDate", width: 160 },
   ];
 
   return (
@@ -72,7 +73,7 @@ export default function SubscriptionsPage() {
               prefix={<SearchOutlined className="text-[#9a2119]" />}
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              className="w-64"
+              className="w-full sm:w-64"
             />
             <Select
               value={status}
@@ -103,6 +104,7 @@ export default function SubscriptionsPage() {
           dataSource={filteredData}
           rowKey="id"
           pagination={{ pageSize: 5 }}
+          scroll={{ x: "max-content" }}
         />
       </div>
     </div>

@@ -9,13 +9,15 @@ function JobScopeTable({ data, onAdd, onView, onEdit, onDelete, onSearch, search
       render: (_, __, index) => index + 1,
       width: 60,
     },
-    { title: "Stream", dataIndex: "stream" },
-    { title: "Category", dataIndex: "category" },
-    { title: "2nd Category", dataIndex: "secondCategory" },
-    { title: "Sub Category", dataIndex: "subcategory" },
-    { title: "Name", dataIndex: "name" },
+    { title: "Stream", dataIndex: "stream", width: 140 },
+    { title: "Category", dataIndex: "category", width: 160 },
+    { title: "2nd Category", dataIndex: "secondCategory", width: 280, ellipsis: true },
+    { title: "Sub Category", dataIndex: "subcategory", width: 180, ellipsis: true },
+    { title: "Name", dataIndex: "name", width: 220, ellipsis: true },
     {
       title: "Action",
+      fixed: "right",
+      width: 150,
       render: (_, record) => (
         <div className="flex gap-2">
           <Button className="w-8 h-8 flex items-center justify-center rounded-md 
@@ -48,12 +50,12 @@ function JobScopeTable({ data, onAdd, onView, onEdit, onDelete, onSearch, search
     <div className="bg-white p-6 rounded-2xl shadow border w-full">
       
       {/* Header */}
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
         <input
           placeholder="Search..."
           value={search}
           onChange={(e) => onSearch(e.target.value)}
-          className="border px-3 py-2 rounded-md w-64"
+          className="border px-3 py-2 rounded-md w-full sm:w-64"
         />
 
         <Button
@@ -70,6 +72,7 @@ function JobScopeTable({ data, onAdd, onView, onEdit, onDelete, onSearch, search
         dataSource={data}
         rowKey="id"
         pagination={{ pageSize: 5 }}
+        scroll={{ x: "max-content" }}
       />
     </div>
   );

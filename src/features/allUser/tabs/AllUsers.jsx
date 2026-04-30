@@ -97,14 +97,14 @@ export default function AllUsers() {
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h2 className="text-lg font-semibold text-[#9a2119]">All Users</h2>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Input
             placeholder="Search user..."
             value={search}
             prefix={<SearchOutlined className="text-[#9a2119]" />}
-            className="w-64 h-9 rounded-md border-[#9a2119]"
+            className="w-full sm:w-64 h-9 rounded-md border-[#9a2119]"
             onChange={(e) => setSearch(e.target.value)}
           />
           <Button
@@ -122,7 +122,11 @@ export default function AllUsers() {
         dataSource={filteredData}
         pagination={{ pageSize: 5 }}
         rowClassName="hover:bg-gray-50"
+        scroll={{ x: "max-content" }}
       />
     </div>
   );
 }
+
+
+

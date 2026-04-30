@@ -149,6 +149,20 @@ body::after {
 
 .ant-table {
   border-radius: 12px !important;
+  width: 100% !important;
+}
+
+.ant-table-wrapper {
+  width: 100%;
+}
+
+.ant-table-cell {
+  vertical-align: middle !important;
+}
+
+.ant-table-cell .ant-tag {
+  margin-inline-end: 0;
+  white-space: nowrap;
 }
 
 /* ============================================================

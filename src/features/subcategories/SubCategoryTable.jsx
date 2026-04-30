@@ -9,33 +9,41 @@ function SubCategoryTable({ data, onAdd, onView, onEdit, onDelete, search, setSe
 );
 
   const columns = [
-    { title: "SL", render: (_, __, i) => i + 1 },
+    { title: "SL", render: (_, __, i) => i + 1, width: 70 },
 
-    { title: "Category Name", dataIndex: "category" },
+    { title: "Category Name", dataIndex: "category", width: 180, ellipsis: true },
 
-    { title: "2nd Category Name", dataIndex: "secondCategory" },
+    { title: "2nd Category Name", dataIndex: "secondCategory", width: 260, ellipsis: true },
 
-    { title: "Title", dataIndex: "title" },
+    { title: "Title", dataIndex: "title", width: 180, ellipsis: true },
 
     {
       title: "Institutions",
       dataIndex: "institutions",
-     render: (text) => <span>{text ? text.slice(0, 40) + "..." : ""}</span>,
+      width: 320,
+      ellipsis: true,
+      render: (text) => <span>{text ? text.slice(0, 80) + "..." : ""}</span>,
     },
 
     {
       title: "File",
       dataIndex: "file",
       render: () => "File",
+      width: 100,
     },
 
     {
       title: "Description",
       dataIndex: "description",
-    render: (text) => <span>{text ? text.slice(0, 40) + "..." : ""}</span>, },
+      width: 340,
+      ellipsis: true,
+      render: (text) => <span>{text ? text.slice(0, 80) + "..." : ""}</span>,
+    },
 
     {
       title: "Action",
+      fixed: "right",
+      width: 150,
       render: (_, record) => (
         <div className="flex gap-2">
           <Button className="w-8 h-8 flex items-center justify-center rounded-md 
@@ -65,13 +73,13 @@ function SubCategoryTable({ data, onAdd, onView, onEdit, onDelete, search, setSe
   ];
 
   return (
-    <div className="bg-white p-5 rounded-2xl shadow-md">
+    <div className="w-full bg-white p-5 rounded-2xl shadow-md">
 
       {/* Header */}
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
         <input
           placeholder="Search..."
-          className="border px-3 py-2 rounded-md w-[250px]"
+          className="border px-3 py-2 rounded-md w-full sm:w-[250px]"
           value={search}
 onChange={(e) => setSearch(e.target.value || "")} />
 
@@ -84,7 +92,13 @@ onChange={(e) => setSearch(e.target.value || "")} />
         </Button>
       </div>
 
-      <Table columns={columns} dataSource={filtered} rowKey="id" />
+      <Table
+        columns={columns}
+        dataSource={filtered}
+        rowKey="id"
+        pagination={{ pageSize: 5 }}
+        scroll={{ x: "max-content" }}
+      />
     </div>
   );
 }
