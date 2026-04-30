@@ -20,6 +20,7 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { createLanguageId, getLanguages, saveLanguages } from "./languageStore";
+import { validationRules } from "../../utils/formValidation";
 
 const initialFormValues = {
   name: "",
@@ -287,8 +288,7 @@ export default function LanguagePage() {
             label="Language Code"
             name="code"
             rules={[
-              { required: true, message: "Please enter the language code." },
-              { min: 2, message: "Use at least 2 characters." },
+              validationRules.charactersOnly("Language Code")
             ]}
           >
             <Input placeholder="Example: en" />
