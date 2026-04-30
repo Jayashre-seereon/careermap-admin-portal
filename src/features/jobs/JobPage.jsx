@@ -1,5 +1,5 @@
-import { useMemo, useState, } from "react";
-import { Input, message, Popconfirm, Table, Tag ,Button} from "antd";
+import { useMemo, useState } from "react";
+import { Input, message, Modal, Popconfirm, Table, Tag, Button } from "antd";
 import {
   DeleteOutlined,
   EditOutlined,
@@ -9,11 +9,14 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { getJobs, saveJobs } from "./jobStore";
+import JobForm from "./JobForm";
 
 export default function JobPage() {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState(getJobs);
   const [search, setSearch] = useState("");
+  const [modalMode, setModalMode] = useState(null);
+  const [activeJobId, setActiveJobId] = useState(null);
 
   const filteredJobs = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -35,6 +38,16 @@ export default function JobPage() {
     setJobs(updatedJobs);
     saveJobs(updatedJobs);
     message.success("Job deleted successfully.");
+  };
+
+  const openJobModal = (mode, jobId = null) => {
+    setModalMode(mode);
+    setActiveJobId(jobId);
+  };
+
+  const closeJobModal = () => {
+    setModalMode(null);
+    setActiveJobId(null);
   };
 
   const columns = [
@@ -73,7 +86,7 @@ export default function JobPage() {
         <div className="flex justify-end gap-2">
           <button
             type="button"
-            onClick={() => navigate(`/jobs/${record.id}/view`)}
+            onClick={() => openJobModal("view", record.id)}
             className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
             aria-label={`View ${record.name}`}
           >
@@ -81,7 +94,7 @@ export default function JobPage() {
           </button>
           <button
             type="button"
-            onClick={() => navigate(`/jobs/${record.id}/edit`)}
+            onClick={() => openJobModal("edit", record.id)}
             className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
             aria-label={`Edit ${record.name}`}
           >
@@ -125,7 +138,7 @@ export default function JobPage() {
               <ReloadOutlined /> Reset
             </button>
 
-            <button type="button" onClick={() => navigate("/jobs/add")} className="btn-main">
+            <button type="button" onClick={() => openJobModal("add")} className="btn-main">
               + Add Job
             </button>
           </div>
@@ -139,6 +152,35 @@ export default function JobPage() {
           scroll={{ x: true }}
         />
       </div>
+
+      <Modal
+        open={Boolean(modalMode)}
+        footer={null}
+        onCancel={closeJobModal}
+        width={1100}
+        destroyOnHidden
+        title={
+          <span className="text-[#1f2a44] font-semibold">
+            {modalMode === "view"
+              ? "View Job"
+              : modalMode === "edit"
+                ? "Edit Job"
+                : "Add Job"}
+          </span>
+        }
+      >
+        {modalMode && (
+          <JobForm
+            mode={modalMode}
+            jobId={activeJobId}
+            onCancel={closeJobModal}
+            onSuccess={(nextJobs) => {
+              setJobs(nextJobs);
+              closeJobModal();
+            }}
+          />
+        )}
+      </Modal>
 
       <style jsx>{`
         .btn-main {
