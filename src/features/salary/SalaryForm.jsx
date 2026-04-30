@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { Form, Select, Input, Button } from "antd";
+import { validationRules } from "../../utils/formValidation";
 
 const { Option } = Select;
 
@@ -9,7 +10,7 @@ function SalaryForm({ onSubmit, initialValues, viewMode }) {
   useEffect(() => {
     if (initialValues) form.setFieldsValue(initialValues);
     else form.resetFields();
-  }, [initialValues]);
+  }, [form, initialValues]);
 
   const handleFinish = (values) => {
     onSubmit(values);
@@ -21,6 +22,7 @@ function SalaryForm({ onSubmit, initialValues, viewMode }) {
       layout="vertical"
       form={form}
       onFinish={handleFinish}
+      validateTrigger={["onChange", "onBlur"]}
       className="grid grid-cols-2 gap-4"
     >
       {/* Stream */}
@@ -58,7 +60,7 @@ function SalaryForm({ onSubmit, initialValues, viewMode }) {
         name="salary"
         label="Salary Range"
         className="col-span-2"
-        rules={[{ required: true }]}
+        rules={[validationRules.required("Salary range")]}
       >
         <Input.TextArea rows={2} disabled={viewMode} />
       </Form.Item>

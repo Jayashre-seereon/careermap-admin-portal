@@ -1,4 +1,5 @@
 import { Form, Input, Button } from "antd";
+import { validationRules } from "../../utils/formValidation";
 
 export default function CountriesForm({ onSubmit, initialValues, viewMode }) {
   const [form] = Form.useForm();
@@ -9,8 +10,13 @@ export default function CountriesForm({ onSubmit, initialValues, viewMode }) {
       form={form}
       initialValues={initialValues}
       onFinish={onSubmit}
+      validateTrigger={["onChange", "onBlur"]}
     >
-      <Form.Item name="name" label="Country Name">
+      <Form.Item
+        name="name"
+        label="Country Name"
+        rules={[validationRules.required("Country name"), validationRules.charactersOnly("Country name")]}
+      >
         <Input disabled={viewMode} />
       </Form.Item>
 

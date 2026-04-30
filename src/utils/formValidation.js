@@ -38,6 +38,74 @@ const createCustomValidator =
     return message ? Promise.reject(new Error(message)) : Promise.resolve();
   };
 
+export const validationMessages = {
+  email: (label = "Email") => (value) =>
+    regex.email.test(value) ? "" : `Please enter a valid ${label.toLowerCase()}.`,
+  phone: (label = "Phone number") => (value) => {
+    if (/[A-Za-z]/.test(value)) {
+      return `Only numbers are allowed in ${label.toLowerCase()}.`;
+    }
+
+    if (/[^0-9\s]/.test(value)) {
+      return `Special characters are not allowed in ${label.toLowerCase()}.`;
+    }
+
+    const digitCount = value.replace(/\s/g, "").length;
+    if (digitCount < 10 || digitCount > 15) {
+      return `Please enter a valid ${label.toLowerCase()}.`;
+    }
+
+    return "";
+  },
+  charactersOnly: (label = "This field") => (value) => {
+    if (/\d/.test(value)) {
+      return `Numbers are not allowed in ${label.toLowerCase()}.`;
+    }
+
+    if (/[^A-Za-z\s]/.test(value)) {
+      return `Special characters are not allowed in ${label.toLowerCase()}.`;
+    }
+
+    return regex.charactersOnly.test(value)
+      ? ""
+      : `Only characters are allowed in ${label.toLowerCase()}.`;
+  },
+  numbersOnly: (label = "This field") => (value) => {
+    if (/[A-Za-z]/.test(value)) {
+      return `Characters are not allowed in ${label.toLowerCase()}.`;
+    }
+
+    if (/[^0-9]/.test(value)) {
+      return `Special characters are not allowed in ${label.toLowerCase()}.`;
+    }
+
+    return regex.numbersOnly.test(value)
+      ? ""
+      : `Only numbers are allowed in ${label.toLowerCase()}.`;
+  },
+  decimal: (label = "This field") => (value) => {
+    if (/[A-Za-z]/.test(value)) {
+      return `Characters are not allowed in ${label.toLowerCase()}.`;
+    }
+
+    if (/[^0-9.]/.test(value)) {
+      return `Special characters are not allowed in ${label.toLowerCase()}.`;
+    }
+
+    if ((value.match(/\./g) || []).length > 1) {
+      return `Please enter a valid ${label.toLowerCase()}.`;
+    }
+
+    return regex.decimal.test(value)
+      ? ""
+      : `Only numbers are allowed in ${label.toLowerCase()}.`;
+  },
+  url: (label = "URL") => (value) =>
+    regex.url.test(value)
+      ? ""
+      : `Please enter a valid ${label.toLowerCase()}. Only links are allowed.`,
+};
+
 export const validationRules = {
   required: (label = "This field") => ({
     required: true,
@@ -50,71 +118,16 @@ export const validationRules = {
     ),
   }),
   phone: (label = "Phone number") => ({
-    validator: createCustomValidator((value) => {
-      if (/[A-Za-z]/.test(value)) {
-        return `Only numbers are allowed in ${label.toLowerCase()}.`;
-      }
-
-      if (/[^0-9\s]/.test(value)) {
-        return `Special characters are not allowed in ${label.toLowerCase()}.`;
-      }
-
-      const digitCount = value.replace(/\s/g, "").length;
-      if (digitCount < 10 || digitCount > 15) {
-        return `Please enter a valid ${label.toLowerCase()}.`;
-      }
-
-      return "";
-    }),
+    validator: createCustomValidator(validationMessages.phone(label)),
   }),
   charactersOnly: (label = "This field") => ({
-    validator: createCustomValidator((value) => {
-      if (/\d/.test(value)) {
-        return `Numbers are not allowed in ${label.toLowerCase()}.`;
-      }
-
-      if (/[^A-Za-z\s]/.test(value)) {
-        return `Special characters are not allowed in ${label.toLowerCase()}.`;
-      }
-
-      return regex.charactersOnly.test(value)
-        ? ""
-        : `Only characters are allowed in ${label.toLowerCase()}.`;
-    }),
+    validator: createCustomValidator(validationMessages.charactersOnly(label)),
   }),
   numbersOnly: (label = "This field") => ({
-    validator: createCustomValidator((value) => {
-      if (/[A-Za-z]/.test(value)) {
-        return `Characters are not allowed in ${label.toLowerCase()}.`;
-      }
-
-      if (/[^0-9]/.test(value)) {
-        return `Special characters are not allowed in ${label.toLowerCase()}.`;
-      }
-
-      return regex.numbersOnly.test(value)
-        ? ""
-        : `Only numbers are allowed in ${label.toLowerCase()}.`;
-    }),
+    validator: createCustomValidator(validationMessages.numbersOnly(label)),
   }),
   decimal: (label = "This field") => ({
-    validator: createCustomValidator((value) => {
-      if (/[A-Za-z]/.test(value)) {
-        return `Characters are not allowed in ${label.toLowerCase()}.`;
-      }
-
-      if (/[^0-9.]/.test(value)) {
-        return `Special characters are not allowed in ${label.toLowerCase()}.`;
-      }
-
-      if ((value.match(/\./g) || []).length > 1) {
-        return `Please enter a valid ${label.toLowerCase()}.`;
-      }
-
-      return regex.decimal.test(value)
-        ? ""
-        : `Only numbers are allowed in ${label.toLowerCase()}.`;
-    }),
+    validator: createCustomValidator(validationMessages.decimal(label)),
   }),
   url: (label = "URL") => ({
     validator: createPatternValidator(

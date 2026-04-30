@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { Form, Select, Input, Button } from "antd";
+import { validationRules } from "../../utils/formValidation";
 
 const { Option } = Select;
 
@@ -9,7 +10,7 @@ function CareerPathForm({ onSubmit, initialValues, viewMode }) {
   useEffect(() => {
     if (initialValues) form.setFieldsValue(initialValues);
     else form.resetFields();
-  }, [initialValues]);
+  }, [form, initialValues]);
 
   const handleFinish = (values) => {
     onSubmit(values);
@@ -21,6 +22,7 @@ function CareerPathForm({ onSubmit, initialValues, viewMode }) {
       layout="vertical"
       form={form}
       onFinish={handleFinish}
+      validateTrigger={["onChange", "onBlur"]}
       className="grid grid-cols-2 gap-4"
     >
       <Form.Item name="module" label="Select Module">
@@ -41,23 +43,23 @@ function CareerPathForm({ onSubmit, initialValues, viewMode }) {
         </Select>
       </Form.Item>
 
-      <Form.Item name="stream" label="Stream">
+      <Form.Item name="stream" label="Stream" rules={[validationRules.charactersOnly("Stream")]}>
         <Input disabled={viewMode} />
       </Form.Item>
 
-      <Form.Item name="graduation" label="Graduation">
+      <Form.Item name="graduation" label="Graduation" rules={[validationRules.charactersOnly("Graduation")]}>
         <Input disabled={viewMode} />
       </Form.Item>
 
-      <Form.Item name="afterGraduation" label="After Graduation">
+      <Form.Item name="afterGraduation" label="After Graduation" rules={[validationRules.charactersOnly("After graduation")]}>
         <Input disabled={viewMode} />
       </Form.Item>
 
-      <Form.Item name="afterPostGraduation" label="After Post Graduation">
+      <Form.Item name="afterPostGraduation" label="After Post Graduation" rules={[validationRules.charactersOnly("After post graduation")]}>
         <Input disabled={viewMode} />
       </Form.Item>
 
-      <Form.Item name="anyOther" label="Any Other">
+      <Form.Item name="anyOther" label="Any Other" rules={[validationRules.charactersOnly("Any other")]}>
         <Input disabled={viewMode} />
       </Form.Item>
 

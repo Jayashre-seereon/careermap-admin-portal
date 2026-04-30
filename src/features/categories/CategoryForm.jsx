@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Form, Input, Select, Upload, Button, Radio } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import RichTextEditor from "../../components/ui/RichTextEditor";
+import { validationRules } from "../../utils/formValidation";
 
 const { Option } = Select;
 
@@ -11,10 +12,10 @@ export default function CategoryForm({ onSubmit, initialValues, disabled }) {
   useEffect(() => {
     if (initialValues) form.setFieldsValue(initialValues);
     else form.resetFields();
-  }, [initialValues]);
+  }, [form, initialValues]);
 
   return (
-    <Form layout="vertical" form={form} onFinish={onSubmit}>
+    <Form layout="vertical" form={form} onFinish={onSubmit} validateTrigger={["onChange", "onBlur"]}>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
@@ -29,11 +30,19 @@ export default function CategoryForm({ onSubmit, initialValues, disabled }) {
           <Input placeholder="Search Institutions" disabled={disabled} />
         </Form.Item>
 
-        <Form.Item name="title" label="Title" rules={[{ required: true }]}>
+        <Form.Item
+          name="title"
+          label="Title"
+          rules={[validationRules.required("Title"), validationRules.charactersOnly("Title")]}
+        >
           <Input disabled={disabled} />
         </Form.Item>
 
-        <Form.Item name="howToBecome" label="How to Become Title">
+        <Form.Item
+          name="howToBecome"
+          label="How to Become Title"
+          rules={[validationRules.charactersOnly("How to become title")]}
+        >
           <Input disabled={disabled} />
         </Form.Item>
 

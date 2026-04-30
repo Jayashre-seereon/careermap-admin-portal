@@ -1,6 +1,7 @@
 import { Form, Input, Select, Switch, Button } from "antd";
 import { useEffect } from "react";
 import RichTextEditor from "../../components/editor/RichTextEditor";
+import { validationRules } from "../../utils/formValidation";
 
 const { Option } = Select;
 
@@ -21,9 +22,10 @@ export default function ScholarshipForm({ onSubmit, initialValues, viewMode }) {
       form={form}
       initialValues={initialValues}
       onFinish={onSubmit}
+      validateTrigger={["onChange", "onBlur"]}
       className="grid grid-cols-2 gap-4"
     >
-      <Form.Item name="type" label="Type">
+      <Form.Item name="type" label="Type" rules={[validationRules.required("Type")]}>
         <Select disabled={viewMode}>
           <Option value="State">State</Option>
           <Option value="Private">Private</Option>
@@ -34,11 +36,11 @@ export default function ScholarshipForm({ onSubmit, initialValues, viewMode }) {
         <Input disabled={viewMode} />
       </Form.Item>
 
-      <Form.Item name="name" label="Name">
+      <Form.Item name="name" label="Name" rules={[validationRules.required("Name")]}>
         <Input disabled={viewMode} />
       </Form.Item>
 
-      <Form.Item name="url" label="URL">
+      <Form.Item name="url" label="URL" rules={[validationRules.url("URL")]}>
         <Input disabled={viewMode} />
       </Form.Item>
 

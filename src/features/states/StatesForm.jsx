@@ -1,4 +1,5 @@
 import { Form, Input, Select, Button } from "antd";
+import { validationRules } from "../../utils/formValidation";
 
 export default function StatesForm({
   onSubmit,
@@ -13,14 +14,19 @@ export default function StatesForm({
       form={form}
       initialValues={initialValues}
       onFinish={onSubmit}
+      validateTrigger={["onChange", "onBlur"]}
     >
       {/* State Name */}
-      <Form.Item name="name" label="State Name">
+      <Form.Item
+        name="name"
+        label="State Name"
+        rules={[validationRules.required("State name"), validationRules.charactersOnly("State name")]}
+      >
         <Input disabled={viewMode} />
       </Form.Item>
 
       {/* Select Country */}
-      <Form.Item name="country" label="Select Country">
+      <Form.Item name="country" label="Select Country" rules={[validationRules.required("Country")]}>
         <Select disabled={viewMode}>
           <Select.Option value="India">India</Select.Option>
           <Select.Option value="Others">Others</Select.Option>

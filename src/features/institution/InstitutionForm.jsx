@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Form, Input, Select, Upload, Button, DatePicker } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
+import { validationRules } from "../../utils/formValidation";
 
 const { Option } = Select;
 
@@ -10,7 +11,7 @@ function InstitutionForm({ onSubmit, initialValues, viewMode }) {
   useEffect(() => {
     if (initialValues) form.setFieldsValue(initialValues);
     else form.resetFields();
-  }, [initialValues]);
+  }, [form, initialValues]);
 
   const handleFinish = (values) => {
     onSubmit(values);
@@ -22,10 +23,11 @@ function InstitutionForm({ onSubmit, initialValues, viewMode }) {
       layout="vertical"
       form={form}
       onFinish={handleFinish}
+      validateTrigger={["onChange", "onBlur"]}
       className="grid grid-cols-3 gap-4"
     >
       {/* Name */}
-      <Form.Item name="name" label="Institution Name" rules={[{ required: true }]}>
+      <Form.Item name="name" label="Institution Name" rules={[validationRules.required("Institution name")]}>
         <Input disabled={viewMode} />
       </Form.Item>
 
@@ -60,22 +62,22 @@ function InstitutionForm({ onSubmit, initialValues, viewMode }) {
       </Form.Item>
 
       {/* URL */}
-      <Form.Item name="url" label="URL">
+      <Form.Item name="url" label="URL" rules={[validationRules.url("URL")]}>
         <Input disabled={viewMode} />
       </Form.Item>
 
       {/* Country */}
-      <Form.Item name="country" label="Country">
+      <Form.Item name="country" label="Country" rules={[validationRules.charactersOnly("Country")]}>
         <Input disabled={viewMode} />
       </Form.Item>
 
       {/* State */}
-      <Form.Item name="state" label="State">
+      <Form.Item name="state" label="State" rules={[validationRules.charactersOnly("State")]}>
         <Input disabled={viewMode} />
       </Form.Item>
 
       {/* District */}
-      <Form.Item name="district" label="District">
+      <Form.Item name="district" label="District" rules={[validationRules.charactersOnly("District")]}>
         <Input disabled={viewMode} />
       </Form.Item>
 

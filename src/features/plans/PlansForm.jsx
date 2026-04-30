@@ -1,5 +1,6 @@
 import { Form, Input, Select, Button } from "antd";
 import RichTextEditor from "../../components/ui/RichTextEditor";
+import { validationRules } from "../../utils/formValidation";
 
 const { Option } = Select;
 
@@ -12,17 +13,26 @@ export default function PlansForm({ onSubmit, initialValues, viewMode }) {
       form={form}
       initialValues={initialValues}
       onFinish={onSubmit}
+      validateTrigger={["onChange", "onBlur"]}
       className="grid grid-cols-2 gap-4"
     >
-      <Form.Item name="name" label="Plan Name">
+      <Form.Item
+        name="name"
+        label="Plan Name"
+        rules={[validationRules.required("Plan name"), validationRules.charactersOnly("Plan name")]}
+      >
         <Input disabled={viewMode} />
       </Form.Item>
 
-      <Form.Item name="price" label="Price">
+      <Form.Item
+        name="price"
+        label="Price"
+        rules={[validationRules.required("Price"), validationRules.decimal("Price")]}
+      >
         <Input disabled={viewMode} />
       </Form.Item>
 
-      <Form.Item name="module" label="Module" className="col-span-2">
+      <Form.Item name="module" label="Module" className="col-span-2" rules={[validationRules.required("Module")]}>
         <Select mode="multiple" disabled={viewMode}>
           <Option value="Career Library">Career Library</Option>
           <Option value="Career Assessment">Career Assessment</Option>

@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Form, Input, Select, Upload, Button } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import RichTextEditor from "../../components/ui/RichTextEditor";
+import { validationRules } from "../../utils/formValidation";
 
 const { Option } = Select;
 
@@ -11,7 +12,7 @@ function SubCategoryForm({ onSubmit, initialValues, viewMode }) {
   useEffect(() => {
     if (initialValues) form.setFieldsValue(initialValues);
     else form.resetFields();
-  }, [initialValues]);
+  }, [form, initialValues]);
 
   const handleFinish = (values) => {
     onSubmit(values);
@@ -23,6 +24,7 @@ function SubCategoryForm({ onSubmit, initialValues, viewMode }) {
       layout="vertical"
       form={form}
       onFinish={handleFinish}
+      validateTrigger={["onChange", "onBlur"]}
       className="grid grid-cols-2 gap-5"
     >
       {/* LEFT COLUMN */}
@@ -51,7 +53,7 @@ function SubCategoryForm({ onSubmit, initialValues, viewMode }) {
       <Form.Item
         name="title"
         label="Title"
-        rules={[{ required: true }]}
+        rules={[validationRules.required("Title"), validationRules.charactersOnly("Title")]}
       >
         <Input size="large" disabled={viewMode} placeholder="Title" />
       </Form.Item>
@@ -60,7 +62,10 @@ function SubCategoryForm({ onSubmit, initialValues, viewMode }) {
       <Form.Item
         name="howToBecome"
         label="How to Become Title"
-        rules={[{ required: true }]}
+        rules={[
+          validationRules.required("How to become title"),
+          validationRules.charactersOnly("How to become title"),
+        ]}
       >
         <Input
           size="large"
@@ -126,7 +131,7 @@ function SubCategoryForm({ onSubmit, initialValues, viewMode }) {
       <Form.Item
         name="institutions"
         label="Select Institutions"
-        rules={[{ required: true }]}
+        rules={[validationRules.required("Institutions")]}
         className="col-span-2"
       >
         <Input

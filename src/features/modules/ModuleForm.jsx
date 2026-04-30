@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Form, Input, Button, Upload, Select, Switch } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
+import { validationRules } from "../../utils/formValidation";
 
 const { Option } = Select;
 
@@ -10,10 +11,10 @@ function ModuleForm({ onSubmit, initialValues, disabled }) {
   useEffect(() => {
     if (initialValues) form.setFieldsValue(initialValues);
     else form.resetFields();
-  }, [initialValues]);
+  }, [form, initialValues]);
 
   return (
-    <Form layout="vertical" form={form} onFinish={onSubmit}>
+    <Form layout="vertical" form={form} onFinish={onSubmit} validateTrigger={["onChange", "onBlur"]}>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
@@ -25,15 +26,23 @@ function ModuleForm({ onSubmit, initialValues, disabled }) {
           </Upload>
         </Form.Item>
 
-        <Form.Item name="title" label="Title" rules={[{ required: true }]}>
+        <Form.Item
+          name="title"
+          label="Title"
+          rules={[validationRules.required("Title"), validationRules.charactersOnly("Title")]}
+        >
           <Input disabled={disabled} />
         </Form.Item>
 
-        <Form.Item name="btnText" label="Btn Text">
+        <Form.Item
+          name="btnText"
+          label="Btn Text"
+          rules={[validationRules.charactersOnly("Btn text")]}
+        >
           <Input disabled={disabled} />
         </Form.Item>
 
-        <Form.Item name="url" label="URL">
+        <Form.Item name="url" label="URL" rules={[validationRules.url("URL")]}>
           <Input disabled={disabled} />
         </Form.Item>
 

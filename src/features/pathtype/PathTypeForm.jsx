@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { Form, Input, Button } from "antd";
+import { validationRules } from "../../utils/formValidation";
 
 function PathTypeForm({ onSubmit, initialValues, viewMode }) {
   const [form] = Form.useForm();
@@ -7,7 +8,7 @@ function PathTypeForm({ onSubmit, initialValues, viewMode }) {
   useEffect(() => {
     if (initialValues) form.setFieldsValue(initialValues);
     else form.resetFields();
-  }, [initialValues]);
+  }, [form, initialValues]);
 
   const handleFinish = (values) => {
     onSubmit(values);
@@ -15,13 +16,13 @@ function PathTypeForm({ onSubmit, initialValues, viewMode }) {
   };
 
   return (
-    <Form layout="vertical" form={form} onFinish={handleFinish}>
+    <Form layout="vertical" form={form} onFinish={handleFinish} validateTrigger={["onChange", "onBlur"]}>
       
       {/* Path Type */}
       <Form.Item
         name="title"
         label="Path Type"
-        rules={[{ required: true, message: "Please enter path type" }]}
+        rules={[validationRules.required("Path type"), validationRules.charactersOnly("Path type")]}
       >
         <Input placeholder="Enter Path Type" disabled={viewMode} />
       </Form.Item>

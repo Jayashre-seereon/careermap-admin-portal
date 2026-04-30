@@ -1,6 +1,7 @@
 import { Form, Input, Upload, Button, Select } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import RichTextEditor from "../../components/ui/RichTextEditor";
+import { validationRules } from "../../utils/formValidation";
 
 export default function ServicesForm({ onSubmit, initialValues, viewMode }) {
   const [form] = Form.useForm();
@@ -11,13 +12,22 @@ export default function ServicesForm({ onSubmit, initialValues, viewMode }) {
       form={form}
       initialValues={initialValues}
       onFinish={onSubmit}
+      validateTrigger={["onChange", "onBlur"]}
       className="grid grid-cols-2 gap-4"
     >
-      <Form.Item name="title" label="Title">
+      <Form.Item
+        name="title"
+        label="Title"
+        rules={[validationRules.required("Title"), validationRules.charactersOnly("Title")]}
+      >
         <Input disabled={viewMode} />
       </Form.Item>
 
-      <Form.Item name="price" label="Price">
+      <Form.Item
+        name="price"
+        label="Price"
+        rules={[validationRules.required("Price"), validationRules.decimal("Price")]}
+      >
         <Input disabled={viewMode} />
       </Form.Item>
 
@@ -41,7 +51,7 @@ export default function ServicesForm({ onSubmit, initialValues, viewMode }) {
         />
       </Form.Item>
 
-      <Form.Item name="status" label="Status">
+      <Form.Item name="status" label="Status" rules={[validationRules.required("Status")]}>
         <Select disabled={viewMode}>
           <Select.Option value="Active">Active</Select.Option>
           <Select.Option value="Inactive">Inactive</Select.Option>

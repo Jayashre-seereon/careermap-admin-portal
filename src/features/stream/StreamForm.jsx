@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Form, Input, Button, Upload } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
+import { validationRules } from "../../utils/formValidation";
 
 function StreamForm({ onSubmit, initialValues, disabled }) {
   const [form] = Form.useForm();
@@ -8,15 +9,15 @@ function StreamForm({ onSubmit, initialValues, disabled }) {
   useEffect(() => {
     if (initialValues) form.setFieldsValue(initialValues);
     else form.resetFields();
-  }, [initialValues]);
+  }, [form, initialValues]);
 
   return (
-    <Form layout="vertical" form={form} onFinish={onSubmit}>
+    <Form layout="vertical" form={form} onFinish={onSubmit} validateTrigger={["onChange", "onBlur"]}>
 
       <Form.Item
         name="name"
         label="Stream Name"
-        rules={[{ required: true }]}
+        rules={[validationRules.required("Stream name"), validationRules.charactersOnly("Stream name")]}
       >
         <Input disabled={disabled} />
       </Form.Item>
