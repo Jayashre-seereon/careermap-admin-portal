@@ -22,12 +22,22 @@ function MentorTable({ data, onAddClick, onView, onEdit, onDelete }) {
     { title: "Name", dataIndex: "name" },
     { title: "Email", dataIndex: "email" },
     { title: "Phone", dataIndex: "phone" },
+    { title: "Education", dataIndex: "education" },
     {
       title: "Category",
       dataIndex: "category",
       render: (cat) => <Tag color="red">{cat}</Tag>,
     },
     { title: "Designation", dataIndex: "designation" },
+    {
+      title: "Status",
+      dataIndex: "status",
+      render: (status) => (
+        <Tag color={status === false ? "default" : "red"}>
+          {status === false ? "Inactive" : "Active"}
+        </Tag>
+      ),
+    },
     {
       title: "Action",
       render: (_, record, index) => (

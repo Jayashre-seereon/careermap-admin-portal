@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
-import { Form, Input, Button, Upload, Select, Switch } from "antd";
+import { Form, Input, Button, Upload, Select } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
+import StatusSwitch from "../../components/ui/StatusSwitch";
 import { validationRules } from "../../utils/formValidation";
 
 const { Option } = Select;
@@ -57,7 +58,7 @@ function ModuleForm({ onSubmit, initialValues, disabled }) {
           label="Mark as Free"
           valuePropName="checked"
         >
-          <Switch disabled={disabled} />
+          <StatusSwitch disabled={disabled} />
         </Form.Item>
 
       </div>

@@ -30,6 +30,16 @@ export default function Category2Table({
       dataIndex: "name",
     },
     {
+      title: "Institutes",
+      dataIndex: "institutions",
+      ellipsis: true,
+    },
+    {
+      title: "How to Become",
+      dataIndex: "howToBecome",
+      ellipsis: true,
+    },
+    {
       title: "Description",
       dataIndex: "description",
       ellipsis: true,

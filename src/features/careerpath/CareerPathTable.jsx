@@ -38,6 +38,14 @@ export default function CareerPathTable({
       dataIndex: "category",
     },
     {
+      title: <span className="text-[#9a2119] font-semibold">2nd Category</span>,
+      dataIndex: "secondCategory",
+    },
+    {
+      title: <span className="text-[#9a2119] font-semibold">Subcategory</span>,
+      dataIndex: "subcategory",
+    },
+    {
       title: <span className="text-[#9a2119] font-semibold">Path Type</span>,
       dataIndex: "pathType",
     },

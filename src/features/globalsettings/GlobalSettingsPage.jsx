@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Form, Input, Select, Button, Switch, message } from "antd";
+import { Form, Input, Select, Button, message } from "antd";
+import StatusSwitch from "../../components/ui/StatusSwitch";
 
 const { Option } = Select;
 const BRAND = "#9a2119";
@@ -156,10 +157,9 @@ export default function SiteSettings() {
           ].map(([key, label]) => (
             <div key={key} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
               <span style={{ fontSize: 12, fontWeight: 600, textAlign: "center" }}>{label}</span>
-              <Switch
+              <StatusSwitch
                 checked={toggles[key]}
                 onChange={(v) => setToggles((s) => ({ ...s, [key]: v }))}
-                style={{ background: toggles[key] ? BRAND : undefined }}
               />
             </div>
           ))}

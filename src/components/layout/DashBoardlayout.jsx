@@ -21,6 +21,7 @@ const pageNameMap = {
   "/careerplan": "Career Plan",
   "/bookings": "Bookings",
   "/plans": "Plans",
+  "/subscriptions": "Subscriptions",
   "/services": "Services",
   "/allcountries": "All Countries",
   "/states": "States",

@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
-import { Form, Input, Select, Upload, Button, Radio } from "antd";
+import { Form, Input, Select, Upload, Button } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import RichTextEditor from "../../components/ui/RichTextEditor";
+import StatusSwitch from "../../components/ui/StatusSwitch";
 import { validationRules } from "../../utils/formValidation";
 
 const { Option } = Select;
@@ -37,6 +38,7 @@ export default function CategoryForm({ onSubmit, initialValues, disabled }) {
   useEffect(() => {
     if (initialValues) {
       form.setFieldsValue({
+        isUpgrade: "Free",
         ...initialValues,
         institutions: normalizeInstitutions(initialValues.institutions),
       });
@@ -54,7 +56,13 @@ export default function CategoryForm({ onSubmit, initialValues, disabled }) {
   };
 
   return (
-    <Form layout="vertical" form={form} onFinish={handleFinish} validateTrigger={["onChange", "onBlur"]}>
+    <Form
+      layout="vertical"
+      form={form}
+      onFinish={handleFinish}
+      validateTrigger={["onChange", "onBlur"]}
+      initialValues={{ isUpgrade: "Free" }}
+    >
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
@@ -127,11 +135,19 @@ export default function CategoryForm({ onSubmit, initialValues, disabled }) {
           />
         </Form.Item>
 
-        <Form.Item name="isUpgrade" label="Category Access">
-          <Radio.Group disabled={disabled}>
-            <Radio value="Free">Free</Radio>
-            <Radio value="Premium">Premium</Radio>
-          </Radio.Group>
+        <Form.Item
+          name="isUpgrade"
+          label="Mark as Free"
+          valuePropName="checked"
+          getValueProps={(value) => ({ checked: value === "Free" })}
+          normalize={(checked) => (checked ? "Free" : "Premium")}
+          rules={[validationRules.required("Category access")]}
+        >
+          <StatusSwitch
+            disabled={disabled}
+            checkedChildren="Free"
+            unCheckedChildren="Premium"
+          />
         </Form.Item>
 
       </div>

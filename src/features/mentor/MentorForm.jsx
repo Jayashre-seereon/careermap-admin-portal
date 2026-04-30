@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Form, Input, Button, Select, Upload } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import RichTextEditor from "../../components/ui/RichTextEditor";
+import StatusSwitch from "../../components/ui/StatusSwitch";
 import {
   getValueFromInput,
   inputSanitizers,
@@ -15,7 +16,10 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
 
   useEffect(() => {
     if (initialValues) {
-      form.setFieldsValue(initialValues);
+      form.setFieldsValue({
+        status: true,
+        ...initialValues,
+      });
     } else {
       form.resetFields();
     }
@@ -27,6 +31,7 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
       form={form}
       onFinish={onSubmit}
       validateTrigger={["onChange", "onBlur"]}
+      initialValues={{ status: true }}
     >
       
       {/* GRID 3 COLUMNS */}
@@ -86,6 +91,14 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
           rules={[validationRules.charactersOnly("Designation")]}
         >
           <Input disabled={disabled} placeholder="Enter designation" />
+        </Form.Item>
+
+        <Form.Item
+          name="education"
+          label="Education"
+          rules={[validationRules.required("Education")]}
+        >
+          <Input disabled={disabled} placeholder="Enter education field" />
         </Form.Item>
 
         {/* Place of Work */}
@@ -167,6 +180,19 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
             disabled={disabled}
             placeholder="Enter mentor description"
             height={180}
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="status"
+          label="Status"
+          valuePropName="checked"
+          className="lg:col-span-1"
+        >
+          <StatusSwitch
+            disabled={disabled}
+            checkedChildren="Active"
+            unCheckedChildren="Inactive"
           />
         </Form.Item>
 

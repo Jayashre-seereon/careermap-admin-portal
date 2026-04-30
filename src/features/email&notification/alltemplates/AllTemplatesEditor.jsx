@@ -1,6 +1,7 @@
-import { Button, Form, Input, Switch } from "antd";
+import { Button, Form, Input } from "antd";
 import { useEffect } from "react";
 import RichTextEditor from "../../../components/editor/RichTextEditor";
+import StatusSwitch from "../../../components/ui/StatusSwitch";
 
 export default function AllTemplatesEditor({ initialValues, onSubmit }) {
   const [form] = Form.useForm();
@@ -33,7 +34,7 @@ export default function AllTemplatesEditor({ initialValues, onSubmit }) {
             label="Status"
             valuePropName="checked"
           >
-            <Switch />
+            <StatusSwitch />
           </Form.Item>
 
           <Form.Item name="subject" label="Subject">
@@ -56,7 +57,7 @@ export default function AllTemplatesEditor({ initialValues, onSubmit }) {
             label="Status"
             valuePropName="checked"
           >
-            <Switch />
+            <StatusSwitch />
           </Form.Item>
 
           <Form.Item name="smsMessage" label="Message">

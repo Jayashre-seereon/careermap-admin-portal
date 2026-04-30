@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Modal, Input, Switch, Select, message } from "antd";
+import { Modal, Input, Select, message } from "antd";
 import {
   ArrowLeftOutlined,
   WalletOutlined,
@@ -15,6 +15,7 @@ import {
   SaveOutlined,
 } from "@ant-design/icons";
 import { validationMessages } from "../../../utils/formValidation";
+import StatusSwitch from "../../../components/ui/StatusSwitch";
 
 const THEME = {
   primary: "#9a2119",
@@ -263,10 +264,9 @@ export default function UserDetails({ user, onBack, onNotify }) {
             { label: "2FA Verification", field: "twoFA" },
           ].map(({ label, field }) => (
             <label key={field} className="flex items-center gap-2 cursor-pointer">
-              <Switch
+              <StatusSwitch
                 checked={info[field]}
                 onChange={(value) => set(field, value)}
-                style={{ background: info[field] ? "#9a2119" : "#d1d5db" }}
               />
               <span className="text-sm text-gray-600">{label}</span>
             </label>
