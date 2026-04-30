@@ -5,6 +5,11 @@ import { useQuill } from "react-quilljs";
 import Quill from "quill";
 import { createJobId, getJobs, getTodayLabel, saveJobs } from "./jobStore";
 import "quill/dist/quill.snow.css";
+import {
+  getValueFromInput,
+  inputSanitizers,
+  validationRules,
+} from "../../utils/formValidation";
 
 const icons = Quill.import("ui/icons");
 
@@ -161,26 +166,29 @@ export default function JobFormPage({ mode }) {
           initialValues={initialValues}
           key={job?.id || mode}
         >
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid gap-5 md:grid-cols-4">
             <Form.Item
               name="name"
-              label={<span className="text-[16px] font-semibold">Name <span className="text-red-500">*</span></span>}
-              rules={[{ required: true, message: "Name is required" }]}
+              label={<span className="text-[16px] font-semibold">Name <span className="text-red-500"></span></span>}
+              rules={[ 
+                validationRules.required("Name"),
+                validationRules.charactersOnly("Name"),
+              ]}
             >
               <Input className="h-12" />
             </Form.Item>
 
             <Form.Item
               name="totalVacancy"
-              label={<span className="text-[16px] font-semibold">Total Vacancy <span className="text-red-500">*</span></span>}
-              rules={[{ required: true, message: "Total vacancy is required" }]}
+              label={<span className="text-[16px] font-semibold">Total Vacancy <span className="text-red-500"></span></span>}
+              rules={[ validationRules.numbersOnly("TotalVacancy") ]}
             >
-              <InputNumber min={0} className="h-12 w-full" />
+              <Input className="h-12 w-full" />
             </Form.Item>
 
             <Form.Item
               name="salary"
-              label={<span className="text-[16px] font-semibold">Salary Range <span className="text-red-500">*</span></span>}
+              label={<span className="text-[16px] font-semibold">Salary Range <span className="text-red-500"></span></span>}
               rules={[{ required: true, message: "Salary range is required" }]}
             >
               <Input className="h-12" />
@@ -188,7 +196,7 @@ export default function JobFormPage({ mode }) {
 
             <Form.Item
               name="jobType"
-              label={<span className="text-[16px] font-semibold">Job Type <span className="text-red-500">*</span></span>}
+              label={<span className="text-[16px] font-semibold">Job Type <span className="text-red-500"></span></span>}
               rules={[{ required: true, message: "Job type is required" }]}
             >
               <Select
