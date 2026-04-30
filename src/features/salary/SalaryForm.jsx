@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { Form, Select, Input, Button } from "antd";
+import { validationRules } from "../../utils/formValidation";
 
 const { Option } = Select;
 
@@ -9,7 +10,7 @@ function SalaryForm({ onSubmit, initialValues, viewMode }) {
   useEffect(() => {
     if (initialValues) form.setFieldsValue(initialValues);
     else form.resetFields();
-  }, [initialValues]);
+  }, [form, initialValues]);
 
   const handleFinish = (values) => {
     onSubmit(values);
@@ -21,6 +22,7 @@ function SalaryForm({ onSubmit, initialValues, viewMode }) {
       layout="vertical"
       form={form}
       onFinish={handleFinish}
+      validateTrigger={["onChange", "onBlur"]}
       className="grid grid-cols-2 gap-4"
     >
       {/* Stream */}
@@ -47,8 +49,11 @@ function SalaryForm({ onSubmit, initialValues, viewMode }) {
       </Form.Item>
 
       {/* Sub Category */}
-      <Form.Item name="subcategory" label="Sub Categories">
-        <Select disabled={viewMode}>
+    <Form.Item
+  name="subcategory"
+  label="Sub Categories"
+  rules={[{ required: true, message: "Subcategory is required" }]}
+>     <Select disabled={viewMode}>
           <Option value="MBBS">MBBS</Option>
         </Select>
       </Form.Item>
@@ -58,9 +63,10 @@ function SalaryForm({ onSubmit, initialValues, viewMode }) {
         name="salary"
         label="Salary Range"
         className="col-span-2"
-        rules={[{ required: true }]}
-      >
-        <Input.TextArea rows={2} disabled={viewMode} />
+        rules={[ validationRules.required("Salary Range")]}
+             
+           >
+        <Input rows={2} disabled={viewMode} />
       </Form.Item>
 
       {/* Submit */}

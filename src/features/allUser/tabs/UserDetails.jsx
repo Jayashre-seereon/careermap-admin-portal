@@ -14,6 +14,7 @@ import {
   MailOutlined,
   SaveOutlined,
 } from "@ant-design/icons";
+import { validationMessages } from "../../../utils/formValidation";
 
 const THEME = {
   primary: "#9a2119",
@@ -63,12 +64,13 @@ const StatCard = ({ icon, label, value, accent }) => (
   </div>
 );
 
-const Field = ({ label, required, children }) => (
+const Field = ({ label, required, error, children }) => (
   <div>
     <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
       {label} {required && <span className="text-red-400">*</span>}
     </label>
     {children}
+    {error ? <p className="mt-1 text-xs text-red-500">{error}</p> : null}
   </div>
 );
 
@@ -108,6 +110,7 @@ export default function UserDetails({ user, onBack, onNotify }) {
   const [amount, setAmount] = useState("");
   const [remark, setRemark] = useState("");
   const [reason, setReason] = useState("");
+  const [errors, setErrors] = useState({});
 
   const [info, setInfo] = useState({
     firstName: user.user?.split(" ")[0] || "",
@@ -126,6 +129,38 @@ export default function UserDetails({ user, onBack, onNotify }) {
 
   const set = (field, value) => setInfo((prev) => ({ ...prev, [field]: value }));
 
+  const getInfoError = (field, value) => {
+    const trimmedValue = typeof value === "string" ? value.trim() : value;
+
+    switch (field) {
+      case "firstName":
+        if (!trimmedValue) return "First name is required.";
+        return validationMessages.charactersOnly("First name")(trimmedValue);
+      case "lastName":
+        if (!trimmedValue) return "Last name is required.";
+        return validationMessages.charactersOnly("Last name")(trimmedValue);
+      case "email":
+        if (!trimmedValue) return "Email is required.";
+        return validationMessages.email("Email")(trimmedValue);
+      case "mobile":
+        if (!trimmedValue) return "Mobile number is required.";
+        return validationMessages.phone("Mobile number")(trimmedValue);
+      case "city":
+        return trimmedValue ? validationMessages.charactersOnly("City")(trimmedValue) : "";
+      case "state":
+        return trimmedValue ? validationMessages.charactersOnly("State")(trimmedValue) : "";
+      case "zip":
+        return trimmedValue ? validationMessages.numbersOnly("Zip / postal")(trimmedValue) : "";
+      default:
+        return "";
+    }
+  };
+
+  const handleInfoChange = (field, value) => {
+    setInfo((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => ({ ...prev, [field]: getInfoError(field, value) }));
+  };
+
   const showStatusMessage = (type, text) => {
     if (type === "error") {
       messageApi.error(text);
@@ -135,7 +170,21 @@ export default function UserDetails({ user, onBack, onNotify }) {
     messageApi.success(text);
   };
 
-  const handleSave = () => showStatusMessage("success", "User information saved successfully.");
+  const handleSave = () => {
+    const nextErrors = Object.fromEntries(
+      Object.keys(info).map((field) => [field, getInfoError(field, info[field])])
+    );
+    const hasErrors = Object.values(nextErrors).some(Boolean);
+
+    setErrors(nextErrors);
+
+    if (hasErrors) {
+      showStatusMessage("error", "Please fix the validation errors.");
+      return;
+    }
+
+    showStatusMessage("success", "User information saved successfully.");
+  };
 
   const handleAdd = () => {
     if (!amount) return showStatusMessage("error", "Enter amount");
@@ -225,36 +274,36 @@ export default function UserDetails({ user, onBack, onNotify }) {
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <Field label="First Name" required>
-            <Input value={info.firstName} onChange={(e) => set("firstName", e.target.value)} />
+          <Field label="First Name" required error={errors.firstName}>
+            <Input value={info.firstName} onChange={(e) => handleInfoChange("firstName", e.target.value)} />
           </Field>
-          <Field label="Last Name" required>
-            <Input value={info.lastName} onChange={(e) => set("lastName", e.target.value)} />
+          <Field label="Last Name" required error={errors.lastName}>
+            <Input value={info.lastName} onChange={(e) => handleInfoChange("lastName", e.target.value)} />
           </Field>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Email" required>
-            <Input value={info.email} onChange={(e) => set("email", e.target.value)} />
+          <Field label="Email" required error={errors.email}>
+            <Input value={info.email} onChange={(e) => handleInfoChange("email", e.target.value)} />
           </Field>
-          <Field label="Mobile Number" required>
-            <Input value={info.mobile} onChange={(e) => set("mobile", e.target.value)} />
+          <Field label="Mobile Number" required error={errors.mobile}>
+            <Input value={info.mobile} onChange={(e) => handleInfoChange("mobile", e.target.value)} />
           </Field>
         </div>
 
         <Field label="Address">
-          <Input value={info.address} onChange={(e) => set("address", e.target.value)} />
+          <Input value={info.address} onChange={(e) => handleInfoChange("address", e.target.value)} />
         </Field>
 
         <div className="grid grid-cols-4 gap-4">
-          <Field label="City">
-            <Input value={info.city} onChange={(e) => set("city", e.target.value)} />
+          <Field label="City" error={errors.city}>
+            <Input value={info.city} onChange={(e) => handleInfoChange("city", e.target.value)} />
           </Field>
-          <Field label="State">
-            <Input value={info.state} onChange={(e) => set("state", e.target.value)} />
+          <Field label="State" error={errors.state}>
+            <Input value={info.state} onChange={(e) => handleInfoChange("state", e.target.value)} />
           </Field>
-          <Field label="Zip / Postal">
-            <Input value={info.zip} onChange={(e) => set("zip", e.target.value)} />
+          <Field label="Zip / Postal" error={errors.zip}>
+            <Input value={info.zip} onChange={(e) => handleInfoChange("zip", e.target.value)} />
           </Field>
           <Field label="Country">
             <Select
@@ -296,7 +345,7 @@ export default function UserDetails({ user, onBack, onNotify }) {
         <Input
           prefix="₹"
           placeholder="Enter amount"
-          type="number"
+        
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
         />
@@ -326,10 +375,10 @@ export default function UserDetails({ user, onBack, onNotify }) {
         <Input
           prefix="₹"
           placeholder="Enter amount"
-          type="number"
+        
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-        />
+            />
         <Input
           placeholder="Remark (optional)"
           value={remark}

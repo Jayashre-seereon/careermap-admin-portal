@@ -8,22 +8,17 @@ import {
 } from "@ant-design/icons";
 import { useState } from "react";
 
-const initialData = [
-  { key: "1", name: "India" },
-  { key: "2", name: "Others" },
-];
-
 export default function CountriesTable({
+  data = [],
   onView,
   onEdit,
   onDelete,
   onAdd,
 }) {
   const [search, setSearch] = useState("");
-  const [data, setData] = useState(initialData);
 
   const filteredData = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
+    item.name?.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleReset = () => setSearch("");
@@ -43,18 +38,17 @@ export default function CountriesTable({
       align: "right",
       render: (_, record) => (
         <div className="flex justify-end gap-3">
-          {/* View */}
           <Button
             onClick={() => onView(record)}
-             className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
-           >
+            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
+          >
             <EyeOutlined />
           </Button>
 
-          {/* Edit */}
           <Button
             onClick={() => onEdit(record)}
-            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"   >
+            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
+          >
             <EditOutlined />
           </Button>
 
@@ -63,11 +57,7 @@ export default function CountriesTable({
             description="Are you sure you want to delete this item?"
             okText="Yes"
             cancelText="No"
-            onConfirm={() => {
-              const updated = data.filter((d) => d.key !== record.key);
-              setData(updated);
-              onDelete && onDelete(record);
-            }}
+            onConfirm={() => onDelete?.(record)}
           >
             <Button danger icon={<DeleteOutlined />} />
           </Popconfirm>
@@ -78,15 +68,11 @@ export default function CountriesTable({
 
   return (
     <div className="w-full">
-      {/* MAIN HEADING */}
       <h1 className="text-xl font-semibold text-[#9a2119] mb-6">
         Countries Management
       </h1>
 
-      {/* CARD */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
-
-        {/* HEADER */}
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-semibold text-[#9a2119]">
             Countries
@@ -103,11 +89,7 @@ export default function CountriesTable({
 
             <button
               onClick={handleReset}
-              className="flex items-center gap-2 px-5 h-10 rounded-lg
-                         bg-[#9a2119]
-                         text-white
-                         hover:bg-[#c0392b]
-                         transition"
+              className="flex items-center gap-2 px-5 h-10 rounded-lg bg-[#9a2119] text-white hover:bg-[#c0392b] transition"
             >
               <ReloadOutlined />
               Reset
@@ -115,18 +97,13 @@ export default function CountriesTable({
 
             <button
               onClick={onAdd}
-              className="px-5 h-10 rounded-lg
-                         bg-[#9a2119]
-                         text-white
-                         hover:bg-[#c0392b]
-                         transition"
+              className="px-5 h-10 rounded-lg bg-[#9a2119] text-white hover:bg-[#c0392b] transition"
             >
               + Add
             </button>
           </div>
         </div>
 
-        {/* TABLE */}
         <Table
           columns={columns}
           dataSource={filteredData}

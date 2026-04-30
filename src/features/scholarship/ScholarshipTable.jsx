@@ -90,12 +90,7 @@ export default function ScholarshipTable({
             <EditOutlined />
           </Button>
 
-          <Button
-            onClick={() => onDelete && onDelete(record)}
-            className="w-9 h-9 border border-red-500 text-red-500 rounded-md"
-          >
-            <DeleteOutlined />
-          </Button>
+         
 
           <Popconfirm
             title="Delete?"

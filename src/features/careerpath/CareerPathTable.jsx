@@ -39,7 +39,7 @@ export default function CareerPathTable({
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Path Type</span>,
-      dataIndex: "path",
+      dataIndex: "pathType",
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Stream</span>,
@@ -53,17 +53,17 @@ export default function CareerPathTable({
       title: <span className="text-[#9a2119] font-semibold">
         After Graduation
       </span>,
-      dataIndex: "afterGrad",
+      dataIndex: "afterGraduation",
     },
     {
       title: <span className="text-[#9a2119] font-semibold">
         After Post Graduation
       </span>,
-      dataIndex: "postGrad",
+      dataIndex: "afterPostGraduation",
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Any Other</span>,
-      dataIndex: "other",
+      dataIndex: "anyOther",
     },
     {
       title: (

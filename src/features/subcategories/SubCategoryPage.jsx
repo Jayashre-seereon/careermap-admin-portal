@@ -51,7 +51,7 @@ function SubCategoryPage() {
 
       {/* Page Title */}
       <h2 className="text-xl font-semibold text-[#9a2119] mb-5">
-        SubCategory Management
+        Sub Category Management
       </h2>
 
       {/* Table Section */}

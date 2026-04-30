@@ -8,34 +8,34 @@ const initialData = [
     key: "1",
     module: "Career Library",
     category: "Medical",
-    path: "Path 1",
+    pathType: "Path 1",
     stream: "12th [PCB, PCMB, PCB(M), PCM(B)]",
     graduation: "MBBS",
-    afterGrad: "M.D / M.S",
-    postGrad: "DM-MCH : SS",
-    other: "POST DOC",
+    afterGraduation: "M.D / M.S",
+    afterPostGraduation: "DM-MCH : SS",
+    anyOther: "POST DOC",
   },
   {
     key: "2",
     module: "Career Library",
     category: "Lecturer/Professor",
-    path: "Path 1",
+    pathType: "Path 1",
     stream: "12th",
     graduation: "Graduation in any stream",
-    afterGrad: "Post graduation in any discipline",
-    postGrad: "Ph.D",
-    other: "N/A",
+    afterGraduation: "Post graduation in any discipline",
+    afterPostGraduation: "Ph.D",
+    anyOther: "N/A",
   },
   {
     key: "3",
     module: "Career Library",
     category: "Journalism & Mass communication",
-    path: "Path 1",
+    pathType: "Path 1",
     stream: "12th pass in any stream",
     graduation: "UG(J/JMC) / PG Diploma",
-    afterGrad: "Ph.D",
-    postGrad: "N/A",
-    other: "N/A",
+    afterGraduation: "Ph.D",
+    afterPostGraduation: "N/A",
+    anyOther: "N/A",
   },
 ];
 
@@ -44,6 +44,24 @@ export default function CareerPathPage() {
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState(null);
   const [viewMode, setViewMode] = useState(false);
+
+  const handleClose = () => {
+    setOpen(false);
+    setCurrent(null);
+    setViewMode(false);
+  };
+
+  const handleSubmit = (values) => {
+    if (current) {
+      setData((prev) =>
+        prev.map((item) => (item.key === current.key ? { ...item, ...values } : item))
+      );
+    } else {
+      setData((prev) => [...prev, { key: Date.now().toString(), ...values }]);
+    }
+
+    handleClose();
+  };
 
   const handleDelete = (record) => {
     setData((prev) => prev.filter((item) => item.key !== record.key));
@@ -75,11 +93,11 @@ export default function CareerPathPage() {
         data={data}
       />
 
-      <Modal open={open} footer={null} onCancel={() => setOpen(false)} width={900}>
+      <Modal open={open} footer={null} onCancel={handleClose} width={900}>
         <CareerPathForm
           initialValues={current}
           viewMode={viewMode}
-          onSubmit={() => setOpen(false)}
+          onSubmit={handleSubmit}
         />
       </Modal>
     </div>

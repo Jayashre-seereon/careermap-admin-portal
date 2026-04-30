@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Modal } from "antd";
 import EntranceExamTable from "./EntranceExamTable";
 import EntranceExamForm from "./EntranceExamForm";
+import dayjs from "dayjs";
 
 const initialData = [
   {
@@ -46,20 +47,48 @@ export default function EntranceExamPage() {
   };
 
   const handleView = (record) => {
-    setEditingData(record);
+    setEditingData({
+      ...record,
+      issue: record.issueDate ? dayjs(record.issueDate) : null,
+      last: record.lastDate ? dayjs(record.lastDate) : null,
+    });
     setViewMode(true);
     setOpen(true);
   };
 
   const handleEdit = (record) => {
-    setEditingData(record);
+    setEditingData({
+      ...record,
+      issue: record.issueDate ? dayjs(record.issueDate) : null,
+      last: record.lastDate ? dayjs(record.lastDate) : null,
+    });
     setViewMode(false);
     setOpen(true);
   };
 
   const handleSubmit = (values) => {
-    console.log("Form Data:", values);
+    const normalizedValues = {
+      ...values,
+      issueDate: values.issue?.format ? values.issue.format("YYYY-MM-DD") : values.issue,
+      lastDate: values.last?.format ? values.last.format("YYYY-MM-DD") : values.last,
+    };
+
+    if (editingData) {
+      setData((prev) =>
+        prev.map((item) =>
+          item.key === editingData.key ? { ...item, ...normalizedValues } : item
+        )
+      );
+    } else {
+      setData((prev) => [
+        ...prev,
+        { key: Date.now().toString(), ...normalizedValues },
+      ]);
+    }
+
     setOpen(false);
+    setEditingData(null);
+    setViewMode(false);
   };
 
   const handleDelete = (record) => {

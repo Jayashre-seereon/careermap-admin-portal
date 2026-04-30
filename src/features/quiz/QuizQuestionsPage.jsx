@@ -9,6 +9,7 @@ import {
 } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import { createQuestionId, getQuizzes, saveQuizzes } from "./quizStore";
+import { validationRules } from "../../utils/formValidation";
 
 const initialQuestionValues = {
   question: "",
@@ -237,12 +238,13 @@ export default function QuizQuestionsPage() {
           form={form}
           layout="vertical"
           initialValues={initialQuestionValues}
+          validateTrigger={["onChange", "onBlur"]}
           className="space-y-1"
         >
           <Form.Item
             label="Question"
             name="question"
-            rules={[{ required: true, message: "Please write the question." }]}
+            rules={[validationRules.required("Question")]}
           >
             <Input.TextArea rows={4} placeholder="Write question here" />
           </Form.Item>
@@ -251,28 +253,28 @@ export default function QuizQuestionsPage() {
             <Form.Item
               label="Option 1"
               name="option1"
-              rules={[{ required: true, message: "Please enter option 1." }]}
+              rules={[validationRules.required("Option 1")]}
             >
               <Input placeholder="Option 1" />
             </Form.Item>
             <Form.Item
               label="Option 2"
               name="option2"
-              rules={[{ required: true, message: "Please enter option 2." }]}
+              rules={[validationRules.required("Option 2")]}
             >
               <Input placeholder="Option 2" />
             </Form.Item>
             <Form.Item
               label="Option 3"
               name="option3"
-              rules={[{ required: true, message: "Please enter option 3." }]}
+              rules={[validationRules.required("Option 3")]}
             >
               <Input placeholder="Option 3" />
             </Form.Item>
             <Form.Item
               label="Option 4"
               name="option4"
-              rules={[{ required: true, message: "Please enter option 4." }]}
+              rules={[validationRules.required("Option 4")]}
             >
               <Input placeholder="Option 4" />
             </Form.Item>
@@ -281,7 +283,7 @@ export default function QuizQuestionsPage() {
           <Form.Item
             label="Correct Option"
             name="correctOption"
-            rules={[{ required: true, message: "Please select correct option." }]}
+            rules={[validationRules.required("Correct option")]}
           >
             <Select
               options={[
@@ -348,11 +350,11 @@ export default function QuizQuestionsPage() {
           </button>,
         ]}
       >
-        <Form form={editForm} layout="vertical" className="mt-4">
+        <Form form={editForm} layout="vertical" validateTrigger={["onChange", "onBlur"]} className="mt-4">
           <Form.Item
             label="Question"
             name="question"
-            rules={[{ required: true, message: "Please write the question." }]}
+            rules={[validationRules.required("Question")]}
           >
             <Input.TextArea rows={4} placeholder="Write question here" />
           </Form.Item>
@@ -361,28 +363,28 @@ export default function QuizQuestionsPage() {
             <Form.Item
               label="Option 1"
               name="option1"
-              rules={[{ required: true, message: "Please enter option 1." }]}
+              rules={[validationRules.required("Option 1")]}
             >
               <Input placeholder="Option 1" />
             </Form.Item>
             <Form.Item
               label="Option 2"
               name="option2"
-              rules={[{ required: true, message: "Please enter option 2." }]}
+              rules={[validationRules.required("Option 2")]}
             >
               <Input placeholder="Option 2" />
             </Form.Item>
             <Form.Item
               label="Option 3"
               name="option3"
-              rules={[{ required: true, message: "Please enter option 3." }]}
+              rules={[validationRules.required("Option 3")]}
             >
               <Input placeholder="Option 3" />
             </Form.Item>
             <Form.Item
               label="Option 4"
               name="option4"
-              rules={[{ required: true, message: "Please enter option 4." }]}
+              rules={[validationRules.required("Option 4")]}
             >
               <Input placeholder="Option 4" />
             </Form.Item>
@@ -391,7 +393,7 @@ export default function QuizQuestionsPage() {
           <Form.Item
             label="Correct Option"
             name="correctOption"
-            rules={[{ required: true, message: "Please select correct option." }]}
+            rules={[validationRules.required("Correct option")]}
           >
             <Select
               options={[

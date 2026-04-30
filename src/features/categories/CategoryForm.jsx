@@ -2,19 +2,59 @@ import React, { useEffect } from "react";
 import { Form, Input, Select, Upload, Button, Radio } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import RichTextEditor from "../../components/ui/RichTextEditor";
+import { validationRules } from "../../utils/formValidation";
 
 const { Option } = Select;
+const institutionOptions = [
+  "AIIMS DELHI",
+  "AIIMS BHOPAL",
+  "AIIMS BHUBANESWAR",
+  "SCB Medical College",
+  "CMC, Vellore",
+  "KMC, Manipal",
+  "Amrita Vishwam Vidyapeetham",
+  "JIPMER, Puducherry",
+].map((item) => ({ label: item, value: item }));
+
+const normalizeInstitutions = (value) => {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    return value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+};
 
 export default function CategoryForm({ onSubmit, initialValues, disabled }) {
   const [form] = Form.useForm();
 
   useEffect(() => {
-    if (initialValues) form.setFieldsValue(initialValues);
+    if (initialValues) {
+      form.setFieldsValue({
+        ...initialValues,
+        institutions: normalizeInstitutions(initialValues.institutions),
+      });
+    }
     else form.resetFields();
-  }, [initialValues]);
+  }, [form, initialValues]);
+
+  const handleFinish = (values) => {
+    onSubmit({
+      ...values,
+      institutions: Array.isArray(values.institutions)
+        ? values.institutions.join(", ")
+        : values.institutions,
+    });
+  };
 
   return (
-    <Form layout="vertical" form={form} onFinish={onSubmit}>
+    <Form layout="vertical" form={form} onFinish={handleFinish} validateTrigger={["onChange", "onBlur"]}>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
@@ -25,15 +65,33 @@ export default function CategoryForm({ onSubmit, initialValues, disabled }) {
           </Select>
         </Form.Item>
 
-        <Form.Item name="institutions" label="Select Institutions">
-          <Input placeholder="Search Institutions" disabled={disabled} />
+        <Form.Item
+          name="institutions"
+          label="Select Institutions"
+          rules={[validationRules.required("Institutions")]}
+        >
+          <Select
+            mode="multiple"
+            showSearch
+            allowClear
+            disabled={disabled}
+            placeholder="Search and select institutions"
+            optionFilterProp="label"
+            options={institutionOptions}
+          />
         </Form.Item>
 
-        <Form.Item name="title" label="Title" rules={[{ required: true }]}>
+        <Form.Item
+          name="title"
+          label="Title"
+             >
           <Input disabled={disabled} />
         </Form.Item>
 
-        <Form.Item name="howToBecome" label="How to Become Title">
+        <Form.Item
+          name="howToBecome"
+          label="How to Become Title"
+               >
           <Input disabled={disabled} />
         </Form.Item>
 

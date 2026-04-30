@@ -5,9 +5,9 @@ import { EyeOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 export default function CategoryTable({ data, onAddClick, onView, onEdit, onDelete }) {
   const [search, setSearch] = useState("");
 
-  const filtered = data.filter((item) =>
-    item.title.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = (data || []).filter((item) =>
+  (item.title || "").toLowerCase().includes((search || "").toLowerCase())
+);
 
   const columns = [
     {
@@ -21,8 +21,7 @@ export default function CategoryTable({ data, onAddClick, onView, onEdit, onDele
     {
       title: "Description",
       dataIndex: "description",
-      render: (text) => text.slice(0, 50) + "...",
-    },
+render: (text) => (text ? text.slice(0, 50) + "..." : ""), },
     {
       title: "Is Upgrade",
       dataIndex: "isUpgrade",

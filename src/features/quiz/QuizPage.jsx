@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Form, Input, message, Modal, Popconfirm, Select, Table,Button } from "antd";
+import { Form, Input, message, Modal, Popconfirm, Select, Table,Button ,DatePicker} from "antd";
 import {
   DeleteOutlined,
   EditOutlined,
@@ -8,6 +8,7 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { createQuizId, getQuizzes, saveQuizzes } from "./quizStore";
+import { validationRules } from "../../utils/formValidation";
 
 const initialValues = {
   title: "",
@@ -170,12 +171,13 @@ export default function QuizPage() {
           form={form}
           layout="vertical"
           initialValues={initialValues}
+          validateTrigger={["onChange", "onBlur"]}
           className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5"
         >
           <Form.Item
             label="Quiz Title"
             name="title"
-            rules={[{ required: true, message: "Please enter quiz title." }]}
+            rules={[validationRules.required("Quiz title")]}
           >
             <Input placeholder="Quiz Title" />
           </Form.Item>
@@ -183,7 +185,7 @@ export default function QuizPage() {
           <Form.Item
             label="Quiz Type"
             name="type"
-            rules={[{ required: true, message: "Please select quiz type." }]}
+            rules={[validationRules.required("Quiz type")]}
           >
             <Select
               options={[
@@ -196,7 +198,7 @@ export default function QuizPage() {
           <Form.Item
             label="Duration"
             name="duration"
-            rules={[{ required: true, message: "Please enter duration." }]}
+            rules={[validationRules.required("Duration")]}
           >
             <Input placeholder="30 Minutes" />
           </Form.Item>
@@ -206,7 +208,7 @@ export default function QuizPage() {
             name="from"
             rules={[{ required: true, message: "Please select start date." }]}
           >
-            <Input type="date" />
+            <DatePicker />
           </Form.Item>
 
           <Form.Item
@@ -214,7 +216,7 @@ export default function QuizPage() {
             name="to"
             rules={[{ required: true, message: "Please select end date." }]}
           >
-            <Input type="date" />
+            <DatePicker />
           </Form.Item>
         </Form>
 
@@ -275,11 +277,11 @@ export default function QuizPage() {
           </button>,
         ]}
       >
-        <Form form={editForm} layout="vertical" className="mt-4">
+        <Form form={editForm} layout="vertical" validateTrigger={["onChange", "onBlur"]} className="mt-4">
           <Form.Item
             label="Quiz Title"
             name="title"
-            rules={[{ required: true, message: "Please enter quiz title." }]}
+            rules={[validationRules.required("Quiz title")]}
           >
             <Input placeholder="Quiz Title" />
           </Form.Item>
@@ -287,7 +289,7 @@ export default function QuizPage() {
           <Form.Item
             label="Quiz Type"
             name="type"
-            rules={[{ required: true, message: "Please select quiz type." }]}
+            rules={[validationRules.required("Quiz type")]}
           >
             <Select
               options={[
@@ -301,7 +303,7 @@ export default function QuizPage() {
             <Form.Item
               label="Duration"
               name="duration"
-              rules={[{ required: true, message: "Please enter duration." }]}
+              rules={[validationRules.required("Duration")]}
             >
               <Input placeholder="30 Minutes" />
             </Form.Item>

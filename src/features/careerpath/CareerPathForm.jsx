@@ -9,7 +9,7 @@ function CareerPathForm({ onSubmit, initialValues, viewMode }) {
   useEffect(() => {
     if (initialValues) form.setFieldsValue(initialValues);
     else form.resetFields();
-  }, [initialValues]);
+  }, [form, initialValues]);
 
   const handleFinish = (values) => {
     onSubmit(values);
@@ -21,6 +21,7 @@ function CareerPathForm({ onSubmit, initialValues, viewMode }) {
       layout="vertical"
       form={form}
       onFinish={handleFinish}
+      validateTrigger={["onChange", "onBlur"]}
       className="grid grid-cols-2 gap-4"
     >
       <Form.Item name="module" label="Select Module">

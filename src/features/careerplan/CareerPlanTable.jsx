@@ -8,41 +8,17 @@ import {
 } from "@ant-design/icons";
 import { useState } from "react";
 
-const initialData = [
-  {
-    key: "1",
-    title: "Psychometric Career Counselling",
-    image: "https://via.placeholder.com/40",
-    desc: "Career Map’s Psychometric Career Counselling provides detailed insights...",
-    url: "#",
-  },
-  {
-    key: "2",
-    title: "Behavioural & Psychological Counselling",
-    image: "https://via.placeholder.com/40",
-    desc: "Career Map’s Behavioural & Psychological Counselling helps students...",
-    url: "#",
-  },
-  {
-    key: "3",
-    title: "MSM",
-    image: "https://via.placeholder.com/40",
-    desc: "Our Multidimensional Student Mentorship (MSM) program supports growth...",
-    url: "#",
-  },
-];
-
 export default function CareerPlanTable({
+  data = [],
   onView,
   onEdit,
   onDelete,
   onAdd,
 }) {
   const [search, setSearch] = useState("");
-  const [data, setData] = useState(initialData);
 
   const filteredData = data.filter((item) =>
-    item.title.toLowerCase().includes(search.toLowerCase())
+    item.title?.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleReset = () => setSearch("");
@@ -70,17 +46,20 @@ export default function CareerPlanTable({
       title: "Image",
       dataIndex: "image",
       width: 100,
-      render: (img) => (
-        <img
-          src={img}
-          alt="img"
-          className="w-10 h-10 rounded-md object-cover border"
-        />
-      ),
+      render: (img) =>
+        img ? (
+          <img
+            src={img}
+            alt="img"
+            className="w-10 h-10 rounded-md object-cover border"
+          />
+        ) : (
+          "-"
+        ),
     },
     {
       title: "Description",
-      dataIndex: "desc",
+      dataIndex: "description",
       width: 260,
       render: ellipsis,
     },
@@ -102,16 +81,16 @@ export default function CareerPlanTable({
       render: (_, record) => (
         <div className="flex justify-end gap-2">
           <Button
-            onClick={() => onView && onView(record)}
-          className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
-         >
+            onClick={() => onView?.(record)}
+            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
+          >
             <EyeOutlined />
           </Button>
 
           <Button
-            onClick={() => onEdit && onEdit(record)}
-          className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
-           >
+            onClick={() => onEdit?.(record)}
+            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
+          >
             <EditOutlined />
           </Button>
 
@@ -120,11 +99,7 @@ export default function CareerPlanTable({
             description="Are you sure you want to delete this item?"
             okText="Yes"
             cancelText="No"
-            onConfirm={() => {
-              const updated = data.filter((d) => d.key !== record.key);
-              setData(updated);
-              onDelete && onDelete(record);
-            }}
+            onConfirm={() => onDelete?.(record)}
           >
             <Button danger icon={<DeleteOutlined />} />
           </Popconfirm>
@@ -135,16 +110,11 @@ export default function CareerPlanTable({
 
   return (
     <div className="w-full">
-
-      {/* MAIN HEADING */}
       <h1 className="text-xl font-semibold text-[#9a2119] mb-6">
         Career Plan Management
       </h1>
 
-      {/* CARD */}
       <div className="bg-white rounded-2xl shadow-sm border p-5">
-
-        {/* HEADER */}
         <div className="flex justify-between mb-4">
           <h2 className="text-lg font-semibold text-[#9a2119]">
             Career Plans

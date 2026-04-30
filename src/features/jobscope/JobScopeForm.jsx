@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { Form, Select, Input, Button } from "antd";
+import { validationRules } from "../../utils/formValidation";
 
 const { Option } = Select;
 
@@ -9,7 +10,7 @@ function JobScopeForm({ onSubmit, initialValues, viewMode }) {
   useEffect(() => {
     if (initialValues) form.setFieldsValue(initialValues);
     else form.resetFields();
-  }, [initialValues]);
+  }, [form, initialValues]);
 
   const handleFinish = (values) => {
     onSubmit(values);
@@ -21,6 +22,7 @@ function JobScopeForm({ onSubmit, initialValues, viewMode }) {
       layout="vertical"
       form={form}
       onFinish={handleFinish}
+      validateTrigger={["onChange", "onBlur"]}
       className="grid grid-cols-2 gap-4"
     >
       {/* Stream */}
@@ -59,7 +61,7 @@ function JobScopeForm({ onSubmit, initialValues, viewMode }) {
         name="name"
         label="Name"
         className="col-span-2"
-        rules={[{ required: true }]}
+        rules={[validationRules.required("Name"), validationRules.charactersOnly("Name")]}
       >
         <Input disabled={viewMode} />
       </Form.Item>

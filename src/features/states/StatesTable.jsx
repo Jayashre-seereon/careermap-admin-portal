@@ -8,25 +8,17 @@ import {
 } from "@ant-design/icons";
 import { useState } from "react";
 
-const initialData = [
-  { key: "1", name: "ANDAMAN & NICOBAR", country: "India" },
-  { key: "2", name: "ANDHRA PRADESH", country: "India" },
-  { key: "3", name: "ARUNACHAL PRADESH", country: "India" },
-  { key: "4", name: "ASSAM", country: "India" },
-  { key: "5", name: "BIHAR", country: "India" },
-];
-
 export default function StatesTable({
+  data = [],
   onView,
   onEdit,
   onDelete,
   onAdd,
 }) {
   const [search, setSearch] = useState("");
-  const [data, setData] = useState(initialData);
 
   const filteredData = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
+    item.name?.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleReset = () => setSearch("");
@@ -50,17 +42,17 @@ export default function StatesTable({
       align: "right",
       render: (_, record) => (
         <div className="flex justify-end gap-3">
-
           <Button
             onClick={() => onView(record)}
-            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"   >
-             
+            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
+          >
             <EyeOutlined />
           </Button>
 
           <Button
             onClick={() => onEdit(record)}
-            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"   >
+            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
+          >
             <EditOutlined />
           </Button>
 
@@ -69,14 +61,10 @@ export default function StatesTable({
             description="Are you sure you want to delete this item?"
             okText="Yes"
             cancelText="No"
-            onConfirm={() => {
-              setData(data.filter((d) => d.key !== record.key));
-              onDelete && onDelete(record);
-            }}
+            onConfirm={() => onDelete?.(record)}
           >
             <Button danger icon={<DeleteOutlined />} />
           </Popconfirm>
-
         </div>
       ),
     },
@@ -84,16 +72,11 @@ export default function StatesTable({
 
   return (
     <div className="w-full">
-
-      {/* MAIN HEADING */}
       <h1 className="text-xl font-semibold text-[#9a2119] mb-6">
         States Management
       </h1>
 
-      {/* CARD */}
       <div className="bg-white rounded-2xl border border-gray-200 p-5">
-
-        {/* HEADER */}
         <div className="flex justify-between mb-5">
           <h2 className="text-lg font-semibold text-[#9a2119]">
             States
@@ -125,7 +108,6 @@ export default function StatesTable({
           </div>
         </div>
 
-        {/* TABLE */}
         <Table
           columns={columns}
           dataSource={filteredData}

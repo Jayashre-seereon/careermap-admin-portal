@@ -2,19 +2,57 @@ import React, { useEffect } from "react";
 import { Form, Input, Select, Upload, Button } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import RichTextEditor from "../../components/ui/RichTextEditor";
+import { validationRules } from "../../utils/formValidation";
 
 const { Option } = Select;
+const institutionOptions = [
+  "AIIMS DELHI",
+  "AIIMS BHOPAL",
+  "AIIMS BHUBANESWAR",
+  "SCB Medical College",
+  "CMC, Vellore",
+  "KMC, Manipal",
+  "Amrita Vishwam Vidyapeetham",
+  "JIPMER, Puducherry",
+  "Saveetha Institute of Medical and Technical Sciences",
+  "Manipal College of Dental Sciences",
+].map((item) => ({ label: item, value: item }));
+
+const normalizeInstitutions = (value) => {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    return value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+};
 
 function SubCategoryForm({ onSubmit, initialValues, viewMode }) {
   const [form] = Form.useForm();
 
   useEffect(() => {
-    if (initialValues) form.setFieldsValue(initialValues);
+    if (initialValues) {
+      form.setFieldsValue({
+        ...initialValues,
+        institutions: normalizeInstitutions(initialValues.institutions),
+      });
+    }
     else form.resetFields();
-  }, [initialValues]);
+  }, [form, initialValues]);
 
   const handleFinish = (values) => {
-    onSubmit(values);
+    onSubmit({
+      ...values,
+      institutions: Array.isArray(values.institutions)
+        ? values.institutions.join(", ")
+        : values.institutions,
+    });
     form.resetFields();
   };
 
@@ -23,6 +61,7 @@ function SubCategoryForm({ onSubmit, initialValues, viewMode }) {
       layout="vertical"
       form={form}
       onFinish={handleFinish}
+      validateTrigger={["onChange", "onBlur"]}
       className="grid grid-cols-2 gap-5"
     >
       {/* LEFT COLUMN */}
@@ -51,8 +90,7 @@ function SubCategoryForm({ onSubmit, initialValues, viewMode }) {
       <Form.Item
         name="title"
         label="Title"
-        rules={[{ required: true }]}
-      >
+              >
         <Input size="large" disabled={viewMode} placeholder="Title" />
       </Form.Item>
 
@@ -60,7 +98,7 @@ function SubCategoryForm({ onSubmit, initialValues, viewMode }) {
       <Form.Item
         name="howToBecome"
         label="How to Become Title"
-        rules={[{ required: true }]}
+       
       >
         <Input
           size="large"
@@ -126,13 +164,18 @@ function SubCategoryForm({ onSubmit, initialValues, viewMode }) {
       <Form.Item
         name="institutions"
         label="Select Institutions"
-        rules={[{ required: true }]}
+        rules={[validationRules.required("Institutions")]}
         className="col-span-2"
       >
-        <Input
+        <Select
+          mode="multiple"
+          showSearch
+          allowClear
           size="large"
           disabled={viewMode}
-          placeholder="Search Institutions"
+          placeholder="Search and select institutions"
+          optionFilterProp="label"
+          options={institutionOptions}
         />
       </Form.Item>
 

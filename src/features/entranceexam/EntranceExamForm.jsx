@@ -1,5 +1,6 @@
 import { Form, Input, Select, Button, DatePicker } from "antd";
 import { useEffect } from "react";
+import { validationRules } from "../../utils/formValidation";
 
 const { Option } = Select;
 
@@ -13,13 +14,14 @@ export default function EntranceExamForm({
   useEffect(() => {
     if (initialValues) form.setFieldsValue(initialValues);
     else form.resetFields();
-  }, [initialValues]);
+  }, [form, initialValues]);
 
   return (
     <Form
       form={form}
       layout="vertical"
       onFinish={onSubmit}
+      validateTrigger={["onChange", "onBlur"]}
       className="grid grid-cols-2 gap-4"
     >
       <Form.Item name="module" label="Select Module">
@@ -28,8 +30,10 @@ export default function EntranceExamForm({
         </Select>
       </Form.Item>
 
-      <Form.Item name="stream" label="Stream">
-        <Input disabled={viewMode} />
+      <Form.Item name="stream" label="Stream" rules={[validationRules.charactersOnly("Stream")]}>
+        <Select disabled={viewMode} placeholder="Select Stream">
+          <Option value="Science">Science</Option>
+        </Select>
       </Form.Item>
 
       <Form.Item name="category" label="Select Category">
@@ -39,14 +43,20 @@ export default function EntranceExamForm({
       </Form.Item>
 
       <Form.Item name="secondCategory" label="2nd Category">
-        <Input disabled={viewMode} />
+        <Select disabled={viewMode} placeholder="Select 2nd Category">
+          <Option value="GENERAL COURSES/DEGREES">
+            GENERAL COURSES/DEGREES
+          </Option>
+        </Select>
       </Form.Item>
 
       <Form.Item name="subcategory" label="Select Subcategory">
-        <Input disabled={viewMode} />
+        <Select disabled={viewMode} placeholder="Select Subcategory">
+          <Option value="MBBS">MBBS</Option>
+        </Select>
       </Form.Item>
 
-      <Form.Item name="exam" label="Exam Name">
+      <Form.Item name="exam" label="Exam Name" rules={[validationRules.required("Exam name")]}>
         <Input disabled={viewMode} />
       </Form.Item>
 
@@ -58,11 +68,7 @@ export default function EntranceExamForm({
         <DatePicker className="w-full" disabled={viewMode} />
       </Form.Item>
 
-      <Form.Item
-        name="url"
-        label="URL"
-        className="col-span-2"
-      >
+      <Form.Item name="url" label="URL" className="col-span-2" rules={[validationRules.url("URL")]}>
         <Input disabled={viewMode} />
       </Form.Item>
 
