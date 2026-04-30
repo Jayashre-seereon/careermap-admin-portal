@@ -39,8 +39,23 @@ const createCustomValidator =
   };
 
 export const validationMessages = {
-  email: (label = "Email") => (value) =>
-    regex.email.test(value) ? "" : `Please enter a valid ${label.toLowerCase()}.`,
+  email: (label = "Email") => (value) => {
+    if (/\s/.test(value)) {
+      return `Spaces are not allowed in ${label.toLowerCase()}.`;
+    }
+
+    if (/\.{3,}/.test(value)) {
+      return `Three dots are not allowed in ${label.toLowerCase()}.`;
+    }
+
+    if (/\.com.+$/i.test(value)) {
+      return `After .com no input is allowed in ${label.toLowerCase()}.`;
+    }
+
+    return regex.email.test(value)
+      ? ""
+      : `Please enter a valid ${label.toLowerCase()}.`;
+  },
   phone: (label = "Phone number") => (value) => {
     if (/[A-Za-z]/.test(value)) {
       return `Only numbers are allowed in ${label.toLowerCase()}.`;
@@ -112,10 +127,7 @@ export const validationRules = {
     message: `${label} is required.`,
   }),
   email: (label = "Email") => ({
-    validator: createPatternValidator(
-      regex.email,
-      `Please enter a valid ${label.toLowerCase()}.`
-    ),
+    validator: createCustomValidator(validationMessages.email(label)),
   }),
   phone: (label = "Phone number") => ({
     validator: createCustomValidator(validationMessages.phone(label)),
@@ -132,7 +144,7 @@ export const validationRules = {
   url: (label = "URL") => ({
     validator: createPatternValidator(
       regex.url,
-      `Please enter a valid ${label.toLowerCase()}. `
+      `Please enter a valid ${label.toLowerCase()}. Only links are allowed.`
     ),
   }),
   noWhitespace: (label = "This field") => ({

@@ -14,7 +14,7 @@ import {
   MailOutlined,
   SaveOutlined,
 } from "@ant-design/icons";
-import { validationMessages,getValueFromInput,inputSanitizers,validationRules } from "../../../utils/formValidation";
+import { validationMessages } from "../../../utils/formValidation";
 
 const THEME = {
   primary: "#9a2119",
@@ -348,7 +348,6 @@ export default function UserDetails({ user, onBack, onNotify }) {
         
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          rules={[validationRules.numbersOnly("Amount")]}
         />
         <Input
           placeholder="Remark (optional)"
@@ -379,7 +378,6 @@ export default function UserDetails({ user, onBack, onNotify }) {
         
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          rules={[validationRules.numbersOnly("Amount")]}
             />
         <Input
           placeholder="Remark (optional)"
