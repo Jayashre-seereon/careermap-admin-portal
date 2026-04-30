@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Form, Input, Modal, Popconfirm, Select, Table, message ,Button} from "antd";
+import { Form, Input, Modal, Popconfirm, Select, Table, message, Button } from "antd";
 import {
   ArrowLeftOutlined,
   DeleteOutlined,
@@ -27,6 +27,7 @@ export default function QuizQuestionsPage() {
   const [editForm] = Form.useForm();
   const [quizzes, setQuizzes] = useState(() => getQuizzes());
   const [editingQuestion, setEditingQuestion] = useState(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const quiz = useMemo(
     () => quizzes.find((item) => item.id === quizId),
@@ -41,6 +42,11 @@ export default function QuizQuestionsPage() {
   const resetForm = () => {
     form.resetFields();
     form.setFieldsValue(initialQuestionValues);
+  };
+
+  const closeAddModal = () => {
+    setIsAddModalOpen(false);
+    resetForm();
   };
 
   const closeEditModal = () => {
@@ -70,7 +76,7 @@ export default function QuizQuestionsPage() {
 
     persistQuizzes(nextQuizzes);
     message.success("Question added successfully.");
-    resetForm();
+    closeAddModal();
   };
 
   const handleEdit = (question) => {
@@ -225,21 +231,67 @@ export default function QuizQuestionsPage() {
   return (
     <section className="space-y-5">
       <div className="flex items-center gap-3">
-      
         <div>
-          <h2 className="text-xl font-bold text-[#9a2119]"> <ArrowLeftOutlined className="mr-2"  onClick={() => navigate("/quiz")}/>
-      Add Question for the Quiz</h2>
+          <h2 className="text-xl font-bold text-[#9a2119]">
+            <ArrowLeftOutlined className="mr-2" onClick={() => navigate("/quiz")} />
+            Add Question for the Quiz
+          </h2>
           <p className="text-sm text-slate-500">{quiz.title}</p>
         </div>
       </div>
 
       <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="text-lg font-semibold text-[#9a2119]">Question List</h3>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="rounded-xl bg-[#9a2119] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#b62b21]"
+          >
+            <PlusOutlined className="mr-2" />
+            Add Question
+          </button>
+        </div>
+
+        <Table
+          rowKey="id"
+          columns={columns}
+          dataSource={quiz.questions}
+          pagination={{ pageSize: 6 }}
+          scroll={{ x: 1300 }}
+          rowClassName="hover:bg-[#fff8f7]"
+        />
+      </div>
+
+      <Modal
+        title={<span className="text-[#9a2119] font-semibold">Add Question</span>}
+        open={isAddModalOpen}
+        onCancel={closeAddModal}
+        destroyOnHidden
+        footer={[
+          <button
+            key="reset"
+            onClick={resetForm}
+            className="rounded-xl border border-[#d7d7d7] bg-white px-5 py-2 text-sm font-semibold text-[#222] transition hover:border-[#9a2119] hover:text-[#9a2119]"
+          >
+            <ReloadOutlined className="mr-2" />
+            Reset
+          </button>,
+          <button
+            key="add"
+            onClick={handleSubmit}
+            className="rounded-xl bg-[#9a2119] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#b62b21]"
+          >
+            <PlusOutlined className="mr-2" />
+            Add Question
+          </button>,
+        ]}
+      >
         <Form
           form={form}
           layout="vertical"
           initialValues={initialQuestionValues}
           validateTrigger={["onChange", "onBlur"]}
-          className="space-y-1"
+          className="mt-4 space-y-1"
         >
           <Form.Item
             label="Question"
@@ -295,44 +347,13 @@ export default function QuizQuestionsPage() {
             />
           </Form.Item>
         </Form>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            onClick={handleSubmit}
-            className="rounded-xl bg-[#9a2119] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#b62b21]"
-          >
-            <PlusOutlined className="mr-2" />
-            Add Question
-          </button>
-          <button
-            onClick={resetForm}
-            className="rounded-xl border border-[#d7d7d7] bg-white px-5 py-2.5 text-sm font-semibold text-[#222] transition hover:border-[#9a2119] hover:text-[#9a2119]"
-          >
-            <ReloadOutlined className="mr-2" />
-            Reset
-          </button>
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <div className="mb-4">
-          <h3 className="text-lg font-semibold text-[#9a2119]">Question List</h3>
-        </div>
-
-        <Table
-          rowKey="id"
-          columns={columns}
-          dataSource={quiz.questions}
-          pagination={{ pageSize: 6 }}
-          scroll={{ x: 1300 }}
-          rowClassName="hover:bg-[#fff8f7]"
-        />
-      </div>
+      </Modal>
 
       <Modal
         title={<span className="text-[#9a2119] font-semibold">Edit Question</span>}
         open={Boolean(editingQuestion)}
         onCancel={closeEditModal}
+        destroyOnHidden
         footer={[
           <button
             key="cancel"
