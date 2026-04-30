@@ -1,9 +1,18 @@
+import { useEffect } from "react";
 import { Form, Input, Upload, Button } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { validationRules } from "../../utils/formValidation";
 
 export default function CareerPlanForm({ onSubmit, initialValues, viewMode }) {
   const [form] = Form.useForm();
+
+  useEffect(() => {
+    if (initialValues) {
+      form.setFieldsValue(initialValues);
+    } else {
+      form.resetFields();
+    }
+  }, [form, initialValues]);
 
   return (
     <Form
@@ -17,7 +26,7 @@ export default function CareerPlanForm({ onSubmit, initialValues, viewMode }) {
       <Form.Item
         name="title"
         label="Title"
-        rules={[validationRules.required("Title"), validationRules.charactersOnly("Title")]}
+        rules={[validationRules.required("Title")]}
       >
         <Input disabled={viewMode} />
       </Form.Item>

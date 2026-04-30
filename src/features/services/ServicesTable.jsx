@@ -8,65 +8,17 @@ import {
 } from "@ant-design/icons";
 import { useState } from "react";
 
-const initialData = [
-  {
-    key: "1",
-    title: "Psychometric Career Counselling",
-    price: "Rs 1.00",
-    icon: "",
-    time: "Mar 2025, 08:12 PM",
-    status: "Active",
-  },
-  {
-    key: "2",
-    title: "Behavioural & Psychological Counselling",
-    price: "Rs 1.00",
-    icon: "",
-    time: "Mar 2025, 08:08 PM",
-    status: "Active",
-  },
-  {
-    key: "3",
-    title: "MSM",
-    price: "Rs 1.00",
-    icon: "",
-    time: "Mar 2025, 08:04 PM",
-    status: "Active",
-  },
-  {
-    key: "4",
-    title: "Career Counselling Cell",
-    price: "Rs 1.00",
-    time: "Mar 2025, 07:53 PM",
-    status: "Active",
-  },
-  {
-    key: "5",
-    title: "University Admissions",
-    price: "Rs 1.00",
-    time: "Mar 2025, 07:41 PM",
-    status: "Active",
-  },
-  {
-    key: "6",
-    title: "Information Dashboard & App",
-    price: "Rs 1.00",
-    time: "Mar 2025, 07:38 PM",
-    status: "Active",
-  },
-];
-
 export default function ServicesTable({
+  data = [],
   onView,
   onEdit,
   onDelete,
   onAdd,
 }) {
   const [search, setSearch] = useState("");
-  const [data, setData] = useState(initialData);
 
   const filteredData = data.filter((item) =>
-    item.title.toLowerCase().includes(search.toLowerCase())
+    item.title?.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleReset = () => setSearch("");
@@ -89,15 +41,7 @@ export default function ServicesTable({
       title: <span className="text-[#9a2119] font-semibold">Icon</span>,
       dataIndex: "icon",
       render: (icon) =>
-        icon ? (
-          <img src={icon} className="w-8 h-8 object-cover" />
-        ) : (
-          "-"
-        ),
-    },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Time</span>,
-      dataIndex: "time",
+        icon ? <img src={icon} className="w-8 h-8 object-cover" /> : "-",
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Status</span>,
@@ -115,14 +59,15 @@ export default function ServicesTable({
         <div className="flex justify-end gap-3">
           <Button
             onClick={() => onView(record)}
-             className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
-           >
+            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
+          >
             <EyeOutlined />
           </Button>
 
           <Button
             onClick={() => onEdit(record)}
-            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"   >
+            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
+          >
             <EditOutlined />
           </Button>
 
@@ -131,10 +76,7 @@ export default function ServicesTable({
             description="Are you sure you want to delete this item?"
             okText="Yes"
             cancelText="No"
-            onConfirm={() => {
-              setData(data.filter((d) => d.key !== record.key));
-              onDelete && onDelete(record);
-            }}
+            onConfirm={() => onDelete?.(record)}
           >
             <Button danger icon={<DeleteOutlined />} />
           </Popconfirm>

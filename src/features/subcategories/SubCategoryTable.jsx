@@ -4,9 +4,9 @@ import { EyeOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 
 function SubCategoryTable({ data, onAdd, onView, onEdit, onDelete, search, setSearch }) {
   
-  const filtered = data.filter((item) =>
-    item.title.toLowerCase().includes(search.toLowerCase())
-  );
+ const filtered = (data || []).filter((item) =>
+  (item.title || "").toLowerCase().includes((search || "").toLowerCase())
+);
 
   const columns = [
     { title: "SL", render: (_, __, i) => i + 1 },
@@ -20,7 +20,7 @@ function SubCategoryTable({ data, onAdd, onView, onEdit, onDelete, search, setSe
     {
       title: "Institutions",
       dataIndex: "institutions",
-      render: (text) => <span>{text.slice(0, 40)}...</span>,
+     render: (text) => <span>{text ? text.slice(0, 40) + "..." : ""}</span>,
     },
 
     {
@@ -32,8 +32,7 @@ function SubCategoryTable({ data, onAdd, onView, onEdit, onDelete, search, setSe
     {
       title: "Description",
       dataIndex: "description",
-      render: (text) => <span>{text.slice(0, 40)}...</span>,
-    },
+    render: (text) => <span>{text ? text.slice(0, 40) + "..." : ""}</span>, },
 
     {
       title: "Action",
@@ -74,8 +73,7 @@ function SubCategoryTable({ data, onAdd, onView, onEdit, onDelete, search, setSe
           placeholder="Search..."
           className="border px-3 py-2 rounded-md w-[250px]"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+onChange={(e) => setSearch(e.target.value || "")} />
 
         <Button
           type="primary"

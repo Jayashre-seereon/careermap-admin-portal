@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Form, Input, Select, Button } from "antd";
 import RichTextEditor from "../../components/ui/RichTextEditor";
 import { validationRules } from "../../utils/formValidation";
@@ -7,11 +8,18 @@ const { Option } = Select;
 export default function PlansForm({ onSubmit, initialValues, viewMode }) {
   const [form] = Form.useForm();
 
+  useEffect(() => {
+    if (initialValues) {
+      form.setFieldsValue(initialValues);
+    } else {
+      form.resetFields();
+    }
+  }, [form, initialValues]);
+
   return (
     <Form
       layout="vertical"
       form={form}
-      initialValues={initialValues}
       onFinish={onSubmit}
       validateTrigger={["onChange", "onBlur"]}
       className="grid grid-cols-2 gap-4"

@@ -40,8 +40,7 @@ function SalaryPage() {
   const filteredData = useMemo(
     () =>
       data.filter((item) =>
-        item.subcategory.toLowerCase().includes(search.toLowerCase())
-      ),
+       (item.subcategory || "").toLowerCase().includes((search || "").toLowerCase())      ),
     [data, search]
   );
 

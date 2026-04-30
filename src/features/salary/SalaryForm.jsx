@@ -49,8 +49,11 @@ function SalaryForm({ onSubmit, initialValues, viewMode }) {
       </Form.Item>
 
       {/* Sub Category */}
-      <Form.Item name="subcategory" label="Sub Categories">
-        <Select disabled={viewMode}>
+    <Form.Item
+  name="subcategory"
+  label="Sub Categories"
+  rules={[{ required: true, message: "Subcategory is required" }]}
+>     <Select disabled={viewMode}>
           <Option value="MBBS">MBBS</Option>
         </Select>
       </Form.Item>

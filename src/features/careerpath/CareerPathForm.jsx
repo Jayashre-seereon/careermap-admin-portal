@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { Form, Select, Input, Button } from "antd";
-import { validationRules } from "../../utils/formValidation";
 
 const { Option } = Select;
 
@@ -43,23 +42,23 @@ function CareerPathForm({ onSubmit, initialValues, viewMode }) {
         </Select>
       </Form.Item>
 
-      <Form.Item name="stream" label="Stream" rules={[validationRules.charactersOnly("Stream")]}>
+      <Form.Item name="stream" label="Stream">
         <Input disabled={viewMode} />
       </Form.Item>
 
-      <Form.Item name="graduation" label="Graduation" rules={[validationRules.charactersOnly("Graduation")]}>
+      <Form.Item name="graduation" label="Graduation">
         <Input disabled={viewMode} />
       </Form.Item>
 
-      <Form.Item name="afterGraduation" label="After Graduation" rules={[validationRules.charactersOnly("After graduation")]}>
+      <Form.Item name="afterGraduation" label="After Graduation">
         <Input disabled={viewMode} />
       </Form.Item>
 
-      <Form.Item name="afterPostGraduation" label="After Post Graduation" rules={[validationRules.charactersOnly("After post graduation")]}>
+      <Form.Item name="afterPostGraduation" label="After Post Graduation">
         <Input disabled={viewMode} />
       </Form.Item>
 
-      <Form.Item name="anyOther" label="Any Other" rules={[validationRules.charactersOnly("Any other")]}>
+      <Form.Item name="anyOther" label="Any Other">
         <Input disabled={viewMode} />
       </Form.Item>
 

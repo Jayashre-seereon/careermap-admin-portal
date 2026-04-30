@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Form, Input, Select, Button } from "antd";
 import { validationRules } from "../../utils/formValidation";
 
@@ -8,11 +9,18 @@ export default function DistrictsForm({
 }) {
   const [form] = Form.useForm();
 
+  useEffect(() => {
+    if (initialValues) {
+      form.setFieldsValue(initialValues);
+    } else {
+      form.resetFields();
+    }
+  }, [form, initialValues]);
+
   return (
     <Form
       layout="vertical"
       form={form}
-      initialValues={initialValues}
       onFinish={onSubmit}
       validateTrigger={["onChange", "onBlur"]}
     >
@@ -20,7 +28,7 @@ export default function DistrictsForm({
       <Form.Item
         name="name"
         label="District Name"
-        rules={[validationRules.required("District name"), validationRules.charactersOnly("District name")]}
+        rules={[validationRules.required("District name")]}
       >
         <Input disabled={viewMode} />
       </Form.Item>

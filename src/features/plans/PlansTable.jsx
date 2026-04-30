@@ -8,41 +8,17 @@ import {
 } from "@ant-design/icons";
 import { useState } from "react";
 
-const initialData = [
-  {
-    key: "1",
-    name: "Free",
-    features: "Career Library, Entrance Exam, Institute, Quiz",
-    module: "Career Library, Entrance Exam, Institute, Quiz",
-    price: "0",
-  },
-  {
-    key: "2",
-    name: "Gold",
-    features: "Mock Test, Live Test, Practice Questions",
-    module: "Career Library, Career Assessment",
-    price: "1",
-  },
-  {
-    key: "3",
-    name: "Platinum",
-    features: "All Features Included",
-    module: "All Modules",
-    price: "50000",
-  },
-];
-
 export default function PlansTable({
+  data = [],
   onView,
   onEdit,
   onDelete,
   onAdd,
 }) {
   const [search, setSearch] = useState("");
-  const [data, setData] = useState(initialData);
 
   const filteredData = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
+    item.name?.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleReset = () => setSearch("");
@@ -64,6 +40,7 @@ export default function PlansTable({
     {
       title: <span className="text-[#9a2119] font-semibold">Module</span>,
       dataIndex: "module",
+      render: (module) => (Array.isArray(module) ? module.join(", ") : module),
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Price</span>,
@@ -74,20 +51,17 @@ export default function PlansTable({
       align: "right",
       render: (_, record) => (
         <div className="flex justify-end gap-3">
-
-          {/* VIEW */}
           <Button
             onClick={() => onView(record)}
             className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
-        >
+          >
             <EyeOutlined />
           </Button>
 
-          {/* EDIT */}
           <Button
             onClick={() => onEdit(record)}
             className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
-           >
+          >
             <EditOutlined />
           </Button>
 
@@ -96,11 +70,7 @@ export default function PlansTable({
             description="Are you sure you want to delete this item?"
             okText="Yes"
             cancelText="No"
-            onConfirm={() => {
-              const updated = data.filter((d) => d.key !== record.key);
-              setData(updated);
-              onDelete && onDelete(record);
-            }}
+            onConfirm={() => onDelete?.(record)}
           >
             <Button danger icon={<DeleteOutlined />} />
           </Popconfirm>
@@ -111,23 +81,17 @@ export default function PlansTable({
 
   return (
     <div className="w-full">
-
-      {/* MAIN HEADING */}
       <h1 className="text-xl font-semibold text-[#9a2119] mb-6">
         Plans Management
       </h1>
 
-      {/* CARD */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
-
-        {/* HEADER */}
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-semibold text-[#9a2119]">
             Plans
           </h2>
 
           <div className="flex items-center gap-4">
-
             <Input
               placeholder="Search plan..."
               value={search}
@@ -136,35 +100,23 @@ export default function PlansTable({
               onChange={(e) => setSearch(e.target.value)}
             />
 
-            {/* RESET */}
             <button
               onClick={handleReset}
-              className="flex items-center gap-2 px-5 h-10 rounded-lg
-                         bg-[#9a2119]
-                         text-white
-                         hover:bg-[#c0392b]
-                         transition duration-200"
+              className="flex items-center gap-2 px-5 h-10 rounded-lg bg-[#9a2119] text-white hover:bg-[#c0392b] transition duration-200"
             >
               <ReloadOutlined />
               Reset
             </button>
 
-            {/* ADD */}
             <button
               onClick={onAdd}
-              className="px-5 h-10 rounded-lg
-                         bg-[#9a2119]
-                         text-white
-                         hover:bg-[#c0392b]
-                         transition duration-200"
+              className="px-5 h-10 rounded-lg bg-[#9a2119] text-white hover:bg-[#c0392b] transition duration-200"
             >
               + Add
             </button>
-
           </div>
         </div>
 
-        {/* TABLE */}
         <Table
           columns={columns}
           dataSource={filteredData}

@@ -56,13 +56,26 @@ export default function InstitutionPage() {
     setOpen(true);
   };
 
+  const handleClose = () => {
+    setOpen(false);
+    setEditData(null);
+    setViewMode(false);
+  };
+
   const handleDelete = (data) => {
     setData((prev) => prev.filter((item) => item.key !== data.key));
   };
 
   const handleSubmit = (values) => {
-    console.log("Submitted:", values);
-    setOpen(false);
+    if (editData) {
+      setData((prev) =>
+        prev.map((item) => (item.key === editData.key ? { ...item, ...values } : item))
+      );
+    } else {
+      setData((prev) => [...prev, { key: Date.now().toString(), ...values }]);
+    }
+
+    handleClose();
   };
 
   return (
@@ -77,7 +90,7 @@ export default function InstitutionPage() {
 
       <Modal
         open={open}
-        onCancel={() => setOpen(false)}
+        onCancel={handleClose}
         footer={null}
         width={1000}
         title={viewMode ? "View Institution" : "Add / Edit Institution"}

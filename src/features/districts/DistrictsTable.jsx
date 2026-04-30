@@ -8,25 +8,17 @@ import {
 } from "@ant-design/icons";
 import { useState } from "react";
 
-const initialData = [
-  { key: "1", name: "Adilabad", state: "Telangana" },
-  { key: "2", name: "Agar Malwa", state: "Madhya Pradesh" },
-  { key: "3", name: "Agatti", state: "Lakshadweep" },
-  { key: "4", name: "Agra", state: "Uttar Pradesh" },
-  { key: "5", name: "Ahmedabad", state: "Gujarat" },
-];
-
 export default function DistrictsTable({
+  data = [],
   onView,
   onEdit,
   onDelete,
   onAdd,
 }) {
   const [search, setSearch] = useState("");
-  const [data, setData] = useState(initialData);
 
   const filteredData = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
+    item.name?.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleReset = () => setSearch("");
@@ -50,19 +42,17 @@ export default function DistrictsTable({
       align: "right",
       render: (_, record) => (
         <div className="flex justify-end gap-3">
-
           <Button
             onClick={() => onView(record)}
-            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"  
-           >
+            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
+          >
             <EyeOutlined />
           </Button>
 
           <Button
             onClick={() => onEdit(record)}
-            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"  
-             >
-             
+            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
+          >
             <EditOutlined />
           </Button>
 
@@ -71,15 +61,10 @@ export default function DistrictsTable({
             description="Are you sure you want to delete this item?"
             okText="Yes"
             cancelText="No"
-            onConfirm={() => {
-              const updated = data.filter((d) => d.key !== record.key);
-              setData(updated);
-              onDelete && onDelete(record);
-            }}
+            onConfirm={() => onDelete?.(record)}
           >
             <Button danger icon={<DeleteOutlined />} />
           </Popconfirm>
-
         </div>
       ),
     },
@@ -87,16 +72,11 @@ export default function DistrictsTable({
 
   return (
     <div className="w-full">
-
-      {/* MAIN HEADING */}
       <h1 className="text-xl font-semibold text-[#9a2119] mb-6">
         Districts Management
       </h1>
 
-      {/* CARD */}
       <div className="bg-white rounded-2xl border border-gray-200 p-5">
-
-        {/* HEADER */}
         <div className="flex justify-between mb-5">
           <h2 className="text-lg font-semibold text-[#9a2119]">
             Districts
@@ -128,7 +108,6 @@ export default function DistrictsTable({
           </div>
         </div>
 
-        {/* TABLE */}
         <Table
           columns={columns}
           dataSource={filteredData}
