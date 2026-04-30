@@ -21,8 +21,12 @@ export default function CareerPlanForm({ onSubmit, initialValues, viewMode }) {
       initialValues={initialValues}
       onFinish={onSubmit}
       validateTrigger={["onChange", "onBlur"]}
-      className="grid grid-cols-2 gap-4"
+      className="grid grid-cols-1 md:grid-cols-2 gap-4"
     >
+      <h3 className="md:col-span-2 mb-1 text-lg font-semibold text-[#9a2119]">
+        Career Plan Details
+      </h3>
+
       <Form.Item
         name="title"
         label="Title"
@@ -40,19 +44,19 @@ export default function CareerPlanForm({ onSubmit, initialValues, viewMode }) {
       <Form.Item
         name="description"
         label="Description"
-        className="col-span-2"
+        className="md:col-span-2"
       >
         <Input.TextArea rows={4} disabled={viewMode} />
       </Form.Item>
 
-      <Form.Item name="url" label="Link" className="col-span-2" rules={[validationRules.url("Link")]}>
+      <Form.Item name="url" label="Link" className="md:col-span-2" rules={[validationRules.url("Link")]}>
         <Input disabled={viewMode} />
       </Form.Item>
 
       {!viewMode && (
         <Button
           htmlType="submit"
-          className="col-span-2 bg-[#9a2119] text-white"
+          className="md:col-span-2 bg-[#9a2119] text-white"
         >
           Submit
         </Button>

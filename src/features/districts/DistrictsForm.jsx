@@ -24,6 +24,8 @@ export default function DistrictsForm({
       onFinish={onSubmit}
       validateTrigger={["onChange", "onBlur"]}
     >
+      <h3 className="mb-4 text-lg font-semibold text-[#9a2119]">District Details</h3>
+
       {/* District Name */}
       <Form.Item
         name="name"

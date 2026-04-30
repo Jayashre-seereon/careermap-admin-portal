@@ -65,6 +65,9 @@ export default function CategoryForm({ onSubmit, initialValues, disabled }) {
     >
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <h3 className="md:col-span-2 mb-1 text-lg font-semibold text-[#9a2119]">
+          Category Details
+        </h3>
 
         <Form.Item name="stream" label="Stream" rules={[{ required: true }]}>
           <Select placeholder="Select Stream" disabled={disabled}>
@@ -115,11 +118,11 @@ export default function CategoryForm({ onSubmit, initialValues, disabled }) {
           </Upload>
         </Form.Item>
 
-        <Form.Item name="description" label="Description">
+        <Form.Item name="description" label="Description" className="md:col-span-2">
           <Input.TextArea rows={3} disabled={disabled} />
         </Form.Item>
 
-        <Form.Item name="specialisation" label="Specialisation">
+        <Form.Item name="specialisation" label="Specialisation" className="md:col-span-2">
           <RichTextEditor
             disabled={disabled}
             placeholder="Enter specialisation"
@@ -127,7 +130,7 @@ export default function CategoryForm({ onSubmit, initialValues, disabled }) {
           />
         </Form.Item>
 
-        <Form.Item name="importantFacts" label="Important Facts">
+        <Form.Item name="importantFacts" label="Important Facts" className="md:col-span-2">
           <RichTextEditor
             disabled={disabled}
             placeholder="Enter important facts"

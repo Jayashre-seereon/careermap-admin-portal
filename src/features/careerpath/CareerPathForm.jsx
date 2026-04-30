@@ -23,8 +23,12 @@ function CareerPathForm({ onSubmit, initialValues, viewMode }) {
       form={form}
       onFinish={handleFinish}
       validateTrigger={["onChange", "onBlur"]}
-      className="grid grid-cols-2 gap-4"
+      className="grid grid-cols-1 md:grid-cols-2 gap-4"
     >
+      <h3 className="md:col-span-2 mb-1 text-lg font-semibold text-[#9a2119]">
+        Career Path Details
+      </h3>
+
       <Form.Item name="module" label="Select Module" rules={[validationRules.required("Module")]}>
         <Select disabled={viewMode}>
           <Option value="Career Library">Career Library</Option>
@@ -89,7 +93,7 @@ function CareerPathForm({ onSubmit, initialValues, viewMode }) {
       </Form.Item>
 
       {!viewMode && (
-        <div className="col-span-2 text-right">
+        <div className="md:col-span-2 text-right">
           <Button
             htmlType="submit"
             block

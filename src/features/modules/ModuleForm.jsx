@@ -18,6 +18,9 @@ function ModuleForm({ onSubmit, initialValues, disabled }) {
     <Form layout="vertical" form={form} onFinish={onSubmit} validateTrigger={["onChange", "onBlur"]}>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <h3 className="md:col-span-2 lg:col-span-3 mb-1 text-lg font-semibold text-[#9a2119]">
+          Module Details
+        </h3>
 
         <Form.Item name="image" label="Image">
           <Upload beforeUpload={() => false} disabled={disabled}>

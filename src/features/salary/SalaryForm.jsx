@@ -23,8 +23,12 @@ function SalaryForm({ onSubmit, initialValues, viewMode }) {
       form={form}
       onFinish={handleFinish}
       validateTrigger={["onChange", "onBlur"]}
-      className="grid grid-cols-2 gap-4"
+      className="grid grid-cols-1 md:grid-cols-2 gap-4"
     >
+      <h3 className="md:col-span-2 mb-1 text-lg font-semibold text-[#9a2119]">
+        Salary Range Details
+      </h3>
+
       {/* Stream */}
       <Form.Item name="stream" label="Stream" rules={[{ required: true }]}>
         <Select disabled={viewMode}>
@@ -62,7 +66,7 @@ function SalaryForm({ onSubmit, initialValues, viewMode }) {
       <Form.Item
         name="salary"
         label="Salary Range"
-        className="col-span-2"
+        className="md:col-span-2"
         rules={[ validationRules.required("Salary Range")]}
              
            >
@@ -71,7 +75,7 @@ function SalaryForm({ onSubmit, initialValues, viewMode }) {
 
       {/* Submit */}
       {!viewMode && (
-        <div className="col-span-2 text-right">
+        <div className="md:col-span-2 text-right">
           <Button
             htmlType="submit"
             block

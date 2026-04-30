@@ -30,6 +30,10 @@ export default function ScholarshipForm({ onSubmit, initialValues, viewMode }) {
       validateTrigger={["onChange", "onBlur"]}
       className="grid grid-cols-1 md:grid-cols-2 gap-4"
     >
+      <h3 className="md:col-span-2 mb-1 text-lg font-semibold text-[#9a2119]">
+        Scholarship Details
+      </h3>
+
       <Form.Item name="type" label="Type" rules={[validationRules.required("Type")]}>
         <Select disabled={viewMode}>
           <Option value="State">State</Option>
@@ -56,7 +60,7 @@ export default function ScholarshipForm({ onSubmit, initialValues, viewMode }) {
       <Form.Item
         name="desc"
         label="Long Description"
-        className="col-span-2"
+        className="md:col-span-2"
       >
         <RichTextEditor height={220} readOnly={viewMode} />
       </Form.Item>
@@ -64,7 +68,7 @@ export default function ScholarshipForm({ onSubmit, initialValues, viewMode }) {
       {!viewMode && (
         <Button
           htmlType="submit"
-          className="col-span-2 bg-[#9a2119] text-white"
+          className="md:col-span-2 bg-[#9a2119] text-white"
         >
           Submit
         </Button>

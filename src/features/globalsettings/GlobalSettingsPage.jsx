@@ -107,6 +107,10 @@ export default function SiteSettings() {
   return (
     <div style={{ background: "white", borderRadius: 12, padding: "20px 32px", maxWidth: "100%", width: "100%" }}>
       <Form layout="vertical">
+        <h3 className="mb-4 text-lg font-semibold text-[#9a2119]">
+          Global Settings Details
+        </h3>
+
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 48px" }}>
           {/* Left Column */}
           <div>

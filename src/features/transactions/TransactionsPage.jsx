@@ -27,7 +27,7 @@ export default function TransactionsPage() {
         </h2>
 
         {selected && (
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
 
             <div>
               <p className="text-gray-500">Transaction ID</p>
@@ -59,7 +59,7 @@ export default function TransactionsPage() {
               <p className="font-medium">{selected.status}</p>
             </div>
 
-            <div className="col-span-2">
+            <div className="md:col-span-2">
               <p className="text-gray-500">Date</p>
               <p className="font-medium">{selected.date}</p>
             </div>

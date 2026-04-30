@@ -273,7 +273,7 @@ export default function UserDetails({ user, onBack, onNotify }) {
           ))}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field label="First Name" required error={errors.firstName}>
             <Input value={info.firstName} onChange={(e) => handleInfoChange("firstName", e.target.value)} />
           </Field>
@@ -282,7 +282,7 @@ export default function UserDetails({ user, onBack, onNotify }) {
           </Field>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field label="Email" required error={errors.email}>
             <Input value={info.email} onChange={(e) => handleInfoChange("email", e.target.value)} />
           </Field>
@@ -295,7 +295,7 @@ export default function UserDetails({ user, onBack, onNotify }) {
           <Input value={info.address} onChange={(e) => handleInfoChange("address", e.target.value)} />
         </Field>
 
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           <Field label="City" error={errors.city}>
             <Input value={info.city} onChange={(e) => handleInfoChange("city", e.target.value)} />
           </Field>

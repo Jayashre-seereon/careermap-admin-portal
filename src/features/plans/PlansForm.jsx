@@ -22,8 +22,12 @@ export default function PlansForm({ onSubmit, initialValues, viewMode }) {
       form={form}
       onFinish={onSubmit}
       validateTrigger={["onChange", "onBlur"]}
-      className="grid grid-cols-2 gap-4"
+      className="grid grid-cols-1 md:grid-cols-2 gap-4"
     >
+      <h3 className="md:col-span-2 mb-1 text-lg font-semibold text-[#9a2119]">
+        Plan Details
+      </h3>
+
       <Form.Item
         name="name"
         label="Plan Name"
@@ -40,7 +44,7 @@ export default function PlansForm({ onSubmit, initialValues, viewMode }) {
         <Input disabled={viewMode} />
       </Form.Item>
 
-      <Form.Item name="module" label="Module" className="col-span-2" rules={[validationRules.required("Module")]}>
+      <Form.Item name="module" label="Module" className="md:col-span-2" rules={[validationRules.required("Module")]}>
         <Select mode="multiple" disabled={viewMode}>
           <Option value="Career Library">Career Library</Option>
           <Option value="Career Assessment">Career Assessment</Option>
@@ -56,7 +60,7 @@ export default function PlansForm({ onSubmit, initialValues, viewMode }) {
       <Form.Item
         name="features"
         label="Features"
-        className="col-span-2"
+        className="md:col-span-2"
       >
         <RichTextEditor
           disabled={viewMode}
@@ -68,7 +72,7 @@ export default function PlansForm({ onSubmit, initialValues, viewMode }) {
       {!viewMode && (
         <Button
           htmlType="submit"
-          className="col-span-2 bg-[#9a2119] text-white"
+          className="md:col-span-2 bg-[#9a2119] text-white"
         >
           Add Plans
         </Button>

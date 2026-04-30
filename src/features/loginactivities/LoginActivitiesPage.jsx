@@ -26,7 +26,7 @@ export default function LoginActivitiesPage() {
         </h2>
 
         {selected && (
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
 
             <div>
               <p className="text-gray-500">User</p>
@@ -58,7 +58,7 @@ export default function LoginActivitiesPage() {
               <p className="font-medium">{selected.location}</p>
             </div>
 
-            <div className="col-span-2">
+            <div className="md:col-span-2">
               <p className="text-gray-500">Status</p>
               <p className="font-medium">{selected.status}</p>
             </div>

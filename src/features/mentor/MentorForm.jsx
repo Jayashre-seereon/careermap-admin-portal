@@ -36,6 +36,9 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
       
       {/* GRID 3 COLUMNS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <h3 className="md:col-span-2 lg:col-span-4 mb-1 text-lg font-semibold text-[#9a2119]">
+          Mentor Details
+        </h3>
 
         {/* Category */}
         <Form.Item name="category" label="Category" rules={[{ required: true }]}>
@@ -126,7 +129,7 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
           <Input disabled={disabled} placeholder="Enter Facebook profile link" />
         </Form.Item>
 
-        <Form.Item name="skills" label="My Skills" className="lg:col-span-2">
+        <Form.Item name="skills" label="My Skills" className="md:col-span-2">
           <RichTextEditor
             disabled={disabled}
             placeholder="Enter mentor skills"
@@ -174,7 +177,7 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
         <Form.Item
           name="description"
           label="Description"
-          className="lg:col-span-3"
+          className="md:col-span-2 lg:col-span-3"
         >
           <RichTextEditor
             disabled={disabled}
@@ -187,7 +190,7 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
           name="status"
           label="Status"
           valuePropName="checked"
-          className="lg:col-span-1"
+          className="md:col-span-2 lg:col-span-1"
         >
           <StatusSwitch
             disabled={disabled}

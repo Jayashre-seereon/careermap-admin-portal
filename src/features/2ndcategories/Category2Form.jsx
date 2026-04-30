@@ -50,7 +50,10 @@ export default function Category2Form({ onSubmit, initialValues, mode }) {
 
   return (
     <Form form={form} layout="vertical" onFinish={handleFinish} validateTrigger={["onChange", "onBlur"]}>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <h3 className="md:col-span-2 lg:col-span-3 mb-1 text-lg font-semibold text-[#9a2119]">
+          2nd Category Details
+        </h3>
 
         <Form.Item name="category" label="Category" rules={[{ required: true }]}>
           <Select disabled={isView}>
@@ -100,11 +103,11 @@ export default function Category2Form({ onSubmit, initialValues, mode }) {
           </Upload>
         </Form.Item>
 
-        <Form.Item name="description" label="Description" className="col-span-3">
+        <Form.Item name="description" label="Description" className="md:col-span-2 lg:col-span-3">
           <Input.TextArea rows={4} disabled={isView} />
         </Form.Item>
 
-        <Form.Item name="specialisation" label="Specialisation" className="col-span-3">
+        <Form.Item name="specialisation" label="Specialisation" className="md:col-span-2 lg:col-span-3">
           <RichTextEditor
             disabled={isView}
             placeholder="Enter specialisation"
@@ -112,7 +115,7 @@ export default function Category2Form({ onSubmit, initialValues, mode }) {
           />
         </Form.Item>
 
-        <Form.Item name="importantFacts" label="Important Facts" className="col-span-3">
+        <Form.Item name="importantFacts" label="Important Facts" className="md:col-span-2 lg:col-span-3">
           <RichTextEditor
             disabled={isView}
             placeholder="Enter important facts"
