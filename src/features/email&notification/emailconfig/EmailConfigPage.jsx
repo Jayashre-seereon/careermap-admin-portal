@@ -1,11 +1,35 @@
 import { useState } from "react";
-import { Input, Select, Modal } from "antd";
+import { Button, Form, Input, Select, Modal, message } from "antd";
+import { getEmailConfig, saveEmailConfig } from "../notificationConfigStore";
 
 const { Option } = Select;
 
 export default function EmailConfigPage() {
+  const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [testEmail, setTestEmail] = useState("");
+  const initialValues = getEmailConfig();
+
+  const handleSubmit = (values) => {
+    saveEmailConfig(values);
+    message.success("Email configuration saved successfully.");
+  };
+
+  const handleCancel = () => {
+    form.setFieldsValue(getEmailConfig());
+    message.info("Changes cancelled.");
+  };
+
+  const handleSendTestEmail = () => {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testEmail.trim())) {
+      message.error("Enter a valid email address.");
+      return;
+    }
+
+    message.success(`Test email sent to ${testEmail.trim()}.`);
+    setTestEmail("");
+    setIsModalOpen(false);
+  };
 
   return (
     <div className="w-full">
@@ -16,7 +40,13 @@ export default function EmailConfigPage() {
       </h1>
 
       {/* CARD */}
-      <div className="bg-white rounded-2xl shadow-sm border p-6 space-y-6">
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={initialValues}
+        onFinish={handleSubmit}
+        className="bg-white rounded-2xl shadow-sm border p-6 space-y-6"
+      >
 
         {/* EMAIL METHOD */}
         <div>
@@ -24,10 +54,12 @@ export default function EmailConfigPage() {
             Email Send Method
           </label>
 
-          <Select defaultValue="SMTP" className="w-60">
-            <Option value="SMTP">SMTP</Option>
-            <Option value="MAIL">PHP Mail</Option>
-          </Select>
+          <Form.Item name="method" className="mb-0">
+            <Select className="w-60">
+              <Option value="SMTP">SMTP</Option>
+              <Option value="MAIL">PHP Mail</Option>
+            </Select>
+          </Form.Item>
         </div>
 
         {/* SMTP CONFIG */}
@@ -41,13 +73,17 @@ export default function EmailConfigPage() {
             {/* HOST */}
             <div>
               <label className="block mb-1 font-medium">Host</label>
-              <Input placeholder="smtp.gmail.com" />
+              <Form.Item name="host" className="mb-0" rules={[{ required: true, message: "Host is required" }]}>
+                <Input placeholder="smtp.gmail.com" />
+              </Form.Item>
             </div>
 
             {/* PORT */}
             <div>
               <label className="block mb-1 font-medium">Port</label>
-              <Input placeholder="587" />
+              <Form.Item name="port" className="mb-0" rules={[{ required: true, message: "Port is required" }]}>
+                <Input placeholder="587" />
+              </Form.Item>
             </div>
 
             {/* ENCRYPTION */}
@@ -55,11 +91,13 @@ export default function EmailConfigPage() {
               <label className="block mb-1 font-medium">
                 Encryption
               </label>
-              <Select defaultValue="TLS" className="w-full">
-                <Option value="TLS">TLS</Option>
-                <Option value="SSL">SSL</Option>
-                <Option value="NONE">None</Option>
-              </Select>
+              <Form.Item name="encryption" className="mb-0">
+                <Select className="w-full">
+                  <Option value="TLS">TLS</Option>
+                  <Option value="SSL">SSL</Option>
+                  <Option value="NONE">None</Option>
+                </Select>
+              </Form.Item>
             </div>
 
             {/* USERNAME */}
@@ -67,7 +105,9 @@ export default function EmailConfigPage() {
               <label className="block mb-1 font-medium">
                 Username
               </label>
-              <Input placeholder="your@email.com" />
+              <Form.Item name="username" className="mb-0" rules={[{ required: true, message: "Username is required" }]}>
+                <Input placeholder="your@email.com" />
+              </Form.Item>
             </div>
 
             {/* PASSWORD */}
@@ -75,7 +115,9 @@ export default function EmailConfigPage() {
               <label className="block mb-1 font-medium">
                 Password
               </label>
-              <Input.Password placeholder="Enter password" />
+              <Form.Item name="password" className="mb-0" rules={[{ required: true, message: "Password is required" }]}>
+                <Input.Password placeholder="Enter password" />
+              </Form.Item>
             </div>
           </div>
         </div>
@@ -85,6 +127,7 @@ export default function EmailConfigPage() {
 
           {/* TEST BUTTON */}
           <button
+            type="button"
             onClick={() => setIsModalOpen(true)}
             className="px-5 py-2 rounded-md border border-[#9a2119]
                        text-[#9a2119]
@@ -94,17 +137,20 @@ export default function EmailConfigPage() {
           </button>
 
           {/* SAVE BUTTON */}
-          <button
-            className="px-6 py-2 rounded-md
-                       bg-[#9a2119]
-                       text-white
-                       hover:bg-[#c0392b]
-                       transition"
-          >
-            Save
-          </button>
+          <div className="flex gap-3">
+            <Button htmlType="button" onClick={handleCancel}>
+              Cancel
+            </Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              style={{ background: "#9a2119", borderColor: "#9a2119" }}
+            >
+              Submit
+            </Button>
+          </div>
         </div>
-      </div>
+      </Form>
 
       {/* ================= MODAL ================= */}
       <Modal
@@ -127,10 +173,8 @@ export default function EmailConfigPage() {
           </div>
 
           <button
-            onClick={() => {
-              console.log("Sending test email to:", testEmail);
-              setIsModalOpen(false);
-            }}
+            type="button"
+            onClick={handleSendTestEmail}
             className="w-full py-2 rounded-md
                        bg-[#9a2119]
                        text-white
@@ -138,6 +182,9 @@ export default function EmailConfigPage() {
           >
             Send Email
           </button>
+          <Button block onClick={() => setIsModalOpen(false)}>
+            Cancel
+          </Button>
         </div>
       </Modal>
     </div>

@@ -1,15 +1,11 @@
-import { Button, Checkbox, Form, Input, InputNumber, Select, message } from "antd";
+import { Button, Checkbox, Form, Input, Select, message } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuill } from "react-quilljs";
 import Quill from "quill";
 import { createJobId, getJobs, getTodayLabel, saveJobs } from "./jobStore";
 import "quill/dist/quill.snow.css";
-import {
-  getValueFromInput,
-  inputSanitizers,
-  validationRules,
-} from "../../utils/formValidation";
+import { validationRules } from "../../utils/formValidation";
 
 const icons = Quill.import("ui/icons");
 
@@ -39,6 +35,7 @@ export default function JobFormPage({ mode }) {
   const { jobId } = useParams();
   const [form] = Form.useForm();
   const [description, setDescription] = useState("");
+  const isView = mode === "view";
   const { quill, quillRef } = useQuill({
     theme: "snow",
     modules: {
@@ -102,6 +99,7 @@ export default function JobFormPage({ mode }) {
     }
 
     quill.root.innerHTML = description || "";
+    quill.enable(!isView);
 
     const handleTextChange = () => {
       setDescription(quill.root.innerHTML);
@@ -112,7 +110,7 @@ export default function JobFormPage({ mode }) {
     return () => {
       quill.off("text-change", handleTextChange);
     };
-  }, [quill]);
+  }, [isView, quill]);
 
   useEffect(() => {
     if (!quill) {
@@ -122,9 +120,15 @@ export default function JobFormPage({ mode }) {
     if (quill.root.innerHTML !== (description || "")) {
       quill.root.innerHTML = description || "";
     }
-  }, [description, quill]);
+    quill.enable(!isView);
+  }, [description, isView, quill]);
 
   const handleSubmit = async () => {
+    if (isView) {
+      navigate("/jobs");
+      return;
+    }
+
     const values = await form.validateFields();
     const generatedId = job?.id || createJobId();
     const updatedJob = {
@@ -155,7 +159,7 @@ export default function JobFormPage({ mode }) {
     <div className="rounded-2xl border border-gray-200 bg-white">
       <div className="border-b border-gray-200 px-5 py-4">
         <h1 className="text-2xl font-semibold text-[#1f2a44]">
-          {mode === "edit" ? "Edit Job" : "Add Job"}
+          {isView ? "View Job" : mode === "edit" ? "Edit Job" : "Add Job"}
         </h1>
       </div>
 
@@ -165,6 +169,7 @@ export default function JobFormPage({ mode }) {
           layout="vertical"
           initialValues={initialValues}
           key={job?.id || mode}
+          onFinish={handleSubmit}
         >
           <div className="grid gap-5 md:grid-cols-4">
             <Form.Item
@@ -175,7 +180,7 @@ export default function JobFormPage({ mode }) {
                 validationRules.charactersOnly("Name"),
               ]}
             >
-              <Input className="h-12" />
+              <Input className="h-12" disabled={isView} />
             </Form.Item>
 
             <Form.Item
@@ -183,7 +188,7 @@ export default function JobFormPage({ mode }) {
               label={<span className="text-[16px] font-semibold">Total Vacancy <span className="text-red-500"></span></span>}
               rules={[ validationRules.numbersOnly("TotalVacancy") ]}
             >
-              <Input className="h-12 w-full" />
+              <Input className="h-12 w-full" disabled={isView} />
             </Form.Item>
 
             <Form.Item
@@ -191,7 +196,7 @@ export default function JobFormPage({ mode }) {
               label={<span className="text-[16px] font-semibold">Salary Range <span className="text-red-500"></span></span>}
               rules={[{ required: true, message: "Salary range is required" }]}
             >
-              <Input className="h-12" />
+              <Input className="h-12" disabled={isView} />
             </Form.Item>
 
             <Form.Item
@@ -203,6 +208,7 @@ export default function JobFormPage({ mode }) {
                 options={jobTypeOptions}
                 className="job-type-select"
                 placeholder="Select job type"
+                disabled={isView}
               />
             </Form.Item>
           </div>
@@ -217,24 +223,27 @@ export default function JobFormPage({ mode }) {
           </div>
 
           <Form.Item name="active" valuePropName="checked" className="mb-6">
-            <Checkbox>Active</Checkbox>
+            <Checkbox disabled={isView}>Active</Checkbox>
           </Form.Item>
 
           <div className="flex gap-3">
+            {!isView && (
+              <Button
+                type="primary"
+                htmlType="submit"
+                style={{ background: "#14b8b8", borderColor: "#14b8b8" }}
+                className="h-10 px-7"
+              >
+                Submit
+              </Button>
+            )}
             <Button
-              type="primary"
-              onClick={handleSubmit}
-              style={{ background: "#14b8b8", borderColor: "#14b8b8" }}
-              className="h-10 px-7"
-            >
-              Save
-            </Button>
-            <Button
+              htmlType="button"
               onClick={() => navigate("/jobs")}
               style={{ background: "#1f2957", borderColor: "#1f2957", color: "white" }}
               className="h-10 px-7"
             >
-              Back
+              {isView ? "Back" : "Cancel"}
             </Button>
           </div>
         </Form>

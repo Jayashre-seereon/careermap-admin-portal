@@ -1,16 +1,23 @@
-import { Input } from "antd";
-import { useState } from "react";
+import { Button, Form, Input, message } from "antd";
 import RichTextEditor from "../../../components/editor/RichTextEditor";
 import {
-  getValueFromInput,
-  inputSanitizers,
-  validationRules,
-} from "../../../utils/formValidation";
+  getGlobalTemplateConfig,
+  saveGlobalTemplateConfig,
+} from "../notificationConfigStore";
 
 export default function GlobalTemplatePage() {
-  const [emailBody, setEmailBody] = useState(`Hi {{fullname}} ({{username}}),
+  const [form] = Form.useForm();
+  const initialValues = getGlobalTemplateConfig();
 
-{{message}}`);
+  const handleSubmit = (values) => {
+    saveGlobalTemplateConfig(values);
+    message.success("Global template saved successfully.");
+  };
+
+  const handleCancel = () => {
+    form.setFieldsValue(getGlobalTemplateConfig());
+    message.info("Changes cancelled.");
+  };
 
   return (
     <div className="w-full">
@@ -20,7 +27,13 @@ export default function GlobalTemplatePage() {
         Global Template Management
       </h1>
 
-      <div className="bg-white rounded-2xl shadow-sm border p-5 space-y-6">
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={initialValues}
+        onFinish={handleSubmit}
+        className="bg-white rounded-2xl shadow-sm border p-5 space-y-6"
+      >
 
         {/* ================= SHORTCODES ================= */}
         <div>
@@ -77,7 +90,13 @@ export default function GlobalTemplatePage() {
               <label className="block mb-1 font-medium">
                 Email Sent From
               </label>
-              <Input defaultValue="info@example.com" />
+              <Form.Item
+                name="emailFrom"
+                className="mb-0"
+                rules={[{ required: true, message: "Email sender is required" }]}
+              >
+                <Input placeholder="info@example.com" />
+              </Form.Item>
             </div>
 
             {/* BODY */}
@@ -85,11 +104,13 @@ export default function GlobalTemplatePage() {
               <label className="block mb-1 font-medium">
                 Email Body
               </label>
-              <RichTextEditor
-                value={emailBody}
-                onChange={setEmailBody}
-                height={240}
-              />
+              <Form.Item
+                name="emailBody"
+                className="mb-0"
+                rules={[{ required: true, message: "Email body is required" }]}
+              >
+                <RichTextEditor height={240} />
+              </Form.Item>
             </div>
           </div>
 
@@ -104,7 +125,13 @@ export default function GlobalTemplatePage() {
               <label className="block mb-1 font-medium">
                 SMS Sent From
               </label>
-              <Input defaultValue="FinBiz" />
+              <Form.Item
+                name="smsFrom"
+                className="mb-0"
+                rules={[{ required: true, message: "SMS sender is required" }]}
+              >
+                <Input placeholder="FinBiz" />
+              </Form.Item>
             </div>
 
             {/* BODY */}
@@ -112,28 +139,31 @@ export default function GlobalTemplatePage() {
               <label className="block mb-1 font-medium">
                 SMS Body
               </label>
-              <textarea
-                rows={7}
-                className="w-full border rounded-md p-3"
-                defaultValue={`Hi {{fullname}} ({{username}}), {{message}}`}
-              />
+              <Form.Item
+                name="smsBody"
+                className="mb-0"
+                rules={[{ required: true, message: "SMS body is required" }]}
+              >
+                <Input.TextArea rows={7} className="w-full" />
+              </Form.Item>
             </div>
           </div>
         </div>
 
         {/* SAVE BUTTON */}
-        <div className="flex justify-end">
-          <button
-            className="px-6 py-2 rounded-md
-                       bg-[#9a2119]
-                       text-white
-                       hover:bg-[#c0392b]
-                       transition"
+        <div className="flex justify-end gap-3">
+          <Button htmlType="button" onClick={handleCancel}>
+            Cancel
+          </Button>
+          <Button
+            type="primary"
+            htmlType="submit"
+            style={{ background: "#9a2119", borderColor: "#9a2119" }}
           >
-            Save
-          </button>
+            Submit
+          </Button>
         </div>
-      </div>
+      </Form>
     </div>
   );
 }
