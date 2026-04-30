@@ -157,6 +157,7 @@ export const router = createBrowserRouter([
           { path: "jobs", element: <JobPage /> },
           { path: "jobs/add", element: <JobFormPage mode="add" /> },
           { path: "jobs/:jobId/edit", element: <JobFormPage mode="edit" /> },
+          { path: "jobs/:jobId/view", element: <JobFormPage mode="view" /> },
           { path: "job-applications", element: <JobApplicationsPage /> },
           { path: "quiz", element: <QuizPage /> },
           { path: "quiz/:quizId/questions", element: <QuizQuestionsPage /> },

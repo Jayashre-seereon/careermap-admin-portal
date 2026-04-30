@@ -3,6 +3,7 @@ import { Input, message, Popconfirm, Table, Tag ,Button} from "antd";
 import {
   DeleteOutlined,
   EditOutlined,
+  EyeOutlined,
   ReloadOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
@@ -71,10 +72,19 @@ export default function JobPage() {
       render: (_, record) => (
         <div className="flex justify-end gap-2">
           <button
+            type="button"
+            onClick={() => navigate(`/jobs/${record.id}/view`)}
+            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
+            aria-label={`View ${record.name}`}
+          >
+            <EyeOutlined />
+          </button>
+          <button
+            type="button"
             onClick={() => navigate(`/jobs/${record.id}/edit`)}
-            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"   >
-          
-          
+            className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
+            aria-label={`Edit ${record.name}`}
+          >
             <EditOutlined />
           </button>
           <Popconfirm
@@ -111,11 +121,11 @@ export default function JobPage() {
               onChange={(e) => setSearch(e.target.value)}
             />
 
-            <button onClick={() => setSearch("")} className="btn-main">
+            <button type="button" onClick={() => setSearch("")} className="btn-main">
               <ReloadOutlined /> Reset
             </button>
 
-            <button onClick={() => navigate("/jobs/add")} className="btn-main">
+            <button type="button" onClick={() => navigate("/jobs/add")} className="btn-main">
               + Add Job
             </button>
           </div>
