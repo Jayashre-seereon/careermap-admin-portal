@@ -10,6 +10,8 @@ const initialData = [
     phone: "9876543210",
     category: "IT",
     designation: "Frontend Dev",
+    education: "B.Tech Computer Science",
+    status: true,
     image: "https://randomuser.me/api/portraits/men/32.jpg",
   },
   {
@@ -18,6 +20,8 @@ const initialData = [
     phone: "9123456780",
     category: "Management",
     designation: "HR Manager",
+    education: "MBA Human Resources",
+    status: true,
     image: "https://randomuser.me/api/portraits/women/44.jpg",
   },
 ];

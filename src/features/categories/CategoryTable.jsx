@@ -13,15 +13,21 @@ export default function CategoryTable({ data, onAddClick, onView, onEdit, onDele
     {
       title: "SL",
       render: (_, __, index) => index + 1,
+      width: 70,
     },
     {
       title: "Title",
       dataIndex: "title",
+      width: 220,
+      ellipsis: true,
     },
     {
       title: "Description",
       dataIndex: "description",
-render: (text) => (text ? text.slice(0, 50) + "..." : ""), },
+      width: 360,
+      ellipsis: true,
+      render: (text) => (text ? text.slice(0, 80) + "..." : ""),
+    },
     {
       title: "Is Upgrade",
       dataIndex: "isUpgrade",
@@ -30,9 +36,12 @@ render: (text) => (text ? text.slice(0, 50) + "..." : ""), },
           {val}
         </Tag>
       ),
+      width: 130,
     },
     {
       title: "Action",
+      fixed: "right",
+      width: 150,
       render: (_, record, index) => (
         <Space>
           <Button className="w-8 h-8 flex items-center justify-center rounded-md 
@@ -56,13 +65,13 @@ render: (text) => (text ? text.slice(0, 50) + "..." : ""), },
   ];
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow border">
+    <div className="w-full bg-white p-6 rounded-2xl shadow border">
 
       {/* Top Bar */}
-      <div className="flex justify-between mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <Input
           placeholder="Search..."
-          className="w-60"
+          className="w-full sm:w-60"
           onChange={(e) => setSearch(e.target.value)}
         />
 
@@ -80,6 +89,7 @@ render: (text) => (text ? text.slice(0, 50) + "..." : ""), },
         dataSource={filtered}
         rowKey={(r, i) => i}
         pagination={{ pageSize: 5 }}
+        scroll={{ x: "max-content" }}
       />
     </div>
   );

@@ -62,8 +62,12 @@ function SubCategoryForm({ onSubmit, initialValues, viewMode }) {
       form={form}
       onFinish={handleFinish}
       validateTrigger={["onChange", "onBlur"]}
-      className="grid grid-cols-2 gap-5"
+      className="grid grid-cols-1 md:grid-cols-2 gap-5"
     >
+      <h3 className="md:col-span-2 mb-1 text-lg font-semibold text-[#9a2119]">
+        Subcategory Details
+      </h3>
+
       {/* LEFT COLUMN */}
 
       {/* Category */}
@@ -125,7 +129,7 @@ function SubCategoryForm({ onSubmit, initialValues, viewMode }) {
       <Form.Item
         name="description"
         label="Description"
-        className="col-span-2"
+        className="md:col-span-2"
       >
         <Input.TextArea
           rows={4}
@@ -138,7 +142,7 @@ function SubCategoryForm({ onSubmit, initialValues, viewMode }) {
       <Form.Item
         name="specialisation"
         label="Specialisation"
-        className="col-span-2"
+        className="md:col-span-2"
       >
         <RichTextEditor
           disabled={viewMode}
@@ -151,7 +155,7 @@ function SubCategoryForm({ onSubmit, initialValues, viewMode }) {
       <Form.Item
         name="importantFacts"
         label="Important Facts"
-        className="col-span-2"
+        className="md:col-span-2"
       >
         <RichTextEditor
           disabled={viewMode}
@@ -165,7 +169,7 @@ function SubCategoryForm({ onSubmit, initialValues, viewMode }) {
         name="institutions"
         label="Select Institutions"
         rules={[validationRules.required("Institutions")]}
-        className="col-span-2"
+        className="md:col-span-2"
       >
         <Select
           mode="multiple"
@@ -181,7 +185,7 @@ function SubCategoryForm({ onSubmit, initialValues, viewMode }) {
 
       {/* Submit */}
       {!viewMode && (
-        <div className="col-span-2 flex justify-end">
+        <div className="md:col-span-2 flex justify-end">
           <Button
             htmlType="submit"
             block

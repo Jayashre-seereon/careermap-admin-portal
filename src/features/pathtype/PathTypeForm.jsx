@@ -17,6 +17,7 @@ function PathTypeForm({ onSubmit, initialValues, viewMode }) {
 
   return (
     <Form layout="vertical" form={form} onFinish={handleFinish} validateTrigger={["onChange", "onBlur"]}>
+      <h3 className="mb-4 text-lg font-semibold text-[#9a2119]">Path Type Details</h3>
       
       {/* Path Type */}
       <Form.Item

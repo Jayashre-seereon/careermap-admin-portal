@@ -13,6 +13,7 @@ function StreamForm({ onSubmit, initialValues, disabled }) {
 
   return (
     <Form layout="vertical" form={form} onFinish={onSubmit} validateTrigger={["onChange", "onBlur"]}>
+      <h3 className="mb-4 text-lg font-semibold text-[#9a2119]">Stream Details</h3>
 
       <Form.Item
         name="name"

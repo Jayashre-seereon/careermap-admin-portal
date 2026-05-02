@@ -11,6 +11,7 @@ function ModuleTable({ data, onAddClick, onView, onEdit, onDelete }) {
     {
       title: "SL No.",
       render: (_, __, index) => index + 1,
+      width: 80,
     },
     {
       title: "Image",
@@ -23,9 +24,10 @@ function ModuleTable({ data, onAddClick, onView, onEdit, onDelete }) {
           className="border border-[#9a2119]"
         />
       ),
+      width: 90,
     },
-    { title: "Title", dataIndex: "title" },
-    { title: "Btn Text", dataIndex: "btnText" },
+    { title: "Title", dataIndex: "title", width: 220, ellipsis: true },
+    { title: "Btn Text", dataIndex: "btnText", width: 180, ellipsis: true },
     {
       title: "URL",
       dataIndex: "url",
@@ -39,9 +41,12 @@ function ModuleTable({ data, onAddClick, onView, onEdit, onDelete }) {
           Visit
         </a>
       ),
+      width: 120,
     },
     {
       title: "Action",
+      fixed: "right",
+      width: 150,
       render: (_, record, index) => (
         <Space>
           <Button  className="w-8 h-8 flex items-center justify-center rounded-md 
@@ -65,9 +70,9 @@ function ModuleTable({ data, onAddClick, onView, onEdit, onDelete }) {
   ];
 
   return (
-    <div className="bg-white p-5 rounded-2xl shadow-md border">
+    <div className="w-full bg-white p-5 rounded-2xl shadow-md border">
 
-      <div className="flex justify-between mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h2 className="text-[#9a2119] font-semibold">Module List</h2>
 
         <Button
@@ -83,6 +88,8 @@ function ModuleTable({ data, onAddClick, onView, onEdit, onDelete }) {
         columns={columns}
         dataSource={data}
         rowKey={(r, i) => i}
+        pagination={{ pageSize: 5 }}
+        scroll={{ x: "max-content" }}
       />
     </div>
   );

@@ -79,6 +79,10 @@ export default function SeoPage() {
             "Career Map is Odisha's No. 1 career counselling organization, guiding students with expert counselling, psychometric tests, and personalized career pathways.",
         }}
       >
+        <h3 className="mb-4 text-lg font-semibold text-[#9a2119]">
+          SEO Details
+        </h3>
+
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[460px_minmax(0,1fr)]">
           <div>
             <div className="overflow-hidden rounded-lg border border-gray-100 bg-white p-4">

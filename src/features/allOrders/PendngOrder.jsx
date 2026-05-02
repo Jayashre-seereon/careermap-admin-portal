@@ -41,26 +41,33 @@ export default function PendingOrder({ setSelectedUser }) {
     {
       title: <span className="text-[#9a2119] font-semibold">Order Date</span>,
       dataIndex: "OrderDate",
+      width: 150,
      
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Order No</span>,
       dataIndex: "OrderNo",
+      width: 140,
       
     },
     {
       title: <span className="text-[#9a2119] font-semibold">User</span>,
       dataIndex: "User",
+      width: 200,
+      ellipsis: true,
      
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Service Name</span>,
       dataIndex: "ServiceName",
+      width: 240,
+      ellipsis: true,
       
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Price</span>,
       dataIndex: "Price",
+      width: 120,
       
     },
     {
@@ -73,6 +80,7 @@ export default function PendingOrder({ setSelectedUser }) {
           {text}    
         </span>
       ),
+      width: 140,
     },
    
   ];
@@ -81,17 +89,17 @@ export default function PendingOrder({ setSelectedUser }) {
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
 
       {/* HEADER */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h2 className="text-lg font-semibold text-[#9a2119]">
           Pending Orders
         </h2>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Input
             placeholder="Search user..."
             value={search}
             prefix={<SearchOutlined className="text-[#9a2119]" />}
-            className="w-64 h-9 rounded-md border-[#9a2119] focus:border-[#9a2119]"
+            className="w-full sm:w-64 h-9 rounded-md border-[#9a2119] focus:border-[#9a2119]"
             onChange={(e) => setSearch(e.target.value)}
           />
 
@@ -115,6 +123,7 @@ export default function PendingOrder({ setSelectedUser }) {
         dataSource={filteredData}
         pagination={{ pageSize: 5 }}
         rowClassName="hover:bg-gray-50"
+        scroll={{ x: "max-content" }}
       />
     </div>
   );

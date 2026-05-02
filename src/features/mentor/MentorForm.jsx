@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Form, Input, Button, Select, Upload } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import RichTextEditor from "../../components/ui/RichTextEditor";
+import StatusSwitch from "../../components/ui/StatusSwitch";
 import {
   getValueFromInput,
   inputSanitizers,
@@ -15,7 +16,10 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
 
   useEffect(() => {
     if (initialValues) {
-      form.setFieldsValue(initialValues);
+      form.setFieldsValue({
+        status: true,
+        ...initialValues,
+      });
     } else {
       form.resetFields();
     }
@@ -27,10 +31,14 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
       form={form}
       onFinish={onSubmit}
       validateTrigger={["onChange", "onBlur"]}
+      initialValues={{ status: true }}
     >
       
       {/* GRID 3 COLUMNS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <h3 className="md:col-span-2 lg:col-span-4 mb-1 text-lg font-semibold text-[#9a2119]">
+          Mentor Details
+        </h3>
 
         {/* Category */}
         <Form.Item name="category" label="Category" rules={[{ required: true }]}>
@@ -88,6 +96,14 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
           <Input disabled={disabled} placeholder="Enter designation" />
         </Form.Item>
 
+        <Form.Item
+          name="education"
+          label="Education"
+          rules={[validationRules.required("Education")]}
+        >
+          <Input disabled={disabled} placeholder="Enter education field" />
+        </Form.Item>
+
         {/* Place of Work */}
         <Form.Item name="workplace" label="Place of Work">
           <Input disabled={disabled} placeholder="Enter place of work" />
@@ -113,7 +129,7 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
           <Input disabled={disabled} placeholder="Enter Facebook profile link" />
         </Form.Item>
 
-        <Form.Item name="skills" label="My Skills" className="lg:col-span-2">
+        <Form.Item name="skills" label="My Skills" className="md:col-span-2">
           <RichTextEditor
             disabled={disabled}
             placeholder="Enter mentor skills"
@@ -161,12 +177,25 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
         <Form.Item
           name="description"
           label="Description"
-          className="lg:col-span-3"
+          className="md:col-span-2 lg:col-span-3"
         >
           <RichTextEditor
             disabled={disabled}
             placeholder="Enter mentor description"
             height={180}
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="status"
+          label="Status"
+          valuePropName="checked"
+          className="md:col-span-2 lg:col-span-1"
+        >
+          <StatusSwitch
+            disabled={disabled}
+            checkedChildren="Active"
+            unCheckedChildren="Inactive"
           />
         </Form.Item>
 

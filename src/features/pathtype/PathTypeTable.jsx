@@ -27,6 +27,8 @@ export default function PathTypeTable({
     {
       title: <span className="text-[#9a2119] font-semibold">Title</span>,
       dataIndex: "title",
+      width: 280,
+      ellipsis: true,
     },
     {
       title: (
@@ -82,20 +84,20 @@ export default function PathTypeTable({
   ];
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
+    <div className="w-full bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
       
       {/* HEADER */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h2 className="text-lg font-semibold text-[#9a2119]">
           Path Type
         </h2>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Input
             placeholder="Search path..."
             value={search}
             prefix={<SearchOutlined className="text-[#9a2119]" />}
-            className="w-64 h-9 rounded-md border-[#9a2119]"
+            className="w-full sm:w-64 h-9 rounded-md border-[#9a2119]"
             onChange={(e) => onSearch(e.target.value)}
           />
 
@@ -131,6 +133,7 @@ export default function PathTypeTable({
         dataSource={data}
         pagination={{ pageSize: 5 }}
         rowClassName="hover:bg-gray-50"
+        scroll={{ x: "max-content" }}
         className="[&_.ant-table-cell]:align-middle"
       />
     </div>

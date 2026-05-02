@@ -21,8 +21,12 @@ export default function ServicesForm({ onSubmit, initialValues, viewMode }) {
       form={form}
       onFinish={onSubmit}
       validateTrigger={["onChange", "onBlur"]}
-      className="grid grid-cols-2 gap-4"
+      className="grid grid-cols-1 md:grid-cols-2 gap-4"
     >
+      <h3 className="md:col-span-2 mb-1 text-lg font-semibold text-[#9a2119]">
+        Service Details
+      </h3>
+
       <Form.Item
         name="title"
         label="Title"
@@ -51,7 +55,7 @@ export default function ServicesForm({ onSubmit, initialValues, viewMode }) {
         </Upload>
       </Form.Item>
 
-      <Form.Item name="description" label="Description" className="col-span-2">
+      <Form.Item name="description" label="Description" className="md:col-span-2">
         <RichTextEditor
           disabled={viewMode}
           placeholder="Enter service description"
@@ -69,7 +73,7 @@ export default function ServicesForm({ onSubmit, initialValues, viewMode }) {
       {!viewMode && (
         <Button
           htmlType="submit"
-          className="col-span-2 bg-[#9a2119] text-white"
+          className="md:col-span-2 bg-[#9a2119] text-white"
         >
           Add Services
         </Button>

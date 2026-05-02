@@ -32,14 +32,19 @@ export default function DistrictsTable({
     {
       title: <span className="text-[#9a2119] font-semibold">Name</span>,
       dataIndex: "name",
+      width: 240,
+      ellipsis: true,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">State</span>,
       dataIndex: "state",
+      width: 220,
+      ellipsis: true,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Action</span>,
       align: "right",
+      width: 150,
       render: (_, record) => (
         <div className="flex justify-end gap-3">
           <Button
@@ -77,17 +82,17 @@ export default function DistrictsTable({
       </h1>
 
       <div className="bg-white rounded-2xl border border-gray-200 p-5">
-        <div className="flex justify-between mb-5">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
           <h2 className="text-lg font-semibold text-[#9a2119]">
             Districts
           </h2>
 
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             <Input
               placeholder="Search district..."
               value={search}
               prefix={<SearchOutlined className="text-[#9a2119]" />}
-              className="w-64 h-10 border-[#9a2119]"
+              className="w-full sm:w-64 h-10 border-[#9a2119]"
               onChange={(e) => setSearch(e.target.value)}
             />
 
@@ -113,6 +118,7 @@ export default function DistrictsTable({
           dataSource={filteredData}
           pagination={{ pageSize: 5 }}
           rowClassName="hover:bg-gray-50"
+          scroll={{ x: "max-content" }}
         />
       </div>
     </div>

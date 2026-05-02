@@ -56,18 +56,24 @@ export default function BookingTable() {
     {
       title: "User Name",
       dataIndex: "user",
+      width: 220,
+      ellipsis: true,
     },
     {
       title: "Member Name",
       dataIndex: "member",
+      width: 220,
+      ellipsis: true,
     },
     {
       title: "Date",
       dataIndex: "date",
+      width: 140,
     },
     {
       title: "Time",
       dataIndex: "time",
+      width: 120,
     },
     {
       title: "Status",
@@ -77,10 +83,12 @@ export default function BookingTable() {
           {status}
         </Tag>
       ),
+      width: 120,
     },
     {
       title: "Action",
       align: "right",
+      width: 120,
       render: (_, record) => (
         <div className="flex justify-end">
           <Button
@@ -110,17 +118,17 @@ export default function BookingTable() {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
 
         {/* HEADER */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <h2 className="text-lg font-semibold text-[#9a2119]">
             Bookings
           </h2>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Input
               placeholder="Search user..."
               value={search}
               prefix={<SearchOutlined className="text-[#9a2119]" />}
-              className="w-64 h-9"
+              className="w-full sm:w-64 h-9"
               onChange={(e) => setSearch(e.target.value)}
             />
 
@@ -141,6 +149,7 @@ export default function BookingTable() {
           columns={columns}
           dataSource={filteredData}
           pagination={{ pageSize: 5 }}
+          scroll={{ x: "max-content" }}
         />
       </div>
 

@@ -43,6 +43,7 @@ import AnsweredTickets from "../features/supportTickets/AnsweredTickets";
 import TicketDetails from "../features/supportTickets/TicketDetails";
 import BookingTable from "../features/bookings/BookingTable";
 import PlansPage from "../features/plans/PlansPage";
+import SubscriptionsPage from "../features/subscriptions/SubscriptionsPage";
 import ServicesPage from "../features/services/ServicesPage";
 import CountriesPage from "../features/allcountries/CountriesPage";
 import StatesPage from "../features/states/StatesPage";
@@ -142,6 +143,7 @@ export const router = createBrowserRouter([
           { path: "careerplan", element: <CareerPlanPage /> },
           { path: "bookings", element: <BookingTable /> },
           { path: "plans", element: <PlansPage /> },
+          { path: "subscriptions", element: <SubscriptionsPage /> },
           { path: "services", element: <ServicesPage /> },
           { path: "allcountries", element: <CountriesPage /> },
           { path: "states", element: <StatesPage /> },

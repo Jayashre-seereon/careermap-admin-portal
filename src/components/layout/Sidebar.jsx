@@ -84,7 +84,7 @@ export const navSections = [
       { icon: CalendarCheck, name: "Bookings", path: "/bookings" },
       { icon: CreditCard, name: "Plans", path: "/plans" },
       { icon: HelpCircle, name: "Quiz", path: "/quiz" },
-      { icon: Repeat, name: "Subscriptions" },
+      { icon: Repeat, name: "Subscriptions", path: "/subscriptions" },
       { icon: Wrench, name: "Services", path: "/services" },
     ],
   },
