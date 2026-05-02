@@ -65,9 +65,9 @@ function ModuleTable({ data, onAddClick, onView, onEdit, onDelete }) {
   ];
 
   return (
-    <div className="bg-white p-5 rounded-2xl shadow-md border">
+    <div className="responsive-page-card">
 
-      <div className="flex justify-between mb-4">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-[#9a2119] font-semibold">Module List</h2>
 
         <Button
@@ -83,6 +83,7 @@ function ModuleTable({ data, onAddClick, onView, onEdit, onDelete }) {
         columns={columns}
         dataSource={data}
         rowKey={(r, i) => i}
+        scroll={{ x: true }}
       />
     </div>
   );

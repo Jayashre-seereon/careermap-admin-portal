@@ -83,24 +83,36 @@ const DashBoardlayout = () => {
     const location = useLocation();
     const [activePage, setActivePage] = useState("Dashboard");
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
     useEffect(() => {
       setActivePage(getActivePage(location.pathname));
     }, [location.pathname]);
 
+    useEffect(() => {
+      setMobileSidebarOpen(false);
+    }, [location.pathname]);
+
   return (
-   <div className="flex h-screen bg-[#f9fafd] overflow-hidden font-body">
+   <div className="flex min-h-screen bg-[#f9fafd] font-body">
          <Sidebar
            activePage={activePage}
            setActivePage={setActivePage}
            collapsed={sidebarCollapsed}
            setCollapsed={setSidebarCollapsed}
+           mobileOpen={mobileSidebarOpen}
+           setMobileOpen={setMobileSidebarOpen}
          />
-         <div className={`flex flex-col flex-1 overflow-hidden transition-all duration-300 ${
-           sidebarCollapsed ? "ml-[72px]" : "ml-[240px]"
+         <div className={`flex min-w-0 flex-1 flex-col transition-all duration-300 ${
+           sidebarCollapsed ? "lg:ml-[72px]" : "lg:ml-[240px]"
          }`}>
-           <Header activePage={activePage} />
-           <main className="flex-1 overflow-y-auto p-6">
+           <Header
+             activePage={activePage}
+             sidebarCollapsed={sidebarCollapsed}
+             onToggleSidebar={() => setSidebarCollapsed((prev) => !prev)}
+             onOpenMobileSidebar={() => setMobileSidebarOpen(true)}
+           />
+           <main className="flex-1 overflow-y-auto px-4 py-4 sm:px-5 lg:px-6">
              <Outlet/>
            </main>
          </div>

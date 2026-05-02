@@ -96,20 +96,20 @@ export default function AllUsers() {
   ];
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
-      <div className="flex items-center justify-between mb-4">
+    <div className="responsive-page-card">
+      <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <h2 className="text-lg font-semibold text-[#9a2119]">All Users</h2>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <Input
             placeholder="Search user..."
             value={search}
             prefix={<SearchOutlined className="text-[#9a2119]" />}
-            className="w-64 h-9 rounded-md border-[#9a2119]"
+            className="h-9 w-full rounded-md border-[#9a2119] sm:w-64"
             onChange={(e) => setSearch(e.target.value)}
           />
           <Button
             onClick={handleReset}
-            className="flex items-center gap-2 px-4 h-9 rounded-md bg-[#9a2119] text-white hover:bg-[#c4392e] transition"
+            className="flex h-9 items-center justify-center gap-2 rounded-md bg-[#9a2119] px-4 text-white transition hover:bg-[#c4392e] sm:w-auto"
           >
             <ReloadOutlined />
             Reset
@@ -122,6 +122,7 @@ export default function AllUsers() {
         dataSource={filteredData}
         pagination={{ pageSize: 5 }}
         rowClassName="hover:bg-gray-50"
+        scroll={{ x: true }}
       />
     </div>
   );

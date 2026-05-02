@@ -56,13 +56,13 @@ render: (text) => (text ? text.slice(0, 50) + "..." : ""), },
   ];
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow border">
+    <div className="responsive-page-card">
 
       {/* Top Bar */}
-      <div className="flex justify-between mb-4">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Input
           placeholder="Search..."
-          className="w-60"
+          className="w-full sm:w-60"
           onChange={(e) => setSearch(e.target.value)}
         />
 
@@ -80,6 +80,7 @@ render: (text) => (text ? text.slice(0, 50) + "..." : ""), },
         dataSource={filtered}
         rowKey={(r, i) => i}
         pagination={{ pageSize: 5 }}
+        scroll={{ x: true }}
       />
     </div>
   );

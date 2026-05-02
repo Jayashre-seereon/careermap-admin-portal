@@ -141,7 +141,14 @@ export const navSections = [
   },
 ];
 
-export default function Sidebar({ activePage, setActivePage, collapsed, setCollapsed }) {
+export default function Sidebar({
+  activePage,
+  setActivePage,
+  collapsed,
+  setCollapsed,
+  mobileOpen,
+  setMobileOpen,
+}) {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
   // Track which accordion items are open by their name
@@ -161,11 +168,19 @@ export default function Sidebar({ activePage, setActivePage, collapsed, setColla
   };
 
   return (
+    <>
+      {mobileOpen ? (
+        <button
+          type="button"
+          aria-label="Close navigation"
+          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      ) : null}
     <aside
-      className={`fixed top-0 left-0 z-40 flex h-full flex-col transition-all duration-300 ${
+      className={`fixed top-0 left-0 z-50 flex h-full flex-col border-r border-[#eee] bg-white transition-all duration-300 ${
         collapsed ? "w-[72px]" : "w-[240px]"
-      }`}
-      style={{ background: "#fff", borderRight: "1px solid #eee" }}
+      } ${mobileOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
     >
       {/* Logo */}
       <div
@@ -254,6 +269,7 @@ export default function Sidebar({ activePage, setActivePage, collapsed, setColla
                               key={child.name}
                               onClick={() => {
                                 setActivePage(child.name);
+                                setMobileOpen(false);
                                 if (child.path) navigate(child.path);
                               }}
                               className={`flex w-full items-center gap-2 px-3 py-[7px] text-sm transition ${
@@ -285,6 +301,7 @@ export default function Sidebar({ activePage, setActivePage, collapsed, setColla
                   key={item.name}
                   onClick={() => {
                     setActivePage(item.name);
+                    setMobileOpen(false);
                     if (item.path) navigate(item.path);
                   }}
                   className={`flex w-full items-center gap-3 px-4 py-2 text-sm transition ${
@@ -319,5 +336,6 @@ export default function Sidebar({ activePage, setActivePage, collapsed, setColla
         </div>
       )}
     </aside>
+    </>
   );
 }

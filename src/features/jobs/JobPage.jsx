@@ -116,29 +116,29 @@ export default function JobPage() {
   ];
 
   return (
-    <div className="w-full">
-      <h1 className="text-xl font-semibold text-[#9a2119] mb-6">
+    <div className="w-full min-w-0">
+      <h1 className="mb-6 text-xl font-semibold text-[#9a2119]">
         Job Management
       </h1>
 
-      <div className="bg-white rounded-2xl border border-gray-200 p-5">
-        <div className="flex justify-between mb-5">
+      <div className="responsive-page-card">
+        <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <h2 className="text-lg font-semibold text-[#9a2119]">Job</h2>
 
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
             <Input
               placeholder="Search..."
               value={search}
               prefix={<SearchOutlined className="text-[#9a2119]" />}
-              className="w-64 h-10 border-[#9a2119]"
+              className="h-10 w-full border-[#9a2119] sm:w-64"
               onChange={(e) => setSearch(e.target.value)}
             />
 
-            <button type="button" onClick={() => setSearch("")} className="btn-main">
+            <button type="button" onClick={() => setSearch("")} className="btn-main w-full sm:w-auto">
               <ReloadOutlined /> Reset
             </button>
 
-            <button type="button" onClick={() => openJobModal("add")} className="btn-main">
+            <button type="button" onClick={() => openJobModal("add")} className="btn-main w-full sm:w-auto">
               + Add Job
             </button>
           </div>
@@ -158,6 +158,7 @@ export default function JobPage() {
         footer={null}
         onCancel={closeJobModal}
         width={1100}
+        style={{ top: 16 }}
         destroyOnHidden
         title={
           <span className="text-[#1f2a44] font-semibold">
