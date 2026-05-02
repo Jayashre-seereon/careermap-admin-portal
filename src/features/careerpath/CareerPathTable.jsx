@@ -126,27 +126,27 @@ export default function CareerPathTable({
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 w-full">
 
       {/* HEADER */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <h2 className="text-lg font-semibold text-[#9a2119]">
           Career Path
         </h2>
 
-        <div className="flex items-center gap-3">
+        <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
           <Input
             placeholder="Search module..."
             value={search}
             prefix={<SearchOutlined className="text-[#9a2119]" />}
-            className="w-64 h-9 rounded-md border-[#9a2119]"
+            className="h-9 w-full rounded-md border-[#9a2119] sm:w-64"
             onChange={(e) => setSearch(e.target.value)}
           />
 
           <button
             onClick={handleReset}
-            className="flex items-center gap-2 px-4 h-9 rounded-md
+            className="flex h-9 items-center justify-center gap-2 rounded-md
                        bg-[#9a2119]
                        text-white
                        hover:bg-[#c4392e]
-                       transition"
+                       px-4 transition"
           >
             <ReloadOutlined />
             Reset
@@ -154,11 +154,11 @@ export default function CareerPathTable({
 
           <button
             onClick={onAdd}
-            className="px-4 h-9 rounded-md
+            className="h-9 rounded-md
                        bg-[#9a2119]
                        text-white
                        hover:bg-[#c4392e]
-                       transition"
+                       px-4 transition"
           >
             + Add
           </button>

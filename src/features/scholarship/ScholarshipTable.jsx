@@ -118,30 +118,30 @@ export default function ScholarshipTable({
       <div className="bg-white rounded-2xl shadow-sm border p-5">
 
         {/* HEADER */}
-        <div className="flex justify-between mb-4">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <h2 className="text-lg font-semibold text-[#9a2119]">
             Scholarships
           </h2>
 
-          <div className="flex gap-3">
+          <div className="flex w-full flex-wrap gap-3 sm:w-auto">
             <Input
               placeholder="Search..."
               value={search}
               prefix={<SearchOutlined />}
-              className="w-64"
+              className="w-full sm:w-64"
               onChange={(e) => setSearch(e.target.value)}
             />
 
             <button
               onClick={handleReset}
-              className="px-4 bg-[#9a2119] text-white rounded-md"
+              className="h-10 rounded-md bg-[#9a2119] px-4 text-white"
             >
               <ReloadOutlined /> Reset
             </button>
 
             <button
               onClick={onAdd}
-              className="px-4 bg-[#9a2119] text-white rounded-md"
+              className="h-10 rounded-md bg-[#9a2119] px-4 text-white"
             >
               + Add
             </button>

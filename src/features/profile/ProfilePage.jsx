@@ -58,7 +58,7 @@ export default function ProfilePage() {
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="mb-6 flex items-center gap-4">
+          <div className="mb-6 flex flex-wrap items-center gap-4">
             <Avatar
               size={72}
               src={avatar || undefined}
@@ -113,7 +113,7 @@ export default function ProfilePage() {
               type="primary"
               icon={<SaveOutlined />}
               onClick={handleSaveProfile}
-              className="h-10 border-none bg-[#9a2119] px-5 hover:!bg-[#c4392e]"
+              className="h-10 w-full border-none bg-[#9a2119] px-5 hover:!bg-[#c4392e] sm:w-auto"
             >
               Save Profile
             </Button>
@@ -168,7 +168,7 @@ export default function ProfilePage() {
             <Button
               type="primary"
               onClick={handleChangePassword}
-              className="h-10 border-none bg-[#9a2119] px-5 hover:!bg-[#c4392e]"
+              className="h-10 w-full border-none bg-[#9a2119] px-5 hover:!bg-[#c4392e] sm:w-auto"
             >
               Save Password
             </Button>

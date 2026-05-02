@@ -46,6 +46,15 @@
     color: var(--text-primary);
     font-family: "DM Sans", sans-serif;
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  html, body, #root {
+    min-width: 320px;
+  }
+
+  img, svg, video, canvas {
+    max-width: 100%;
   }
 
   ::-webkit-scrollbar { width: 4px; }
@@ -259,6 +268,102 @@ body::after {
 /* Optional spacing */
 .custom-tabs .ant-tabs-nav-list {
   gap: 10px;
+  flex-wrap: nowrap !important;
+  width: max-content;
+}
+
+.custom-tabs .ant-tabs-nav {
+  margin-bottom: 20px !important;
+}
+
+.custom-tabs .ant-tabs-nav::before {
+  border-bottom-color: #f1d6d3 !important;
+}
+
+.custom-tabs .ant-tabs-nav-wrap {
+  scrollbar-width: none;
+}
+
+.custom-tabs .ant-tabs-nav-wrap::-webkit-scrollbar {
+  display: none;
+}
+
+.custom-tabs .ant-tabs-tab {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.custom-tabs .ant-tabs-content-holder,
+.ant-table-wrapper,
+.ant-table-wrapper .ant-spin-nested-loading,
+.ant-table-wrapper .ant-spin-container {
+  min-width: 0;
+}
+
+.ant-modal {
+  max-width: calc(100vw - 24px) !important;
+}
+
+.ant-modal .ant-modal-content {
+  overflow: hidden;
+}
+
+.ant-modal .ant-modal-body {
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.ant-modal .ant-modal-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ant-form,
+.ant-form-item,
+.ant-select,
+.ant-picker,
+.ant-input-affix-wrapper,
+.ant-input,
+.ant-btn {
+  max-width: 100%;
+}
+
+@media (max-width: 1023px) {
+  .custom-tabs .ant-tabs-nav {
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .custom-tabs .ant-tabs-nav-wrap {
+    overflow-x: auto !important;
+  }
+
+  .custom-tabs .ant-tabs-nav-list {
+    padding-right: 8px;
+  }
+
+  .ant-table-wrapper .ant-table-content,
+  .ant-table-wrapper .ant-table-body {
+    overflow-x: auto !important;
+  }
+
+  .ant-table-wrapper .ant-table-thead > tr > th,
+  .ant-table-wrapper .ant-table-tbody > tr > td {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 767px) {
+  .ant-modal {
+    margin: 12px auto !important;
+  }
+
+  .ant-modal .ant-modal-body {
+    max-height: calc(100vh - 150px);
+  }
 }
 
 @keyframes authFloat {

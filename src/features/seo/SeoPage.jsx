@@ -83,7 +83,7 @@ export default function SeoPage() {
           SEO Details
         </h3>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[460px_minmax(0,1fr)]">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[460px_minmax(0,1fr)]">
           <div>
             <div className="overflow-hidden rounded-lg border border-gray-100 bg-white p-4">
               <img
@@ -160,7 +160,7 @@ export default function SeoPage() {
               <Button
                 type="primary"
                 onClick={handleSave}
-                className="h-10 min-w-[82px] border-0 px-6 text-base shadow-none"
+                className="h-10 w-full sm:w-auto sm:min-w-[82px] border-0 px-6 text-base shadow-none"
                 style={{ background: BRAND }}
               >
                 Save

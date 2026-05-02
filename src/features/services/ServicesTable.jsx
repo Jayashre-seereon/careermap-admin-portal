@@ -92,17 +92,17 @@ export default function ServicesTable({
       </h1>
 
       <div className="bg-white rounded-2xl border p-5">
-        <div className="flex justify-between mb-5">
+        <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
           <h2 className="text-lg font-semibold text-[#9a2119]">
             Services
           </h2>
 
-          <div className="flex gap-3">
+          <div className="flex w-full flex-wrap gap-3 sm:w-auto">
             <Input
               placeholder="Search..."
               value={search}
               prefix={<SearchOutlined />}
-              className="w-64 h-10"
+              className="h-10 w-full sm:w-64"
               onChange={(e) => setSearch(e.target.value)}
             />
 
