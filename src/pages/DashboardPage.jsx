@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import { Line, Doughnut } from "react-chartjs-2";
 import {
+  WalletOutlined,
+  DollarOutlined,
+  GiftOutlined,
+  RocketOutlined,
+} from "@ant-design/icons";
+import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
@@ -21,10 +27,10 @@ const PRIMARY_BG    = "#fdf3f2";
 const ACCENT        = "#e8c5c2";
 
 const statCards = [
-  { label: "Total Deposited",  value: "Rs0.00", icon: "💰", grad: "linear-gradient(135deg,#3d0a07 0%,#6b1510 100%)" },
-  { label: "Deposited Charge", value: "Rs0.00", icon: "💸",  grad: "linear-gradient(135deg,#7a1a13 0%,#9a2119 60%,#b03030 100%)" },
-  { label: "Total Plan",       value: "1",      icon: "🎁", grad: "linear-gradient(135deg,#9a2119 0%,#c4392e 100%)"},
-  { label: "Total Services",   value: "6",      icon: "🚀", grad: "linear-gradient(135deg,#b5420d 0%,#e8793a 100%)" },
+  { label: "Total Deposited",  value: "Rs0.00", icon:  <WalletOutlined />, grad: "linear-gradient(135deg,#3d0a07 0%,#6b1510 100%)" },
+  { label: "Commission", value: "Rs0.00", icon: <DollarOutlined />,  grad: "linear-gradient(135deg,#7a1a13 0%,#9a2119 60%,#b03030 100%)" },
+  { label: "Total Plan",       value: "1",      icon: <GiftOutlined />, grad: "linear-gradient(135deg,#9a2119 0%,#c4392e 100%)"},
+  { label: "Total Services",   value: "6",      icon: <RocketOutlined />, grad: "linear-gradient(135deg,#b5420d 0%,#e8793a 100%)" },
 ];
 
 const tickets = [
