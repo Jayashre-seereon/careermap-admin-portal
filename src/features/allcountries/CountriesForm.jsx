@@ -20,6 +20,8 @@ export default function CountriesForm({ onSubmit, initialValues, viewMode }) {
       onFinish={onSubmit}
       validateTrigger={["onChange", "onBlur"]}
     >
+      <h3 className="mb-4 text-lg font-semibold text-[#9a2119]">Country Details</h3>
+
       <Form.Item
         name="name"
         label="Country Name"

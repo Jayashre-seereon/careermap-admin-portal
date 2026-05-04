@@ -86,17 +86,17 @@ export default function PlansTable({
       </h1>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
-        <div className="flex items-center justify-between mb-5">
+        <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
           <h2 className="text-lg font-semibold text-[#9a2119]">
             Plans
           </h2>
 
-          <div className="flex items-center gap-4">
+          <div className="flex w-full flex-wrap items-center gap-4 sm:w-auto">
             <Input
               placeholder="Search plan..."
               value={search}
               prefix={<SearchOutlined className="text-[#9a2119]" />}
-              className="w-64 h-10 rounded-md border-[#9a2119]"
+              className="h-10 w-full rounded-md border-[#9a2119] sm:w-64"
               onChange={(e) => setSearch(e.target.value)}
             />
 

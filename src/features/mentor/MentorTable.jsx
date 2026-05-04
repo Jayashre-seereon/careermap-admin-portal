@@ -11,6 +11,7 @@ function MentorTable({ data, onAddClick, onView, onEdit, onDelete }) {
     {
       title: "SL No.",
       render: (_, __, index) => index + 1,
+      width: 80,
     },
     {
       title: "Image",
@@ -18,18 +19,33 @@ function MentorTable({ data, onAddClick, onView, onEdit, onDelete }) {
       render: (img) => (
         <Avatar src={img} size={40} />
       ),
+      width: 90,
     },
-    { title: "Name", dataIndex: "name" },
-    { title: "Email", dataIndex: "email" },
-    { title: "Phone", dataIndex: "phone" },
+    { title: "Name", dataIndex: "name", width: 170 },
+    { title: "Email", dataIndex: "email", width: 220, ellipsis: true },
+    { title: "Phone", dataIndex: "phone", width: 150 },
+    { title: "Education", dataIndex: "education", width: 220, ellipsis: true },
     {
       title: "Category",
       dataIndex: "category",
       render: (cat) => <Tag color="red">{cat}</Tag>,
+      width: 160,
     },
-    { title: "Designation", dataIndex: "designation" },
+    { title: "Designation", dataIndex: "designation", width: 180, ellipsis: true },
+    {
+      title: "Status",
+      dataIndex: "status",
+      render: (status) => (
+        <Tag color={status === false ? "default" : "red"}>
+          {status === false ? "Inactive" : "Active"}
+        </Tag>
+      ),
+      width: 120,
+    },
     {
       title: "Action",
+      fixed: "right",
+      width: 150,
       render: (_, record, index) => (
         <Space>
           <Button className="
@@ -54,8 +70,8 @@ function MentorTable({ data, onAddClick, onView, onEdit, onDelete }) {
   ];
 
   return (
-    <div className="bg-white p-5 rounded-2xl shadow-md border">
-      <div className="flex justify-between mb-4">
+    <div className="w-full bg-white p-5 rounded-2xl shadow-md border">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h2 className="text-[#9a2119] font-semibold">Mentor List</h2>
 
         <Button
@@ -71,6 +87,8 @@ function MentorTable({ data, onAddClick, onView, onEdit, onDelete }) {
         columns={columns}
         dataSource={data}
         rowKey={(r, i) => i}
+        pagination={{ pageSize: 5 }}
+        scroll={{ x: "max-content" }}
       />
     </div>
   );

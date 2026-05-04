@@ -11,6 +11,7 @@ function StreamTable({ data, onAddClick, onView, onEdit, onDelete }) {
     {
       title: "ID",
       render: (_, __, index) => index + 1,
+      width: 80,
     },
     {
       title: "Image",
@@ -18,13 +19,18 @@ function StreamTable({ data, onAddClick, onView, onEdit, onDelete }) {
       render: (img) => (
         <Avatar src={img} size={45} shape="square" />
       ),
+      width: 90,
     },
     {
       title: "Name",
       dataIndex: "name",
+      width: 260,
+      ellipsis: true,
     },
     {
       title: "Action",
+      align: "right",
+      width: 150,
       render: (_, record, index) => (
         <Space>
           <Button className="w-8 h-8 flex items-center justify-center rounded-md 
@@ -48,9 +54,9 @@ function StreamTable({ data, onAddClick, onView, onEdit, onDelete }) {
   ];
 
   return (
-    <div className="bg-white p-5 rounded-2xl shadow-md border">
+    <div className="w-full bg-white p-5 rounded-2xl shadow-md border">
 
-      <div className="flex justify-between mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h2 className="text-[#9a2119] font-semibold">
           Stream List
         </h2>
@@ -64,7 +70,13 @@ function StreamTable({ data, onAddClick, onView, onEdit, onDelete }) {
         </Button>
       </div>
 
-      <Table columns={columns} dataSource={data} rowKey={(r, i) => i} />
+      <Table
+        columns={columns}
+        dataSource={data}
+        rowKey={(r, i) => i}
+        pagination={{ pageSize: 5 }}
+        scroll={{ x: "max-content" }}
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
-import { Form, Input, Select, Switch, Button } from "antd";
+import { Form, Input, Select, Button } from "antd";
 import { useEffect } from "react";
 import RichTextEditor from "../../components/editor/RichTextEditor";
+import StatusSwitch from "../../components/ui/StatusSwitch";
 import { validationRules } from "../../utils/formValidation";
 
 const { Option } = Select;
@@ -10,7 +11,11 @@ export default function ScholarshipForm({ onSubmit, initialValues, viewMode }) {
 
   useEffect(() => {
     if (initialValues) {
-      form.setFieldsValue(initialValues);
+      form.setFieldsValue({
+        isFree: false,
+        markFree: false,
+        ...initialValues,
+      });
     } else {
       form.resetFields();
     }
@@ -20,20 +25,20 @@ export default function ScholarshipForm({ onSubmit, initialValues, viewMode }) {
     <Form
       layout="vertical"
       form={form}
-      initialValues={initialValues}
+      initialValues={{ isFree: false, markFree: false, ...initialValues }}
       onFinish={onSubmit}
       validateTrigger={["onChange", "onBlur"]}
-      className="grid grid-cols-2 gap-4"
+      className="grid grid-cols-1 md:grid-cols-2 gap-4"
     >
+      <h3 className="md:col-span-2 mb-1 text-lg font-semibold text-[#9a2119]">
+        Scholarship Details
+      </h3>
+
       <Form.Item name="type" label="Type" rules={[validationRules.required("Type")]}>
         <Select disabled={viewMode}>
           <Option value="State">State</Option>
           <Option value="Private">Private</Option>
         </Select>
-      </Form.Item>
-
-      <Form.Item name="class" label="Class">
-        <Input disabled={viewMode} />
       </Form.Item>
 
       <Form.Item name="name" label="Name" rules={[validationRules.required("Name")]}>
@@ -45,17 +50,17 @@ export default function ScholarshipForm({ onSubmit, initialValues, viewMode }) {
       </Form.Item>
 
       <Form.Item name="isFree" label="Is Free" valuePropName="checked">
-        <Switch disabled={viewMode} />
+        <StatusSwitch disabled={viewMode} />
       </Form.Item>
 
       <Form.Item name="markFree" label="Mark as Free" valuePropName="checked">
-        <Switch disabled={viewMode} />
+        <StatusSwitch disabled={viewMode} />
       </Form.Item>
 
       <Form.Item
         name="desc"
         label="Long Description"
-        className="col-span-2"
+        className="md:col-span-2"
       >
         <RichTextEditor height={220} readOnly={viewMode} />
       </Form.Item>
@@ -63,7 +68,7 @@ export default function ScholarshipForm({ onSubmit, initialValues, viewMode }) {
       {!viewMode && (
         <Button
           htmlType="submit"
-          className="col-span-2 bg-[#9a2119] text-white"
+          className="md:col-span-2 bg-[#9a2119] text-white"
         >
           Submit
         </Button>

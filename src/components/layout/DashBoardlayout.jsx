@@ -21,6 +21,7 @@ const pageNameMap = {
   "/careerplan": "Career Plan",
   "/bookings": "Bookings",
   "/plans": "Plans",
+  "/subscriptions": "Subscriptions",
   "/services": "Services",
   "/allcountries": "All Countries",
   "/states": "States",
@@ -83,9 +84,11 @@ const DashBoardlayout = () => {
     const location = useLocation();
     const [activePage, setActivePage] = useState("Dashboard");
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
     useEffect(() => {
       setActivePage(getActivePage(location.pathname));
+      setMobileSidebarOpen(false);
     }, [location.pathname]);
 
   return (
@@ -95,12 +98,17 @@ const DashBoardlayout = () => {
            setActivePage={setActivePage}
            collapsed={sidebarCollapsed}
            setCollapsed={setSidebarCollapsed}
+           mobileOpen={mobileSidebarOpen}
+           onMobileClose={() => setMobileSidebarOpen(false)}
          />
-         <div className={`flex flex-col flex-1 overflow-hidden transition-all duration-300 ${
-           sidebarCollapsed ? "ml-[72px]" : "ml-[240px]"
+         <div className={`flex min-w-0 flex-col flex-1 overflow-hidden transition-all duration-300 ${
+           sidebarCollapsed ? "lg:ml-[72px]" : "lg:ml-[240px]"
          }`}>
-           <Header activePage={activePage} />
-           <main className="flex-1 overflow-y-auto p-6">
+           <Header
+             activePage={activePage}
+             onMenuClick={() => setMobileSidebarOpen(true)}
+           />
+           <main className="flex-1 overflow-y-auto px-4 py-4 sm:px-5 sm:py-5 lg:p-6">
              <Outlet/>
            </main>
          </div>

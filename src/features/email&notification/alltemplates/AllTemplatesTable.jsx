@@ -6,14 +6,19 @@ export default function AllTemplatesTable({ data, onEdit }) {
     {
       title: <span className="text-[#9a2119] font-semibold">Name</span>,
       dataIndex: "name",
+      width: 240,
+      ellipsis: true,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Subject</span>,
       dataIndex: "subject",
+      width: 420,
+      ellipsis: true,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Action</span>,
       align: "right",
+      width: 110,
       render: (_, record) => (
         <Button
           onClick={() => onEdit(record)}
@@ -32,6 +37,9 @@ export default function AllTemplatesTable({ data, onEdit }) {
       pagination={{ pageSize: 6 }}
       rowKey="key"
       rowClassName="hover:bg-gray-50"
+      scroll={{ x: "max-content" }}
     />
   );
 }
+
+

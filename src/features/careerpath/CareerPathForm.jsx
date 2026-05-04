@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { Form, Select, Input, Button } from "antd";
+import { validationRules } from "../../utils/formValidation";
 
 const { Option } = Select;
 
@@ -22,17 +23,50 @@ function CareerPathForm({ onSubmit, initialValues, viewMode }) {
       form={form}
       onFinish={handleFinish}
       validateTrigger={["onChange", "onBlur"]}
-      className="grid grid-cols-2 gap-4"
+      className="grid grid-cols-1 md:grid-cols-2 gap-4"
     >
-      <Form.Item name="module" label="Select Module">
+      <h3 className="md:col-span-2 mb-1 text-lg font-semibold text-[#9a2119]">
+        Career Path Details
+      </h3>
+
+      <Form.Item name="module" label="Select Module" rules={[validationRules.required("Module")]}>
         <Select disabled={viewMode}>
           <Option value="Career Library">Career Library</Option>
         </Select>
       </Form.Item>
 
-      <Form.Item name="category" label="Category">
+      <Form.Item name="stream" label="Stream" rules={[validationRules.required("Stream")]}>
+        <Select disabled={viewMode} placeholder="Select Stream">
+          <Option value="Science">Science</Option>
+          <Option value="Commerce">Commerce</Option>
+          <Option value="Arts">Arts</Option>
+        </Select>
+      </Form.Item>
+
+      <Form.Item name="category" label="Category" rules={[validationRules.required("Category")]}>
         <Select disabled={viewMode}>
           <Option value="Medical">Medical</Option>
+          <Option value="Engineering">Engineering</Option>
+          <Option value="Commercial Pilot">Commercial Pilot</Option>
+          <Option value="Merchant Navy">Merchant Navy</Option>
+        </Select>
+      </Form.Item>
+
+      <Form.Item name="secondCategory" label="2nd Category" rules={[validationRules.required("2nd Category")]}>
+        <Select disabled={viewMode}>
+          <Option value="GENERAL COURSES/DEGREES">GENERAL COURSES/DEGREES</Option>
+          <Option value="ALLIED & PARA MEDICAL COURSES/DEGREES">
+            ALLIED & PARA MEDICAL COURSES/DEGREES
+          </Option>
+          <Option value="Architecture">Architecture</Option>
+        </Select>
+      </Form.Item>
+
+      <Form.Item name="subcategory" label="Subcategory" rules={[validationRules.required("Subcategory")]}>
+        <Select disabled={viewMode}>
+          <Option value="MBBS">MBBS</Option>
+          <Option value="BDS">BDS</Option>
+          <Option value="B.Tech">B.Tech</Option>
         </Select>
       </Form.Item>
 
@@ -40,10 +74,6 @@ function CareerPathForm({ onSubmit, initialValues, viewMode }) {
         <Select disabled={viewMode}>
           <Option value="Path 1">Path 1</Option>
         </Select>
-      </Form.Item>
-
-      <Form.Item name="stream" label="Stream">
-        <Input disabled={viewMode} />
       </Form.Item>
 
       <Form.Item name="graduation" label="Graduation">
@@ -63,7 +93,7 @@ function CareerPathForm({ onSubmit, initialValues, viewMode }) {
       </Form.Item>
 
       {!viewMode && (
-        <div className="col-span-2 text-right">
+        <div className="md:col-span-2 text-right">
           <Button
             htmlType="submit"
             block

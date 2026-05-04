@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Modal, Input, Switch, Select, message } from "antd";
+import { Modal, Input, Select, message } from "antd";
 import {
   ArrowLeftOutlined,
   WalletOutlined,
@@ -15,6 +15,7 @@ import {
   SaveOutlined,
 } from "@ant-design/icons";
 import { validationMessages } from "../../../utils/formValidation";
+import StatusSwitch from "../../../components/ui/StatusSwitch";
 
 const THEME = {
   primary: "#9a2119",
@@ -218,7 +219,7 @@ export default function UserDetails({ user, onBack, onNotify }) {
     <div className="p-1 space-y-5">
       {contextHolder}
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <button
           onClick={onBack}
           className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:border-[#9a2119] hover:text-[#9a2119] transition"
@@ -263,17 +264,16 @@ export default function UserDetails({ user, onBack, onNotify }) {
             { label: "2FA Verification", field: "twoFA" },
           ].map(({ label, field }) => (
             <label key={field} className="flex items-center gap-2 cursor-pointer">
-              <Switch
+              <StatusSwitch
                 checked={info[field]}
                 onChange={(value) => set(field, value)}
-                style={{ background: info[field] ? "#9a2119" : "#d1d5db" }}
               />
               <span className="text-sm text-gray-600">{label}</span>
             </label>
           ))}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field label="First Name" required error={errors.firstName}>
             <Input value={info.firstName} onChange={(e) => handleInfoChange("firstName", e.target.value)} />
           </Field>
@@ -282,7 +282,7 @@ export default function UserDetails({ user, onBack, onNotify }) {
           </Field>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field label="Email" required error={errors.email}>
             <Input value={info.email} onChange={(e) => handleInfoChange("email", e.target.value)} />
           </Field>
@@ -295,7 +295,7 @@ export default function UserDetails({ user, onBack, onNotify }) {
           <Input value={info.address} onChange={(e) => handleInfoChange("address", e.target.value)} />
         </Field>
 
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           <Field label="City" error={errors.city}>
             <Input value={info.city} onChange={(e) => handleInfoChange("city", e.target.value)} />
           </Field>
@@ -411,3 +411,4 @@ export default function UserDetails({ user, onBack, onNotify }) {
     </div>
   );
 }
+

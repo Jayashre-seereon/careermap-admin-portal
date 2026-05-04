@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
-import { Form, Input, Select, Upload, Button, Radio } from "antd";
+import { Form, Input, Select, Upload, Button } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import RichTextEditor from "../../components/ui/RichTextEditor";
+import StatusSwitch from "../../components/ui/StatusSwitch";
 import { validationRules } from "../../utils/formValidation";
 
 const { Option } = Select;
@@ -37,6 +38,7 @@ export default function CategoryForm({ onSubmit, initialValues, disabled }) {
   useEffect(() => {
     if (initialValues) {
       form.setFieldsValue({
+        isUpgrade: "Free",
         ...initialValues,
         institutions: normalizeInstitutions(initialValues.institutions),
       });
@@ -54,9 +56,18 @@ export default function CategoryForm({ onSubmit, initialValues, disabled }) {
   };
 
   return (
-    <Form layout="vertical" form={form} onFinish={handleFinish} validateTrigger={["onChange", "onBlur"]}>
+    <Form
+      layout="vertical"
+      form={form}
+      onFinish={handleFinish}
+      validateTrigger={["onChange", "onBlur"]}
+      initialValues={{ isUpgrade: "Free" }}
+    >
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <h3 className="md:col-span-2 mb-1 text-lg font-semibold text-[#9a2119]">
+          Category Details
+        </h3>
 
         <Form.Item name="stream" label="Stream" rules={[{ required: true }]}>
           <Select placeholder="Select Stream" disabled={disabled}>
@@ -107,11 +118,11 @@ export default function CategoryForm({ onSubmit, initialValues, disabled }) {
           </Upload>
         </Form.Item>
 
-        <Form.Item name="description" label="Description">
+        <Form.Item name="description" label="Description" className="md:col-span-2">
           <Input.TextArea rows={3} disabled={disabled} />
         </Form.Item>
 
-        <Form.Item name="specialisation" label="Specialisation">
+        <Form.Item name="specialisation" label="Specialisation" className="md:col-span-2">
           <RichTextEditor
             disabled={disabled}
             placeholder="Enter specialisation"
@@ -119,7 +130,7 @@ export default function CategoryForm({ onSubmit, initialValues, disabled }) {
           />
         </Form.Item>
 
-        <Form.Item name="importantFacts" label="Important Facts">
+        <Form.Item name="importantFacts" label="Important Facts" className="md:col-span-2">
           <RichTextEditor
             disabled={disabled}
             placeholder="Enter important facts"
@@ -127,11 +138,19 @@ export default function CategoryForm({ onSubmit, initialValues, disabled }) {
           />
         </Form.Item>
 
-        <Form.Item name="isUpgrade" label="Category Access">
-          <Radio.Group disabled={disabled}>
-            <Radio value="Free">Free</Radio>
-            <Radio value="Premium">Premium</Radio>
-          </Radio.Group>
+        <Form.Item
+          name="isUpgrade"
+          label="Mark as Free"
+          valuePropName="checked"
+          getValueProps={(value) => ({ checked: value === "Free" })}
+          normalize={(checked) => (checked ? "Free" : "Premium")}
+          rules={[validationRules.required("Category access")]}
+        >
+          <StatusSwitch
+            disabled={disabled}
+            checkedChildren="Free"
+            unCheckedChildren="Premium"
+          />
         </Form.Item>
 
       </div>

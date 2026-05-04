@@ -154,7 +154,7 @@ export default function SocialCredentialPage() {
         </h1>
 
         <div className="bg-white rounded-2xl border border-gray-200 p-5">
-          <div className="flex justify-between gap-3 mb-5">
+          <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
             <h2 className="text-lg font-semibold text-[#9a2119]">
               Social Credential
             </h2>
@@ -163,7 +163,7 @@ export default function SocialCredentialPage() {
               placeholder="Search..."
               value={search}
               prefix={<SearchOutlined className="text-[#9a2119]" />}
-              className="w-72 h-10 border-[#9a2119]"
+              className="h-10 w-full border-[#9a2119] sm:w-72"
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>

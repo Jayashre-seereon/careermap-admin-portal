@@ -65,7 +65,7 @@ export default function SmsConfigPage() {
           </label>
 
           <Form.Item name="method" className="mb-0">
-            <Select value={method} onChange={handleMethodChange} className="w-64">
+            <Select value={method} onChange={handleMethodChange} className="w-full sm:w-64">
               <Option value="Nexmo">Nexmo</Option>
               <Option value="Twilio">Twilio</Option>
               <Option value="Custom">Custom API</Option>
@@ -183,7 +183,7 @@ export default function SmsConfigPage() {
         </div>
 
         {/* BUTTONS */}
-        <div className="flex justify-between items-center pt-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-4">
 
           {/* TEST SMS */}
           <button
@@ -197,7 +197,7 @@ export default function SmsConfigPage() {
           </button>
 
           {/* SAVE */}
-          <div className="flex gap-3">
+          <div className="flex w-full flex-wrap gap-3 sm:w-auto">
             <Button htmlType="button" onClick={handleCancel}>
               Cancel
             </Button>

@@ -24,6 +24,8 @@ export default function StatesForm({
       onFinish={onSubmit}
       validateTrigger={["onChange", "onBlur"]}
     >
+      <h3 className="mb-4 text-lg font-semibold text-[#9a2119]">State Details</h3>
+
       {/* State Name */}
       <Form.Item
         name="name"

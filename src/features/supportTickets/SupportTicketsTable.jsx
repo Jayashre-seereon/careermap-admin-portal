@@ -33,10 +33,14 @@ export default function SupportTicketsTable({ title, data }) {
     {
       title: <span className="text-[#9a2119] font-semibold">Subject</span>,
       dataIndex: "subject",
+      width: 320,
+      ellipsis: true,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Opened By</span>,
       dataIndex: "openedBy",
+      width: 180,
+      ellipsis: true,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Priority</span>,
@@ -46,6 +50,7 @@ export default function SupportTicketsTable({ title, data }) {
           {priority}
         </span>
       ),
+      width: 130,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Status</span>,
@@ -55,9 +60,12 @@ export default function SupportTicketsTable({ title, data }) {
           {status}
         </span>
       ),
+      width: 130,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Action</span>,
+      align: "right",
+      width: 110,
       render: (_, record) => (
         <Button
           onClick={() => navigate(`/support_tickets/${record.id}`)}
@@ -72,15 +80,15 @@ export default function SupportTicketsTable({ title, data }) {
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h2 className="text-lg font-semibold text-[#9a2119]">{title}</h2>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Input
             placeholder="Search ticket..."
             value={search}
             prefix={<SearchOutlined className="text-[#9a2119]" />}
-            className="w-64 h-9 rounded-md border-[#9a2119] focus:border-[#9a2119]"
+            className="w-full sm:w-64 h-9 rounded-md border-[#9a2119] focus:border-[#9a2119]"
             onChange={(e) => setSearch(e.target.value)}
           />
 
@@ -99,6 +107,7 @@ export default function SupportTicketsTable({ title, data }) {
         dataSource={filteredData}
         pagination={{ pageSize: 5 }}
         rowClassName="hover:bg-gray-50"
+        scroll={{ x: "max-content" }}
       />
     </div>
   );

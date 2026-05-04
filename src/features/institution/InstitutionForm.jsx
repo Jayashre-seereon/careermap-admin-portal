@@ -24,8 +24,12 @@ function InstitutionForm({ onSubmit, initialValues, viewMode }) {
       form={form}
       onFinish={handleFinish}
       validateTrigger={["onChange", "onBlur"]}
-      className="grid grid-cols-3 gap-4"
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
     >
+      <h3 className="md:col-span-2 lg:col-span-3 mb-1 text-lg font-semibold text-[#9a2119]">
+        Institution Details
+      </h3>
+
       {/* Name */}
       <Form.Item name="name" label="Institution Name" rules={[validationRules.required("Institution name")]}>
         <Input disabled={viewMode} />
@@ -47,7 +51,7 @@ function InstitutionForm({ onSubmit, initialValues, viewMode }) {
       </Form.Item>
 
       {/* Address */}
-      <Form.Item name="address" label="Address" className="col-span-3">
+      <Form.Item name="address" label="Address" className="md:col-span-2 lg:col-span-3">
         <Input.TextArea rows={2} disabled={viewMode} />
       </Form.Item>
 
@@ -83,7 +87,7 @@ function InstitutionForm({ onSubmit, initialValues, viewMode }) {
 
       {/* Submit */}
       {!viewMode && (
-        <div className="col-span-3">
+        <div className="md:col-span-2 lg:col-span-3">
           <Button
             htmlType="submit"
             block

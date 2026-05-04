@@ -22,8 +22,12 @@ export default function EntranceExamForm({
       layout="vertical"
       onFinish={onSubmit}
       validateTrigger={["onChange", "onBlur"]}
-      className="grid grid-cols-2 gap-4"
+      className="grid grid-cols-1 md:grid-cols-2 gap-4"
     >
+      <h3 className="md:col-span-2 mb-1 text-lg font-semibold text-[#9a2119]">
+        Entrance Exam Details
+      </h3>
+
       <Form.Item name="module" label="Select Module">
         <Select disabled={viewMode}>
           <Option value="Career Library">Career Library</Option>
@@ -68,12 +72,12 @@ export default function EntranceExamForm({
         <DatePicker className="w-full" disabled={viewMode} />
       </Form.Item>
 
-      <Form.Item name="url" label="URL" className="col-span-2" rules={[validationRules.url("URL")]}>
+      <Form.Item name="url" label="URL" className="md:col-span-2" rules={[validationRules.url("URL")]}>
         <Input disabled={viewMode} />
       </Form.Item>
 
       {!viewMode && (
-        <div className="col-span-2">
+        <div className="md:col-span-2">
           <Button
             htmlType="submit"
             block

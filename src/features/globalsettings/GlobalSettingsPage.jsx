@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Form, Input, Select, Button, Switch, message } from "antd";
+import { Form, Input, Select, Button, message } from "antd";
+import StatusSwitch from "../../components/ui/StatusSwitch";
 
 const { Option } = Select;
 const BRAND = "#9a2119";
@@ -104,9 +105,13 @@ export default function SiteSettings() {
   };
 
   return (
-    <div style={{ background: "white", borderRadius: 12, padding: "20px 32px", maxWidth: "100%", width: "100%" }}>
+    <div style={{ background: "white", borderRadius: 12, padding: "20px clamp(16px, 4vw, 32px)", maxWidth: "100%", width: "100%" }}>
       <Form layout="vertical">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 48px" }}>
+        <h3 className="mb-4 text-lg font-semibold text-[#9a2119]">
+          Global Settings Details
+        </h3>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px 48px" }}>
           {/* Left Column */}
           <div>
             <Form.Item label={<>Site Title <span style={{ color: "red" }}>*</span></>} style={{ marginBottom: 12 }}>
@@ -148,7 +153,7 @@ export default function SiteSettings() {
         </div>
 
         {/* Toggles */}
-        <div style={{ borderTop: "1px solid #f3f4f6", paddingTop: 16, marginTop: 4, display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 12 }}>
+        <div style={{ borderTop: "1px solid #f3f4f6", paddingTop: 16, marginTop: 4, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12 }}>
           {[
             ["userReg","User Registration"],["emailVerify","Email Verification"],
             ["emailNotif","Email Notification"],["mobileVerify","Mobile Verification"],
@@ -156,10 +161,9 @@ export default function SiteSettings() {
           ].map(([key, label]) => (
             <div key={key} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
               <span style={{ fontSize: 12, fontWeight: 600, textAlign: "center" }}>{label}</span>
-              <Switch
+              <StatusSwitch
                 checked={toggles[key]}
                 onChange={(v) => setToggles((s) => ({ ...s, [key]: v }))}
-                style={{ background: toggles[key] ? BRAND : undefined }}
               />
             </div>
           ))}

@@ -84,7 +84,7 @@ export const navSections = [
       { icon: CalendarCheck, name: "Bookings", path: "/bookings" },
       { icon: CreditCard, name: "Plans", path: "/plans" },
       { icon: HelpCircle, name: "Quiz", path: "/quiz" },
-      { icon: Repeat, name: "Subscriptions" },
+      { icon: Repeat, name: "Subscriptions", path: "/subscriptions" },
       { icon: Wrench, name: "Services", path: "/services" },
     ],
   },
@@ -141,7 +141,14 @@ export const navSections = [
   },
 ];
 
-export default function Sidebar({ activePage, setActivePage, collapsed, setCollapsed }) {
+export default function Sidebar({
+  activePage,
+  setActivePage,
+  collapsed,
+  setCollapsed,
+  mobileOpen = false,
+  onMobileClose,
+}) {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
   // Track which accordion items are open by their name
@@ -161,10 +168,17 @@ export default function Sidebar({ activePage, setActivePage, collapsed, setColla
   };
 
   return (
-    <aside
-      className={`fixed top-0 left-0 z-40 flex h-full flex-col transition-all duration-300 ${
-        collapsed ? "w-[72px]" : "w-[240px]"
+    <>
+    <div
+      onClick={onMobileClose}
+      className={`fixed inset-0 z-40 bg-black/30 transition-opacity duration-300 lg:hidden ${
+        mobileOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
       }`}
+    />
+    <aside
+      className={`fixed top-0 left-0 z-50 flex h-full flex-col transition-all duration-300 lg:z-40 ${
+        collapsed ? "w-[72px]" : "w-[240px]"
+      } ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       style={{ background: "#fff", borderRight: "1px solid #eee" }}
     >
       {/* Logo */}
@@ -254,6 +268,7 @@ export default function Sidebar({ activePage, setActivePage, collapsed, setColla
                               key={child.name}
                               onClick={() => {
                                 setActivePage(child.name);
+                                onMobileClose?.();
                                 if (child.path) navigate(child.path);
                               }}
                               className={`flex w-full items-center gap-2 px-3 py-[7px] text-sm transition ${
@@ -285,6 +300,7 @@ export default function Sidebar({ activePage, setActivePage, collapsed, setColla
                   key={item.name}
                   onClick={() => {
                     setActivePage(item.name);
+                    onMobileClose?.();
                     if (item.path) navigate(item.path);
                   }}
                   className={`flex w-full items-center gap-3 px-4 py-2 text-sm transition ${
@@ -319,5 +335,6 @@ export default function Sidebar({ activePage, setActivePage, collapsed, setColla
         </div>
       )}
     </aside>
+    </>
   );
 }

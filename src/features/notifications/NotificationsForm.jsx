@@ -11,8 +11,12 @@ export default function NotificationsForm({ onSubmit, initialValues }) {
       form={form}
       onFinish={onSubmit}
       initialValues={initialValues}
-      className="grid grid-cols-2 gap-4"
+      className="grid grid-cols-1 md:grid-cols-2 gap-4"
     >
+      <h3 className="md:col-span-2 mb-1 text-lg font-semibold text-[#9a2119]">
+        Notification Details
+      </h3>
+
       <Form.Item name="title" label="Title" rules={[{ required: true }]}>
         <Input />
       </Form.Item>
@@ -28,7 +32,7 @@ export default function NotificationsForm({ onSubmit, initialValues }) {
       <Form.Item
         name="message"
         label="Message"
-        className="col-span-2"
+        className="md:col-span-2"
       >
         <Input.TextArea rows={3} />
       </Form.Item>
@@ -47,7 +51,7 @@ export default function NotificationsForm({ onSubmit, initialValues }) {
         </Select>
       </Form.Item>
 
-      <div className="col-span-2">
+      <div className="md:col-span-2">
         <Button
           htmlType="submit"
           block

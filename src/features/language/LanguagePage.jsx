@@ -222,22 +222,22 @@ export default function LanguagePage() {
      <h2 className="text-xl font-bold text-[#9a2119]">
      Manage Languages
       </h2>
-       <div className="bg-white p-5 rounded-2xl shadow-md border">
-      <div className="flex justify-between mb-4">
+      <div className="bg-white p-5 rounded-2xl shadow-md border">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <h2 className="text-[#9a2119] font-semibold">Language List</h2>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex w-full flex-wrap gap-3 sm:w-auto">
               <Input
                 placeholder="Search language..."
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 prefix={<SearchOutlined className="text-[#9a2119]" />}
-              className="w-64 h-9 rounded-md border-[#9a2119]"
+              className="h-9 w-full rounded-md border-[#9a2119] sm:w-64"
             />
               <Button
                 icon={<ReloadOutlined />}
                 onClick={() => setSearch("")}
-                 className="flex items-center gap-2 px-4 h-9 rounded-md bg-[#9a2119] text-white hover:bg-[#c4392e] transition"
+                 className="flex h-9 items-center justify-center gap-2 rounded-md bg-[#9a2119] px-4 text-white transition hover:bg-[#c4392e]"
          >
                 Reset
               </Button>
@@ -246,6 +246,7 @@ export default function LanguagePage() {
                 icon={<PlusOutlined />}
                 onClick={handleAdd}
                 style={{ background: "#9a2119", borderColor: "#9a2119" }}
+                className="h-9"
          >
                 Add Language
               </Button>
