@@ -206,24 +206,24 @@ export default function LanguageKeywordsPage() {
 
      <section className="space-y-5">
        
-     <h2 className="text-xl font-bold text-[#9a2119]">    <ArrowLeftOutlined  className="mr-2" onClick={() => navigate("/language")}/>
-      
-    Language Keywords
+      <h2 className="flex flex-wrap items-center gap-2 text-xl font-bold text-[#9a2119]">
+        <ArrowLeftOutlined className="cursor-pointer" onClick={() => navigate("/language")} />
+        <span>Language Keywords</span>
       </h2>
        <div className="bg-white p-5 rounded-2xl shadow-md border">
         
-      <div className="flex justify-between mb-4">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
              
         <h2 className="text-[#9a2119] font-semibold"> Language Keywords</h2>
 
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex w-full flex-wrap gap-3 sm:w-auto">
               <Input
                 placeholder="Search keyword..."
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 prefix={<SearchOutlined className="text-[#9a2119]" />}
-                className="h-10 w-64"
+                className="h-10 w-full sm:w-64"
               />
               <Button
                 icon={<ReloadOutlined />}

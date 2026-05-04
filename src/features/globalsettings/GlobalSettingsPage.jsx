@@ -105,13 +105,13 @@ export default function SiteSettings() {
   };
 
   return (
-    <div style={{ background: "white", borderRadius: 12, padding: "20px 32px", maxWidth: "100%", width: "100%" }}>
+    <div style={{ background: "white", borderRadius: 12, padding: "20px clamp(16px, 4vw, 32px)", maxWidth: "100%", width: "100%" }}>
       <Form layout="vertical">
         <h3 className="mb-4 text-lg font-semibold text-[#9a2119]">
           Global Settings Details
         </h3>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 48px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px 48px" }}>
           {/* Left Column */}
           <div>
             <Form.Item label={<>Site Title <span style={{ color: "red" }}>*</span></>} style={{ marginBottom: 12 }}>
@@ -153,7 +153,7 @@ export default function SiteSettings() {
         </div>
 
         {/* Toggles */}
-        <div style={{ borderTop: "1px solid #f3f4f6", paddingTop: 16, marginTop: 4, display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 12 }}>
+        <div style={{ borderTop: "1px solid #f3f4f6", paddingTop: 16, marginTop: 4, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12 }}>
           {[
             ["userReg","User Registration"],["emailVerify","Email Verification"],
             ["emailNotif","Email Notification"],["mobileVerify","Mobile Verification"],

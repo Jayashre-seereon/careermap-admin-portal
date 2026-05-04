@@ -122,15 +122,15 @@ export default function JobPage() {
       </h1>
 
       <div className="bg-white rounded-2xl border border-gray-200 p-5">
-        <div className="flex justify-between mb-5">
+        <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
           <h2 className="text-lg font-semibold text-[#9a2119]">Job</h2>
 
-          <div className="flex gap-3">
+          <div className="flex w-full flex-wrap gap-3 sm:w-auto">
             <Input
               placeholder="Search..."
               value={search}
               prefix={<SearchOutlined className="text-[#9a2119]" />}
-              className="w-64 h-10 border-[#9a2119]"
+              className="h-10 w-full border-[#9a2119] sm:w-64"
               onChange={(e) => setSearch(e.target.value)}
             />
 

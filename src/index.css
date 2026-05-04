@@ -46,6 +46,15 @@
     color: var(--text-primary);
     font-family: "DM Sans", sans-serif;
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  html, body, #root {
+    min-width: 320px;
+  }
+
+  img, svg, video, canvas {
+    max-width: 100%;
   }
 
   ::-webkit-scrollbar { width: 4px; }
@@ -165,6 +174,96 @@ body::after {
   white-space: nowrap;
 }
 
+.ant-table-cell .justify-end,
+.ant-table-cell .flex.gap-2,
+.ant-table-cell .flex.gap-3 {
+  flex-wrap: nowrap !important;
+  align-items: center;
+}
+
+.ant-table-cell .ant-btn,
+.ant-table-cell button {
+  flex-shrink: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 6px;
+  background-clip: padding-box;
+}
+
+.ant-table-cell .ant-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0 !important;
+  border: 1px solid transparent !important;
+  background: #fff !important;
+  box-shadow: inset 0 0 0 1px currentColor !important;
+  overflow: visible !important;
+  transform: translateZ(0);
+}
+
+.ant-table-cell button.border,
+.ant-table-cell button[class*=" border-"],
+.ant-table-cell button[class^="border-"] {
+  border: 1px solid transparent !important;
+  box-shadow: inset 0 0 0 1px currentColor !important;
+  background: #fff !important;
+  overflow: visible !important;
+  transform: translateZ(0);
+}
+
+.ant-table-cell .ant-btn.ant-btn-icon-only {
+  width: 32px;
+  height: 32px;
+}
+
+.ant-table-cell .ant-btn:not(.ant-btn-dangerous) {
+  border-color: currentColor !important;
+}
+
+.ant-table-cell .ant-btn.ant-btn-dangerous {
+  background: #fff !important;
+}
+
+.ant-table-cell .ant-btn > span,
+.ant-table-cell button > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.ant-table-cell .ant-btn .anticon,
+.ant-table-cell button .anticon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  font-size: 14px;
+  line-height: 1;
+  color: inherit !important;
+  -webkit-text-fill-color: currentColor;
+  flex-shrink: 0;
+}
+
+.ant-table-cell .ant-btn .anticon svg,
+.ant-table-cell button .anticon svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.ant-table-cell .flex.justify-end,
+.ant-table-cell .justify-end.gap-2,
+.ant-table-cell .justify-end.gap-3 {
+  min-width: max-content;
+}
+
 /* ============================================================
    ✅ POPCONFIRM FULL FIX (IMPORTANT)
    ============================================================ */
@@ -259,6 +358,102 @@ body::after {
 /* Optional spacing */
 .custom-tabs .ant-tabs-nav-list {
   gap: 10px;
+  flex-wrap: nowrap !important;
+  width: max-content;
+}
+
+.custom-tabs .ant-tabs-nav {
+  margin-bottom: 20px !important;
+}
+
+.custom-tabs .ant-tabs-nav::before {
+  border-bottom-color: #f1d6d3 !important;
+}
+
+.custom-tabs .ant-tabs-nav-wrap {
+  scrollbar-width: none;
+}
+
+.custom-tabs .ant-tabs-nav-wrap::-webkit-scrollbar {
+  display: none;
+}
+
+.custom-tabs .ant-tabs-tab {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.custom-tabs .ant-tabs-content-holder,
+.ant-table-wrapper,
+.ant-table-wrapper .ant-spin-nested-loading,
+.ant-table-wrapper .ant-spin-container {
+  min-width: 0;
+}
+
+.ant-modal {
+  max-width: calc(100vw - 24px) !important;
+}
+
+.ant-modal .ant-modal-content {
+  overflow: hidden;
+}
+
+.ant-modal .ant-modal-body {
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.ant-modal .ant-modal-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ant-form,
+.ant-form-item,
+.ant-select,
+.ant-picker,
+.ant-input-affix-wrapper,
+.ant-input,
+.ant-btn {
+  max-width: 100%;
+}
+
+@media (max-width: 1023px) {
+  .custom-tabs .ant-tabs-nav {
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .custom-tabs .ant-tabs-nav-wrap {
+    overflow-x: auto !important;
+  }
+
+  .custom-tabs .ant-tabs-nav-list {
+    padding-right: 8px;
+  }
+
+  .ant-table-wrapper .ant-table-content,
+  .ant-table-wrapper .ant-table-body {
+    overflow-x: auto !important;
+  }
+
+  .ant-table-wrapper .ant-table-thead > tr > th,
+  .ant-table-wrapper .ant-table-tbody > tr > td {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 767px) {
+  .ant-modal {
+    margin: 12px auto !important;
+  }
+
+  .ant-modal .ant-modal-body {
+    max-height: calc(100vh - 150px);
+  }
 }
 
 @keyframes authFloat {

@@ -231,7 +231,7 @@ export default function TicketDetails() {
           </div>
 
           <div className="flex flex-wrap items-end justify-between gap-4">
-            <div className="min-w-[280px] flex-1">
+            <div className="min-w-0 flex-1 md:min-w-[280px]">
               <p className="mb-2 text-sm font-medium text-slate-500">
                 Maximum upload size: 2MB
               </p>
@@ -244,7 +244,7 @@ export default function TicketDetails() {
                 >
                   <button
                     type="button"
-                    className="inline-flex  items-center gap-2 rounded-xl border border-[#f3c7c3] bg-white px-4 py-2  text-sm font-semibold text-[#9a2119] transition hover:bg-[#fdf2f1]"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[#f3c7c3] bg-white px-4 py-2 text-sm font-semibold text-[#9a2119] transition hover:bg-[#fdf2f1] sm:w-auto"
                   >
                     <InboxOutlined />
                     Choose File

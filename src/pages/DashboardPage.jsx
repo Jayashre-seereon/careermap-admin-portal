@@ -122,6 +122,68 @@ const globalStyle = `
     background: #fff; border-radius: 16px; padding: 18px 20px;
     box-shadow: 0 2px 16px rgba(154,33,25,0.07); border: 1px solid #f2e3e2;
   }
+
+  .dashboard-stat-grid,
+  .dashboard-chart-grid,
+  .dashboard-bottom-grid {
+    display: grid;
+  }
+
+  .dashboard-stat-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .dashboard-chart-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .dashboard-bottom-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .order-pill-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  @media (max-width: 1279px) {
+    .dashboard-bottom-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 1023px) {
+    .dashboard-stat-grid,
+    .dashboard-chart-grid,
+    .dashboard-bottom-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 767px) {
+    .dashboard-stat-grid,
+    .dashboard-chart-grid,
+    .dashboard-bottom-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .order-pill-row {
+      flex-wrap: wrap;
+    }
+
+    .ticket-head,
+    .ticket-item {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 6px;
+    }
+  }
 `;
 
 const cardHeader = {
@@ -162,10 +224,10 @@ export default function Dashboard() {
   return (
     <>
       <style>{globalStyle}</style>
-      <div >
+      <div className="min-w-0">
 
         {/* Stat Cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 20 }}>
+        <div className="dashboard-stat-grid">
           {statCards.map((c, i) => (
             <div key={i} className="stat-card" style={{ background: c.grad, ...anim(animate, i + 2) }}>
               <div style={{ fontSize: 24, marginBottom: 8, position: "relative", zIndex: 1 }}>{c.icon}</div>
@@ -176,7 +238,7 @@ export default function Dashboard() {
         </div>
 
         {/* Charts Row */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr", gap: 20, marginBottom: 20 }}>
+        <div className="dashboard-chart-grid">
           <div style={{ ...baseCard, ...anim(animate, 0) }}>
             <div style={cardHeader}>Subscriptions Report <span style={badge}>Last 30 days</span></div>
             <div style={{ height: 180 }}>
@@ -192,7 +254,7 @@ export default function Dashboard() {
         </div>
 
         {/* Bottom Row — equal 3 columns, equal height via align-items stretch */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, alignItems: "stretch" }}>
+        <div className="dashboard-bottom-grid">
 
           {/* Orders Overview */}
           <div className="bottom-card" style={anim(animate, 6)}>
@@ -211,7 +273,7 @@ export default function Dashboard() {
             </div>
 
             {/* Legend — single row, 3 pill cards */}
-            <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
+            <div className="order-pill-row">
               {legendItems.map((row, i) => (
                 <div key={i} className="order-pill" >
                    <span style={{ fontSize: 17, fontWeight: 800, color: row.color, fontFamily: "'Sora', sans-serif" }}>{Math.round((row.val / orderValues.total) * 100)}%</span>
@@ -253,7 +315,7 @@ export default function Dashboard() {
               <span style={{ fontSize: 12, color: PRIMARY, cursor: "pointer", fontWeight: 600 }}>View all →</span>
             </div>
             <div style={{ display: "flex", flexDirection: "column" }}>
-              <div style={{
+              <div className="ticket-head" style={{
                 display: "grid", gridTemplateColumns: "1fr auto",
                 background: `linear-gradient(90deg,${PRIMARY},${PRIMARY_LIGHT})`,
                 color: "#fff", padding: "8px 12px", borderRadius: "8px 8px 0 0",
@@ -262,7 +324,7 @@ export default function Dashboard() {
                 <span>SUBJECT</span><span>STATUS</span>
               </div>
               {tickets.map((t, i) => (
-                <div key={i} className="ticket-row" style={{
+                <div key={i} className="ticket-row ticket-item" style={{
                   display: "grid", gridTemplateColumns: "1fr auto",
                   padding: "9px 12px",
                   background: i % 2 === 0 ? "#fff" : PRIMARY_BG,

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Bell, ChevronDown, LogOut, Search, Settings, User } from "lucide-react";
+import { Bell, ChevronDown, LogOut, Menu, Search, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getCurrentUser, logoutUser } from "../../features/auth/authStorage";
 import { navSections } from "./Sidebar";
@@ -48,7 +48,7 @@ const flattenNavItems = (sections) =>
     })
   );
 
-export default function Header({ activePage }) {
+export default function Header({ activePage, onMenuClick }) {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
   const [search, setSearch] = useState("");
@@ -115,25 +115,35 @@ export default function Header({ activePage }) {
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between bg-white px-6 shadow-sm">
-      <div>
-        <h1 className="text-lg font-bold tracking-tight text-[#9a2119]">{activePage}</h1>
+    <header className="sticky top-0 z-30 flex min-h-16 flex-wrap items-center justify-between gap-3 bg-white px-4 py-3 shadow-sm sm:px-5 lg:flex-nowrap lg:px-6">
+      <div className="flex min-w-0 items-center gap-3">
+        <button
+          type="button"
+          onClick={onMenuClick}
+          className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 text-[#9a2119] transition hover:border-[#9a2119] hover:bg-[#fdf2f1] lg:hidden"
+          aria-label="Open sidebar"
+        >
+          <Menu size={18} />
+        </button>
+        <div className="min-w-0">
+        <h1 className="truncate text-lg font-bold tracking-tight text-[#9a2119]">{activePage}</h1>
         <p className="mt-0.5 text-[11px] tracking-wide text-black">Overview & Analytics</p>
+        </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div ref={searchRef} className="relative hidden md:block">
+      <div className="flex w-full flex-wrap items-center justify-end gap-3 sm:w-auto sm:gap-4 lg:flex-nowrap">
+        <div ref={searchRef} className="relative hidden min-w-0 md:block">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9a2119]" />
           <input
             type="text"
             placeholder="Search sidebar menu..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-72 rounded-lg border border-[#9a2119] py-2 pl-9 pr-3 text-sm text-black placeholder-black/70 focus:outline-none"
+            className="w-[min(18rem,42vw)] min-w-[220px] rounded-lg border border-[#9a2119] py-2 pl-9 pr-3 text-sm text-black placeholder-black/70 focus:outline-none lg:w-72"
           />
 
           {search.trim() && (
-            <div className="absolute right-0 top-[calc(100%+10px)] z-50 w-72 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+            <div className="absolute right-0 top-[calc(100%+10px)] z-50 w-[min(18rem,80vw)] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl lg:w-72">
               {matchedItems.length > 0 ? (
                 matchedItems.map((item) => (
                   <button
@@ -162,7 +172,7 @@ export default function Header({ activePage }) {
           </button>
 
           {isNotificationOpen && (
-            <div className="absolute right-0 top-[calc(100%+12px)] z-50 w-96 rounded-2xl border border-gray-200 bg-white p-4 shadow-xl">
+            <div className="absolute right-0 top-[calc(100%+12px)] z-50 w-[min(24rem,calc(100vw-2rem))] rounded-2xl border border-gray-200 bg-white p-4 shadow-xl">
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-[#9a2119]">Notifications</h3>
                 <button
@@ -204,7 +214,7 @@ export default function Header({ activePage }) {
         <div ref={userMenuRef} className="relative">
           <button
             onClick={() => setIsUserMenuOpen((prev) => !prev)}
-            className="flex items-center gap-2 rounded-lg px-2 py-1 transition hover:bg-[#fdf2f1]"
+            className="flex max-w-full items-center gap-2 rounded-lg px-2 py-1 transition hover:bg-[#fdf2f1]"
           >
             <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-md bg-[#9a2119] text-xs font-bold text-white">
               {currentUser?.avatar ? (
@@ -213,7 +223,7 @@ export default function Header({ activePage }) {
                 currentUser?.name?.charAt(0)?.toUpperCase() || "A"
               )}
             </div>
-            <span className="text-sm font-semibold text-[#9a2119]">
+            <span className="hidden max-w-[140px] truncate text-sm font-semibold text-[#9a2119] sm:block">
               {currentUser?.name || "Admin"}
             </span>
             <ChevronDown size={14} className="text-[#9a2119]" />

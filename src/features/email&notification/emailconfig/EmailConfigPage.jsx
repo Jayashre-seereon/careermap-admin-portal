@@ -55,7 +55,7 @@ export default function EmailConfigPage() {
           </label>
 
           <Form.Item name="method" className="mb-0">
-            <Select className="w-60">
+            <Select className="w-full sm:w-60">
               <Option value="SMTP">SMTP</Option>
               <Option value="MAIL">PHP Mail</Option>
             </Select>
@@ -123,7 +123,7 @@ export default function EmailConfigPage() {
         </div>
 
         {/* BUTTONS */}
-        <div className="flex justify-between items-center pt-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-4">
 
           {/* TEST BUTTON */}
           <button
@@ -137,7 +137,7 @@ export default function EmailConfigPage() {
           </button>
 
           {/* SAVE BUTTON */}
-          <div className="flex gap-3">
+          <div className="flex w-full flex-wrap gap-3 sm:w-auto">
             <Button htmlType="button" onClick={handleCancel}>
               Cancel
             </Button>
