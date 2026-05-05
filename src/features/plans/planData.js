@@ -1,0 +1,66 @@
+export const initialPlans = [
+  {
+    key: "plan-free",
+    name: "Free",
+    features: "Career Library, Entrance Exam, Institute, Quiz",
+    module: ["Career Library", "Entrance Exam", "Institute", "Quiz"],
+    price: "0",
+  },
+  {
+    key: "plan-gold",
+    name: "Gold",
+    features: "Mock Test, Live Test, Practice Questions",
+    module: ["Career Library", "Career Assessment", "Quiz"],
+    price: "999",
+  },
+  {
+    key: "plan-premium",
+    name: "Premium Career Plan",
+    features: "Mentor sessions, scholarship access, mock tests, live guidance",
+    module: ["Career Library", "Career Assessment", "Book Your Mentor", "Scholarship", "Quiz"],
+    price: "1999",
+  },
+];
+
+export const initialSubscriptions = [
+  {
+    id: 1,
+    user: "Rahul Sharma",
+    email: "rahul.sharma@example.com",
+    planKey: "plan-premium",
+    planName: "Premium Career Plan",
+    time: "12 Months",
+    status: "Active",
+    expiryDate: "2026-12-31",
+  },
+  {
+    id: 2,
+    user: "Priya Das",
+    email: "priya.das@example.com",
+    planKey: "plan-gold",
+    planName: "Gold",
+    time: "6 Months",
+    status: "Inactive",
+    expiryDate: "2026-08-15",
+  },
+  {
+    id: 3,
+    user: "Amit Kumar",
+    email: "amit.kumar@example.com",
+    planKey: "plan-premium",
+    planName: "Premium Career Plan",
+    time: "3 Months",
+    status: "Active",
+    expiryDate: "2026-06-30",
+  },
+  {
+    id: 4,
+    user: "Sneha Nair",
+    email: "sneha.nair@example.com",
+    planKey: "plan-free",
+    planName: "Free",
+    time: "1 Month",
+    status: "Active",
+    expiryDate: "2026-05-31",
+  },
+];

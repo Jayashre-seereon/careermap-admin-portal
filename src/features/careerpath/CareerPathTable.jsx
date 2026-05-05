@@ -136,32 +136,24 @@ export default function CareerPathTable({
             placeholder="Search module..."
             value={search}
             prefix={<SearchOutlined className="text-[#9a2119]" />}
-            className="h-9 w-full rounded-md border-[#9a2119] sm:w-64"
+            className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
             onChange={(e) => setSearch(e.target.value)}
           />
 
-          <button
+          <Button
             onClick={handleReset}
-            className="flex h-9 items-center justify-center gap-2 rounded-md
-                       bg-[#9a2119]
-                       text-white
-                       hover:bg-[#c4392e]
-                       px-4 transition"
+              style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}    
           >
             <ReloadOutlined />
             Reset
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={onAdd}
-            className="h-9 rounded-md
-                       bg-[#9a2119]
-                       text-white
-                       hover:bg-[#c4392e]
-                       px-4 transition"
+            style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}
           >
             + Add
-          </button>
+          </Button>
         </div>
       </div>
 

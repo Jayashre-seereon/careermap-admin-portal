@@ -1,12 +1,14 @@
 import React from "react";
-import { Table, Button, Tag, Avatar, Space, Popconfirm } from "antd";
+import { Table, Button, Tag, Avatar, Space, Popconfirm, Input } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
   DeleteOutlined,
+  ReloadOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 
-function MentorTable({ data, onAddClick, onView, onEdit, onDelete }) {
+function MentorTable({ data, onAddClick, onView, onEdit, onDelete, search, onSearch }) {
   const columns = [
     {
       title: "SL No.",
@@ -24,6 +26,7 @@ function MentorTable({ data, onAddClick, onView, onEdit, onDelete }) {
     { title: "Name", dataIndex: "name", width: 170 },
     { title: "Email", dataIndex: "email", width: 220, ellipsis: true },
     { title: "Phone", dataIndex: "phone", width: 150 },
+    { title: "Date of Birth", dataIndex: "dob", width: 150 },
     { title: "Education", dataIndex: "education", width: 220, ellipsis: true },
     {
       title: "Category",
@@ -32,6 +35,7 @@ function MentorTable({ data, onAddClick, onView, onEdit, onDelete }) {
       width: 160,
     },
     { title: "Designation", dataIndex: "designation", width: 180, ellipsis: true },
+    { title: "Rank", dataIndex: "rank", width: 120 ,ellipsis: true},
     {
       title: "Status",
       dataIndex: "status",
@@ -72,15 +76,29 @@ function MentorTable({ data, onAddClick, onView, onEdit, onDelete }) {
   return (
     <div className="w-full bg-white p-5 rounded-2xl shadow-md border">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <h2 className="text-[#9a2119] font-semibold">Mentor List</h2>
-
-        <Button
-          type="primary"
-          onClick={onAddClick}
-          style={{ background: "#9a2119", borderColor: "#9a2119" }}
-        >
-          + Add Mentor
-        </Button>
+        <h2 className="text-lg font-semibold text-[#9a2119]">Mentor</h2>
+        <div className="flex flex-wrap items-center gap-3">
+          <Input
+            placeholder="Search mentor..."
+            prefix={<SearchOutlined className="text-[#9a2119]" />}
+            value={search}
+            onChange={(event) => onSearch(event.target.value)}
+            className="w-full sm:w-64 h-8 rounded-md border-[#9a2119]"
+          />
+          <Button
+            onClick={() => onSearch("")}
+            style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
+          >
+            <ReloadOutlined />
+            Reset
+          </Button>
+          <Button
+            onClick={onAddClick}
+            style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
+          >
+            + Add Mentor
+          </Button>
+        </div>
       </div>
 
       <Table

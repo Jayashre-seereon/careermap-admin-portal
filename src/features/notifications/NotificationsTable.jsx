@@ -1,4 +1,4 @@
-import { Table, Input, Tag } from "antd";
+import { Table, Input, Tag ,Button} from "antd";
 import {
   SearchOutlined,
   ReloadOutlined,
@@ -105,17 +105,23 @@ export default function NotificationsTable({
               placeholder="Search..."
               value={search}
               prefix={<SearchOutlined className="text-[#9a2119]" />}
-              className="h-10 w-full border-[#9a2119] sm:w-64"
+              className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
+             
               onChange={(e) => setSearch(e.target.value)}
             />
 
-            <button onClick={handleReset} className="btn-main">
-              <ReloadOutlined /> Reset
-            </button>
+            <Button
+              onClick={handleReset}
+              style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}  >
+              <ReloadOutlined />
+              Reset
+            </Button>
 
-            <button onClick={handleMarkAsReadClick} className="btn-main">
+            <Button
+              onClick={handleMarkAsReadClick}
+              style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}  >
               Mark as Read
-            </button>
+            </Button>
           </div>
         </div>
 

@@ -1,4 +1,4 @@
-import { Table, Input } from "antd";
+import { Table, Input,Button } from "antd";
 import {
   EyeOutlined,
   SearchOutlined,
@@ -98,21 +98,16 @@ export default function ApprovedOrder({ setSelectedUser }) {
             placeholder="Search user..."
             value={search}
             prefix={<SearchOutlined className="text-[#9a2119]" />}
-            className="w-full sm:w-64 h-9 rounded-md border-[#9a2119] focus:border-[#9a2119]"
-            onChange={(e) => setSearch(e.target.value)}
+          className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
+                onChange={(e) => setSearch(e.target.value)}
           />
 
-          <button
+          <Button
             onClick={handleReset}
-            className="flex items-center gap-2 px-4 h-9 rounded-md
-                       bg-[#9a2119]
-                       text-white
-                       hover:bg-[#c4392e]
-                       transition"
-          >
+            style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}  >
             <ReloadOutlined />
             Reset
-          </button>
+          </Button>
         </div>
       </div>
 

@@ -13,6 +13,9 @@ const initialData = [
     member: "Macaulay Jackson",
     date: "2025-12-12",
     time: "12:10",
+    receivedPayment: "NA",
+    transactionId: "NA",
+    paymentConfirmationId: "NA",
     status: "Unpaid",
   },
   {
@@ -21,6 +24,9 @@ const initialData = [
     member: "Macaulay Jackson",
     date: "2025-12-12",
     time: "12:10",
+    receivedPayment: "NA",
+    transactionId: "NA",
+    paymentConfirmationId: "NA",
     status: "Unpaid",
   },
   {
@@ -29,6 +35,9 @@ const initialData = [
     member: "Macaulay Jackson",
     date: "2025-07-31",
     time: "18:59",
+    receivedPayment: "8000",
+    transactionId: "1234567890",
+    paymentConfirmationId: "0987654321",
     status: "Paid",
   },
 ];
@@ -74,6 +83,23 @@ export default function BookingTable() {
       title: "Time",
       dataIndex: "time",
       width: 120,
+    },
+      {
+      title: "Received Payment",
+      dataIndex: "receivedPayment",
+      width: 160,
+    },
+    {
+      title: "Transaction ID",
+      dataIndex: "transactionId",
+      width: 180,
+      ellipsis: true,
+    },
+    {
+      title: "Payment Confirmation ID",
+      dataIndex: "paymentConfirmationId",
+      width: 220,
+      ellipsis: true,
     },
     {
       title: "Status",
@@ -128,19 +154,17 @@ export default function BookingTable() {
               placeholder="Search user..."
               value={search}
               prefix={<SearchOutlined className="text-[#9a2119]" />}
-              className="w-full sm:w-64 h-9"
+              className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
+             
               onChange={(e) => setSearch(e.target.value)}
             />
 
-            <button
+            <Button
               onClick={handleReset}
-              className="flex items-center gap-2 px-4 h-9 rounded-md
-                         bg-[#9a2119]
-                         text-white"
-            >
+               style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}  >
               <ReloadOutlined />
               Reset
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -166,6 +190,9 @@ export default function BookingTable() {
             <p><b>Member:</b> {selected.member}</p>
             <p><b>Date:</b> {selected.date}</p>
             <p><b>Time:</b> {selected.time}</p>
+            <p><b>Received Payment:</b> {selected.receivedPayment}</p>
+            <p><b>Transaction ID:</b> {selected.transactionId}</p>
+            <p><b>Payment Confirmation ID:</b> {selected.paymentConfirmationId}</p>
             <p>
               <b>Status:</b>{" "}
               <Tag color={selected.status === "Paid" ? "green" : "red"}>

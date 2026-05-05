@@ -101,7 +101,7 @@ export default function CategoryForm({ onSubmit, initialValues, disabled }) {
 
         <Form.Item
           name="howToBecome"
-          label="How to Become Title"
+          label="Path Ways"
                >
           <Input disabled={disabled} />
         </Form.Item>
@@ -140,7 +140,7 @@ export default function CategoryForm({ onSubmit, initialValues, disabled }) {
 
         <Form.Item
           name="isUpgrade"
-          label="Mark as Free"
+          label="Category Access"
           valuePropName="checked"
           getValueProps={(value) => ({ checked: value === "Free" })}
           normalize={(checked) => (checked ? "Free" : "Premium")}

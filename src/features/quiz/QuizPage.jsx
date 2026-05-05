@@ -5,6 +5,8 @@ import {
   EditOutlined,
   PlusOutlined,
   ReloadOutlined,
+  SearchOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { createQuizId, getQuizzes, saveQuizzes } from "./quizStore";
@@ -25,6 +27,8 @@ export default function QuizPage() {
   const [quizzes, setQuizzes] = useState(() => getQuizzes());
   const [editingQuiz, setEditingQuiz] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [selectedQuizUsers, setSelectedQuizUsers] = useState(null);
+  const [search, setSearch] = useState("");
 
   const persistQuizzes = (nextQuizzes) => {
     setQuizzes(nextQuizzes);
@@ -32,6 +36,15 @@ export default function QuizPage() {
   };
 
   const quizCount = useMemo(() => quizzes.length, [quizzes]);
+  const filteredQuizzes = useMemo(
+    () =>
+      quizzes.filter((quiz) =>
+        `${quiz.title} ${quiz.type} ${quiz.from} ${quiz.to} ${quiz.duration}`
+          .toLowerCase()
+          .includes(search.toLowerCase())
+      ),
+    [quizzes, search]
+  );
 
   const resetForm = () => {
     form.resetFields();
@@ -60,6 +73,7 @@ export default function QuizPage() {
       to: values.to,
       duration: values.duration,
       questions: [],
+      participants: [],
     };
 
     persistQuizzes([...quizzes, nextQuiz]);
@@ -118,6 +132,7 @@ export default function QuizPage() {
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Add</span>,
+      width: 160,
       render: (_, record) => (
         <button
           onClick={() => navigate(`/quiz/${record.id}/questions`)}
@@ -130,6 +145,28 @@ export default function QuizPage() {
     {
       title: <span className="text-[#9a2119] font-semibold">Duration</span>,
       dataIndex: "duration",
+    },
+    {
+      title: <span className="text-[#9a2119] font-semibold">Attended Users</span>,
+      render: (_, record) => {
+        const participants = record.participants || [];
+
+        return (
+          <div className="flex items-center gap-3">
+            <span className="rounded-full bg-[#fdf2f1] px-3 py-1 text-xs font-semibold text-[#9a2119]">
+              {participants.length}
+            </span>
+            <Button
+              type="button"
+              onClick={() => setSelectedQuizUsers(record)}
+              className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
+              title="View attended users"
+            >
+              <UserOutlined />
+            </Button>
+          </div>
+        );
+      },
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Action</span>,
@@ -171,24 +208,35 @@ export default function QuizPage() {
       <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-lg font-semibold text-[#9a2119]">Quiz List</h3>
-          <div className="flex items-center gap-3">
-            <div className="rounded-full bg-[#fdf2f1] px-4 py-2 text-sm font-semibold text-[#9a2119]">
-              Total Quiz: {quizCount}
-            </div>
-            <button
-              onClick={() => setIsAddModalOpen(true)}
-              className="rounded-xl bg-[#9a2119] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#b62b21]"
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            <Input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              prefix={<SearchOutlined className="text-[#9a2119]" />}
+              placeholder="Search quiz..."
+              className="w-full sm:w-64 h-8 rounded-md border-[#9a2119]"
+            />
+            <Button
+              onClick={() => setSearch("")}
+              style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
             >
-              <PlusOutlined className="mr-2" />
-              Add Quiz
-            </button>
+              <ReloadOutlined />
+              Reset
+            </Button>
+           
+            <Button
+              onClick={() => setIsAddModalOpen(true)}
+              style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
+            >
+              + Add Quiz
+            </Button>
           </div>
         </div>
 
         <Table
           rowKey="id"
           columns={columns}
-          dataSource={quizzes}
+          dataSource={filteredQuizzes}
           pagination={{ pageSize: 6 }}
           scroll={{ x: 900 }}
           rowClassName="hover:bg-[#fff8f7]"
@@ -343,6 +391,48 @@ export default function QuizPage() {
             </Form.Item>
           </div>
         </Form>
+      </Modal>
+
+      <Modal
+        title={
+          <span className="text-[#9a2119] font-semibold">
+            Attended Users{selectedQuizUsers ? ` - ${selectedQuizUsers.title}` : ""}
+          </span>
+        }
+        open={Boolean(selectedQuizUsers)}
+        onCancel={() => setSelectedQuizUsers(null)}
+        footer={null}
+        destroyOnHidden
+        width={720}
+      >
+        <Table
+          rowKey="id"
+          pagination={false}
+          dataSource={selectedQuizUsers?.participants || []}
+          locale={{ emptyText: "No users have taken this quiz yet." }}
+          columns={[
+            
+            {
+              title: <span className="text-[#9a2119] font-semibold">Attended User Name</span>,
+              dataIndex: "name",
+            },
+            {
+              title: <span className="text-[#9a2119] font-semibold">Email</span>,
+              dataIndex: "email",
+            },
+           
+            {
+              title: <span className="text-[#9a2119] font-semibold">Score</span>,
+              dataIndex: "score",
+              width: 110,
+            },
+            {
+              title: <span className="text-[#9a2119] font-semibold">Attended On</span>,
+              dataIndex: "attendedOn",
+              width: 140,
+            },
+          ]}
+        />
       </Modal>
     </section>
   );

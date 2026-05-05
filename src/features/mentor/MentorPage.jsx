@@ -28,6 +28,7 @@ const initialData = [
 
 export default function MentorPage() {
   const [mentors, setMentors] = useState(initialData);
+  const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("add"); // add | edit | view
   const [selected, setSelected] = useState(null);
@@ -67,6 +68,12 @@ export default function MentorPage() {
     setOpen(false);
   };
 
+  const filteredMentors = mentors.filter((mentor) =>
+    `${mentor.name} ${mentor.email} ${mentor.phone} ${mentor.category} ${mentor.designation} ${mentor.education}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
+
   return (
     <div className="space-y-5">
       <h2 className="text-xl font-bold text-[#9a2119]">
@@ -74,7 +81,9 @@ export default function MentorPage() {
       </h2>
 
       <MentorTable
-        data={mentors}
+        data={filteredMentors}
+        search={search}
+        onSearch={setSearch}
         onAddClick={() => {
           setMode("add");
           setSelected(null);

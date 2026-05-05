@@ -98,16 +98,16 @@ function SubCategoryForm({ onSubmit, initialValues, viewMode }) {
         <Input size="large" disabled={viewMode} placeholder="Title" />
       </Form.Item>
 
-      {/* How to Become */}
+      {/* Path Ways */}
       <Form.Item
         name="howToBecome"
-        label="How to Become Title"
+        label="Path Ways"
        
       >
         <Input
           size="large"
           disabled={viewMode}
-          placeholder="How to Become Title"
+          placeholder="Path Ways"
         />
       </Form.Item>
 

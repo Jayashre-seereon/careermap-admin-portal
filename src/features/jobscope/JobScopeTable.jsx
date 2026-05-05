@@ -1,8 +1,9 @@
 import React from "react";
-import { Table, Button, Popconfirm } from "antd";
-import { EyeOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { Table, Button, Popconfirm, Input } from "antd";
+import { EyeOutlined, EditOutlined, DeleteOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
 
 function JobScopeTable({ data, onAdd, onView, onEdit, onDelete, onSearch, search }) {
+  const handleReset = () => onSearch("");
   const columns = [
     {
       title: "SL",
@@ -13,8 +14,12 @@ function JobScopeTable({ data, onAdd, onView, onEdit, onDelete, onSearch, search
     { title: "Category", dataIndex: "category", width: 160 },
     { title: "2nd Category", dataIndex: "secondCategory", width: 280, ellipsis: true },
     { title: "Sub Category", dataIndex: "subcategory", width: 180, ellipsis: true },
-    { title: "Name", dataIndex: "name", width: 220, ellipsis: true },
-    {
+   {
+  title: "Name",
+  dataIndex: "names",
+  width: 220,
+  render: (names) => (names || []).join(", "),
+},   {
       title: "Action",
       fixed: "right",
       width: 150,
@@ -50,21 +55,30 @@ function JobScopeTable({ data, onAdd, onView, onEdit, onDelete, onSearch, search
     <div className="bg-white p-6 rounded-2xl shadow border w-full">
       
       {/* Header */}
-      <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
-        <input
-          placeholder="Search..."
-          value={search}
-          onChange={(e) => onSearch(e.target.value)}
-          className="border px-3 py-2 rounded-md w-full sm:w-64"
-        />
-
-        <Button
-          type="primary"
-          onClick={onAdd}
-          style={{ background: "#9a2119", borderColor: "#9a2119" }}
-        >
-          + Add Job Scope
-        </Button>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h2 className="text-lg font-semibold text-[#9a2119]">Job Scope</h2>
+        <div className="flex flex-wrap items-center gap-3">
+          <Input
+            placeholder="Search job scope..."
+            prefix={<SearchOutlined className="text-[#9a2119]" />}
+            value={search}
+            onChange={(e) => onSearch(e.target.value)}
+            className="w-full sm:w-64 h-8 rounded-md border-[#9a2119]"
+          />
+          <Button
+            onClick={handleReset}
+            style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
+          >
+            <ReloadOutlined />
+            Reset
+          </Button>
+          <Button
+            onClick={onAdd}
+            style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
+          >
+            + Add Job Scope
+          </Button>
+        </div>
       </div>
 
       <Table
