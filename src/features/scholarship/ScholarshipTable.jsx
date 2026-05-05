@@ -128,23 +128,22 @@ export default function ScholarshipTable({
               placeholder="Search..."
               value={search}
               prefix={<SearchOutlined />}
-              className="w-full sm:w-64"
+             className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
+             
               onChange={(e) => setSearch(e.target.value)}
             />
 
-            <button
+            <Button
               onClick={handleReset}
-              className="h-10 rounded-md bg-[#9a2119] px-4 text-white"
-            >
+               style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}  >
               <ReloadOutlined /> Reset
-            </button>
+            </Button>
 
-            <button
+            <Button
               onClick={onAdd}
-              className="h-10 rounded-md bg-[#9a2119] px-4 text-white"
-            >
+               style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}  >
               + Add
-            </button>
+            </Button>
           </div>
         </div>
 

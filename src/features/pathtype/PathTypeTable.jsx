@@ -97,33 +97,26 @@ export default function PathTypeTable({
             placeholder="Search path..."
             value={search}
             prefix={<SearchOutlined className="text-[#9a2119]" />}
-            className="w-full sm:w-64 h-9 rounded-md border-[#9a2119]"
+            className="w-full sm:w-64 h-8 rounded-md border-[#9a2119]"
             onChange={(e) => onSearch(e.target.value)}
           />
 
-          <button
+          <Button
             onClick={handleReset}
-            className="flex items-center gap-2 px-4 h-9 rounded-md
-                       bg-[#9a2119]
-                       text-white
-                       hover:bg-[#c4392e]
-                       transition"
-          >
+             style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}    >
+          
+          
             <ReloadOutlined />
             Reset
-          </button>
+          </Button>
 
           {/* Add Button */}
-          <button
+          <Button
             onClick={onAdd}
-            className="px-4 h-9 rounded-md
-                       bg-[#9a2119]
-                       text-white
-                       hover:bg-[#c4392e]
-                       transition"
-          >
+            style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}    >
+
             + Add
-          </button>
+          </Button>
         </div>
       </div>
 

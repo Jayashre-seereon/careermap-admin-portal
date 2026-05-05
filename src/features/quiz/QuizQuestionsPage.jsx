@@ -243,13 +243,13 @@ export default function QuizQuestionsPage() {
       <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-lg font-semibold text-[#9a2119]">Question List</h3>
-          <button
+          <Button
+            type="primary"
             onClick={() => setIsAddModalOpen(true)}
-            className="rounded-xl bg-[#9a2119] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#b62b21]"
-          >
-            <PlusOutlined className="mr-2" />
-            Add Question
-          </button>
+           style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}    >
+             + Add Questions
+         
+          </Button>
         </div>
 
         <Table
@@ -268,22 +268,21 @@ export default function QuizQuestionsPage() {
         onCancel={closeAddModal}
         destroyOnHidden
         footer={[
-          <button
+          <Button
             key="reset"
-            onClick={resetForm}
-            className="rounded-xl border border-[#d7d7d7] bg-white px-5 py-2 text-sm font-semibold text-[#222] transition hover:border-[#9a2119] hover:text-[#9a2119]"
+            onClick={closeAddModal}
+            className=" border border-[#9a2119]  px-5 py-2 text-sm font-semibold text-[#9a2119] "
           >
-            <ReloadOutlined className="mr-2" />
-            Reset
-          </button>,
-          <button
+
+            Cancel
+          </Button>,
+          <Button
             key="add"
             onClick={handleSubmit}
-            className="rounded-xl bg-[#9a2119] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#b62b21]"
-          >
-            <PlusOutlined className="mr-2" />
-            Add Question
-          </button>,
+            style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}    >
+
+            + Add Question
+          </Button>,
         ]}
       >
         <Form
@@ -355,20 +354,18 @@ export default function QuizQuestionsPage() {
         onCancel={closeEditModal}
         destroyOnHidden
         footer={[
-          <button
+          <Button
             key="cancel"
             onClick={closeEditModal}
-            className="rounded-xl border border-[#d7d7d7] bg-white px-5 py-2 text-sm font-semibold text-[#222] transition hover:border-[#9a2119] hover:text-[#9a2119]"
-          >
-            Cancel
-          </button>,
-          <button
+            className=" border border-[#9a2119]  px-5 py-2 text-sm font-semibold text-[#9a2119] ">
+                Cancel
+          </Button>,
+          <Button
             key="update"
             onClick={handleUpdate}
-            className="rounded-xl bg-[#9a2119] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#b62b21]"
-          >
+            style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}    >
             Update
-          </button>,
+          </Button>,
         ]}
       >
         <Form form={editForm} layout="vertical" validateTrigger={["onChange", "onBlur"]} className="mt-4">

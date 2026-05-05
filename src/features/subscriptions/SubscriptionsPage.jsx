@@ -1,40 +1,14 @@
 import React, { useState } from "react";
 import { Button, Input, Select, Table, Tag } from "antd";
 import { SearchOutlined, ReloadOutlined } from "@ant-design/icons";
-
-const initialSubscriptions = [
-  {
-    id: 1,
-    user: "Rahul Sharma",
-    planName: "Premium Career Plan",
-    time: "12 Months",
-    status: "Active",
-    expiryDate: "2026-12-31",
-  },
-  {
-    id: 2,
-    user: "Priya Das",
-    planName: "Mentor Plus",
-    time: "6 Months",
-    status: "Inactive",
-    expiryDate: "2026-08-15",
-  },
-  {
-    id: 3,
-    user: "Amit Kumar",
-    planName: "Scholarship Access",
-    time: "3 Months",
-    status: "Active",
-    expiryDate: "2026-06-30",
-  },
-];
+import { initialSubscriptions } from "../plans/planData";
 
 export default function SubscriptionsPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("All");
 
   const filteredData = initialSubscriptions.filter((item) => {
-    const matchesSearch = `${item.user} ${item.planName}`
+    const matchesSearch = `${item.user} ${item.email} ${item.planName}`
       .toLowerCase()
       .includes(search.toLowerCase());
     const matchesStatus = status === "All" || item.status === status;
@@ -48,6 +22,7 @@ export default function SubscriptionsPage() {
       width: 70,
     },
     { title: "User", dataIndex: "user", width: 220, ellipsis: true },
+    { title: "Email", dataIndex: "email", width: 260, ellipsis: true },
     { title: "Plan Name", dataIndex: "planName", width: 260, ellipsis: true },
     { title: "Time", dataIndex: "time", width: 140 },
     {

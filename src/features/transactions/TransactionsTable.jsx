@@ -129,20 +129,17 @@ export default function TransactionsTable({ onView }) {
               placeholder="Search user..."
               value={search}
               prefix={<SearchOutlined className="text-[#9a2119]" />}
-              className="h-10 w-full border-[#9a2119] sm:w-64"
+             className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
+             
               onChange={(e) => setSearch(e.target.value)}
             />
 
-            <button
+            <Button
               onClick={handleReset}
-              className="flex items-center gap-2 px-5 h-10 rounded-lg
-                         bg-[#9a2119]
-                         text-white
-                         hover:bg-[#c0392b]"
-            >
+              style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}  >
               <ReloadOutlined />
               Reset
-            </button>
+            </Button>
           </div>
         </div>
 
