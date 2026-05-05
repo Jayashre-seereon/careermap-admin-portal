@@ -5,6 +5,7 @@ import {
   EditOutlined,
   DeleteOutlined,
   SearchOutlined,
+  ReloadOutlined,
 } from "@ant-design/icons";
 
 export default function Category2Table({
@@ -16,6 +17,8 @@ export default function Category2Table({
   search,
   setSearch,
 }) {
+  const handleReset = () => setSearch("");
+
   const columns = [
     {
       title: "SL",
@@ -70,18 +73,16 @@ export default function Category2Table({
       width: 150,
       render: (_, record) => (
         <Space>
-          <Button className="w-8 h-8 flex items-center justify-center rounded-md 
-                       border border-[#9a2119] 
-                       text-[#9a2119]
-                       hover:border-[#e57373]
-                       hover:text-[#e57373]
-                      " icon={<EyeOutlined />} onClick={() => onView(record)} />
-          <Button className="w-8 h-8 flex items-center justify-center rounded-md 
-                       border border-[#9a2119] 
-                       text-[#9a2119]
-                       hover:border-[#e57373]
-                       hover:text-[#e57373]
-                      " icon={<EditOutlined />} onClick={() => onEdit(record)} />
+          <Button
+            className="w-8 h-8 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
+            icon={<EyeOutlined />}
+            onClick={() => onView(record)}
+          />
+          <Button
+            className="w-8 h-8 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
+            icon={<EditOutlined />}
+            onClick={() => onEdit(record)}
+          />
           <Popconfirm
             title="Delete?"
             description="Are you sure you want to delete this item?"
@@ -97,29 +98,31 @@ export default function Category2Table({
   ];
 
   return (
-  <div className="w-full bg-white p-6 rounded-2xl shadow border">
-
-      {/* Top Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">  
-          {/* 🔍 SEARCH */}
+    <div className="w-full bg-white p-6 rounded-2xl shadow border">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h2 className="text-lg font-semibold text-[#9a2119]">Second Category</h2>
+        <div className="flex flex-wrap items-center gap-3">
           <Input
-            placeholder="Search category..."
-            prefix={<SearchOutlined />}
+            placeholder="Search second category..."
+            prefix={<SearchOutlined className="text-[#9a2119]" />}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-             className="border px-3 py-2 rounded-md w-full sm:w-[250px]"
-       
+            className="w-full sm:w-64 h-8 rounded-md border-[#9a2119]"
           />
-
-          {/* ➕ ADD BUTTON */}
           <Button
-            type="primary"
+            onClick={handleReset}
+            style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
+          >
+            <ReloadOutlined />
+            Reset
+          </Button>
+          <Button
             onClick={onAdd}
-            style={{ background: "#9a2119", borderColor: "#9a2119" }}
+            style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
           >
             + Add Category
           </Button>
-       
+        </div>
       </div>
 
       <Table

@@ -16,6 +16,7 @@ const initialData = [
 
 export default function ModulePage() {
   const [modules, setModules] = useState(initialData);
+  const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("add");
   const [selected, setSelected] = useState(null);
@@ -50,6 +51,12 @@ export default function ModulePage() {
     setOpen(false);
   };
 
+  const filteredModules = modules.filter((module) =>
+    `${module.title} ${module.btnText} ${module.url} ${module.position}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
+
   return (
     <div className="space-y-5">
       <h2 className="text-xl font-bold text-[#9a2119]">
@@ -57,7 +64,9 @@ export default function ModulePage() {
       </h2>
 
       <ModuleTable
-        data={modules}
+        data={filteredModules}
+        search={search}
+        onSearch={setSearch}
         onAddClick={() => {
           setMode("add");
           setSelected(null);
