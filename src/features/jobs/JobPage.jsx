@@ -130,17 +130,24 @@ export default function JobPage() {
               placeholder="Search..."
               value={search}
               prefix={<SearchOutlined className="text-[#9a2119]" />}
-              className="h-10 w-full border-[#9a2119] sm:w-64"
+              className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
+             
               onChange={(e) => setSearch(e.target.value)}
             />
 
-            <button type="button" onClick={() => setSearch("")} className="btn-main">
-              <ReloadOutlined /> Reset
-            </button>
+            <Button
+              onClick={() => setSearch("")}
+              style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}  >
+              <ReloadOutlined />
+              Reset
+            </Button>
 
-            <button type="button" onClick={() => openJobModal("add")} className="btn-main">
+            <Button
+              type="button"
+              onClick={() => openJobModal("add")}
+              style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}  >
               + Add Job
-            </button>
+            </Button>
           </div>
         </div>
 

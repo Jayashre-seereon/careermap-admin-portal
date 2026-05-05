@@ -10,7 +10,7 @@ const initialData = [
     category: "Medical",
     secondCategory: "ALLIED & PARA MEDICAL COURSES/DEGREES",
     subcategory: "N/A",
-    name: "Physiotheraphist",
+   names: ["Physiotheraphist"]
   },
   {
     id: 2,
@@ -18,7 +18,7 @@ const initialData = [
     category: "Medical",
     secondCategory: "ALLIED & PARA MEDICAL COURSES/DEGREES",
     subcategory: "RADIOLOGY",
-    name: "Radiologist",
+    names: ["Radiologist"],
   },
   {
     id: 3,
@@ -26,7 +26,7 @@ const initialData = [
     category: "Medical",
     secondCategory: "ALLIED & PARA MEDICAL COURSES/DEGREES",
     subcategory: "N/A",
-    name: "Pharamacist",
+    names: ["Pharamacist"],
   },
 ];
 
@@ -40,10 +40,12 @@ function JobScopePage() {
   const filteredData = useMemo(
     () =>
       data.filter((item) =>
-        item.name.toLowerCase().includes(search.toLowerCase())
-      ),
+       (item.names || []).some((n) =>
+  n.toLowerCase().includes((search || "").toLowerCase())
+)      ),
     [data, search]
   );
+   
 
   // Submit
   const handleSubmit = (values) => {

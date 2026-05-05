@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Table, Button, Input, Space, Popconfirm, Tag } from "antd";
-import { EyeOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { EyeOutlined, EditOutlined, DeleteOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
 
 export default function CategoryTable({ data, onAddClick, onView, onEdit, onDelete }) {
   const [search, setSearch] = useState("");
@@ -69,19 +69,29 @@ export default function CategoryTable({ data, onAddClick, onView, onEdit, onDele
 
       {/* Top Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <Input
-          placeholder="Search..."
-          className="w-full sm:w-60"
-          onChange={(e) => setSearch(e.target.value)}
-        />
-
-        <Button
-          type="primary"
-          onClick={onAddClick}
-          style={{ background: "#9a2119", borderColor: "#9a2119" }}
-        >
-          + Add Category
-        </Button>
+        <h2 className="text-lg font-semibold text-[#9a2119]">Category</h2>
+        <div className="flex flex-wrap items-center gap-3">
+          <Input
+            placeholder="Search category..."
+            prefix={<SearchOutlined className="text-[#9a2119]" />}
+            className="w-full sm:w-64 h-8 rounded-md border-[#9a2119]"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <Button
+            onClick={() => setSearch("")}
+            style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
+          >
+            <ReloadOutlined />
+            Reset
+          </Button>
+          <Button
+            onClick={onAddClick}
+            style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
+          >
+            + Add Category
+          </Button>
+        </div>
       </div>
 
       <Table

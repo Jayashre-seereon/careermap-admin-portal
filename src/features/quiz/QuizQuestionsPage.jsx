@@ -6,6 +6,7 @@ import {
   EditOutlined,
   PlusOutlined,
   ReloadOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import { createQuestionId, getQuizzes, saveQuizzes } from "./quizStore";
@@ -28,10 +29,20 @@ export default function QuizQuestionsPage() {
   const [quizzes, setQuizzes] = useState(() => getQuizzes());
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [search, setSearch] = useState("");
 
   const quiz = useMemo(
     () => quizzes.find((item) => item.id === quizId),
     [quizId, quizzes]
+  );
+  const filteredQuestions = useMemo(
+    () =>
+      (quiz?.questions || []).filter((question) =>
+        `${question.question} ${(question.options || []).join(" ")} Option ${question.correctOption + 1}`
+          .toLowerCase()
+          .includes(search.toLowerCase())
+      ),
+    [quiz, search]
   );
 
   const persistQuizzes = (nextQuizzes) => {
@@ -243,19 +254,34 @@ export default function QuizQuestionsPage() {
       <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-lg font-semibold text-[#9a2119]">Question List</h3>
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="rounded-xl bg-[#9a2119] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#b62b21]"
-          >
-            <PlusOutlined className="mr-2" />
-            Add Question
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <Input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              prefix={<SearchOutlined className="text-[#9a2119]" />}
+              placeholder="Search question..."
+              className="w-full sm:w-64 h-8 rounded-md border-[#9a2119]"
+            />
+            <Button
+              onClick={() => setSearch("")}
+              style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
+            >
+              <ReloadOutlined />
+              Reset
+            </Button>
+            <Button
+              onClick={() => setIsAddModalOpen(true)}
+              style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
+            >
+              + Add Questions
+            </Button>
+          </div>
         </div>
 
         <Table
           rowKey="id"
           columns={columns}
-          dataSource={quiz.questions}
+          dataSource={filteredQuestions}
           pagination={{ pageSize: 6 }}
           scroll={{ x: 1300 }}
           rowClassName="hover:bg-[#fff8f7]"
@@ -268,22 +294,21 @@ export default function QuizQuestionsPage() {
         onCancel={closeAddModal}
         destroyOnHidden
         footer={[
-          <button
+          <Button
             key="reset"
-            onClick={resetForm}
-            className="rounded-xl border border-[#d7d7d7] bg-white px-5 py-2 text-sm font-semibold text-[#222] transition hover:border-[#9a2119] hover:text-[#9a2119]"
+            onClick={closeAddModal}
+            className=" border border-[#9a2119]  px-5 py-2 text-sm font-semibold text-[#9a2119] "
           >
-            <ReloadOutlined className="mr-2" />
-            Reset
-          </button>,
-          <button
+
+            Cancel
+          </Button>,
+          <Button
             key="add"
             onClick={handleSubmit}
-            className="rounded-xl bg-[#9a2119] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#b62b21]"
-          >
-            <PlusOutlined className="mr-2" />
-            Add Question
-          </button>,
+            style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}    >
+
+            + Add Question
+          </Button>,
         ]}
       >
         <Form
@@ -355,20 +380,18 @@ export default function QuizQuestionsPage() {
         onCancel={closeEditModal}
         destroyOnHidden
         footer={[
-          <button
+          <Button
             key="cancel"
             onClick={closeEditModal}
-            className="rounded-xl border border-[#d7d7d7] bg-white px-5 py-2 text-sm font-semibold text-[#222] transition hover:border-[#9a2119] hover:text-[#9a2119]"
-          >
-            Cancel
-          </button>,
-          <button
+            className=" border border-[#9a2119]  px-5 py-2 text-sm font-semibold text-[#9a2119] ">
+                Cancel
+          </Button>,
+          <Button
             key="update"
             onClick={handleUpdate}
-            className="rounded-xl bg-[#9a2119] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#b62b21]"
-          >
+            style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}    >
             Update
-          </button>,
+          </Button>,
         ]}
       >
         <Form form={editForm} layout="vertical" validateTrigger={["onChange", "onBlur"]} className="mt-4">

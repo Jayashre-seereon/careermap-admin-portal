@@ -117,18 +117,7 @@ export default function SiteSettings() {
             <Form.Item label={<>Site Title <span style={{ color: "red" }}>*</span></>} style={{ marginBottom: 12 }}>
               <Input defaultValue="No. 1 Career Counselling Organization in Odisha" />
             </Form.Item>
-            <Form.Item label={<>Currency <span style={{ color: "red" }}>*</span></>} style={{ marginBottom: 12 }}>
-              <Input defaultValue="INR700" />
-            </Form.Item>
-            <Form.Item label={<>Currency Symbol <span style={{ color: "red" }}>*</span></>} style={{ marginBottom: 12 }}>
-              <Input defaultValue="RS" />
-            </Form.Item>
-            <Form.Item label={<>RTL/LTR <span style={{ color: "red" }}>*</span></>} style={{ marginBottom: 12 }}>
-              <Select defaultValue="LTR" style={{ width: "100%" }}>
-                <Option value="LTR">LTR</Option>
-                <Option value="RTL">RTL</Option>
-              </Select>
-            </Form.Item>
+           
           </div>
 
           {/* Right Column */}
@@ -139,16 +128,7 @@ export default function SiteSettings() {
                 <Option value="UTC">UTC</Option>
               </Select>
             </Form.Item>
-            <ColorPickerField
-              label="Theme Five Base Color"
-              value={baseColor}
-              onChange={setBaseColor}
-            />
-            <ColorPickerField
-              label="Theme Five Secondary Color"
-              value={secondaryColor}
-              onChange={setSecondaryColor}
-            />
+           
           </div>
         </div>
 

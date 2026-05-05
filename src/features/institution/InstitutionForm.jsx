@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
-import { Form, Input, Select, Upload, Button, DatePicker } from "antd";
+import { Form, Input, Select, Upload, Button,  } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { validationRules } from "../../utils/formValidation";
+import StatusSwitch from "../../components/ui/StatusSwitch";
 
 const { Option } = Select;
 
@@ -62,7 +63,7 @@ function InstitutionForm({ onSubmit, initialValues, viewMode }) {
 
       {/* Date */}
       <Form.Item name="date" label="Tentative Date">
-        <DatePicker placeholder="July 2025" disabled={viewMode} />
+        <Input type="date" placeholder="July 2025" disabled={viewMode} />
       </Form.Item>
 
       {/* URL */}
@@ -84,7 +85,13 @@ function InstitutionForm({ onSubmit, initialValues, viewMode }) {
       <Form.Item name="district" label="District" rules={[validationRules.charactersOnly("District")]}>
         <Input disabled={viewMode} />
       </Form.Item>
-
+<Form.Item name="isTop" label="Is Top" valuePropName="checked" getValueProps={(value) => ({ checked: value === "Yes" })}
+               normalize={(checked) => (checked ? "Yes" : "No")}
+               rules={[validationRules.required("Is Top")]} >
+       <StatusSwitch disabled={viewMode} checkedChildren="Yes"
+                 unCheckedChildren="No"/>
+      </Form.Item>
+     
       {/* Submit */}
       {!viewMode && (
         <div className="md:col-span-2 lg:col-span-3">

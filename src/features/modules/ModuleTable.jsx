@@ -1,12 +1,14 @@
 import React from "react";
-import { Table, Button, Avatar, Space, Popconfirm } from "antd";
+import { Table, Button, Avatar, Space, Popconfirm, Input } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
   DeleteOutlined,
+  ReloadOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 
-function ModuleTable({ data, onAddClick, onView, onEdit, onDelete }) {
+function ModuleTable({ data, onAddClick, onView, onEdit, onDelete, search, onSearch }) {
   const columns = [
     {
       title: "SL No.",
@@ -73,15 +75,29 @@ function ModuleTable({ data, onAddClick, onView, onEdit, onDelete }) {
     <div className="w-full bg-white p-5 rounded-2xl shadow-md border">
 
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <h2 className="text-[#9a2119] font-semibold">Module List</h2>
-
-        <Button
-          type="primary"
-          onClick={onAddClick}
-          style={{ background: "#9a2119", borderColor: "#9a2119" }}
-        >
-          + Add Module
-        </Button>
+        <h2 className="text-lg font-semibold text-[#9a2119]">Module</h2>
+        <div className="flex flex-wrap items-center gap-3">
+          <Input
+            placeholder="Search module..."
+            prefix={<SearchOutlined className="text-[#9a2119]" />}
+            value={search}
+            onChange={(event) => onSearch(event.target.value)}
+            className="w-full sm:w-64 h-8 rounded-md border-[#9a2119]"
+          />
+          <Button
+            onClick={() => onSearch("")}
+            style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
+          >
+            <ReloadOutlined />
+            Reset
+          </Button>
+          <Button
+            onClick={onAddClick}
+            style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
+          >
+            + Add Module
+          </Button>
+        </div>
       </div>
 
       <Table

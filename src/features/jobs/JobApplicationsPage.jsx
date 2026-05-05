@@ -104,13 +104,16 @@ export default function JobApplicationsPage() {
               placeholder="Search..."
               value={search}
               prefix={<SearchOutlined className="text-[#9a2119]" />}
-              className="h-10 w-full border-[#9a2119] sm:w-64"
-              onChange={(e) => setSearch(e.target.value)}
+             className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
+               onChange={(e) => setSearch(e.target.value)}
             />
 
-            <button onClick={() => setSearch("")} className="btn-main">
-              <ReloadOutlined /> Reset
-            </button>
+            <Button
+              onClick={() => setSearch("")}
+              style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}  >
+              <ReloadOutlined />
+              Reset
+            </Button>
           </div>
         </div>
 

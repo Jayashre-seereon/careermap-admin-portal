@@ -1,30 +1,23 @@
-import { useState } from "react";
-import { Modal } from "antd";
+import { useMemo, useState } from "react";
+import { Modal, Table, Tag } from "antd";
 import PlansTable from "./PlansTable";
 import PlansForm from "./PlansForm";
-
-const initialData = [
-  {
-    key: "1",
-    name: "Free",
-    features: "Career Library, Entrance Exam, Institute, Quiz",
-    module: ["Career Library", "Entrance Exam", "Institute", "Quiz"],
-    price: "0",
-  },
-  {
-    key: "2",
-    name: "Gold",
-    features: "Mock Test, Live Test, Practice Questions",
-    module: ["Career Library", "Career Assessment"],
-    price: "1",
-  },
-];
+import { initialPlans, initialSubscriptions } from "./planData";
 
 export default function PlansPage() {
-  const [data, setData] = useState(initialData);
+  const [data, setData] = useState(initialPlans);
   const [open, setOpen] = useState(false);
   const [viewMode, setViewMode] = useState(false);
   const [selected, setSelected] = useState(null);
+  const [selectedPlanUsers, setSelectedPlanUsers] = useState(null);
+
+  const subscriptionsByPlan = useMemo(() => {
+    return initialSubscriptions.reduce((accumulator, subscription) => {
+      const planKey = subscription.planKey;
+      accumulator[planKey] = [...(accumulator[planKey] || []), subscription];
+      return accumulator;
+    }, {});
+  }, []);
 
   const handleClose = () => {
     setOpen(false);
@@ -52,6 +45,7 @@ export default function PlansPage() {
     <>
       <PlansTable
         data={data}
+        subscriptionsByPlan={subscriptionsByPlan}
         onAdd={() => {
           setSelected(null);
           setViewMode(false);
@@ -68,6 +62,7 @@ export default function PlansPage() {
           setOpen(true);
         }}
         onDelete={handleDelete}
+        onViewUsers={(plan) => setSelectedPlanUsers(plan)}
       />
 
       <Modal
@@ -80,6 +75,51 @@ export default function PlansPage() {
           onSubmit={handleSubmit}
           initialValues={selected}
           viewMode={viewMode}
+        />
+      </Modal>
+
+      <Modal
+        open={Boolean(selectedPlanUsers)}
+        onCancel={() => setSelectedPlanUsers(null)}
+        footer={null}
+        width={900}
+        title={
+          <span className="text-[#9a2119] font-semibold">
+            Subscriptions{selectedPlanUsers ? ` - ${selectedPlanUsers.name}` : ""}
+          </span>
+        }
+      >
+        <Table
+          rowKey="id"
+          pagination={false}
+          dataSource={subscriptionsByPlan[selectedPlanUsers?.key] || []}
+          locale={{ emptyText: "No users have taken this plan yet." }}
+          columns={[
+            
+            {
+              title: <span className="text-[#9a2119] font-semibold">User</span>,
+              dataIndex: "user",
+            },
+            {
+              title: <span className="text-[#9a2119] font-semibold">Email</span>,
+              dataIndex: "email",
+            },
+            {
+              title: <span className="text-[#9a2119] font-semibold">Time</span>,
+              dataIndex: "time",
+            },
+            {
+              title: <span className="text-[#9a2119] font-semibold">Status</span>,
+              dataIndex: "status",
+              render: (value) => (
+                <Tag color={value === "Active" ? "red" : "default"}>{value}</Tag>
+              ),
+            },
+            {
+              title: <span className="text-[#9a2119] font-semibold">Expiry Date</span>,
+              dataIndex: "expiryDate",
+            },
+          ]}
         />
       </Modal>
     </>

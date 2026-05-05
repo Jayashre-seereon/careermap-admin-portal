@@ -28,7 +28,6 @@ import {
   LogInIcon,
   MapPin,
   MessageSquare,
-  Repeat,
   Search,
   Settings2,
   Tag,
@@ -79,23 +78,22 @@ export const navSections = [
   {
     label: "MANAGEMENT",
     items: [
-      { icon: MapPin, name: "Career Plan", path: "/careerplan" },
+     // { icon: MapPin, name: "Career Plan", path: "/careerplan" },
       { icon: Bell, name: "Subscribers", path: "/all_users/subscribers" },
       { icon: CalendarCheck, name: "Bookings", path: "/bookings" },
       { icon: CreditCard, name: "Plans", path: "/plans" },
       { icon: HelpCircle, name: "Quiz", path: "/quiz" },
-      { icon: Repeat, name: "Subscriptions", path: "/subscriptions" },
-      { icon: Wrench, name: "Services", path: "/services" },
+     // { icon: Wrench, name: "Services", path: "/services" },
     ],
   },
-  {
-    label: "COUNTRIES",
-    items: [
-      { icon: Globe2, name: "All Countries", path: "/allcountries" },
-      { icon: MapPin, name: "States", path: "/states" },
-      { icon: MapPin, name: "Districts", path: "/districts" },
-    ],
-  },
+  // {
+  //   label: "COUNTRIES",
+  //   items: [
+  //     { icon: Globe2, name: "All Countries", path: "/allcountries" },
+  //     { icon: MapPin, name: "States", path: "/states" },
+  //     { icon: MapPin, name: "Districts", path: "/districts" },
+  //   ],
+  // },
   {
     label: "REPORT",
     items: [
@@ -124,19 +122,18 @@ export const navSections = [
     items: [
       { icon: Settings2, name: "Global Settings", path: "/globalsettings" },
       { icon: GalleryVerticalIcon, name: "Logo & Favicon", path: "/logo-favicon" },
-      { icon: Languages, name: "Language", path: "/language" },
-     {
-  icon: BellIcon,
-  name: "Email & Notification",
-  children: [
-    { name: "All Templates", path: "/email-notification/alltemplates" },
-    { name: "Global Template", path: "/email-notification/globaltemplates" },
-    { name: "Email Config", path: "/email-notification/emailconfig" },
-    { name: "SMS Config", path: "/email-notification/smsconfig" },
-  ],
-},
-      { icon: Settings2, name: "Social Credential", path: "/social-credential" },
-      { icon: Search, name: "SEO", path: "/seo" },
+      // { icon: Languages, name: "Language", path: "/language" },
+//      {
+//   icon: BellIcon,
+//   name: "Email & Notification",
+//   children: [
+//     { name: "All Templates", path: "/email-notification/alltemplates" },
+//     { name: "Global Template", path: "/email-notification/globaltemplates" },
+//     { name: "Email Config", path: "/email-notification/emailconfig" },
+//     { name: "SMS Config", path: "/email-notification/smsconfig" },
+// },
+      // { icon: Settings2, name: "Social Credential", path: "/social-credential" },
+      // { icon: Search, name: "SEO", path: "/seo" },
     ],
   },
 ];

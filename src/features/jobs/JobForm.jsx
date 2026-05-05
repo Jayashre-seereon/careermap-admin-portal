@@ -1,11 +1,11 @@
-import { Button, Checkbox, Form, Input, Select, message } from "antd";
+import { Button, Checkbox, Form, Input, Select, message, } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { useQuill } from "react-quilljs";
 import Quill from "quill";
 import { createJobId, getJobs, getTodayLabel, saveJobs } from "./jobStore";
 import "quill/dist/quill.snow.css";
 import { validationRules } from "../../utils/formValidation";
-
+import StatusSwitch from "../../components/ui/StatusSwitch";
 const icons = Quill.import("ui/icons");
 
 icons["undo"] = `
@@ -210,10 +210,19 @@ export default function JobForm({ mode = "add", jobId, onSuccess, onCancel }) {
           </div>
         </div>
 
-        <Form.Item name="active" valuePropName="checked" className="mb-6">
-          <Checkbox disabled={isView}>Active</Checkbox>
+       
+  <Form.Item
+          name="status"
+          label="Status"
+          valuePropName="checked"
+          className="md:col-span-2 lg:col-span-1"
+        >
+          <StatusSwitch
+            disabled={isView}
+            checkedChildren="Active"
+            unCheckedChildren="Inactive"
+          />
         </Form.Item>
-
         <div className="flex gap-3">
           {!isView && (
             <Button

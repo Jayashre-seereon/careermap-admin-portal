@@ -16,6 +16,7 @@ const initialData = [
 
 export default function StreamPage() {
   const [streams, setStreams] = useState(initialData);
+  const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("add");
   const [selected, setSelected] = useState(null);
@@ -54,6 +55,9 @@ export default function StreamPage() {
     );
     setOpen(false);
   };
+  const filteredStreams = streams.filter((stream) =>
+    `${stream.name}`.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className="space-y-5">
@@ -63,7 +67,9 @@ export default function StreamPage() {
       </h2>
 
       <StreamTable
-        data={streams}
+        data={filteredStreams}
+        search={search}
+        onSearch={setSearch}
         onAddClick={() => {
           setMode("add");
           setSelected(null);
