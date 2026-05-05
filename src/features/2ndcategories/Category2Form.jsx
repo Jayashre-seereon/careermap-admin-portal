@@ -65,7 +65,7 @@ export default function Category2Form({ onSubmit, initialValues, mode }) {
 
         <Form.Item
           name="name"
-          label="2nd Category"
+          label="Name"
           rules={[validationRules.required("2nd Category"), validationRules.charactersOnly("2nd Category")]}
         >
           <Input disabled={isView} />
@@ -87,8 +87,8 @@ export default function Category2Form({ onSubmit, initialValues, mode }) {
           />
         </Form.Item>
 
-        <Form.Item name="howToBecome" label="How to Become Title">
-          <Input disabled={isView} placeholder="Enter how to become title" />
+        <Form.Item name="howToBecome" label="Path Ways">
+          <Input disabled={isView} placeholder="Enter Path Ways" />
         </Form.Item>
 
         <Form.Item name="coverImage" label="Cover Image">

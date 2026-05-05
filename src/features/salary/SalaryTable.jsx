@@ -13,8 +13,17 @@ function SalaryTable({ data, onAdd, onView, onEdit, onDelete, onSearch, search }
     { title: "Category", dataIndex: "category", width: 160 },
     { title: "2nd Category", dataIndex: "secondCategory", width: 260, ellipsis: true },
     { title: "Subcategory", dataIndex: "subcategory", width: 180, ellipsis: true },
-    { title: "Salary Range", dataIndex: "salary", width: 220, ellipsis: true },
-    {
+   {
+  title: "Salary Range",
+  dataIndex: "salaryRanges",
+  render: (ranges) => {
+    if (!ranges) return "-";
+
+    return ranges
+      .map((r) => `${r.min} - ${r.max}`)
+      .join(", ");
+  },
+},  {
       title: "Action",
       fixed: "right",
       width: 150,

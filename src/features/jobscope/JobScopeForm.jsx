@@ -1,16 +1,24 @@
 import React, { useEffect } from "react";
 import { Form, Select, Input, Button } from "antd";
 import { validationRules } from "../../utils/formValidation";
-
+import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 const { Option } = Select;
 
 function JobScopeForm({ onSubmit, initialValues, viewMode }) {
   const [form] = Form.useForm();
 
-  useEffect(() => {
-    if (initialValues) form.setFieldsValue(initialValues);
-    else form.resetFields();
-  }, [form, initialValues]);
+useEffect(() => {
+  if (initialValues) {
+    form.setFieldsValue({
+      ...initialValues,
+      names: initialValues.names || [""], // ✅ important
+    });
+  } else {
+    form.setFieldsValue({
+      names: [""],
+    });
+  }
+}, [form, initialValues]);
 
   const handleFinish = (values) => {
     onSubmit(values);
@@ -61,14 +69,56 @@ function JobScopeForm({ onSubmit, initialValues, viewMode }) {
       </Form.Item>
 
       {/* Name */}
-      <Form.Item
-        name="name"
-        label="Name"
-        className="md:col-span-2"
-        rules={[validationRules.required("Name"), validationRules.charactersOnly("Name")]}
-      >
-        <Input disabled={viewMode} />
-      </Form.Item>
+      <Form.List name="names">
+        {(fields, { add, remove }) => (
+          <>
+            <label className="md:col-span-1 font-medium">Names</label>
+
+            {fields.map(({ key, name, ...restField }) => (
+              <Form.Item key={key} className="md:col-span-1">
+                <div className="flex gap-1 items-center">
+
+                  <Form.Item
+                    {...restField}
+                    name={name}
+                    rules={[
+                      validationRules.required("Name"),
+                      validationRules.charactersOnly("Name"),
+                    ]}
+                    noStyle
+                  >
+                    <Input
+                      placeholder="Enter Name"
+                      disabled={viewMode}
+                      style={{ width: "95%" }}
+                    />
+                  </Form.Item>
+
+                  {!viewMode && (
+                    <MinusCircleOutlined
+                      onClick={() => remove(name)}
+                      style={{ marginTop: 8 }}
+                    />
+                  )}
+                </div>
+              </Form.Item>
+            ))}
+
+            {!viewMode && (
+              <Form.Item className="md:col-span-2">
+                <Button
+                  type="dashed"
+                  onClick={() => add()}
+                  block
+                  icon={<PlusOutlined />}
+                >
+                  Add Name
+                </Button>
+              </Form.Item>
+            )}
+          </>
+        )}
+      </Form.List>
 
       {/* Submit */}
       {!viewMode && (

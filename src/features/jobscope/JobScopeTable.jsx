@@ -13,8 +13,12 @@ function JobScopeTable({ data, onAdd, onView, onEdit, onDelete, onSearch, search
     { title: "Category", dataIndex: "category", width: 160 },
     { title: "2nd Category", dataIndex: "secondCategory", width: 280, ellipsis: true },
     { title: "Sub Category", dataIndex: "subcategory", width: 180, ellipsis: true },
-    { title: "Name", dataIndex: "name", width: 220, ellipsis: true },
-    {
+   {
+  title: "Name",
+  dataIndex: "names",
+  width: 220,
+  render: (names) => (names || []).join(", "),
+},   {
       title: "Action",
       fixed: "right",
       width: 150,

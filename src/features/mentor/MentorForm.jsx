@@ -86,7 +86,12 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
         >
           <Input disabled={disabled} placeholder="Enter phone number" />
         </Form.Item>
-
+<Form.Item
+name="dob"
+          label="Date of Birth"
+        >
+          <Input type="date" disabled={disabled} placeholder="Enter date of birth" />
+        </Form.Item>
         {/* Designation */}
         <Form.Item
           name="designation"
@@ -154,7 +159,13 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
         >
           <Input disabled={disabled} placeholder="Enter mentor fees" />
         </Form.Item>
-
+<Form.Item
+name="rank"
+          label="Rank"
+          rules={[validationRules.decimal("Rank")]}
+        >
+          <Input disabled={disabled} placeholder="Enter rank" />
+        </Form.Item>
         {/* Image Upload */}
         <Form.Item name="image" label="Image">
           <Upload beforeUpload={() => false} disabled={disabled}>

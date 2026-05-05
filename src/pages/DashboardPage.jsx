@@ -75,7 +75,7 @@ const orderValues = { total: 24, approved: 14, pending: 7, rejected: 3 };
 const ORDER_COLORS = { approved: "#9a2119", pending: "#c4392e", rejected: "#d4614f" };
 
 const donutData = {
-  labels: ["Approved", "Pending", "Rejected"],
+  labels: ["Diamond", "Gold", "Free"],
   datasets: [{
     data: [orderValues.approved, orderValues.pending, orderValues.rejected],
     backgroundColor: [ORDER_COLORS.approved, ORDER_COLORS.pending, ORDER_COLORS.rejected],
@@ -222,9 +222,9 @@ export default function Dashboard() {
   useEffect(() => { setTimeout(() => setAnimate(true), 80); }, []);
 
   const legendItems = [
-    { label: "Approved", val: orderValues.approved, color: ORDER_COLORS.approved },
-    { label: "Pending",  val: orderValues.pending,  color: ORDER_COLORS.pending  },
-    { label: "Rejected", val: orderValues.rejected, color: ORDER_COLORS.rejected },
+    { label: "Diamond", val: orderValues.approved, color: ORDER_COLORS.approved },
+    { label: "Gold",  val: orderValues.pending,  color: ORDER_COLORS.pending  },
+    { label: "Free", val: orderValues.rejected, color: ORDER_COLORS.rejected },
   ];
 
   return (
@@ -264,7 +264,8 @@ export default function Dashboard() {
 
           {/* Orders Overview */}
           <div className="bottom-card" style={anim(animate, 6)}>
-            <div style={cardHeader}>Orders Overview</div>
+            <div style={cardHeader}>Subscription Plans
+</div>
 
             <div style={{ height: 155, position: "relative" }}>
               <Doughnut data={donutData} options={donutOptions} />

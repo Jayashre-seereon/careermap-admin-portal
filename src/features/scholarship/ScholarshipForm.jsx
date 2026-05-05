@@ -53,9 +53,6 @@ export default function ScholarshipForm({ onSubmit, initialValues, viewMode }) {
         <StatusSwitch disabled={viewMode} />
       </Form.Item>
 
-      <Form.Item name="markFree" label="Mark as Free" valuePropName="checked">
-        <StatusSwitch disabled={viewMode} />
-      </Form.Item>
 
       <Form.Item
         name="desc"

@@ -24,6 +24,7 @@ function MentorTable({ data, onAddClick, onView, onEdit, onDelete }) {
     { title: "Name", dataIndex: "name", width: 170 },
     { title: "Email", dataIndex: "email", width: 220, ellipsis: true },
     { title: "Phone", dataIndex: "phone", width: 150 },
+    { title: "Date of Birth", dataIndex: "dob", width: 150 },
     { title: "Education", dataIndex: "education", width: 220, ellipsis: true },
     {
       title: "Category",
@@ -32,6 +33,7 @@ function MentorTable({ data, onAddClick, onView, onEdit, onDelete }) {
       width: 160,
     },
     { title: "Designation", dataIndex: "designation", width: 180, ellipsis: true },
+    { title: "Rank", dataIndex: "rank", width: 120 ,ellipsis: true},
     {
       title: "Status",
       dataIndex: "status",

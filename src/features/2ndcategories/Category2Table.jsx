@@ -41,7 +41,7 @@ export default function Category2Table({
       width: 280,
     },
     {
-      title: "How to Become",
+      title: "Path ways",
       dataIndex: "howToBecome",
       ellipsis: true,
       width: 260,
