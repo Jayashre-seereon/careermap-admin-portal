@@ -17,6 +17,7 @@ import StreamPage from "../features/stream/StreamPage";
 import CategoryPage from "../features/categories/CategoryPage";
 import Category2Page from "../features/2ndcategories/Category2Page";
 import SubCategoryPage from "../features/subcategories/SubCategoryPage";
+import DetailsPage from "../features/details/DetailsPage";
 import SalaryPage from "../features/salary/SalaryPage";
 import JobScopePage from "../features/jobscope/JobScopePage";
 import RequireAuth from "../features/auth/RequireAuth";
@@ -133,6 +134,7 @@ export const router = createBrowserRouter([
           { path: "categories", element: <CategoryPage /> },
           { path: "2ndcategories", element: <Category2Page /> },
           { path: "subcategories", element: <SubCategoryPage /> },
+          { path: "details", element: <DetailsPage /> },
           { path: "salary", element: <SalaryPage /> },
           { path: "jobscope", element: <JobScopePage /> },
           { path: "pathtype", element: <PathTypePage /> },
