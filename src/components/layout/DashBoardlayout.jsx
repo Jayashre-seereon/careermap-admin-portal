@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import { Outlet, useLocation } from "react-router-dom";
@@ -11,6 +11,7 @@ const pageNameMap = {
   "/categories": "Categories",
   "/2ndcategories": "Secondary Categories",
   "/subcategories": "Sub Categories",
+  "/details": "Details",
   "/salary": "Salary Range",
   "/jobscope": "Job Scope",
   "/pathtype": "Path Type",
@@ -73,6 +74,10 @@ function getActivePage(pathname) {
     return "Job";
   }
 
+  if (pathname.startsWith("/details")) {
+    return "Details";
+  }
+
   if (pathname.startsWith("/quiz")) {
     return "Quiz";
   }
@@ -82,20 +87,15 @@ function getActivePage(pathname) {
 
 const DashBoardlayout = () => {
     const location = useLocation();
-    const [activePage, setActivePage] = useState("Dashboard");
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-
-    useEffect(() => {
-      setActivePage(getActivePage(location.pathname));
-      setMobileSidebarOpen(false);
-    }, [location.pathname]);
+    const activePage = getActivePage(location.pathname);
 
   return (
    <div className="flex h-screen bg-[#f9fafd] overflow-hidden font-body">
          <Sidebar
            activePage={activePage}
-           setActivePage={setActivePage}
+           setActivePage={() => {}}
            collapsed={sidebarCollapsed}
            setCollapsed={setSidebarCollapsed}
            mobileOpen={mobileSidebarOpen}
