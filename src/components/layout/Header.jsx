@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Bell, ChevronDown, LogOut, Menu, Search, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getCurrentUser, logoutUser } from "../../features/auth/authStorage";
-import { navSections } from "./Sidebar";
+import { navSections } from "./navSections";
 
 const notificationItems = [
   {
