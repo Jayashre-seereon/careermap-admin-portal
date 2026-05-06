@@ -39,19 +39,20 @@ export const navSections = [
     ],
   },
   {
-    label: "CONTENT",
+    label: "CAREER LIBRARY ",
     items: [
       { icon: BookOpen, name: "Modules", path: "/modules" },
       { icon: Layers, name: "Stream", path: "/stream" },
       { icon: Tag, name: "Categories", path: "/categories" },
       { icon: Layers, name: "Second Categories", path: "/2ndcategories" },
       { icon: FolderTree, name: "Subcategories", path: "/subcategories" },
+      { icon: FileText, name: "Details", path: "/details" },
     ],
   },
   {
-    label: "CAREER",
+    label: "CONTENT",
     items: [
-      { icon: FileText, name: "Details", path: "/details" },
+     
       { icon: GitBranch, name: "Path Type", path: "/pathtype" },
       { icon: MapPin, name: "Career Path", path: "/careerpath" },
       { icon: ClipboardList, name: "Entrance Exam", path: "/entranceexam" },

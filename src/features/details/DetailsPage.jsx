@@ -882,6 +882,13 @@ export default function DetailsPage() {
       render: (value) => value || "-",
     },
     {
+      title: "Subcategory",
+      dataIndex: "subcategory",
+      width: 150,
+      render: (value) => value || "-",
+    }
+    ,
+    {
       title: "Section",
       width: 200,
       render: (_, record) => {
@@ -889,16 +896,7 @@ export default function DetailsPage() {
         return sections.map((value) => SECTION_LABELS[value] || value).join(", ");
       },
     },
-    {
-      title: "Details / Name",
-      width: 200,
-      render: (_, record) => getRecordTitle(record),
-    },
-    {
-      title: "Summary",
-      width: 260,
-      render: (_, record) => summarizeRecord(record) || "-",
-    },
+   
     {
       title: "Action",
       width: 150,
@@ -943,7 +941,7 @@ export default function DetailsPage() {
               prefix={<SearchOutlined className="text-[#9a2119]" />}
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              className="w-full sm:w-72"
+              className="w-full sm:w-64 h-8 rounded-md border-[#9a2119]"
             />
 
             <Button
