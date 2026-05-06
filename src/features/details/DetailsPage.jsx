@@ -1,14 +1,13 @@
 import { useMemo, useState } from "react";
 import {
   Button,
-  ConfigProvider,
+  Checkbox,
   Form,
   Input,
   Modal,
   Popconfirm,
   Select,
   Table,
-  Tabs,
   Upload,
 } from "antd";
 import {
@@ -380,7 +379,7 @@ function renderCommonFields(viewMode) {
       <Form.Item
         name="secondCategory"
         label="Secondary Category"
-           >
+      >
         <Select disabled={viewMode} placeholder="Select secondary category">
           {renderOptions(SECOND_CATEGORY_OPTIONS)}
         </Select>
@@ -389,7 +388,7 @@ function renderCommonFields(viewMode) {
       <Form.Item
         name="subcategory"
         label="Subcategory"
-       
+
       >
         <Select disabled={viewMode} placeholder="Select Subcategory">
           {renderOptions(SUBCATEGORY_OPTIONS)}
@@ -657,8 +656,7 @@ export default function DetailsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState("add");
   const [currentRecord, setCurrentRecord] = useState(null);
-  const [formSection, setFormSection] = useState("salary-range");
-  const [draftsBySection, setDraftsBySection] = useState(() => buildDrafts());
+  const [selectedSections, setSelectedSections] = useState(["salary-range"]);
 
   const isViewMode = modalMode === "view";
 
@@ -670,28 +668,8 @@ export default function DetailsPage() {
     return data.filter((item) => getSearchText(item).includes(query));
   }, [data, search]);
 
-  function syncDraftsFromCurrentValues(nextSection) {
-    const currentValues = form.getFieldsValue(true);
-    const commonValues = getCommonValues(currentValues);
-    const nextDrafts = {
-      ...draftsBySection,
-      [formSection]: {
-        ...draftsBySection[formSection],
-        ...currentValues,
-      },
-    };
-
-    SECTION_OPTIONS.forEach((option) => {
-      nextDrafts[option.value] = {
-        ...nextDrafts[option.value],
-        ...commonValues,
-      };
-    });
-
-    setDraftsBySection(nextDrafts);
-    setFormSection(nextSection);
-    form.resetFields();
-    form.setFieldsValue(nextDrafts[nextSection]);
+  function handleSectionCheckboxChange(checkedValues) {
+    setSelectedSections(checkedValues.length > 0 ? checkedValues : ["salary-range"]);
   }
 
   function openModal(mode, record = null) {
@@ -700,8 +678,7 @@ export default function DetailsPage() {
 
     setModalMode(mode);
     setCurrentRecord(record);
-    setFormSection(section);
-    setDraftsBySection(drafts);
+    setSelectedSections([section]);
     form.resetFields();
     form.setFieldsValue(drafts[section]);
     setModalOpen(true);
@@ -711,8 +688,7 @@ export default function DetailsPage() {
     setModalOpen(false);
     setCurrentRecord(null);
     setModalMode("add");
-    setFormSection("salary-range");
-    setDraftsBySection(buildDrafts());
+    setSelectedSections(["salary-range"]);
     form.resetFields();
   }
 
@@ -720,13 +696,10 @@ export default function DetailsPage() {
     setData((prev) => prev.filter((item) => item.id !== record.id));
   }
 
-  function handleSectionChange(nextSection) {
-    syncDraftsFromCurrentValues(nextSection);
-  }
-
   async function handleSubmit() {
     const values = await form.validateFields();
-    const normalized = normalizeRecord(formSection, values);
+    const section = selectedSections[0];
+    const normalized = normalizeRecord(section, values);
 
     if (currentRecord) {
       setData((prev) =>
@@ -739,7 +712,7 @@ export default function DetailsPage() {
     } else {
       setData((prev) => [
         ...prev,
-        { ...normalized, id: `${formSection}-${Date.now()}` },
+        { ...normalized, id: `${section}-${Date.now()}` },
       ]);
     }
 
@@ -759,11 +732,6 @@ export default function DetailsPage() {
       render: (value) => SECTION_LABELS[value] || value,
     },
     {
-      title: "Title / Name",
-      width: 220,
-      render: (_, record) => getRecordTitle(record),
-    },
-    {
       title: "Stream",
       dataIndex: "stream",
       width: 120,
@@ -778,28 +746,17 @@ export default function DetailsPage() {
     {
       title: "Secondary Category",
       dataIndex: "secondCategory",
-      width: 190,
-      render: (value) => value || "-",
-    },
-    {
-      title: "Subcategory",
-      dataIndex: "subcategory",
       width: 150,
       render: (value) => value || "-",
     },
     {
-      title: "Details Type",
-      width: 160,
-      render: (_, record) => getRecordDetailsLabel(record),
-    },
-    {
-      title: "Summary",
-      width: 340,
-      render: (_, record) => summarizeRecord(record) || "-",
+      title: "Details / Name",
+      width: 200,
+      render: (_, record) => getRecordTitle(record),
     },
     {
       title: "Action",
-      width: 170,
+      width: 150,
       fixed: "right",
       render: (_, record) => (
         <div className="flex gap-2">
@@ -895,26 +852,33 @@ export default function DetailsPage() {
           {renderCommonFields(isViewMode)}
 
           <div className="md:col-span-2 mt-1 rounded-xl border border-[#ead4d2] bg-[#fffaf9] p-4">
-            <p className="mb-3 text-sm font-medium text-[#9a2119]">Select Section</p>
-            <ConfigProvider
-              theme={{
-                token: {
-                  colorPrimary: "#9a2119",
-                },
-              }}
+            <p className="mb-3 text-sm font-medium text-[#9a2119]">Select Sections</p>
+            <Checkbox.Group
+              value={selectedSections}
+              onChange={handleSectionCheckboxChange}
+              disabled={isViewMode}
+              style={{ display: "flex", flexDirection: "column", gap: "12px" }}
             >
-              <Tabs
-                activeKey={formSection}
-                onChange={handleSectionChange}
-                items={SECTION_OPTIONS.map((item) => ({
-                  key: item.value,
-                  label: item.label,
-                }))}
-              />
-            </ConfigProvider>
+              {SECTION_OPTIONS.map((option) => (
+                <Checkbox key={option.value} value={option.value}>
+                  {option.label}
+                </Checkbox>
+              ))}
+            </Checkbox.Group>
           </div>
 
-          {renderSectionSpecificFields(formSection, isViewMode)}
+          {selectedSections.map((section) => (
+            <div key={section} className="md:col-span-2">
+              <div className="rounded-xl border border-[#ead4d2] bg-[#fffaf9] p-4">
+                <div className="mb-4 border-b pb-2">
+                  <p className="text-sm font-semibold text-[#9a2119]">{SECTION_LABELS[section]} Fields</p>
+                </div>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {renderSectionSpecificFields(section, isViewMode)}
+                </div>
+              </div>
+            </div>
+          ))}
 
           <div className="md:col-span-2 mt-2 flex items-center justify-end gap-2">
             <Button onClick={handleClose}>
