@@ -199,13 +199,64 @@ function getCommonValues(values = {}) {
   };
 }
 
+function getSectionFieldKeys(section) {
+  if (section === "salary-range") {
+    return ["salaryRanges"];
+  }
+
+  if (section === "job-scope") {
+    return ["names"];
+  }
+
+  if (section === "career-path") {
+    return [
+      "module",
+      "pathType",
+      "graduation",
+      "afterGraduation",
+      "afterPostGraduation",
+      "anyOther",
+    ];
+  }
+
+  if (section === "entrance-exam") {
+    return ["module", "exam", "issue", "last", "url"];
+  }
+
+  return [
+    "name",
+    "logo",
+    "type",
+    "address",
+    "admission",
+    "date",
+    "url",
+    "country",
+    "state",
+    "district",
+    "isTop",
+  ];
+}
+
+function getSectionValues(section, values = {}) {
+  return getSectionFieldKeys(section).reduce((result, key) => {
+    if (values[key] !== undefined) {
+      result[key] = values[key];
+    }
+    return result;
+  }, {});
+}
+
 function buildDrafts(record = null) {
   const commonValues = getCommonValues(record || {});
+  const activeSections = record?.sections || (record?.section ? [record.section] : []);
+
   return SECTION_OPTIONS.reduce((drafts, option) => {
-    drafts[option.value] = {
-      ...getDefaultValues(option.value),
+    const section = option.value;
+    drafts[section] = {
+      ...getDefaultValues(section),
       ...commonValues,
-      ...(record?.section === option.value ? record : {}),
+      ...(activeSections.includes(section) ? getSectionValues(section, record) : {}),
     };
     return drafts;
   }, {});
@@ -231,40 +282,57 @@ function getSearchText(record) {
   return JSON.stringify(record).toLowerCase();
 }
 
-function getRecordTitle(record) {
-  if (record.section === "institution") {
+function getRecordSections(record) {
+  return record.sections || (record.section ? [record.section] : []);
+}
+
+function getRecordTitleForSection(section, record) {
+  if (section === "institution") {
     return record.name || "-";
   }
 
-  if (record.section === "entrance-exam") {
+  if (section === "entrance-exam") {
     return record.exam || "-";
   }
 
-  if (record.section === "job-scope") {
+  if (section === "job-scope") {
     return record.names?.join(", ") || "-";
   }
 
-  if (record.section === "salary-range") {
+  if (section === "salary-range") {
     return record.subcategory || "-";
   }
 
   return record.module || record.pathType || record.subcategory || "-";
 }
 
+function getRecordTitle(record) {
+  const sections = getRecordSections(record);
+  if (sections.length === 0) {
+    return "-";
+  }
+  return sections.map((section) => getRecordTitleForSection(section, record)).join(" | ");
+}
+
 function getRecordDetailsLabel(record) {
-  if (record.section === "salary-range") {
+  const sections = getRecordSections(record);
+  if (sections.length > 1) {
+    return sections.map((section) => SECTION_LABELS[section]).join(", ");
+  }
+
+  if (sections[0] === "salary-range") {
     return "Salary Ranges";
   }
 
-  if (record.section === "job-scope") {
+  if (sections[0] === "job-scope") {
     return "Job Scope Names";
   }
 
-  if (record.section === "career-path") {
+  if (sections[0] === "career-path") {
     return "Career Path";
   }
 
-  if (record.section === "entrance-exam") {
+  if (sections[0] === "entrance-exam") {
     return "Exam Details";
   }
 
@@ -272,47 +340,53 @@ function getRecordDetailsLabel(record) {
 }
 
 function summarizeRecord(record) {
-  if (record.section === "salary-range") {
-    return (record.salaryRanges || [])
-      .map((item) => `${item.min} - ${item.max}`)
-      .join(", ");
-  }
+  const sections = getRecordSections(record);
+  return sections
+    .map((section) => {
+      if (section === "salary-range") {
+        return (record.salaryRanges || [])
+          .map((item) => `${item.min} - ${item.max}`)
+          .join(", ");
+      }
 
-  if (record.section === "job-scope") {
-    return (record.names || []).join(", ");
-  }
+      if (section === "job-scope") {
+        return (record.names || []).join(", ");
+      }
 
-  if (record.section === "career-path") {
-    return [
-      record.module,
-      record.pathType,
-      record.graduation,
-      record.afterGraduation,
-      record.afterPostGraduation,
-      record.anyOther,
-    ]
-      .filter(Boolean)
-      .join(" | ");
-  }
+      if (section === "career-path") {
+        return [
+          record.module,
+          record.pathType,
+          record.graduation,
+          record.afterGraduation,
+          record.afterPostGraduation,
+          record.anyOther,
+        ]
+          .filter(Boolean)
+          .join(" | ");
+      }
 
-  if (record.section === "entrance-exam") {
-    return [record.module, record.exam, record.issue, record.last, record.url]
-      .filter(Boolean)
-      .join(" | ");
-  }
+      if (section === "entrance-exam") {
+        return [record.module, record.exam, record.issue, record.last, record.url]
+          .filter(Boolean)
+          .join(" | ");
+      }
 
-  return [
-    record.name,
-    record.type,
-    record.address,
-    record.admission,
-    record.date,
-    record.url,
-    record.country,
-    record.state,
-    record.district,
-    record.isTop,
-  ]
+      return [
+        record.name,
+        record.type,
+        record.address,
+        record.admission,
+        record.date,
+        record.url,
+        record.country,
+        record.state,
+        record.district,
+        record.isTop,
+      ]
+        .filter(Boolean)
+        .join(" | ");
+    })
     .filter(Boolean)
     .join(" | ");
 }
@@ -657,6 +731,7 @@ export default function DetailsPage() {
   const [modalMode, setModalMode] = useState("add");
   const [currentRecord, setCurrentRecord] = useState(null);
   const [selectedSections, setSelectedSections] = useState(["salary-range"]);
+  const [draftsBySection, setDraftsBySection] = useState(() => buildDrafts());
 
   const isViewMode = modalMode === "view";
 
@@ -668,19 +743,45 @@ export default function DetailsPage() {
     return data.filter((item) => getSearchText(item).includes(query));
   }, [data, search]);
 
-  function handleSectionCheckboxChange(checkedValues) {
-    setSelectedSections(checkedValues.length > 0 ? checkedValues : ["salary-range"]);
+  function handleSectionChange(checkedValues) {
+    const nextSections = checkedValues.length > 0 ? checkedValues : ["salary-range"];
+    const currentValues = form.getFieldsValue(true);
+    const commonValues = getCommonValues(currentValues);
+
+    const nextDrafts = { ...draftsBySection };
+    nextSections.forEach((section) => {
+      nextDrafts[section] = {
+        ...getDefaultValues(section),
+        ...commonValues,
+        ...getSectionValues(section, currentValues),
+      };
+    });
+
+    setSelectedSections(nextSections);
+    setDraftsBySection(nextDrafts);
+    form.setFieldsValue(
+      nextSections.reduce(
+        (acc, section) => ({ ...acc, ...nextDrafts[section] }),
+        commonValues
+      )
+    );
   }
 
   function openModal(mode, record = null) {
-    const section = record?.section || "salary-range";
+    const sections = record?.sections || (record?.section ? [record.section] : ["salary-range"]);
     const drafts = buildDrafts(record);
 
     setModalMode(mode);
     setCurrentRecord(record);
-    setSelectedSections([section]);
+    setSelectedSections(sections);
+    setDraftsBySection(drafts);
     form.resetFields();
-    form.setFieldsValue(drafts[section]);
+    form.setFieldsValue(
+      sections.reduce(
+        (acc, section) => ({ ...acc, ...drafts[section] }),
+        getCommonValues(record || {})
+      )
+    );
     setModalOpen(true);
   }
 
@@ -689,6 +790,7 @@ export default function DetailsPage() {
     setCurrentRecord(null);
     setModalMode("add");
     setSelectedSections(["salary-range"]);
+    setDraftsBySection(buildDrafts());
     form.resetFields();
   }
 
@@ -696,10 +798,46 @@ export default function DetailsPage() {
     setData((prev) => prev.filter((item) => item.id !== record.id));
   }
 
+  function normalizeSectionValues(section, values) {
+    const sectionValues = getSectionValues(section, values);
+
+    if (section === "salary-range") {
+      return {
+        salaryRanges: (sectionValues.salaryRanges || []).filter(
+          (item) => item?.min || item?.max
+        ),
+      };
+    }
+
+    if (section === "job-scope") {
+      return {
+        names: (sectionValues.names || []).filter(Boolean),
+      };
+    }
+
+    if (section === "institution") {
+      return {
+        ...sectionValues,
+        logo: sectionValues.logo || [],
+        isTop: sectionValues.isTop || "No",
+      };
+    }
+
+    return sectionValues;
+  }
+
   async function handleSubmit() {
     const values = await form.validateFields();
-    const section = selectedSections[0];
-    const normalized = normalizeRecord(section, values);
+    const commonValues = getCommonValues(values);
+    const selectedValues = selectedSections.reduce(
+      (acc, section) => ({ ...acc, ...normalizeSectionValues(section, values) }),
+      {}
+    );
+    const normalized = {
+      ...commonValues,
+      sections: selectedSections,
+      ...selectedValues,
+    };
 
     if (currentRecord) {
       setData((prev) =>
@@ -712,7 +850,7 @@ export default function DetailsPage() {
     } else {
       setData((prev) => [
         ...prev,
-        { ...normalized, id: `${section}-${Date.now()}` },
+        { ...normalized, id: `${selectedSections.join("-")}-${Date.now()}` },
       ]);
     }
 
@@ -724,12 +862,6 @@ export default function DetailsPage() {
       title: "SL",
       width: 60,
       render: (_, __, index) => index + 1,
-    },
-    {
-      title: "Section",
-      dataIndex: "section",
-      width: 150,
-      render: (value) => SECTION_LABELS[value] || value,
     },
     {
       title: "Stream",
@@ -750,9 +882,22 @@ export default function DetailsPage() {
       render: (value) => value || "-",
     },
     {
+      title: "Section",
+      width: 200,
+      render: (_, record) => {
+        const sections = record.sections || (record.section ? [record.section] : []);
+        return sections.map((value) => SECTION_LABELS[value] || value).join(", ");
+      },
+    },
+    {
       title: "Details / Name",
       width: 200,
       render: (_, record) => getRecordTitle(record),
+    },
+    {
+      title: "Summary",
+      width: 260,
+      render: (_, record) => summarizeRecord(record) || "-",
     },
     {
       title: "Action",
@@ -836,10 +981,10 @@ export default function DetailsPage() {
         destroyOnClose
         title={
           isViewMode
-            ? `View ${SECTION_LABELS[formSection]}`
+            ? `View ${SECTION_LABELS[currentRecord?.section] || (currentRecord?.sections || selectedSections).map((section) => SECTION_LABELS[section]).join(", ")}`
             : currentRecord
-              ? `Edit ${SECTION_LABELS[formSection]}`
-              : "Add Details"
+              ? `Edit ${(currentRecord?.sections || [currentRecord?.section]).map((section) => SECTION_LABELS[section]).join(", ")}`
+              : `Add ${selectedSections.map((section) => SECTION_LABELS[section]).join(", ")}`
         }
       >
         <Form
@@ -851,13 +996,13 @@ export default function DetailsPage() {
         >
           {renderCommonFields(isViewMode)}
 
-          <div className="md:col-span-2 mt-1 rounded-xl border border-[#ead4d2] bg-[#fffaf9] p-4">
-            <p className="mb-3 text-sm font-medium text-[#9a2119]">Select Sections</p>
+          <div className="md:col-span-2">
+            <p className="mb-2 text-sm font-medium">Select Sections</p>
             <Checkbox.Group
               value={selectedSections}
-              onChange={handleSectionCheckboxChange}
+              onChange={handleSectionChange}
               disabled={isViewMode}
-              style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+              style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}
             >
               {SECTION_OPTIONS.map((option) => (
                 <Checkbox key={option.value} value={option.value}>
@@ -869,13 +1014,9 @@ export default function DetailsPage() {
 
           {selectedSections.map((section) => (
             <div key={section} className="md:col-span-2">
-              <div className="rounded-xl border border-[#ead4d2] bg-[#fffaf9] p-4">
-                <div className="mb-4 border-b pb-2">
-                  <p className="text-sm font-semibold text-[#9a2119]">{SECTION_LABELS[section]} Fields</p>
-                </div>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  {renderSectionSpecificFields(section, isViewMode)}
-                </div>
+              <p className="mb-2 text-sm font-medium">{SECTION_LABELS[section]} Fields</p>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {renderSectionSpecificFields(section, isViewMode)}
               </div>
             </div>
           ))}
