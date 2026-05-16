@@ -43,6 +43,14 @@ const pageNameMap = {
   "/language": "Language",
   "/seo": "SEO",
   "/social-credential": "Social Credential",
+  "/domains": "Domains",
+  "/careers": "Careers",
+  "/career-paths": "Career Paths",
+  "/career-categories": "Career Categories",
+  "/institutes": "Institutes",
+  "/questions": "Questions",
+  "/sections": "Sections",
+  "/students": "Students"
 };
 
 function getActivePage(pathname) {
