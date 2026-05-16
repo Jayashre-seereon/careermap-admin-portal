@@ -68,6 +68,14 @@ import LanguageKeywordsPage from "../features/language/LanguageKeywordsPage";
 import SeoPage from "../features/seo/SeoPage";
 import SocialCredentialPage from "../features/socialcredential/SocialCredentialPage";
 import ProfilePage from "../features/profile/ProfilePage";
+import Domain from "../features/psychometric/Domain";
+import Career from "../features/psychometric/Career";
+import CareerPath from "../features/psychometric/CareerPath";
+import CareerCategory from "../features/psychometric/CareerCategory";
+import Institute from "../features/psychometric/Institute";
+import Question from "../features/psychometric/Question";
+import Section from "../features/psychometric/Section";
+import Student from "../features/psychometric/Student";
 
 export const router = createBrowserRouter([
   {
@@ -171,6 +179,14 @@ export const router = createBrowserRouter([
           { path: "language/:languageId/keywords", element: <LanguageKeywordsPage /> },
           { path: "seo", element: <SeoPage /> },
           { path: "social-credential", element: <SocialCredentialPage /> },
+          { path: "domains", element: <Domain /> },
+          { path: "careers", element: <Career /> },
+          { path: "career-paths", element: <CareerPath /> },
+          { path: "career-categories", element: <CareerCategory /> },
+          { path: "institutes", element: <Institute /> },
+          { path: "questions", element: <Question /> },
+          { path: "sections", element: <Section /> },
+          { path: "students", element: <Student /> }
         ],
       },
     ],

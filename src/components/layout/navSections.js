@@ -89,6 +89,19 @@ export const navSections = [
     ],
   },
   {
+    label: "PSYCHOMETRIC",
+    items: [
+      { icon: Layers, name: "Domains", path: "/domains" },
+      { icon: Briefcase, name: "Careers", path: "/careers" },
+      { icon: MapPin, name: "Career Paths", path: "/career-paths" },
+      { icon: Tag, name: "Career Categories", path: "/career-categories" },
+      { icon: Building2, name: "Institutes", path: "/institutes" },
+      { icon: HelpCircle, name: "Questions", path: "/questions" },
+      { icon: ClipboardList, name: "Sections", path: "/sections" },
+      { icon: Users, name: "Students", path: "/students" },
+    ],
+  },
+  {
     label: "SUPPORT",
     items: [{ icon: MessageSquare, name: "Support Tickets", path: "/support_tickets" }],
   },
