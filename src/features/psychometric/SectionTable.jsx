@@ -11,7 +11,7 @@ import {
 const stripHtml = (value = "") =>
   value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 
-const getPreviewText = (value = "", maxLength = 42) => {
+const getPreviewText = (value = "", maxLength = 34) => {
   const text = stripHtml(String(value));
 
   if (!text) {
@@ -21,7 +21,7 @@ const getPreviewText = (value = "", maxLength = 42) => {
   return text.length > maxLength ? `${text.slice(0, maxLength)}.....` : text;
 };
 
-function DomainTable({
+function SectionTable({
   data,
   onAddClick,
   onView,
@@ -43,15 +43,9 @@ function DomainTable({
       ellipsis: true,
     },
     {
-      title: "Display Domain Name",
-      dataIndex: "displayDomainName",
-      width: 230,
-      ellipsis: true,
-    },
-    {
-      title: "Score Type",
-      dataIndex: "scoringType",
-      width: 160,
+      title: "Code",
+      dataIndex: "code",
+      width: 100,
       render: (value) => (
         <Tag color="volcano" className="font-medium">
           {value}
@@ -59,19 +53,59 @@ function DomainTable({
       ),
     },
     {
-      title: "Description",
-      dataIndex: "description",
-      width: 340,
+      title: "Domain",
+      dataIndex: "domain",
+      width: 150,
       ellipsis: true,
-      render: (text) => getPreviewText(text),
     },
     {
-      title: "Domain Weightage",
-      dataIndex: "domainWeightage",
-      width: 170,
-      render: (value) => (
-        <span className="font-semibold text-[#9a2119]">{value}%</span>
-      ),
+      title: "Key Traits",
+      dataIndex: "keyTraits",
+      width: 220,
+      ellipsis: true,
+      render: (value) => getPreviewText(value),
+    },
+    {
+      title: "Enjoys",
+      dataIndex: "enjoys",
+      width: 220,
+      ellipsis: true,
+      render: (value) => getPreviewText(value),
+    },
+    {
+      title: "Ideal Environments",
+      dataIndex: "idealEnvironments",
+      width: 240,
+      ellipsis: true,
+      render: (value) => getPreviewText(value),
+    },
+    {
+      title: "Low",
+      dataIndex: "low",
+      width: 160,
+      ellipsis: true,
+      render: (value) => getPreviewText(value, 22),
+    },
+    {
+      title: "Mid",
+      dataIndex: "mid",
+      width: 160,
+      ellipsis: true,
+      render: (value) => getPreviewText(value, 22),
+    },
+    {
+      title: "High",
+      dataIndex: "high",
+      width: 160,
+      ellipsis: true,
+      render: (value) => getPreviewText(value, 22),
+    },
+    {
+      title: "Description",
+      dataIndex: "description",
+      width: 320,
+      ellipsis: true,
+      render: (text) => getPreviewText(text, 42),
     },
     {
       title: "Actions",
@@ -90,7 +124,7 @@ function DomainTable({
             onClick={() => onEdit(record)}
           />
           <Popconfirm
-            title="Are you sure you want to delete this domain?"
+            title="Are you sure you want to delete this section?"
             onConfirm={() => onDelete(record)}
           >
             <Button danger icon={<DeleteOutlined />} />
@@ -103,11 +137,11 @@ function DomainTable({
   return (
     <div className="w-full bg-white p-5 rounded-2xl border">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <h2 className="text-lg font-semibold text-[#9a2119]">Domains</h2>
+        <h2 className="text-lg font-semibold text-[#9a2119]">Sections</h2>
 
         <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
           <Input
-            placeholder="Search domain..."
+            placeholder="Search section..."
             prefix={<SearchOutlined className="text-[#9a2119]" />}
             value={search}
             onChange={(event) => onSearch(event.target.value)}
@@ -132,7 +166,7 @@ function DomainTable({
               color: "white",
             }}
           >
-            + Add Domain
+            + Add Section
           </Button>
         </div>
       </div>
@@ -148,4 +182,4 @@ function DomainTable({
   );
 }
 
-export default DomainTable;
+export default SectionTable;
