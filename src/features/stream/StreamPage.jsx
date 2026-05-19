@@ -1,66 +1,91 @@
-import React, { useState } from "react";
-import { Modal } from "antd";
+import React, { useEffect, useState } from "react";
+import { Modal, message } from "antd";
 import StreamForm from "./StreamForm";
 import StreamTable from "./StreamTable";
-
-const initialData = [
-  {
-    name: "Engineering",
-    image: "https://via.placeholder.com/80",
-  },
-  {
-    name: "Medical",
-    image: "https://via.placeholder.com/80",
-  },
-];
+import {
+  createStream,
+  deleteStream,
+  getStreams,
+  updateStream,
+} from "../../api/stream";
 
 export default function StreamPage() {
-  const [streams, setStreams] = useState(initialData);
+  const [messageApi, contextHolder] = message.useMessage();
+  const [streams, setStreams] = useState([]);
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("add");
   const [selected, setSelected] = useState(null);
-  const [editIndex, setEditIndex] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // ADD
-  const handleAdd = (data) => {
-    setStreams((prev) => [...prev, data]);
-    setOpen(false);
+  const loadStreams = async () => {
+    try {
+      setLoading(true);
+      const response = await getStreams();
+      const list = response?.data || [];
+      setStreams(Array.isArray(list) ? list : []);
+    } catch (error) {
+      messageApi.error(error.response?.data?.message || error.message || "Failed to load streams.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // DELETE
-  const handleDelete = (index) => {
-    setStreams((prev) => prev.filter((_, i) => i !== index));
+  useEffect(() => {
+    loadStreams();
+  }, []);
+
+  const handleAdd = async (values) => {
+    try {
+      await createStream(values);
+      messageApi.success("Stream created successfully.");
+      setOpen(false);
+      await loadStreams();
+    } catch (error) {
+      messageApi.error(error.response?.data?.message || error.message || "Failed to create stream.");
+    }
   };
 
-  // VIEW
+  const handleDelete = async (id) => {
+    try {
+      await deleteStream(id);
+      messageApi.success("Stream deleted successfully.");
+      await loadStreams();
+    } catch (error) {
+      messageApi.error(error.response?.data?.message || error.message || "Failed to delete stream.");
+    }
+  };
+
   const handleView = (record) => {
     setSelected(record);
     setMode("view");
     setOpen(true);
   };
 
-  // EDIT
-  const handleEdit = (record, index) => {
+  const handleEdit = (record) => {
     setSelected(record);
-    setEditIndex(index);
     setMode("edit");
     setOpen(true);
   };
 
-  // UPDATE
-  const handleUpdate = (data) => {
-    setStreams((prev) =>
-      prev.map((item, index) => (index === editIndex ? data : item))
-    );
-    setOpen(false);
+  const handleUpdate = async (values) => {
+    try {
+      await updateStream(selected.id, values);
+      messageApi.success("Stream updated successfully.");
+      setOpen(false);
+      await loadStreams();
+    } catch (error) {
+      messageApi.error(error.response?.data?.message || error.message || "Failed to update stream.");
+    }
   };
+
   const filteredStreams = streams.filter((stream) =>
     `${stream.name}`.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div className="space-y-5">
+      {contextHolder}
 
       <h2 className="text-xl font-bold text-[#9a2119]">
         Stream Management
@@ -78,6 +103,7 @@ export default function StreamPage() {
         onDelete={handleDelete}
         onView={handleView}
         onEdit={handleEdit}
+        loading={loading}
       />
 
       <Modal
