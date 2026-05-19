@@ -8,11 +8,11 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 
-function ModuleTable({ data, onAddClick, onView, onEdit, onDelete, search, onSearch }) {
+function ModuleTable({ data, onAddClick, onView, onEdit, onDelete, search, onSearch, loading }) {
   const columns = [
     {
-      title: "SL No.",
-      render: (_, __, index) => index + 1,
+      title: "ID",
+      dataIndex: "id",
       width: 80,
     },
     {
@@ -49,7 +49,7 @@ function ModuleTable({ data, onAddClick, onView, onEdit, onDelete, search, onSea
       title: "Action",
       fixed: "right",
       width: 150,
-      render: (_, record, index) => (
+      render: (_, record) => (
         <Space>
           <Button  className="w-8 h-8 flex items-center justify-center rounded-md 
                        border border-[#9a2119] 
@@ -62,8 +62,8 @@ function ModuleTable({ data, onAddClick, onView, onEdit, onDelete, search, onSea
                        text-[#9a2119]
                        hover:border-[#e57373]
                        hover:text-[#e57373]
-                      " icon={<EditOutlined />} onClick={() => onEdit(record, index)} />
-          <Popconfirm title="Are you sure you want to delete this module?" onConfirm={() => onDelete(index)}>
+                      " icon={<EditOutlined />} onClick={() => onEdit(record)} />
+          <Popconfirm title="Are you sure you want to delete this module?" onConfirm={() => onDelete(record.id)}>
             <Button danger icon={<DeleteOutlined />} />
           </Popconfirm>
         </Space>
@@ -103,7 +103,8 @@ function ModuleTable({ data, onAddClick, onView, onEdit, onDelete, search, onSea
       <Table
         columns={columns}
         dataSource={data}
-        rowKey={(r, i) => i}
+        rowKey={(record) => record.id}
+        loading={loading}
         pagination={{ pageSize: 5 }}
         scroll={{ x: "max-content" }}
       />
