@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Bell, ChevronDown, LogOut, Menu, Search, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { getCurrentUser, logoutUser } from "../../features/auth/authStorage";
+import { logoutUser } from "../../features/auth/authStorage";
+import { useSessionStore } from "../../store/sessionStore";
 import { navSections } from "./navSections";
 
 const notificationItems = [
@@ -50,7 +51,7 @@ const flattenNavItems = (sections) =>
 
 export default function Header({ activePage, onMenuClick }) {
   const navigate = useNavigate();
-  const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
+  const currentUser = useSessionStore((state) => state.user);
   const [search, setSearch] = useState("");
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -72,10 +73,6 @@ export default function Header({ activePage, onMenuClick }) {
   }, [search, searchItems]);
 
   useEffect(() => {
-    const handleAuthChange = () => {
-      setCurrentUser(getCurrentUser());
-    };
-
     const handleClickOutside = (event) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setIsUserMenuOpen(false);
@@ -90,11 +87,9 @@ export default function Header({ activePage, onMenuClick }) {
       }
     };
 
-    window.addEventListener("careermap-auth-changed", handleAuthChange);
     document.addEventListener("mousedown", handleClickOutside);
 
     return () => {
-      window.removeEventListener("careermap-auth-changed", handleAuthChange);
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
