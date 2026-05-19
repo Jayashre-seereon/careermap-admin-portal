@@ -9,6 +9,16 @@ import {
   updateStream,
 } from "../../api/stream";
 
+const getApiErrorMessage = (error, fallbackMessage) => {
+  const backendMessage = error.response?.data?.message || error.message || fallbackMessage;
+
+  if (typeof backendMessage === "string" && backendMessage.includes("Unique constraint failed")) {
+    return "This stream already exists.";
+  }
+
+  return backendMessage;
+};
+
 export default function StreamPage() {
   const [messageApi, contextHolder] = message.useMessage();
   const [streams, setStreams] = useState([]);
@@ -25,7 +35,7 @@ export default function StreamPage() {
       const list = response?.data || [];
       setStreams(Array.isArray(list) ? list : []);
     } catch (error) {
-      messageApi.error(error.response?.data?.message || error.message || "Failed to load streams.");
+      messageApi.error(getApiErrorMessage(error, "Failed to load streams."));
     } finally {
       setLoading(false);
     }
@@ -40,9 +50,10 @@ export default function StreamPage() {
       await createStream(values);
       messageApi.success("Stream created successfully.");
       setOpen(false);
+      setSelected(null);
       await loadStreams();
     } catch (error) {
-      messageApi.error(error.response?.data?.message || error.message || "Failed to create stream.");
+      messageApi.error(getApiErrorMessage(error, "Failed to create stream."));
     }
   };
 
@@ -52,7 +63,7 @@ export default function StreamPage() {
       messageApi.success("Stream deleted successfully.");
       await loadStreams();
     } catch (error) {
-      messageApi.error(error.response?.data?.message || error.message || "Failed to delete stream.");
+      messageApi.error(getApiErrorMessage(error, "Failed to delete stream."));
     }
   };
 
@@ -73,9 +84,10 @@ export default function StreamPage() {
       await updateStream(selected.id, values);
       messageApi.success("Stream updated successfully.");
       setOpen(false);
+      setSelected(null);
       await loadStreams();
     } catch (error) {
-      messageApi.error(error.response?.data?.message || error.message || "Failed to update stream.");
+      messageApi.error(getApiErrorMessage(error, "Failed to update stream."));
     }
   };
 
@@ -115,9 +127,13 @@ export default function StreamPage() {
             : "View Stream"
         }
         open={open}
-        onCancel={() => setOpen(false)}
+        onCancel={() => {
+          setOpen(false);
+          setSelected(null);
+        }}
         footer={null}
         width={600}
+        destroyOnClose
       >
         <StreamForm
           onSubmit={mode === "edit" ? handleUpdate : handleAdd}
