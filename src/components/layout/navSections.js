@@ -77,15 +77,22 @@ export const navSections = [
       { icon: BellIcon, name: "Notifications", path: "/notifications" },
     ],
   },
+  // {
+  //   label: "ORDERS",
+  //   items: [{ icon: ListChecks, name: "All Orders", path: "/all_orders" }],
+  // },
+  // {
+  //   label: "JOB MANAGEMENT",
+  //   items: [
+  //     { icon: Briefcase, name: "Job", path: "/jobs" },
+  //     { icon: FileText, name: "Job Application", path: "/job-applications" },
+  //   ],
+  // },
   {
-    label: "ORDERS",
-    items: [{ icon: ListChecks, name: "All Orders", path: "/all_orders" }],
-  },
-  {
-    label: "JOB MANAGEMENT",
+    label: "SUPPORT",
     items: [
-      { icon: Briefcase, name: "Job", path: "/jobs" },
-      { icon: FileText, name: "Job Application", path: "/job-applications" },
+      { icon: MessageSquare, name: "Support Tickets", path: "/support_tickets" },
+      { icon: HelpCircle, name: "Personality Test", path: "/personality-test" },
     ],
   },
   {
@@ -101,15 +108,11 @@ export const navSections = [
       { icon: Users, name: "Students", path: "/students" },
     ],
   },
-  {
-    label: "SUPPORT",
-    items: [{ icon: MessageSquare, name: "Support Tickets", path: "/support_tickets" }],
-  },
-  {
-    label: "SETTINGS",
-    items: [
-      { icon: Settings2, name: "Global Settings", path: "/globalsettings" },
-      { icon: GalleryVerticalIcon, name: "Logo & Favicon", path: "/logo-favicon" },
-    ],
-  },
+  
+  // {
+  //   label: "SETTINGS",
+  //   items: [
+  //     { icon: Settings2, name: "Global Settings", path: "/globalsettings" },
+  //     { icon: GalleryVerticalIcon, name: "Logo & Favicon", path: "/logo-favicon" },
+  // },
 ];
