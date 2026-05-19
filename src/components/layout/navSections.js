@@ -90,7 +90,10 @@ export const navSections = [
   // },
   {
     label: "SUPPORT",
-    items: [{ icon: MessageSquare, name: "Support Tickets", path: "/support_tickets" }],
+    items: [
+      { icon: MessageSquare, name: "Support Tickets", path: "/support_tickets" },
+      { icon: HelpCircle, name: "Personality Test", path: "/personality-test" },
+    ],
   },
   {
     label: "PSYCHOMETRIC",

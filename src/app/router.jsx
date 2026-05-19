@@ -76,7 +76,7 @@ import Institute from "../features/psychometric/Institute";
 import Question from "../features/psychometric/Question";
 import Section from "../features/psychometric/Section";
 import Student from "../features/psychometric/Student";
-
+import PersonalityTest from "../features/personalityTest/PersonalityTest";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -187,7 +187,8 @@ export const router = createBrowserRouter([
           { path: "institutes", element: <Institute /> },
           { path: "questions", element: <Question /> },
           { path: "sections", element: <Section /> },
-          { path: "students", element: <Student /> }
+          { path: "students", element: <Student /> },
+          { path: "personality-test", element: <PersonalityTest /> }
         ],
       },
     ],
