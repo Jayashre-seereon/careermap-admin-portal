@@ -10,6 +10,7 @@ import {
 
 export default function Category2Table({
   data,
+  loading,
   onAdd,
   onEdit,
   onView,
@@ -27,7 +28,7 @@ export default function Category2Table({
     },
     {
       title: "Category",
-      dataIndex: "category",
+      dataIndex: "categoryName",
       width: 180,
       ellipsis: true,
     },
@@ -38,14 +39,14 @@ export default function Category2Table({
       ellipsis: true,
     },
     {
-      title: "Institutes",
-      dataIndex: "institutions",
+      title: "Institute",
+      dataIndex: "institutionName",
       ellipsis: true,
       width: 280,
     },
     {
       title: "Path ways",
-      dataIndex: "howToBecome",
+      dataIndex: "path",
       ellipsis: true,
       width: 260,
     },
@@ -58,13 +59,16 @@ export default function Category2Table({
     {
       title: "Image",
       dataIndex: "image",
-      render: (img) => (
-        <img
-          src={img}
-          alt=""
-          className="w-12 h-12 rounded-full object-cover"
-        />
-      ),
+      render: (img) =>
+        img ? (
+          <img
+            src={img}
+            alt=""
+            className="w-12 h-12 rounded-full object-cover"
+          />
+        ) : (
+          <span className="text-gray-400">No image</span>
+        ),
       width: 90,
     },
     {
@@ -88,7 +92,7 @@ export default function Category2Table({
             description="Are you sure you want to delete this item?"
             okText="Yes"
             cancelText="No"
-            onConfirm={() => onDelete(record.id)}
+            onConfirm={() => onDelete(record)}
           >
             <Button danger icon={<DeleteOutlined />} />
           </Popconfirm>
@@ -100,7 +104,9 @@ export default function Category2Table({
   return (
     <div className="w-full bg-white p-6 rounded-2xl shadow border">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <h2 className="text-lg font-semibold text-[#9a2119]">Second Category</h2>
+        <h2 className="text-lg font-semibold text-[#9a2119]">
+          Second Category
+        </h2>
         <div className="flex flex-wrap items-center gap-3">
           <Input
             placeholder="Search second category..."
@@ -128,6 +134,7 @@ export default function Category2Table({
       <Table
         columns={columns}
         dataSource={data}
+        loading={loading}
         rowKey="id"
         pagination={{ pageSize: 5 }}
         scroll={{ x: "max-content" }}

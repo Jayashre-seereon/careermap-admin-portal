@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
-import { Form, Input, Select, Upload, Button } from "antd";
+import { Form, Input, Select, Upload, Button, DatePicker } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { validationRules } from "../../utils/formValidation";
 import StatusSwitch from "../../components/ui/StatusSwitch";
-
+import dayjs from "dayjs";
 const { Option } = Select;
 
 function InstitutionForm({ onSubmit, initialValues, disabled }) {
@@ -17,16 +17,19 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
     return event?.fileList || [];
   };
 
-  useEffect(() => {
-    if (initialValues) {
-      form.setFieldsValue({
-        ...initialValues,
-        logo: [],
-      });
-    } else {
-      form.resetFields();
-    }
-  }, [form, initialValues]);
+ useEffect(() => {
+  if (initialValues) {
+    form.setFieldsValue({
+      ...initialValues,
+      logo: [],
+      tentative_date: initialValues.tentative_date
+        ? dayjs(initialValues.tentative_date)
+        : null,
+    });
+  } else {
+    form.resetFields();
+  }
+}, [form, initialValues]);
 
   return (
     <Form
@@ -89,7 +92,7 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
       </Form.Item>
 
       <Form.Item name="tentative_date" label="Tentative Date">
-        <Input placeholder="May 2026" disabled={disabled} />
+        <DatePicker placeholder="May 2026" disabled={disabled} />
       </Form.Item>
 
       <Form.Item name="url" label="URL" rules={[validationRules.url("URL")]}>
