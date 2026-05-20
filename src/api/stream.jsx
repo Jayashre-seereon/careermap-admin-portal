@@ -29,6 +29,15 @@ const buildPayload = ({ name, image }) => {
   return formData;
 };
 
+export const mapStream = (item = {}) => ({
+  id: item.id,
+  key: item.id?.toString?.() || item.key || "",
+  name: item.name || "",
+  image: item.image || item.logo || null,
+  createdAt: item.createdAt,
+  updatedAt: item.updatedAt,
+});
+
 export const getStreams = async () => {
   const res = await api.get("/api/streams");
   return res.data;

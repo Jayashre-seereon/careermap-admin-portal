@@ -33,8 +33,14 @@ export default function ModulePage() {
     try {
       setLoading(true);
       const response = await getModules();
-      const list = response?.data || [];
-      setModules(Array.isArray(list) ? list.map(mapModule) : []);
+      const list = response?.data;
+      const normalized = Array.isArray(list)
+        ? list
+        : list && typeof list === "object"
+        ? [list]
+        : [];
+
+      setModules(normalized.map(mapModule));
     } catch (error) {
       messageApi.error(getApiErrorMessage(error, "Failed to load modules."));
     } finally {

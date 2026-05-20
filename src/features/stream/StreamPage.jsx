@@ -6,6 +6,7 @@ import {
   createStream,
   deleteStream,
   getStreams,
+  mapStream,
   updateStream,
 } from "../../api/stream";
 
@@ -32,8 +33,14 @@ export default function StreamPage() {
     try {
       setLoading(true);
       const response = await getStreams();
-      const list = response?.data || [];
-      setStreams(Array.isArray(list) ? list : []);
+      const list = response?.data;
+      const normalized = Array.isArray(list)
+        ? list
+        : list && typeof list === "object"
+        ? [list]
+        : [];
+
+      setStreams(normalized.map(mapStream));
     } catch (error) {
       messageApi.error(getApiErrorMessage(error, "Failed to load streams."));
     } finally {
