@@ -37,11 +37,13 @@ const formatDateValue = (value) => {
   }
 
   if (typeof value === "string") {
-    return value;
+    const parsedDate = new Date(value);
+    return Number.isNaN(parsedDate.getTime()) ? value : parsedDate.toISOString();
   }
 
   if (typeof value?.format === "function") {
-    return value.format("YYYY-MM-DD");
+    const isoValue = value.toDate?.()?.toISOString?.();
+    return isoValue || value.format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
   }
 
   return "";
