@@ -1,5 +1,6 @@
 import { Form, Input, Select, Button, DatePicker } from "antd";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import dayjs from "dayjs";
 import { validationRules } from "../../utils/formValidation";
 
 const { Option } = Select;
@@ -7,14 +8,79 @@ const { Option } = Select;
 export default function EntranceExamForm({
   onSubmit,
   initialValues,
-  viewMode,
+  mode,
+  moduleOptions = [],
+  streamOptions = [],
+  categoryOptions = [],
+  secondCategoryOptions = [],
+  subcategoryOptions = [],
 }) {
   const [form] = Form.useForm();
+  const isView = mode === "view";
+  const selectedCategoryId = Form.useWatch("categoryId", form);
+  const selectedSecondCategoryId = Form.useWatch("secondcategoryId", form);
 
   useEffect(() => {
-    if (initialValues) form.setFieldsValue(initialValues);
-    else form.resetFields();
+    if (initialValues) {
+      form.setFieldsValue({
+        ...initialValues,
+        issuedate: initialValues.issuedate ? dayjs(initialValues.issuedate) : null,
+        lastdate: initialValues.lastdate ? dayjs(initialValues.lastdate) : null,
+      });
+    } else {
+      form.resetFields();
+    }
   }, [form, initialValues]);
+
+  const filteredSecondCategories = useMemo(() => {
+    if (!selectedCategoryId) {
+      return secondCategoryOptions;
+    }
+
+    return secondCategoryOptions.filter(
+      (item) => !item.categoryId || item.categoryId === selectedCategoryId
+    );
+  }, [secondCategoryOptions, selectedCategoryId]);
+
+  const filteredSubcategories = useMemo(() => {
+    return subcategoryOptions.filter((item) => {
+      const matchesCategory =
+        !selectedCategoryId || !item.categoryId || item.categoryId === selectedCategoryId;
+      const matchesSecondCategory =
+        !selectedSecondCategoryId ||
+        !item.secondcategoryId ||
+        item.secondcategoryId === selectedSecondCategoryId;
+
+      return matchesCategory && matchesSecondCategory;
+    });
+  }, [subcategoryOptions, selectedCategoryId, selectedSecondCategoryId]);
+
+  useEffect(() => {
+    const currentSecondCategoryId = form.getFieldValue("secondcategoryId");
+    const hasSecondCategory = filteredSecondCategories.some(
+      (item) => item.id === currentSecondCategoryId
+    );
+
+    if (currentSecondCategoryId && !hasSecondCategory) {
+      form.setFieldsValue({
+        secondcategoryId: undefined,
+        subcategoryId: undefined,
+      });
+    }
+  }, [filteredSecondCategories, form]);
+
+  useEffect(() => {
+    const currentSubcategoryId = form.getFieldValue("subcategoryId");
+    const hasSubcategory = filteredSubcategories.some(
+      (item) => item.id === currentSubcategoryId
+    );
+
+    if (currentSubcategoryId && !hasSubcategory) {
+      form.setFieldsValue({
+        subcategoryId: undefined,
+      });
+    }
+  }, [filteredSubcategories, form]);
 
   return (
     <Form
@@ -28,55 +94,102 @@ export default function EntranceExamForm({
         Entrance Exam Details
       </h3>
 
-      <Form.Item name="module" label="Select Module">
-        <Select disabled={viewMode}>
-          <Option value="Career Library">Career Library</Option>
+      <Form.Item
+        name="moduleId"
+        label="Select Module"
+        rules={[validationRules.required("Module")]}
+      >
+        <Select disabled={isView} placeholder="Select module">
+          {moduleOptions.map((item) => (
+            <Option key={item.id} value={item.id}>
+              {item.label}
+            </Option>
+          ))}
         </Select>
       </Form.Item>
 
-      <Form.Item name="stream" label="Stream" rules={[validationRules.charactersOnly("Stream")]}>
-        <Select disabled={viewMode} placeholder="Select Stream">
-          <Option value="Science">Science</Option>
+      <Form.Item
+        name="streamId"
+        label="Stream"
+        rules={[validationRules.required("Stream")]}
+      >
+        <Select disabled={isView} placeholder="Select Stream">
+          {streamOptions.map((item) => (
+            <Option key={item.id} value={item.id}>
+              {item.label}
+            </Option>
+          ))}
         </Select>
       </Form.Item>
 
-      <Form.Item name="category" label="Select Category">
-        <Select disabled={viewMode}>
-          <Option value="Railways">Railways</Option>
+      <Form.Item
+        name="categoryId"
+        label="Select Category"
+        rules={[validationRules.required("Category")]}
+      >
+        <Select disabled={isView} placeholder="Select category">
+          {categoryOptions.map((item) => (
+            <Option key={item.id} value={item.id}>
+              {item.label}
+            </Option>
+          ))}
         </Select>
       </Form.Item>
 
-      <Form.Item name="secondCategory" label="2nd Category">
-        <Select disabled={viewMode} placeholder="Select 2nd Category">
-          <Option value="GENERAL COURSES/DEGREES">
-            GENERAL COURSES/DEGREES
-          </Option>
+      <Form.Item
+        name="secondcategoryId"
+        label="2nd Category"
+        rules={[validationRules.required("2nd category")]}
+      >
+        <Select disabled={isView} placeholder="Select 2nd Category">
+          {filteredSecondCategories.map((item) => (
+            <Option key={item.id} value={item.id}>
+              {item.label}
+            </Option>
+          ))}
         </Select>
       </Form.Item>
 
-      <Form.Item name="subcategory" label="Select Subcategory">
-        <Select disabled={viewMode} placeholder="Select Subcategory">
-          <Option value="MBBS">MBBS</Option>
+      <Form.Item
+        name="subcategoryId"
+        label="Select Subcategory"
+        rules={[validationRules.required("Subcategory")]}
+      >
+        <Select disabled={isView} placeholder="Select Subcategory">
+          {filteredSubcategories.map((item) => (
+            <Option key={item.id} value={item.id}>
+              {item.label}
+            </Option>
+          ))}
         </Select>
       </Form.Item>
 
-      <Form.Item name="exam" label="Exam Name" rules={[validationRules.required("Exam name")]}>
-        <Input disabled={viewMode} />
+      <Form.Item
+        name="examname"
+        label="Exam Name"
+        rules={[validationRules.required("Exam name")]}
+      >
+        <Input disabled={isView} />
       </Form.Item>
 
-      <Form.Item name="issue" label="Issue Date">
-        <DatePicker className="w-full" disabled={viewMode} />
+      <Form.Item name="issuedate" label="Issue Date">
+        <DatePicker className="w-full" disabled={isView} />
       </Form.Item>
 
-      <Form.Item name="last" label="Last Date">
-        <DatePicker className="w-full" disabled={viewMode} />
+      <Form.Item name="lastdate" label="Last Date">
+        <DatePicker className="w-full" disabled={isView} />
       </Form.Item>
 
-      <Form.Item name="url" label="URL" className="md:col-span-2" rules={[validationRules.url("URL")]}>
-        <Input disabled={viewMode} />
+      <Form.Item
+        name="url"
+        label="URL"
+        className="md:col-span-2"
+        rules={[validationRules.url("URL")]}
+      >
+        <Input disabled={isView} />
       </Form.Item>
 
-      {!viewMode && (
+      {!isView && (
         <div className="md:col-span-2">
           <Button
             htmlType="submit"
@@ -84,7 +197,7 @@ export default function EntranceExamForm({
             style={{ background: "#9a2119", borderColor: "#9a2119" }}
             className="text-white"
           >
-            Submit
+            {mode === "edit" ? "Update" : "Submit"}
           </Button>
         </div>
       )}
