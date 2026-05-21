@@ -1,27 +1,60 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Form, Select, Input, Button } from "antd";
 import { validationRules } from "../../utils/formValidation";
 
 const { Option } = Select;
 
-function CareerPathForm({ onSubmit, initialValues, viewMode }) {
+export default function CareerPathForm({
+  onSubmit,
+  initialValues,
+  mode,
+  moduleOptions = [],
+  categoryOptions = [],
+  secondCategoryOptions = [],
+  subcategoryOptions = [],
+  pathOptions = [],
+}) {
   const [form] = Form.useForm();
+  const isView = mode === "view";
+  const selectedCategoryId = Form.useWatch("categoryId", form);
+  const selectedSecondCategoryId = Form.useWatch("secondcategoryId", form);
 
   useEffect(() => {
-    if (initialValues) form.setFieldsValue(initialValues);
-    else form.resetFields();
+    if (initialValues) {
+      form.setFieldsValue(initialValues);
+    } else {
+      form.resetFields();
+    }
   }, [form, initialValues]);
 
-  const handleFinish = (values) => {
-    onSubmit(values);
-    form.resetFields();
-  };
+  const filteredSecondCategories = useMemo(() => {
+    if (!selectedCategoryId) {
+      return secondCategoryOptions;
+    }
+
+    return secondCategoryOptions.filter(
+      (item) => !item.categoryId || item.categoryId === selectedCategoryId
+    );
+  }, [secondCategoryOptions, selectedCategoryId]);
+
+  const filteredSubcategories = useMemo(() => {
+    return subcategoryOptions.filter((item) => {
+      const matchesCategory =
+        !selectedCategoryId || !item.categoryId || item.categoryId === selectedCategoryId;
+      const matchesSecondCategory =
+        !selectedSecondCategoryId ||
+        !item.secondcategoryId ||
+        item.secondcategoryId === selectedSecondCategoryId;
+
+      return matchesCategory && matchesSecondCategory;
+    });
+  }, [subcategoryOptions, selectedCategoryId, selectedSecondCategoryId]);
 
   return (
     <Form
       layout="vertical"
       form={form}
-      onFinish={handleFinish}
+      onFinish={onSubmit}
       validateTrigger={["onChange", "onBlur"]}
       className="grid grid-cols-1 md:grid-cols-2 gap-4"
     >
@@ -29,70 +62,93 @@ function CareerPathForm({ onSubmit, initialValues, viewMode }) {
         Career Path Details
       </h3>
 
-      <Form.Item name="module" label="Select Module" rules={[validationRules.required("Module")]}>
-        <Select disabled={viewMode}>
-          <Option value="Career Library">Career Library</Option>
+      <Form.Item
+        name="moduleId"
+        label="Select Module"
+        rules={[validationRules.required("Module")]}
+      >
+        <Select disabled={isView} placeholder="Select module">
+          {moduleOptions.map((item) => (
+            <Option key={item.id} value={item.id}>
+              {item.label}
+            </Option>
+          ))}
         </Select>
       </Form.Item>
 
-      <Form.Item name="stream" label="Stream" rules={[validationRules.required("Stream")]}>
-        <Select disabled={viewMode} placeholder="Select Stream">
-          <Option value="Science">Science</Option>
-          <Option value="Commerce">Commerce</Option>
-          <Option value="Arts">Arts</Option>
+      <Form.Item
+        name="categoryId"
+        label="Category"
+        rules={[validationRules.required("Category")]}
+      >
+        <Select disabled={isView} placeholder="Select category">
+          {categoryOptions.map((item) => (
+            <Option key={item.id} value={item.id}>
+              {item.label}
+            </Option>
+          ))}
         </Select>
       </Form.Item>
 
-      <Form.Item name="category" label="Category" rules={[validationRules.required("Category")]}>
-        <Select disabled={viewMode}>
-          <Option value="Medical">Medical</Option>
-          <Option value="Engineering">Engineering</Option>
-          <Option value="Commercial Pilot">Commercial Pilot</Option>
-          <Option value="Merchant Navy">Merchant Navy</Option>
+      <Form.Item
+        name="secondcategoryId"
+        label="2nd Category"
+        rules={[validationRules.required("2nd category")]}
+      >
+        <Select disabled={isView} placeholder="Select 2nd category">
+          {filteredSecondCategories.map((item) => (
+            <Option key={item.id} value={item.id}>
+              {item.label}
+            </Option>
+          ))}
         </Select>
       </Form.Item>
 
-      <Form.Item name="secondCategory" label="2nd Category" rules={[validationRules.required("2nd Category")]}>
-        <Select disabled={viewMode}>
-          <Option value="GENERAL COURSES/DEGREES">GENERAL COURSES/DEGREES</Option>
-          <Option value="ALLIED & PARA MEDICAL COURSES/DEGREES">
-            ALLIED & PARA MEDICAL COURSES/DEGREES
-          </Option>
-          <Option value="Architecture">Architecture</Option>
+      <Form.Item
+        name="subcategoryId"
+        label="Subcategory"
+        rules={[validationRules.required("Subcategory")]}
+      >
+        <Select disabled={isView} placeholder="Select subcategory">
+          {filteredSubcategories.map((item) => (
+            <Option key={item.id} value={item.id}>
+              {item.label}
+            </Option>
+          ))}
         </Select>
       </Form.Item>
 
-      <Form.Item name="subcategory" label="Subcategory" rules={[validationRules.required("Subcategory")]}>
-        <Select disabled={viewMode}>
-          <Option value="MBBS">MBBS</Option>
-          <Option value="BDS">BDS</Option>
-          <Option value="B.Tech">B.Tech</Option>
-        </Select>
-      </Form.Item>
-
-      <Form.Item name="pathType" label="Select Path">
-        <Select disabled={viewMode}>
-          <Option value="Path 1">Path 1</Option>
+      <Form.Item
+        name="pathId"
+        label="Select Path"
+        rules={[validationRules.required("Path type")]}
+      >
+        <Select disabled={isView} placeholder="Select path type">
+          {pathOptions.map((item) => (
+            <Option key={item.id} value={item.id}>
+              {item.label}
+            </Option>
+          ))}
         </Select>
       </Form.Item>
 
       <Form.Item name="graduation" label="Graduation">
-        <Input disabled={viewMode} />
+        <Input disabled={isView} />
       </Form.Item>
 
-      <Form.Item name="afterGraduation" label="After Graduation">
-        <Input disabled={viewMode} />
+      <Form.Item name="aftergraduation" label="After Graduation">
+        <Input disabled={isView} />
       </Form.Item>
 
-      <Form.Item name="afterPostGraduation" label="After Post Graduation">
-        <Input disabled={viewMode} />
+      <Form.Item name="afterpostgraduation" label="After Post Graduation">
+        <Input disabled={isView} />
       </Form.Item>
 
-      <Form.Item name="anyOther" label="Any Other">
-        <Input disabled={viewMode} />
+      <Form.Item name="anyother" label="Any Other">
+        <Input disabled={isView} />
       </Form.Item>
 
-      {!viewMode && (
+      {!isView && (
         <div className="md:col-span-2 text-right">
           <Button
             htmlType="submit"
@@ -100,12 +156,10 @@ function CareerPathForm({ onSubmit, initialValues, viewMode }) {
             style={{ background: "#9a2119", borderColor: "#9a2119" }}
             className="text-white"
           >
-            Create
+            {mode === "edit" ? "Update" : "Create"}
           </Button>
         </div>
       )}
     </Form>
   );
 }
-
-export default CareerPathForm;
