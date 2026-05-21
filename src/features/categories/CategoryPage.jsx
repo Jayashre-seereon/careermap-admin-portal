@@ -44,16 +44,6 @@ const extractFile = (value) => {
   return null;
 };
 
-const stripHtml = (value = "") =>
-  value
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/p>/gi, "\n")
-    .replace(/<\/li>/gi, "\n")
-    .replace(/<li>/gi, "")
-    .replace(/<[^>]*>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .trim();
-
 const htmlListFromArray = (items = []) => {
   if (!Array.isArray(items) || items.length === 0) {
     return "";
@@ -62,28 +52,40 @@ const htmlListFromArray = (items = []) => {
   return `<ul>${items.map((item) => `<li>${item}</li>`).join("")}</ul>`;
 };
 
-const factsToArray = (value = "") =>
-  stripHtml(value)
-    .split("\n")
-    .map((item) => item.trim())
-    .filter(Boolean);
-
-const normalizeFacts = (value) => {
+const normalizeEditorValue = (value) => {
   if (Array.isArray(value)) {
-    return value;
+    if (value.length === 1 && typeof value[0] === "string") {
+      return value[0];
+    }
+
+    return htmlListFromArray(value);
   }
 
   if (typeof value === "string") {
     try {
       const parsed = JSON.parse(value);
-      return Array.isArray(parsed) ? parsed : [];
+      if (Array.isArray(parsed)) {
+        return htmlListFromArray(parsed);
+      }
+
+      return typeof parsed === "string" ? parsed : value;
     } catch {
-      return factsToArray(value);
+      return value;
     }
   }
 
-  return [];
+  return "";
 };
+
+const toStringArray = (value) => {
+  if (!value) {
+    return [];
+  }
+
+  return [value];
+};
+
+const stringifyStringArray = (value) => JSON.stringify(toStringArray(value));
 
 const buildCategoryPayload = ({
   stream,
@@ -103,8 +105,8 @@ const buildCategoryPayload = ({
     title,
     path: howToBecome || null,
     description: description || "",
-    specialization: stripHtml(specialisation),
-    importandt_facts: JSON.stringify(factsToArray(importantFacts)),
+    specialization: specialisation || "",
+    importandt_facts: stringifyStringArray(importantFacts),
     category_access: isUpgrade === "Free",
   };
 
@@ -148,12 +150,12 @@ const mapCategory = (item = {}) => ({
   howToBecome: item.path || "",
   file: item.file || null,
   coverImage: item.coverImage || null,
-  description: item.description || "",
-  specialisation: item.specialization || item.specialisation || "",
-  importantFacts: htmlListFromArray(
-    normalizeFacts(
-      item.important_facts || item.importandt_facts || item.importantFacts
-    )
+  description: normalizeEditorValue(item.description || ""),
+  specialisation: normalizeEditorValue(
+    item.specialization || item.specialisation || ""
+  ),
+  importantFacts: normalizeEditorValue(
+    item.important_facts || item.importandt_facts || item.importantFacts
   ),
   isUpgrade:
     item.category_access === false || item.isUpgrade === "Premium"

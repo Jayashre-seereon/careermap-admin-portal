@@ -2,6 +2,18 @@ import React, { useState } from "react";
 import { Table, Button, Input, Space, Popconfirm, Tag } from "antd";
 import { EyeOutlined, EditOutlined, DeleteOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
 
+const getPlainText = (value) => {
+  if (!value) {
+    return "";
+  }
+
+  return value
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
 export default function CategoryTable({ data, onAddClick, onView, onEdit, onDelete, loading }) {
   const [search, setSearch] = useState("");
 
@@ -26,7 +38,10 @@ export default function CategoryTable({ data, onAddClick, onView, onEdit, onDele
       dataIndex: "description",
       width: 360,
       ellipsis: true,
-      render: (text) => (text ? text.slice(0, 80) + "..." : ""),
+      render: (text) => {
+        const preview = getPlainText(text);
+        return preview ? `${preview.slice(0, 80)}${preview.length > 80 ? "..." : ""}` : "";
+      },
     },
     {
       title: "Is Upgrade",

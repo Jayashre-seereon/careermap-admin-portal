@@ -147,7 +147,11 @@ export default function CategoryForm({
           label="Description"
           className="md:col-span-2"
         >
-          <Input.TextArea rows={3} disabled={disabled} />
+          <RichTextEditor
+            disabled={disabled}
+            placeholder="Enter description"
+            height={160}
+          />
         </Form.Item>
 
         <Form.Item

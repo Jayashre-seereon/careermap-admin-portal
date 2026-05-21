@@ -44,16 +44,6 @@ const extractFile = (value) => {
   return null;
 };
 
-const stripHtml = (value = "") =>
-  value
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/p>/gi, "\n")
-    .replace(/<\/li>/gi, "\n")
-    .replace(/<li>/gi, "")
-    .replace(/<[^>]*>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .trim();
-
 const htmlListFromArray = (items = []) => {
   if (!Array.isArray(items) || items.length === 0) {
     return "";
@@ -62,27 +52,21 @@ const htmlListFromArray = (items = []) => {
   return `<ul>${items.map((item) => `<li>${item}</li>`).join("")}</ul>`;
 };
 
-const factsToArray = (value = "") =>
-  stripHtml(value)
-    .split("\n")
-    .map((item) => item.trim())
-    .filter(Boolean);
-
-const normalizeFacts = (value) => {
+const normalizeEditorValue = (value) => {
   if (Array.isArray(value)) {
-    return value;
+    return htmlListFromArray(value);
   }
 
   if (typeof value === "string") {
     try {
       const parsed = JSON.parse(value);
-      return Array.isArray(parsed) ? parsed : [];
+      return Array.isArray(parsed) ? htmlListFromArray(parsed) : value;
     } catch {
-      return factsToArray(value);
+      return value;
     }
   }
 
-  return [];
+  return "";
 };
 
 const buildSecondaryCategoryPayload = ({
@@ -102,8 +86,8 @@ const buildSecondaryCategoryPayload = ({
     name,
     path: path || "",
     description: description || "",
-    specialization: stripHtml(specialisation),
-    importandt_facts: JSON.stringify(factsToArray(importantFacts)),
+    specialization: specialisation || "",
+    importandt_facts: importantFacts || "",
   };
 
   const imageFile = extractFile(image);
@@ -147,11 +131,11 @@ const mapSecondaryCategory = (item = {}) => ({
   image: item.image || null,
   coverImage: item.coverImage || null,
   description: item.description || "",
-  specialisation: item.specialization || item.specialisation || "",
-  importantFacts: htmlListFromArray(
-    normalizeFacts(
-      item.important_facts || item.importandt_facts || item.importantFacts
-    )
+  specialisation: normalizeEditorValue(
+    item.specialization || item.specialisation || ""
+  ),
+  importantFacts: normalizeEditorValue(
+    item.important_facts || item.importandt_facts || item.importantFacts
   ),
   createdAt: item.createdAt,
   updatedAt: item.updatedAt,
