@@ -8,7 +8,16 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 
-function MentorTable({ data, onAddClick, onView, onEdit, onDelete, search, onSearch }) {
+function MentorTable({
+  data,
+  loading,
+  onAddClick,
+  onView,
+  onEdit,
+  onDelete,
+  search,
+  onSearch,
+}) {
   const columns = [
     {
       title: "SL No.",
@@ -18,24 +27,23 @@ function MentorTable({ data, onAddClick, onView, onEdit, onDelete, search, onSea
     {
       title: "Image",
       dataIndex: "image",
-      render: (img) => (
-        <Avatar src={img} size={40} />
-      ),
+      render: (img) => <Avatar src={img} size={40} />,
       width: 90,
     },
     { title: "Name", dataIndex: "name", width: 170 },
     { title: "Email", dataIndex: "email", width: 220, ellipsis: true },
-    { title: "Phone", dataIndex: "phone", width: 150 },
+    { title: "Phone", dataIndex: "phone_number", width: 150 },
     { title: "Date of Birth", dataIndex: "dob", width: 150 },
     { title: "Education", dataIndex: "education", width: 220, ellipsis: true },
     {
       title: "Category",
-      dataIndex: "category",
-      render: (cat) => <Tag color="red">{cat}</Tag>,
+      dataIndex: "categoryName",
+      render: (cat) => <Tag color="red">{cat || "-"}</Tag>,
       width: 160,
     },
+    { title: "Subcategory", dataIndex: "subCategoryName", width: 180, ellipsis: true },
     { title: "Designation", dataIndex: "designation", width: 180, ellipsis: true },
-    { title: "Rank", dataIndex: "rank", width: 120 ,ellipsis: true},
+    { title: "Rank", dataIndex: "rank", width: 120, ellipsis: true },
     {
       title: "Status",
       dataIndex: "status",
@@ -50,21 +58,21 @@ function MentorTable({ data, onAddClick, onView, onEdit, onDelete, search, onSea
       title: "Action",
       fixed: "right",
       width: 150,
-      render: (_, record, index) => (
+      render: (_, record) => (
         <Space>
-          <Button className="
-                       border border-[#9a2119] 
-                       text-[#9a2119]
-                       hover:border-[#e57373]
-                       hover:text-[#e57373]" icon={<EyeOutlined />} onClick={() => onView(record)} />
-          <Button className=" 
-                       border border-[#9a2119] 
-                       text-[#9a2119]
-                       hover:border-[#e57373]
-                       hover:text-[#e57373]" icon={<EditOutlined />} onClick={() => onEdit(record, index)} />
+          <Button
+            className="border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
+            icon={<EyeOutlined />}
+            onClick={() => onView(record)}
+          />
+          <Button
+            className="border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
+            icon={<EditOutlined />}
+            onClick={() => onEdit(record)}
+          />
           <Popconfirm
             title="Are you sure you want to delete this mentor?"
-            onConfirm={() => onDelete(index)}
+            onConfirm={() => onDelete(record)}
           >
             <Button danger icon={<DeleteOutlined />} />
           </Popconfirm>
@@ -104,7 +112,8 @@ function MentorTable({ data, onAddClick, onView, onEdit, onDelete, search, onSea
       <Table
         columns={columns}
         dataSource={data}
-        rowKey={(r, i) => i}
+        loading={loading}
+        rowKey="id"
         pagination={{ pageSize: 5 }}
         scroll={{ x: "max-content" }}
       />
