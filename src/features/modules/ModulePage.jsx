@@ -6,14 +6,89 @@ import {
   createModule,
   deleteModule,
   getModules,
-  mapModule,
   updateModule,
 } from "../../api/module";
 
-const getApiErrorMessage = (error, fallbackMessage) => {
-  const backendMessage = error.response?.data?.message || error.message || fallbackMessage;
+const extractFile = (value) => {
+  if (Array.isArray(value) && value[0]?.originFileObj) {
+    return value[0].originFileObj;
+  }
 
-  if (typeof backendMessage === "string" && backendMessage.includes("Unique constraint failed")) {
+  if (value?.fileList?.[0]?.originFileObj) {
+    return value.fileList[0].originFileObj;
+  }
+
+  if (value?.originFileObj) {
+    return value.originFileObj;
+  }
+
+  return null;
+};
+
+const buildModulePayload = ({ title, url, image, btnText, position, isFree }) => {
+  const file = extractFile(image);
+
+  if (!file) {
+    return {
+      payload: {
+        title,
+        url,
+        btn_text: btnText,
+        position,
+        markas_free: isFree,
+      },
+      config: {},
+    };
+  }
+
+  const formData = new FormData();
+  formData.append("title", title);
+  formData.append("url", url);
+  formData.append("btn_text", btnText);
+  formData.append("position", position);
+  formData.append("markas_free", isFree);
+  formData.append("image", file);
+
+  return {
+    payload: formData,
+    config: { headers: { "Content-Type": "multipart/form-data" } },
+  };
+};
+
+const mapModule = (item = {}) => ({
+  id: item.id,
+  title: item.title || "",
+  url: item.url || "",
+  image: item.image || null,
+  btnText: item.btnText || item.btn_text || "",
+  position: item.position || "",
+  isFree: item.isFree ?? item.markas_free ?? false,
+  createdAt: item.createdAt,
+  updatedAt: item.updatedAt,
+});
+
+const normalizeList = (response) => {
+  const list = response?.data;
+
+  if (Array.isArray(list)) {
+    return list;
+  }
+
+  if (list && typeof list === "object") {
+    return [list];
+  }
+
+  return [];
+};
+
+const getApiErrorMessage = (error, fallbackMessage) => {
+  const backendMessage =
+    error.response?.data?.message || error.message || fallbackMessage;
+
+  if (
+    typeof backendMessage === "string" &&
+    backendMessage.includes("Unique constraint failed")
+  ) {
     return "This module already exists.";
   }
 
@@ -33,14 +108,7 @@ export default function ModulePage() {
     try {
       setLoading(true);
       const response = await getModules();
-      const list = response?.data;
-      const normalized = Array.isArray(list)
-        ? list
-        : list && typeof list === "object"
-        ? [list]
-        : [];
-
-      setModules(normalized.map(mapModule));
+      setModules(normalizeList(response).map(mapModule));
     } catch (error) {
       messageApi.error(getApiErrorMessage(error, "Failed to load modules."));
     } finally {
@@ -54,7 +122,8 @@ export default function ModulePage() {
 
   const handleAdd = async (values) => {
     try {
-      await createModule(values);
+      const { payload, config } = buildModulePayload(values);
+      await createModule(payload, config);
       messageApi.success("Module created successfully.");
       setOpen(false);
       setSelected(null);
@@ -88,7 +157,8 @@ export default function ModulePage() {
 
   const handleUpdate = async (values) => {
     try {
-      await updateModule(selected.id, values);
+      const { payload, config } = buildModulePayload(values);
+      await updateModule(selected.id, payload, config);
       messageApi.success("Module updated successfully.");
       setOpen(false);
       setSelected(null);
@@ -131,8 +201,8 @@ export default function ModulePage() {
           mode === "add"
             ? "Add Module"
             : mode === "edit"
-            ? "Edit Module"
-            : "View Module"
+              ? "Edit Module"
+              : "View Module"
         }
         open={open}
         onCancel={() => {

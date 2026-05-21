@@ -6,14 +6,172 @@ import {
   createCategory,
   deleteCategory,
   getCategories,
-  mapCategory,
   updateCategory,
 } from "../../api/category";
-import { getStreams, mapStream } from "../../api/stream";
-import { getInstitutes, mapInstitute } from "../../api/institute";
+import { getStreams } from "../../api/stream";
+import { getInstitutes } from "../../api/institute";
 
 const getApiErrorMessage = (error, fallbackMessage) =>
   error.response?.data?.message || error.message || fallbackMessage;
+
+const normalizeList = (response) => {
+  const list = response?.data;
+
+  if (Array.isArray(list)) {
+    return list;
+  }
+
+  if (list && typeof list === "object") {
+    return [list];
+  }
+
+  return [];
+};
+
+const extractFile = (value) => {
+  if (Array.isArray(value) && value[0]?.originFileObj) {
+    return value[0].originFileObj;
+  }
+
+  if (value?.fileList?.[0]?.originFileObj) {
+    return value.fileList[0].originFileObj;
+  }
+
+  if (value?.originFileObj) {
+    return value.originFileObj;
+  }
+
+  return null;
+};
+
+const stripHtml = (value = "") =>
+  value
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<\/li>/gi, "\n")
+    .replace(/<li>/gi, "")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .trim();
+
+const htmlListFromArray = (items = []) => {
+  if (!Array.isArray(items) || items.length === 0) {
+    return "";
+  }
+
+  return `<ul>${items.map((item) => `<li>${item}</li>`).join("")}</ul>`;
+};
+
+const factsToArray = (value = "") =>
+  stripHtml(value)
+    .split("\n")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+const normalizeFacts = (value) => {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return factsToArray(value);
+    }
+  }
+
+  return [];
+};
+
+const buildCategoryPayload = ({
+  stream,
+  institutions,
+  title,
+  howToBecome,
+  file,
+  coverImage,
+  description,
+  specialisation,
+  importantFacts,
+  isUpgrade,
+}) => {
+  const payload = {
+    streamId: stream,
+    institutionId: Array.isArray(institutions) ? institutions[0] : institutions,
+    title,
+    path: howToBecome || null,
+    description: description || "",
+    specialization: stripHtml(specialisation),
+    importandt_facts: JSON.stringify(factsToArray(importantFacts)),
+    category_access: isUpgrade === "Free",
+  };
+
+  const fileValue = extractFile(file);
+  const coverImageValue = extractFile(coverImage);
+
+  if (!fileValue && !coverImageValue) {
+    return { payload, config: {} };
+  }
+
+  const formData = new FormData();
+
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      formData.append(key, value);
+    }
+  });
+
+  if (fileValue) {
+    formData.append("file", fileValue);
+  }
+
+  if (coverImageValue) {
+    formData.append("coverImage", coverImageValue);
+  }
+
+  return {
+    payload: formData,
+    config: { headers: { "Content-Type": "multipart/form-data" } },
+  };
+};
+
+const mapCategory = (item = {}) => ({
+  id: item.id,
+  stream: item.streamId || item.stream?.id || item.stream || undefined,
+  institutions:
+    item.institutionId || item.institution?.id || item.institution
+      ? [item.institutionId || item.institution?.id || item.institution]
+      : [],
+  title: item.title || "",
+  howToBecome: item.path || "",
+  file: item.file || null,
+  coverImage: item.coverImage || null,
+  description: item.description || "",
+  specialisation: item.specialization || item.specialisation || "",
+  importantFacts: htmlListFromArray(
+    normalizeFacts(
+      item.important_facts || item.importandt_facts || item.importantFacts
+    )
+  ),
+  isUpgrade:
+    item.category_access === false || item.isUpgrade === "Premium"
+      ? "Premium"
+      : "Free",
+  createdAt: item.createdAt,
+  updatedAt: item.updatedAt,
+});
+
+const mapStream = (item = {}) => ({
+  id: item.id,
+  name: item.name || "",
+});
+
+const mapInstitute = (item = {}) => ({
+  id: item.id,
+  name: item.name || "",
+});
 
 export default function CategoryPage() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -29,14 +187,7 @@ export default function CategoryPage() {
     try {
       setLoading(true);
       const response = await getCategories();
-      const list = response?.data;
-      const normalized = Array.isArray(list)
-        ? list
-        : list && typeof list === "object"
-          ? [list]
-          : [];
-
-      setData(normalized.map(mapCategory));
+      setData(normalizeList(response).map(mapCategory));
     } catch (error) {
       messageApi.error(getApiErrorMessage(error, "Failed to load categories."));
     } finally {
@@ -51,23 +202,8 @@ export default function CategoryPage() {
         getInstitutes(),
       ]);
 
-      const streamList = streamResponse?.data;
-      const instituteList = instituteResponse?.data;
-
-      const normalizedStreams = Array.isArray(streamList)
-        ? streamList
-        : streamList && typeof streamList === "object"
-          ? [streamList]
-          : [];
-
-      const normalizedInstitutes = Array.isArray(instituteList)
-        ? instituteList
-        : instituteList && typeof instituteList === "object"
-          ? [instituteList]
-          : [];
-
-      setStreams(normalizedStreams.map(mapStream));
-      setInstitutes(normalizedInstitutes.map(mapInstitute));
+      setStreams(normalizeList(streamResponse).map(mapStream));
+      setInstitutes(normalizeList(instituteResponse).map(mapInstitute));
     } catch (error) {
       messageApi.error(
         getApiErrorMessage(error, "Failed to load stream and institute options.")
@@ -82,7 +218,8 @@ export default function CategoryPage() {
 
   const handleAdd = async (values) => {
     try {
-      await createCategory(values);
+      const { payload, config } = buildCategoryPayload(values);
+      await createCategory(payload, config);
       messageApi.success("Category created successfully.");
       setOpen(false);
       setSelected(null);
@@ -94,7 +231,8 @@ export default function CategoryPage() {
 
   const handleUpdate = async (values) => {
     try {
-      await updateCategory(selected.id, values);
+      const { payload, config } = buildCategoryPayload(values);
+      await updateCategory(selected.id, payload, config);
       messageApi.success("Category updated successfully.");
       setOpen(false);
       setSelected(null);

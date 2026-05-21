@@ -6,14 +6,73 @@ import {
   createStream,
   deleteStream,
   getStreams,
-  mapStream,
   updateStream,
 } from "../../api/stream";
 
-const getApiErrorMessage = (error, fallbackMessage) => {
-  const backendMessage = error.response?.data?.message || error.message || fallbackMessage;
+const extractFile = (value) => {
+  if (Array.isArray(value) && value[0]?.originFileObj) {
+    return value[0].originFileObj;
+  }
 
-  if (typeof backendMessage === "string" && backendMessage.includes("Unique constraint failed")) {
+  if (value?.fileList?.[0]?.originFileObj) {
+    return value.fileList[0].originFileObj;
+  }
+
+  if (value?.originFileObj) {
+    return value.originFileObj;
+  }
+
+  return null;
+};
+
+const buildStreamPayload = ({ name, image }) => {
+  const file = extractFile(image);
+
+  if (!file) {
+    return { payload: { name }, config: {} };
+  }
+
+  const formData = new FormData();
+  formData.append("name", name);
+  formData.append("image", file);
+
+  return {
+    payload: formData,
+    config: { headers: { "Content-Type": "multipart/form-data" } },
+  };
+};
+
+const mapStream = (item = {}) => ({
+  id: item.id,
+  key: item.id?.toString?.() || item.key || "",
+  name: item.name || "",
+  image: item.image || item.logo || null,
+  createdAt: item.createdAt,
+  updatedAt: item.updatedAt,
+});
+
+const normalizeList = (response) => {
+  const list = response?.data;
+
+  if (Array.isArray(list)) {
+    return list;
+  }
+
+  if (list && typeof list === "object") {
+    return [list];
+  }
+
+  return [];
+};
+
+const getApiErrorMessage = (error, fallbackMessage) => {
+  const backendMessage =
+    error.response?.data?.message || error.message || fallbackMessage;
+
+  if (
+    typeof backendMessage === "string" &&
+    backendMessage.includes("Unique constraint failed")
+  ) {
     return "This stream already exists.";
   }
 
@@ -33,14 +92,7 @@ export default function StreamPage() {
     try {
       setLoading(true);
       const response = await getStreams();
-      const list = response?.data;
-      const normalized = Array.isArray(list)
-        ? list
-        : list && typeof list === "object"
-        ? [list]
-        : [];
-
-      setStreams(normalized.map(mapStream));
+      setStreams(normalizeList(response).map(mapStream));
     } catch (error) {
       messageApi.error(getApiErrorMessage(error, "Failed to load streams."));
     } finally {
@@ -54,7 +106,8 @@ export default function StreamPage() {
 
   const handleAdd = async (values) => {
     try {
-      await createStream(values);
+      const { payload, config } = buildStreamPayload(values);
+      await createStream(payload, config);
       messageApi.success("Stream created successfully.");
       setOpen(false);
       setSelected(null);
@@ -88,7 +141,8 @@ export default function StreamPage() {
 
   const handleUpdate = async (values) => {
     try {
-      await updateStream(selected.id, values);
+      const { payload, config } = buildStreamPayload(values);
+      await updateStream(selected.id, payload, config);
       messageApi.success("Stream updated successfully.");
       setOpen(false);
       setSelected(null);
@@ -130,8 +184,8 @@ export default function StreamPage() {
           mode === "add"
             ? "Add Stream"
             : mode === "edit"
-            ? "Edit Stream"
-            : "View Stream"
+              ? "Edit Stream"
+              : "View Stream"
         }
         open={open}
         onCancel={() => {
@@ -148,7 +202,6 @@ export default function StreamPage() {
           disabled={mode === "view"}
         />
       </Modal>
-
     </div>
   );
 }

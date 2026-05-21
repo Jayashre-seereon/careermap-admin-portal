@@ -6,9 +6,128 @@ import {
   createInstitute,
   deleteInstitute,
   getInstitutes,
-  mapInstitute,
   updateInstitute,
 } from "../../api/institute";
+
+const extractFile = (value) => {
+  if (Array.isArray(value) && value[0]?.originFileObj) {
+    return value[0].originFileObj;
+  }
+
+  if (value?.fileList?.[0]?.originFileObj) {
+    return value.fileList[0].originFileObj;
+  }
+
+  if (value?.originFileObj) {
+    return value.originFileObj;
+  }
+
+  return null;
+};
+
+const formatDateValue = (value) => {
+  if (!value) {
+    return "";
+  }
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (typeof value?.format === "function") {
+    return value.format("YYYY-MM-DD");
+  }
+
+  return "";
+};
+
+const buildInstitutePayload = ({
+  name,
+  logo,
+  address,
+  admission_process,
+  tentative_date,
+  institute_type,
+  url,
+  country,
+  state,
+  city,
+  district,
+  is_top,
+}) => {
+  const file = extractFile(logo);
+  const formattedDate = formatDateValue(tentative_date);
+
+  if (!file) {
+    return {
+      payload: {
+        name,
+        address,
+        admission_process,
+        tentative_date: formattedDate,
+        institute_type,
+        url,
+        countruy: country,
+        state,
+        city,
+        district,
+        is_top,
+      },
+      config: {},
+    };
+  }
+
+  const formData = new FormData();
+  formData.append("name", name);
+  formData.append("address", address || "");
+  formData.append("admission_process", admission_process || "");
+  formData.append("tentative_date", formattedDate);
+  formData.append("institute_type", institute_type || "");
+  formData.append("url", url || "");
+  formData.append("countruy", country || "");
+  formData.append("state", state || "");
+  formData.append("city", city || "");
+  formData.append("district", district || "");
+  formData.append("is_top", is_top);
+  formData.append("image", file);
+
+  return {
+    payload: formData,
+    config: { headers: { "Content-Type": "multipart/form-data" } },
+  };
+};
+
+const mapInstitute = (item = {}) => ({
+  id: item.id,
+  name: item.name || "",
+  logo: item.logo || item.image || null,
+  address: item.address || "",
+  admission_process: item.admission_process || "",
+  tentative_date: item.tentative_date || "",
+  institute_type: item.institute_type || "",
+  url: item.url || "",
+  country: item.country || item.countruy || "",
+  state: item.state || "",
+  city: item.city || "",
+  district: item.district || "",
+  is_top: item.is_top ?? false,
+  createdAt: item.createdAt,
+  updatedAt: item.updatedAt,
+});
+
+const normalizeList = (response) => {
+  const list = response?.data;
+
+  if (Array.isArray(list)) {
+    return list;
+  }
+
+  if (list && typeof list === "object") {
+    return [list];
+  }
+
+  return [];
+};
 
 const getApiErrorMessage = (error, fallbackMessage) => {
   const backendMessage =
@@ -30,14 +149,7 @@ export default function InstitutionPage() {
     try {
       setLoading(true);
       const response = await getInstitutes();
-      const list = response?.data;
-      const normalized = Array.isArray(list)
-        ? list
-        : list && typeof list === "object"
-          ? [list]
-          : [];
-
-      setInstitutes(normalized.map(mapInstitute));
+      setInstitutes(normalizeList(response).map(mapInstitute));
     } catch (error) {
       messageApi.error(getApiErrorMessage(error, "Failed to load institutes."));
     } finally {
@@ -51,7 +163,8 @@ export default function InstitutionPage() {
 
   const handleAdd = async (values) => {
     try {
-      await createInstitute(values);
+      const { payload, config } = buildInstitutePayload(values);
+      await createInstitute(payload, config);
       messageApi.success("Institute created successfully.");
       setOpen(false);
       setSelected(null);
@@ -63,7 +176,8 @@ export default function InstitutionPage() {
 
   const handleUpdate = async (values) => {
     try {
-      await updateInstitute(selected.id, values);
+      const { payload, config } = buildInstitutePayload(values);
+      await updateInstitute(selected.id, payload, config);
       messageApi.success("Institute updated successfully.");
       setOpen(false);
       setSelected(null);

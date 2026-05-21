@@ -6,14 +6,166 @@ import {
   createSecondaryCategory,
   deleteSecondaryCategory,
   getSecondaryCategories,
-  mapSecondaryCategory,
   updateSecondaryCategory,
 } from "../../api/secondaryCategory";
-import { getCategories, mapCategory } from "../../api/category";
-import { getInstitutes, mapInstitute } from "../../api/institute";
+import { getCategories } from "../../api/category";
+import { getInstitutes } from "../../api/institute";
 
 const getApiErrorMessage = (error, fallbackMessage) =>
   error.response?.data?.message || error.message || fallbackMessage;
+
+const normalizeList = (response) => {
+  const list = response?.data;
+
+  if (Array.isArray(list)) {
+    return list;
+  }
+
+  if (list && typeof list === "object") {
+    return [list];
+  }
+
+  return [];
+};
+
+const extractFile = (value) => {
+  if (Array.isArray(value) && value[0]?.originFileObj) {
+    return value[0].originFileObj;
+  }
+
+  if (value?.fileList?.[0]?.originFileObj) {
+    return value.fileList[0].originFileObj;
+  }
+
+  if (value?.originFileObj) {
+    return value.originFileObj;
+  }
+
+  return null;
+};
+
+const stripHtml = (value = "") =>
+  value
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<\/li>/gi, "\n")
+    .replace(/<li>/gi, "")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .trim();
+
+const htmlListFromArray = (items = []) => {
+  if (!Array.isArray(items) || items.length === 0) {
+    return "";
+  }
+
+  return `<ul>${items.map((item) => `<li>${item}</li>`).join("")}</ul>`;
+};
+
+const factsToArray = (value = "") =>
+  stripHtml(value)
+    .split("\n")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+const normalizeFacts = (value) => {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return factsToArray(value);
+    }
+  }
+
+  return [];
+};
+
+const buildSecondaryCategoryPayload = ({
+  category,
+  institution,
+  name,
+  path,
+  image,
+  coverImage,
+  description,
+  specialisation,
+  importantFacts,
+}) => {
+  const payload = {
+    categoryId: category,
+    institutionId: institution || null,
+    name,
+    path: path || "",
+    description: description || "",
+    specialization: stripHtml(specialisation),
+    importandt_facts: JSON.stringify(factsToArray(importantFacts)),
+  };
+
+  const imageFile = extractFile(image);
+  const coverImageFile = extractFile(coverImage);
+
+  if (!imageFile && !coverImageFile) {
+    return { payload, config: {} };
+  }
+
+  const formData = new FormData();
+
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      formData.append(key, value);
+    }
+  });
+
+  if (imageFile) {
+    formData.append("image", imageFile);
+  }
+
+  if (coverImageFile) {
+    formData.append("coverImage", coverImageFile);
+  }
+
+  return {
+    payload: formData,
+    config: { headers: { "Content-Type": "multipart/form-data" } },
+  };
+};
+
+const mapSecondaryCategory = (item = {}) => ({
+  id: item.id,
+  category: item.categoryId || item.category?.id || item.category || undefined,
+  categoryName: item.category?.name || item.categoryName || "",
+  institution:
+    item.institutionId || item.institution?.id || item.institution || undefined,
+  institutionName: item.institution?.name || item.institutionName || "",
+  name: item.name || "",
+  path: item.path || "",
+  image: item.image || null,
+  coverImage: item.coverImage || null,
+  description: item.description || "",
+  specialisation: item.specialization || item.specialisation || "",
+  importantFacts: htmlListFromArray(
+    normalizeFacts(
+      item.important_facts || item.importandt_facts || item.importantFacts
+    )
+  ),
+  createdAt: item.createdAt,
+  updatedAt: item.updatedAt,
+});
+
+const mapCategory = (item = {}) => ({
+  id: item.id,
+  title: item.title || item.name || "",
+});
+
+const mapInstitute = (item = {}) => ({
+  id: item.id,
+  name: item.name || "",
+});
 
 export default function Category2Page() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -30,14 +182,7 @@ export default function Category2Page() {
     try {
       setLoading(true);
       const response = await getSecondaryCategories();
-      const list = response?.data;
-      const normalized = Array.isArray(list)
-        ? list
-        : list && typeof list === "object"
-          ? [list]
-          : [];
-
-      setData(normalized.map(mapSecondaryCategory));
+      setData(normalizeList(response).map(mapSecondaryCategory));
     } catch (error) {
       messageApi.error(
         getApiErrorMessage(error, "Failed to load secondary categories.")
@@ -54,23 +199,8 @@ export default function Category2Page() {
         getInstitutes(),
       ]);
 
-      const categoryList = categoryResponse?.data;
-      const instituteList = instituteResponse?.data;
-
-      const normalizedCategories = Array.isArray(categoryList)
-        ? categoryList
-        : categoryList && typeof categoryList === "object"
-          ? [categoryList]
-          : [];
-
-      const normalizedInstitutes = Array.isArray(instituteList)
-        ? instituteList
-        : instituteList && typeof instituteList === "object"
-          ? [instituteList]
-          : [];
-
-      setCategories(normalizedCategories.map(mapCategory));
-      setInstitutes(normalizedInstitutes.map(mapInstitute));
+      setCategories(normalizeList(categoryResponse).map(mapCategory));
+      setInstitutes(normalizeList(instituteResponse).map(mapInstitute));
     } catch (error) {
       messageApi.error(
         getApiErrorMessage(
@@ -116,31 +246,15 @@ export default function Category2Page() {
       .includes(search.toLowerCase())
   );
 
-  const handleAdd = () => {
-    setMode("add");
-    setSelected(null);
-    setOpen(true);
-  };
-
-  const handleEdit = (record) => {
-    setMode("edit");
-    setSelected(record);
-    setOpen(true);
-  };
-
-  const handleView = (record) => {
-    setMode("view");
-    setSelected(record);
-    setOpen(true);
-  };
-
   const handleSubmit = async (values) => {
     try {
+      const { payload, config } = buildSecondaryCategoryPayload(values);
+
       if (mode === "edit" && selected) {
-        await updateSecondaryCategory(selected.id, values);
+        await updateSecondaryCategory(selected.id, payload, config);
         messageApi.success("Secondary category updated successfully.");
       } else {
-        await createSecondaryCategory(values);
+        await createSecondaryCategory(payload, config);
         messageApi.success("Secondary category created successfully.");
       }
 
@@ -183,9 +297,21 @@ export default function Category2Page() {
         <Category2Table
           data={filteredData}
           loading={loading}
-          onAdd={handleAdd}
-          onEdit={handleEdit}
-          onView={handleView}
+          onAdd={() => {
+            setMode("add");
+            setSelected(null);
+            setOpen(true);
+          }}
+          onEdit={(record) => {
+            setMode("edit");
+            setSelected(record);
+            setOpen(true);
+          }}
+          onView={(record) => {
+            setMode("view");
+            setSelected(record);
+            setOpen(true);
+          }}
           onDelete={handleDelete}
           search={search}
           setSearch={setSearch}
