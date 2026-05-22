@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Form, Input, message, Modal, Popconfirm, Select, Table, Button } from "antd";
 import {
   DeleteOutlined,
@@ -9,8 +9,13 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { createQuizId, getQuizzes, saveQuizzes } from "./quizStore";
 import { validationRules } from "../../utils/formValidation";
+import {
+  createQuiz,
+  deleteQuiz,
+  getQuizzes,
+  updateQuiz,
+} from "../../api/quiz";
 
 const initialValues = {
   title: "",
@@ -20,20 +25,76 @@ const initialValues = {
   duration: "",
 };
 
+const normalizeList = (response) => {
+  const list = response?.data;
+
+  if (Array.isArray(list)) {
+    return list;
+  }
+
+  if (list && typeof list === "object") {
+    return [list];
+  }
+
+  return [];
+};
+
+const formatDateForInput = (value) => {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toISOString().split("T")[0];
+};
+
+const mapQuiz = (item = {}) => ({
+  ...item,
+  id: item.id,
+  key: item.id,
+  title: item.title || "",
+  type: item.type || "",
+  from: formatDateForInput(item.from),
+  to: formatDateForInput(item.to),
+  duration: item.duration ?? "",
+  participants: Array.isArray(item.participants) ? item.participants : [],
+});
+
+const getApiErrorMessage = (error, fallbackMessage) =>
+  error.response?.data?.message || error.message || fallbackMessage;
+
 export default function QuizPage() {
   const navigate = useNavigate();
+  const [messageApi, contextHolder] = message.useMessage();
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
-  const [quizzes, setQuizzes] = useState(() => getQuizzes());
+  const [quizzes, setQuizzes] = useState([]);
   const [editingQuiz, setEditingQuiz] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedQuizUsers, setSelectedQuizUsers] = useState(null);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const persistQuizzes = (nextQuizzes) => {
-    setQuizzes(nextQuizzes);
-    saveQuizzes(nextQuizzes);
+  const loadQuizzes = async () => {
+    try {
+      setLoading(true);
+      const response = await getQuizzes();
+      setQuizzes(normalizeList(response).map(mapQuiz));
+    } catch (error) {
+      messageApi.error(getApiErrorMessage(error, "Failed to load quizzes."));
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    loadQuizzes();
+  }, []);
 
   const quizCount = useMemo(() => quizzes.length, [quizzes]);
   const filteredQuizzes = useMemo(
@@ -62,23 +123,19 @@ export default function QuizPage() {
   };
 
   const handleSubmit = async () => {
-    const values = await form.validateFields();
-    const nextQuizId = createQuizId();
-    const nextQuiz = {
-      key: nextQuizId,
-      id: nextQuizId,
-      title: values.title,
-      type: values.type,
-      from: values.from,
-      to: values.to,
-      duration: values.duration,
-      questions: [],
-      participants: [],
-    };
+    try {
+      const values = await form.validateFields();
+      await createQuiz(values);
+      messageApi.success("Quiz added successfully.");
+      closeAddModal();
+      await loadQuizzes();
+    } catch (error) {
+      if (error?.errorFields) {
+        return;
+      }
 
-    persistQuizzes([...quizzes, nextQuiz]);
-    message.success("Quiz added successfully.");
-    closeAddModal();
+      messageApi.error(getApiErrorMessage(error, "Failed to add quiz."));
+    }
   };
 
   const handleEdit = (quiz) => {
@@ -97,20 +154,29 @@ export default function QuizPage() {
       return;
     }
 
-    const values = await editForm.validateFields();
-    const nextQuizzes = quizzes.map((quiz) =>
-      quiz.id === editingQuiz.id ? { ...quiz, ...values } : quiz
-    );
+    try {
+      const values = await editForm.validateFields();
+      await updateQuiz(editingQuiz.id, values);
+      messageApi.success("Quiz updated successfully.");
+      closeEditModal();
+      await loadQuizzes();
+    } catch (error) {
+      if (error?.errorFields) {
+        return;
+      }
 
-    persistQuizzes(nextQuizzes);
-    message.success("Quiz updated successfully.");
-    closeEditModal();
+      messageApi.error(getApiErrorMessage(error, "Failed to update quiz."));
+    }
   };
 
-  const handleDelete = (quizId) => {
-    const nextQuizzes = quizzes.filter((quiz) => quiz.id !== quizId);
-    persistQuizzes(nextQuizzes);
-    message.success("Quiz deleted successfully.");
+  const handleDelete = async (quizId) => {
+    try {
+      await deleteQuiz(quizId);
+      messageApi.success("Quiz deleted successfully.");
+      await loadQuizzes();
+    } catch (error) {
+      messageApi.error(getApiErrorMessage(error, "Failed to delete quiz."));
+    }
   };
 
   const columns = [
@@ -135,7 +201,11 @@ export default function QuizPage() {
       width: 160,
       render: (_, record) => (
         <button
-          onClick={() => navigate(`/quiz/${record.id}/questions`)}
+          onClick={() =>
+            navigate(`/quiz/${record.id}/questions`, {
+              state: { quiz: record },
+            })
+          }
           className="rounded-xl bg-[#9a2119] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#b62b21]"
         >
           Add Question
@@ -177,7 +247,7 @@ export default function QuizPage() {
             type="button"
             onClick={() => handleEdit(record)}
             className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
-          title="Edit quiz"
+            title="Edit quiz"
           >
             <EditOutlined />
           </Button>
@@ -190,8 +260,8 @@ export default function QuizPage() {
           >
             <Button
               type="button"
-               className="w-8 h-8 border border-red-500 text-red-500 hover:bg-red-50"
-       title="Delete quiz"
+              className="w-8 h-8 border border-red-500 text-red-500 hover:bg-red-50"
+              title="Delete quiz"
             >
               <DeleteOutlined />
             </Button>
@@ -203,7 +273,10 @@ export default function QuizPage() {
 
   return (
     <section className="space-y-5">
-      <h2 className="text-xl font-bold text-[#9a2119]">Quiz Management</h2>
+      {contextHolder}
+      <h2 className="text-xl font-bold text-[#9a2119]">
+        Quiz Management 
+      </h2>
 
       <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
         <div className="flex items-center justify-between gap-3">
@@ -223,7 +296,6 @@ export default function QuizPage() {
               <ReloadOutlined />
               Reset
             </Button>
-           
             <Button
               onClick={() => setIsAddModalOpen(true)}
               style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
@@ -237,6 +309,7 @@ export default function QuizPage() {
           rowKey="id"
           columns={columns}
           dataSource={filteredQuizzes}
+          loading={loading}
           pagination={{ pageSize: 6 }}
           scroll={{ x: 900 }}
           rowClassName="hover:bg-[#fff8f7]"
@@ -411,7 +484,6 @@ export default function QuizPage() {
           dataSource={selectedQuizUsers?.participants || []}
           locale={{ emptyText: "No users have taken this quiz yet." }}
           columns={[
-            
             {
               title: <span className="text-[#9a2119] font-semibold">Attended User Name</span>,
               dataIndex: "name",
@@ -420,7 +492,6 @@ export default function QuizPage() {
               title: <span className="text-[#9a2119] font-semibold">Email</span>,
               dataIndex: "email",
             },
-           
             {
               title: <span className="text-[#9a2119] font-semibold">Score</span>,
               dataIndex: "score",
