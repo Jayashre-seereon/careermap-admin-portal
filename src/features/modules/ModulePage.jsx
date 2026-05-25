@@ -9,59 +9,29 @@ import {
   updateModule,
 } from "../../api/module";
 
-const extractFile = (value) => {
-  if (Array.isArray(value) && value[0]?.originFileObj) {
-    return value[0].originFileObj;
-  }
+const DEFAULT_MODULES = [
+  { title: "Career Library", isFree: false },
+  { title: "Assessment", isFree: true },
+  { title: "Master Class", isFree: false },
+  { title: "Entrance Exam", isFree: true },
+  { title: "Institutes", isFree: true },
+  { title: "Book Mentor", isFree: false },
+  { title: "Scholarships", isFree: false },
+  { title: "Quiz", isFree: true },
+  { title: "Study Abroad", isFree: false },
+];
 
-  if (value?.fileList?.[0]?.originFileObj) {
-    return value.fileList[0].originFileObj;
-  }
-
-  if (value?.originFileObj) {
-    return value.originFileObj;
-  }
-
-  return null;
-};
-
-const buildModulePayload = ({ title, url, image, btnText, position, isFree }) => {
-  const file = extractFile(image);
-
-  if (!file) {
-    return {
-      payload: {
-        title,
-        url,
-        btn_text: btnText,
-        position,
-        markas_free: isFree,
-      },
-      config: {},
-    };
-  }
-
-  const formData = new FormData();
-  formData.append("title", title);
-  formData.append("url", url);
-  formData.append("btn_text", btnText);
-  formData.append("position", position);
-  formData.append("markas_free", isFree);
-  formData.append("image", file);
-
-  return {
-    payload: formData,
-    config: { headers: { "Content-Type": "multipart/form-data" } },
-  };
-};
+const buildModulePayload = ({ title, isFree }) => ({
+  payload: {
+    title,
+    markas_free: isFree,
+  },
+  config: {},
+});
 
 const mapModule = (item = {}) => ({
   id: item.id,
   title: item.title || "",
-  url: item.url || "",
-  image: item.image || null,
-  btnText: item.btnText || item.btn_text || "",
-  position: item.position || "",
   isFree: item.isFree ?? item.markas_free ?? false,
   createdAt: item.createdAt,
   updatedAt: item.updatedAt,
@@ -168,8 +138,39 @@ export default function ModulePage() {
     }
   };
 
+  const handleAddDefaults = async () => {
+    try {
+      const existingTitles = new Set(
+        modules.map((item) => item.title.trim().toLowerCase())
+      );
+
+      const missingModules = DEFAULT_MODULES.filter(
+        (item) => !existingTitles.has(item.title.toLowerCase())
+      );
+
+      if (!missingModules.length) {
+        messageApi.info("All 9 default modules already exist.");
+        return;
+      }
+
+      await Promise.all(
+        missingModules.map((item) =>
+          createModule({
+            title: item.title,
+            markas_free: item.isFree,
+          })
+        )
+      );
+
+      messageApi.success(`${missingModules.length} default modules added successfully.`);
+      await loadModules();
+    } catch (error) {
+      messageApi.error(getApiErrorMessage(error, "Failed to add default modules."));
+    }
+  };
+
   const filteredModules = modules.filter((module) =>
-    `${module.title} ${module.btnText} ${module.url} ${module.position}`
+    `${module.title} ${module.isFree ? "unlocked" : "locked"}`
       .toLowerCase()
       .includes(search.toLowerCase())
   );
@@ -177,14 +178,13 @@ export default function ModulePage() {
   return (
     <div className="space-y-5">
       {contextHolder}
-      <h2 className="text-xl font-bold text-[#9a2119]">
-        Module Management
-      </h2>
+      <h2 className="text-xl font-bold text-[#9a2119]">Module Management</h2>
 
       <ModuleTable
         data={filteredModules}
         search={search}
         onSearch={setSearch}
+        onAddDefaults={handleAddDefaults}
         onAddClick={() => {
           setMode("add");
           setSelected(null);
@@ -210,13 +210,14 @@ export default function ModulePage() {
           setSelected(null);
         }}
         footer={null}
-        width={1000}
+        width={700}
         destroyOnClose
       >
         <ModuleForm
           onSubmit={mode === "edit" ? handleUpdate : handleAdd}
           initialValues={selected}
           disabled={mode === "view"}
+          moduleOptions={DEFAULT_MODULES}
         />
       </Modal>
     </div>

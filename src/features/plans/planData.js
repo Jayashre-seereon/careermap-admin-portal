@@ -2,22 +2,22 @@ export const initialPlans = [
   {
     key: "plan-free",
     name: "Free",
-    features: "Career Library, Entrance Exam, Institute, Quiz",
-    module: ["Career Library", "Entrance Exam", "Institute", "Quiz"],
+    features: "Career Library, Entrance Exam, Institutes, Quiz",
+    module: ["Career Library", "Entrance Exam", "Institutes", "Quiz"],
     price: "0",
   },
   {
     key: "plan-gold",
     name: "Gold",
     features: "Mock Test, Live Test, Practice Questions",
-    module: ["Career Library", "Career Assessment", "Quiz"],
+    module: ["Career Library", "Assessment", "Quiz"],
     price: "999",
   },
   {
     key: "plan-premium",
     name: "Premium Career Plan",
     features: "Mentor sessions, scholarship access, mock tests, live guidance",
-    module: ["Career Library", "Career Assessment", "Book Your Mentor", "Scholarship", "Quiz"],
+    module: ["Career Library", "Assessment", "Book Mentor", "Scholarships", "Quiz"],
     price: "1999",
   },
 ];
