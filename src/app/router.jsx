@@ -32,6 +32,8 @@ import CareerPathPage from "../features/careerpath/CareerPathPage";
 import EntranceExamPage from "../features/entranceexam/EntranceExamPage";
 import InstitutionPage from "../features/institution/InstitutionPage";
 import ScholarshipPage from "../features/scholarship/ScholarshipPage";
+import MasterClassPage from "../features/masterclass/MasterClassPage";
+import StudyAbroadPage from "../features/studyabroad/StudyAbroadPage";
 import CareerPlanPage from "../features/careerplan/CareerPlanPage";
 import AllOrder from "../features/allOrders/AllOrder";
 import ApprovedOrder from "../features/allOrders/ApprovedOrder";
@@ -151,6 +153,8 @@ export const router = createBrowserRouter([
           { path: "entranceexam", element: <EntranceExamPage /> },
           { path: "institution", element: <InstitutionPage /> },
           { path: "scholarship", element: <ScholarshipPage /> },
+          { path: "masterclass", element: <MasterClassPage /> },
+          { path: "studyabroad", element: <StudyAbroadPage /> },
           { path: "careerplan", element: <CareerPlanPage /> },
           { path: "bookings", element: <BookingTable /> },
           { path: "plans", element: <PlansPage /> },

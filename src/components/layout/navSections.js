@@ -21,9 +21,11 @@ import {
   LogInIcon,
   MapPin,
   MessageSquare,
+  Plane,
   Settings2,
   Tag,
   Users,
+  Video,
 } from "lucide-react";
 
 export const navSections = [
@@ -58,6 +60,8 @@ export const navSections = [
       { icon: ClipboardList, name: "Entrance Exam", path: "/entranceexam" },
       { icon: Building2, name: "Institution", path: "/institution" },
       { icon: Award, name: "Scholarship", path: "/scholarship" },
+      { icon: Video, name: "Master Class", path: "/masterclass" },
+      { icon: Plane, name: "Study Abroad", path: "/studyabroad" },
     ],
   },
   {

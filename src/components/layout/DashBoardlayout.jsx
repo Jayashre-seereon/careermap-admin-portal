@@ -19,6 +19,8 @@ const pageNameMap = {
   "/entranceexam": "Entrance Exam",
   "/institution": "Institution",
   "/scholarship": "Scholarship",
+  "/masterclass": "Master Class",
+  "/studyabroad": "Study Abroad",
   "/careerplan": "Career Plan",
   "/bookings": "Bookings",
   "/plans": "Plans",
