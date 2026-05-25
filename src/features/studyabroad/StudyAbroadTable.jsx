@@ -7,12 +7,21 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 
-const stripHtml = (text = "") =>
-  text
+const stripHtml = (text = "") => {
+  const normalizedText = Array.isArray(text)
+    ? text.join(", ")
+    : typeof text === "string"
+      ? text
+      : text == null
+        ? ""
+        : String(text);
+
+  return normalizedText
     .replace(/<[^>]*>/g, " ")
     .replace(/&nbsp;/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+};
 
 export default function StudyAbroadTable({
   data,

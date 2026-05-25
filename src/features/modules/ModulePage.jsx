@@ -16,7 +16,7 @@ const DEFAULT_MODULES = [
   { title: "Entrance Exam", isFree: true },
   { title: "Institutes", isFree: true },
   { title: "Book Mentor", isFree: false },
-  { title: "Scholarships", isFree: false },
+  { title: "Scholarship", isFree: false },
   { title: "Quiz", isFree: true },
   { title: "Study Abroad", isFree: false },
 ];

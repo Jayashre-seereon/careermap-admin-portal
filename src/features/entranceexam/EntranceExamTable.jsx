@@ -30,12 +30,21 @@ export default function EntranceExamTable({
     return parsedDate.isValid() ? parsedDate.format("DD-MM-YYYY") : value;
   };
 
-  const stripHtml = (text = "") =>
-    text
+  const stripHtml = (text = "") => {
+    const normalizedText = Array.isArray(text)
+      ? text.join(", ")
+      : typeof text === "string"
+        ? text
+        : text == null
+          ? ""
+          : String(text);
+
+    return normalizedText
       .replace(/<[^>]*>/g, " ")
       .replace(/&nbsp;/g, " ")
       .replace(/\s+/g, " ")
       .trim();
+  };
 
   const ellipsis = (text) => (
     <Tooltip title={stripHtml(text) || "-"}>
