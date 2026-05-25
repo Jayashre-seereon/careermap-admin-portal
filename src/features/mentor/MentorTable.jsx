@@ -34,6 +34,8 @@ function MentorTable({
     { title: "Email", dataIndex: "email", width: 220, ellipsis: true },
     { title: "Phone", dataIndex: "phone_number", width: 150 },
     { title: "Date of Birth", dataIndex: "dob", width: 150 },
+    { title: "Available Date", dataIndex: "available_date", width: 150, ellipsis: true },
+    { title: "Available Time", dataIndex: "available_time", width: 140, ellipsis: true },
     { title: "Education", dataIndex: "education", width: 220, ellipsis: true },
     {
       title: "Category",

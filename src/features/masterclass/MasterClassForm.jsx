@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Button, Form, Input, Upload } from "antd";
+import { Button, Form, Input, Select, Upload } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import StatusSwitch from "../../components/ui/StatusSwitch";
 import {
@@ -34,6 +34,11 @@ const toUploadFileList = (value, fallbackName) => {
 export default function MasterClassForm({ onSubmit, initialValues, mode }) {
   const [form] = Form.useForm();
   const isView = mode === "view";
+  const videoOptions = [
+    { label: "Career Video", value: "career_video" },
+    { label: "Export Video", value: "export_video" },
+   
+  ];
 
   useEffect(() => {
     if (initialValues) {
@@ -107,6 +112,21 @@ export default function MasterClassForm({ onSubmit, initialValues, mode }) {
         ]}
       >
         <Input disabled={isView} placeholder="Enter video link" />
+      </Form.Item>
+
+     
+
+      <Form.Item
+        name="Category"
+        label="Category"
+      >
+        <Select disabled={isView} placeholder="Select category">
+          {videoOptions.map((option) => (
+            <Select.Option key={option.value} value={option.value}>
+              {option.label}
+            </Select.Option>
+          ))}
+        </Select>
       </Form.Item>
 
       <Form.Item

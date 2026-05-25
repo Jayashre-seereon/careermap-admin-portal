@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from "react";
-import { Form, Input, Button, Select, Upload, DatePicker } from "antd";
+import { Form, Input, Button, Select, Upload, DatePicker, TimePicker } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import RichTextEditor from "../../components/ui/RichTextEditor";
@@ -51,6 +51,12 @@ function MentorForm({
         status: true,
         ...initialValues,
         dateof_birth: initialValues.dateof_birth ? dayjs(initialValues.dateof_birth) : null,
+        available_date: initialValues.available_date
+          ? dayjs(initialValues.available_date)
+          : null,
+        available_time: initialValues.available_time
+          ? dayjs(initialValues.available_time, "HH:mm:ss")
+          : null,
         image: toUploadFileList(initialValues.image, "mentor-image"),
         resume: toUploadFileList(initialValues.resume, "mentor-resume"),
       });
@@ -148,6 +154,14 @@ function MentorForm({
 
         <Form.Item name="dateof_birth" label="Date of Birth">
           <DatePicker className="w-full" disabled={disabled} />
+        </Form.Item>
+
+        <Form.Item name="available_date" label="Available Date">
+          <DatePicker className="w-full" disabled={disabled} />
+        </Form.Item>
+
+        <Form.Item name="available_time" label="Available Time">
+          <TimePicker className="w-full" disabled={disabled} format="HH:mm" />
         </Form.Item>
 
         <Form.Item

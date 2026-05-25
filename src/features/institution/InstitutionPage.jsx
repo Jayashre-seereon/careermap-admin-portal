@@ -46,6 +46,8 @@ const buildInstitutePayload = ({
   logo,
   address,
   admission_process,
+  about,
+  courses_offered,
   tentative_date,
   institute_type,
   url,
@@ -64,6 +66,8 @@ const buildInstitutePayload = ({
         name,
         address,
         admission_process,
+        about: about || "",
+        courses_offered: courses_offered || "",
         tentative_date: formattedDate,
         institute_type,
         url,
@@ -81,6 +85,8 @@ const buildInstitutePayload = ({
   formData.append("name", name);
   formData.append("address", address || "");
   formData.append("admission_process", admission_process || "");
+  formData.append("about", about || "");
+  formData.append("courses_offered", courses_offered || "");
   formData.append("tentative_date", formattedDate);
   formData.append("institute_type", institute_type || "");
   formData.append("url", url || "");
@@ -103,6 +109,8 @@ const mapInstitute = (item = {}) => ({
   logo: item.logo || item.image || null,
   address: item.address || "",
   admission_process: item.admission_process || "",
+  about: item.about || "",
+  courses_offered: item.courses_offered || item.course_offered || "",
   tentative_date: item.tentative_date || "",
   institute_type: item.institute_type || "",
   url: item.url || "",
@@ -198,7 +206,7 @@ export default function InstitutionPage() {
   };
 
   const filteredInstitutes = institutes.filter((item) =>
-    `${item.name} ${item.address} ${item.city} ${item.state} ${item.country}`
+    `${item.name} ${item.address} ${item.city} ${item.state} ${item.country} ${item.about} ${item.courses_offered}`
       .toLowerCase()
       .includes(search.toLowerCase())
   );

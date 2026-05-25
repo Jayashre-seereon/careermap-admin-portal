@@ -2,6 +2,7 @@ import { Form, Input, Select, Button, DatePicker } from "antd";
 import { useEffect, useMemo } from "react";
 import dayjs from "dayjs";
 import { validationRules } from "../../utils/formValidation";
+import RichTextEditor from "../../components/ui/RichTextEditor";
 
 const { Option } = Select;
 
@@ -26,6 +27,7 @@ export default function EntranceExamForm({
         ...initialValues,
         issuedate: initialValues.issuedate ? dayjs(initialValues.issuedate) : null,
         lastdate: initialValues.lastdate ? dayjs(initialValues.lastdate) : null,
+        examDate: initialValues.examDate ? dayjs(initialValues.examDate) : null,
       });
     } else {
       form.resetFields();
@@ -178,6 +180,62 @@ export default function EntranceExamForm({
 
       <Form.Item name="lastdate" label="Last Date">
         <DatePicker className="w-full" disabled={isView} />
+      </Form.Item>
+
+      <Form.Item
+        name="eligibility"
+        label="Eligibility"
+        className="md:col-span-2"
+      >
+        <Input.TextArea rows={3} disabled={isView} />
+      </Form.Item>
+
+      <Form.Item
+        name="about"
+        label="About"
+        className="md:col-span-2"
+      >
+        <Input.TextArea rows={3} disabled={isView} />
+      </Form.Item>
+
+      <Form.Item name="examDate" label="Exam Date">
+        <DatePicker className="w-full" disabled={isView} />
+      </Form.Item>
+
+      <Form.Item name="examMode" label="Exam Mode">
+        <Input disabled={isView} placeholder="Online / Offline / Hybrid" />
+      </Form.Item>
+
+      <Form.Item name="duration" label="Duration">
+        <Input disabled={isView} placeholder="e.g. 3 Hours" />
+      </Form.Item>
+
+      <Form.Item name="subject" label="Subject">
+        <Input disabled={isView} placeholder="Enter subject" />
+      </Form.Item>
+
+      <Form.Item name="totalMark" label="Total Mark">
+        <Input disabled={isView} placeholder="Enter total marks" />
+      </Form.Item>
+
+      <Form.Item name="frequency" label="Frequency">
+        <Input disabled={isView} placeholder="e.g. Yearly" />
+      </Form.Item>
+
+      <Form.Item
+        name="examPattern"
+        label="Exam Pattern"
+        className="md:col-span-2"
+      >
+        <RichTextEditor disabled={isView} height={220} />
+      </Form.Item>
+
+      <Form.Item
+        name="topInstitutes"
+        label="Top Institutes"
+        className="md:col-span-2"
+      >
+        <Input.TextArea rows={3} disabled={isView} />
       </Form.Item>
 
       <Form.Item

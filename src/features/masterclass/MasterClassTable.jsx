@@ -80,6 +80,13 @@ export default function MasterClassTable({
           "-"
         ),
     },
+   
+    {
+      title: "Category",
+      dataIndex: "category",
+      width: 180,
+      render: ellipsis,
+    },
     {
       title: "Status",
       dataIndex: "isActive",

@@ -3,6 +3,7 @@ import { Form, Input, Select, Upload, Button, DatePicker } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { validationRules } from "../../utils/formValidation";
 import StatusSwitch from "../../components/ui/StatusSwitch";
+import RichTextEditor from "../../components/ui/RichTextEditor";
 import dayjs from "dayjs";
 const { Option } = Select;
 
@@ -89,6 +90,22 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
 
       <Form.Item name="admission_process" label="Admission Process">
         <Input disabled={disabled} />
+      </Form.Item>
+
+      <Form.Item
+        name="about"
+        label="About"
+        className="md:col-span-2 lg:col-span-3"
+      >
+        <RichTextEditor disabled={disabled} height={220} />
+      </Form.Item>
+
+      <Form.Item
+        name="courses_offered"
+        label="Courses Offered"
+        className="md:col-span-2 lg:col-span-3"
+      >
+        <RichTextEditor disabled={disabled} height={220} />
       </Form.Item>
 
       <Form.Item name="tentative_date" label="Tentative Date">

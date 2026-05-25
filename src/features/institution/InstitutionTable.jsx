@@ -23,6 +23,19 @@ export default function InstitutionTable({
     </Tooltip>
   );
 
+  const stripHtml = (text = "") =>
+    text
+      .replace(/<[^>]*>/g, " ")
+      .replace(/&nbsp;/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const renderHtmlEllipsis = (text) => (
+    <Tooltip title={stripHtml(text) || "-"}>
+      <span className="truncate block max-w-[200px]">{stripHtml(text) || "-"}</span>
+    </Tooltip>
+  );
+
   const columns = [
     {
       title: "ID",
@@ -54,6 +67,18 @@ export default function InstitutionTable({
       dataIndex: "admission_process",
       width: 180,
       render: renderEllipsis,
+    },
+    {
+      title: "About",
+      dataIndex: "about",
+      width: 220,
+      render: renderHtmlEllipsis,
+    },
+    {
+      title: "Courses Offered",
+      dataIndex: "courses_offered",
+      width: 220,
+      render: renderHtmlEllipsis,
     },
     {
       title: "Tentative Date",

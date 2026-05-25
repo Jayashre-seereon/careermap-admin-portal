@@ -7,6 +7,7 @@ import {
   ReloadOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
+import { Tooltip } from "antd";
 
 export default function EntranceExamTable({
   data,
@@ -28,6 +29,19 @@ export default function EntranceExamTable({
     const parsedDate = dayjs(value);
     return parsedDate.isValid() ? parsedDate.format("DD-MM-YYYY") : value;
   };
+
+  const stripHtml = (text = "") =>
+    text
+      .replace(/<[^>]*>/g, " ")
+      .replace(/&nbsp;/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const ellipsis = (text) => (
+    <Tooltip title={stripHtml(text) || "-"}>
+      <span className="block max-w-[220px] truncate">{stripHtml(text) || "-"}</span>
+    </Tooltip>
+  );
 
   const columns = [
     {
@@ -82,6 +96,30 @@ export default function EntranceExamTable({
       dataIndex: "lastdate",
       width: 140,
       render: (value) => formatDate(value),
+    },
+    {
+      title: <span className="text-[#9a2119] font-semibold">Eligibility</span>,
+      dataIndex: "eligibility",
+      width: 180,
+      render: ellipsis,
+    },
+    {
+      title: <span className="text-[#9a2119] font-semibold">Exam Mode</span>,
+      dataIndex: "examMode",
+      width: 140,
+      ellipsis: true,
+    },
+    {
+      title: <span className="text-[#9a2119] font-semibold">Duration</span>,
+      dataIndex: "duration",
+      width: 140,
+      ellipsis: true,
+    },
+    {
+      title: <span className="text-[#9a2119] font-semibold">Subject</span>,
+      dataIndex: "subject",
+      width: 160,
+      ellipsis: true,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">URL</span>,

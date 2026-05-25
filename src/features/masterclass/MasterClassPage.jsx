@@ -49,6 +49,7 @@ const buildMasterClassPayload = ({
   time,
   views,
   videoUrl,
+  category,
   isActive,
 }) => {
   const payload = {
@@ -57,6 +58,7 @@ const buildMasterClassPayload = ({
     time: time || "",
     views: views ? Number(views) : 0,
     videoUrl: videoUrl || "",
+    category: category || "",
     isActive: !!isActive,
   };
 
@@ -90,6 +92,7 @@ const mapMasterClass = (item = {}) => ({
   time: item.time || "",
   views: item.views ?? "",
   videoUrl: item.videoUrl || item.video_url || "",
+  category: item.category || "",
   isActive: item.isActive ?? item.active ?? false,
 });
 
@@ -119,7 +122,7 @@ export default function MasterClassPage() {
   }, []);
 
   const filteredData = data.filter((item) =>
-    `${item.title} ${item.name} ${item.time} ${item.views} ${item.videoUrl}`
+    `${item.title} ${item.name} ${item.time} ${item.views} ${item.videoUrl} ${item.category}`
       .toLowerCase()
       .includes(search.toLowerCase())
   );

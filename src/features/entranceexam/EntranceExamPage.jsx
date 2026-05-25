@@ -58,6 +58,16 @@ const buildEntranceExamPayload = ({
   examname,
   issuedate,
   lastdate,
+  eligibility,
+  about,
+  examDate,
+  examMode,
+  duration,
+  subject,
+  totalMark,
+  frequency,
+  examPattern,
+  topInstitutes,
   url,
 }) => ({
   moduleId,
@@ -68,6 +78,16 @@ const buildEntranceExamPayload = ({
   examname,
   issuedate: formatDateValue(issuedate),
   lastdate: formatDateValue(lastdate),
+  eligibility: eligibility || "",
+  about: about || "",
+  examDate: formatDateValue(examDate),
+  examMode: examMode || "",
+  duration: duration || "",
+  subject: subject || "",
+  totalMark: totalMark || "",
+  frequency: frequency || "",
+  examPattern: examPattern || "",
+  topInstitutes: topInstitutes || "",
   url: url || "",
 });
 
@@ -87,6 +107,16 @@ const mapEntranceExam = (item = {}) => ({
   examname: item.examname || "",
   issuedate: item.issuedate || "",
   lastdate: item.lastdate || "",
+  eligibility: item.eligibility || "",
+  about: item.about || "",
+  examDate: item.examDate || item.exam_date || "",
+  examMode: item.examMode || item.exam_mode || "",
+  duration: item.duration || "",
+  subject: item.subject || "",
+  totalMark: item.totalMark || item.total_mark || "",
+  frequency: item.frequency || "",
+  examPattern: item.examPattern || item.exam_pattern || "",
+  topInstitutes: item.topInstitutes || item.top_institutes || "",
   url: item.url || "",
   moduleName: item.module?.title || item.moduleName || "",
   streamName: item.stream?.name || item.streamName || "",
@@ -198,7 +228,7 @@ export default function EntranceExamPage() {
   }));
 
   const filteredData = tableData.filter((item) =>
-    `${item.moduleName} ${item.streamName} ${item.categoryName} ${item.secondCategoryName} ${item.subcategoryName} ${item.examname} ${item.url}`
+    `${item.moduleName} ${item.streamName} ${item.categoryName} ${item.secondCategoryName} ${item.subcategoryName} ${item.examname} ${item.eligibility} ${item.examMode} ${item.subject} ${item.topInstitutes} ${item.url}`
       .toLowerCase()
       .includes(search.toLowerCase())
   );

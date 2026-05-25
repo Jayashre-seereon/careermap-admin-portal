@@ -62,6 +62,22 @@ const formatDateValue = (value) => {
   return "";
 };
 
+const formatTimeValue = (value) => {
+  if (!value) {
+    return "";
+  }
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (typeof value?.format === "function") {
+    return value.format("HH:mm:ss");
+  }
+
+  return "";
+};
+
 const buildMentorPayload = ({
   categoryId,
   subCategoryId,
@@ -69,6 +85,8 @@ const buildMentorPayload = ({
   email,
   phone_number,
   dateof_birth,
+  available_date,
+  available_time,
   designation,
   education,
   placeof_word,
@@ -90,6 +108,8 @@ const buildMentorPayload = ({
     email: email || "",
     phone_number: phone_number || "",
     dateof_birth: formatDateValue(dateof_birth),
+    available_date: formatDateValue(available_date),
+    available_time: formatTimeValue(available_time),
     designation: designation || "",
     education: education || "",
     placeof_word: placeof_word || "",
@@ -136,6 +156,8 @@ const mapMentor = (item = {}) => ({
   email: item.email || "",
   phone_number: item.phone_number || "",
   dateof_birth: item.dateof_birth || "",
+  available_date: item.available_date || item.availableDate || "",
+  available_time: item.available_time || item.availableTime || "",
   designation: item.designation || "",
   education: item.education || "",
   placeof_word: item.placeof_word || "",
@@ -221,7 +243,7 @@ export default function MentorPage() {
   }));
 
   const filteredMentors = tableData.filter((mentor) =>
-    `${mentor.name} ${mentor.email} ${mentor.phone_number} ${mentor.categoryName} ${mentor.subCategoryName} ${mentor.designation} ${mentor.education}`
+    `${mentor.name} ${mentor.email} ${mentor.phone_number} ${mentor.categoryName} ${mentor.subCategoryName} ${mentor.designation} ${mentor.education} ${mentor.available_date} ${mentor.available_time}`
       .toLowerCase()
       .includes(search.toLowerCase())
   );
