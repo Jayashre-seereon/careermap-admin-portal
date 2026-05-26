@@ -84,9 +84,9 @@ export default function ScholarshipForm({ onSubmit, initialValues, mode }) {
         <DatePicker className="w-full" disabled={isView} />
       </Form.Item>
 
-      <Form.Item name="is_free" label="Is Free" valuePropName="checked">
+      {/* <Form.Item name="is_free" label="Is Free" valuePropName="checked">
         <StatusSwitch disabled={isView} />
-      </Form.Item>
+      </Form.Item> */}
 
       <Form.Item
         name="image"

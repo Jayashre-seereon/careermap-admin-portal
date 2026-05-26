@@ -73,10 +73,9 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
       ) : null}
 
       <Form.Item name="institute_type" label="Institution Type">
-        <Select disabled={disabled}>
-          <Option value="Government">Government</Option>
-          <Option value="Private">Private</Option>
-        </Select>
+        <Input disabled={disabled}/>
+          
+        
       </Form.Item>
 
       <Form.Item
