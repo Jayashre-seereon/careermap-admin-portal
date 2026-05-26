@@ -41,6 +41,38 @@ const formatDateValue = (value) => {
   return "";
 };
 
+const normalizeStringArray = (value) => {
+  const collectValues = (input) => {
+    if (Array.isArray(input)) {
+      return input.flatMap((item) => collectValues(item));
+    }
+
+    if (typeof input === "string") {
+      return input
+        .split(/[\n,]/)
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+
+    if (input == null) {
+      return [];
+    }
+
+    const normalizedValue = String(input).trim();
+    return normalizedValue ? [normalizedValue] : [];
+  };
+
+  if (Array.isArray(value)) {
+    return collectValues(value);
+  }
+
+  if (typeof value === "string") {
+    return collectValues(value);
+  }
+
+  return [];
+};
+
 const buildInstitutePayload = ({
   name,
   logo,
@@ -59,34 +91,12 @@ const buildInstitutePayload = ({
 }) => {
   const file = extractFile(logo);
   const formattedDate = formatDateValue(tentative_date);
-
-  if (!file) {
-    return {
-      payload: {
-        name,
-        address,
-        admission_process,
-        about: about || "",
-        courses_offered: courses_offered || "",
-        tentative_date: formattedDate,
-        institute_type,
-        url,
-        countruy: country,
-        state,
-        city,
-        district,
-        is_top,
-      },
-      config: {},
-    };
-  }
-
   const formData = new FormData();
   formData.append("name", name);
   formData.append("address", address || "");
   formData.append("admission_process", admission_process || "");
   formData.append("about", about || "");
-  formData.append("courses_offered", courses_offered || "");
+  formData.append("course_offered", JSON.stringify(normalizeStringArray(courses_offered)));
   formData.append("tentative_date", formattedDate);
   formData.append("institute_type", institute_type || "");
   formData.append("url", url || "");
@@ -94,8 +104,11 @@ const buildInstitutePayload = ({
   formData.append("state", state || "");
   formData.append("city", city || "");
   formData.append("district", district || "");
-  formData.append("is_top", is_top);
-  formData.append("image", file);
+  formData.append("is_top", String(!!is_top));
+
+  if (file) {
+    formData.append("image", file);
+  }
 
   return {
     payload: formData,
@@ -110,7 +123,9 @@ const mapInstitute = (item = {}) => ({
   address: item.address || "",
   admission_process: item.admission_process || "",
   about: item.about || "",
-  courses_offered: item.courses_offered || item.course_offered || "",
+  courses_offered: Array.isArray(item.courses_offered || item.course_offered)
+    ? item.courses_offered || item.course_offered
+    : normalizeStringArray(item.courses_offered || item.course_offered),
   tentative_date: item.tentative_date || "",
   institute_type: item.institute_type || "",
   url: item.url || "",
@@ -137,11 +152,21 @@ const normalizeList = (response) => {
   return [];
 };
 
-const getApiErrorMessage = (error, fallbackMessage) => {
-  const backendMessage =
-    error.response?.data?.message || error.message || fallbackMessage;
+const getApiErrorMessage = (error, fallbackMessage, action = "default") => {
+  const statusCode = error.response?.status;
+  const backendMessage = error.response?.data?.message;
 
-  return backendMessage;
+  if (statusCode === 400) {
+    if (action === "delete") {
+      return "Institute is linked to another module and cannot be deleted.";
+    }
+
+    if (action === "save") {
+      return "This Institute already exists";
+    }
+  }
+
+  return backendMessage || error.message || fallbackMessage;
 };
 
 export default function InstitutionPage() {
@@ -178,7 +203,9 @@ export default function InstitutionPage() {
       setSelected(null);
       await loadInstitutes();
     } catch (error) {
-      messageApi.error(getApiErrorMessage(error, "Failed to create institute."));
+      messageApi.error(
+        getApiErrorMessage(error, "Failed to create institute.", "save")
+      );
     }
   };
 
@@ -191,7 +218,9 @@ export default function InstitutionPage() {
       setSelected(null);
       await loadInstitutes();
     } catch (error) {
-      messageApi.error(getApiErrorMessage(error, "Failed to update institute."));
+      messageApi.error(
+        getApiErrorMessage(error, "Failed to update institute.", "save")
+      );
     }
   };
 
@@ -201,7 +230,9 @@ export default function InstitutionPage() {
       messageApi.success("Institute deleted successfully.");
       await loadInstitutes();
     } catch (error) {
-      messageApi.error(getApiErrorMessage(error, "Failed to delete institute."));
+      messageApi.error(
+        getApiErrorMessage(error, "Failed to delete institute.", "delete")
+      );
     }
   };
 

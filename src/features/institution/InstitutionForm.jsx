@@ -1,10 +1,9 @@
 import React, { useEffect } from "react";
-import { Form, Input, Select, Upload, Button, DatePicker } from "antd";
+import { Form, Input, Select, Upload, Button } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { validationRules } from "../../utils/formValidation";
 import StatusSwitch from "../../components/ui/StatusSwitch";
 import RichTextEditor from "../../components/ui/RichTextEditor";
-import dayjs from "dayjs";
 const { Option } = Select;
 
 function InstitutionForm({ onSubmit, initialValues, disabled }) {
@@ -23,9 +22,9 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
     form.setFieldsValue({
       ...initialValues,
       logo: [],
-      tentative_date: initialValues.tentative_date
-        ? dayjs(initialValues.tentative_date)
-        : null,
+      courses_offered: Array.isArray(initialValues.courses_offered)
+        ? initialValues.courses_offered
+        : [],
     });
   } else {
     form.resetFields();
@@ -105,11 +104,17 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
         label="Courses Offered"
         className="md:col-span-2 lg:col-span-3"
       >
-        <RichTextEditor disabled={disabled} height={220} />
+        <Select
+          mode="tags"
+          disabled={disabled}
+          placeholder="Add courses offered"
+          tokenSeparators={[","]}
+          open={false}
+        />
       </Form.Item>
 
       <Form.Item name="tentative_date" label="Tentative Date">
-        <DatePicker placeholder="May 2026" disabled={disabled} />
+        <Input disabled={disabled} placeholder="e.g. May 2026" />
       </Form.Item>
 
       <Form.Item name="url" label="URL" rules={[validationRules.url("URL")]}>

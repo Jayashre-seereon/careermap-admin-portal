@@ -56,10 +56,10 @@ const buildMasterClassPayload = ({
     title,
     name,
     time: time || "",
-    views: views ? Number(views) : 0,
-    videoUrl: videoUrl || "",
+    views: views || "0",
+    video_url: videoUrl || "",
     category: category || "",
-    isActive: !!isActive,
+    is_active: !!isActive,
   };
 
   const file = extractFile(image);
@@ -93,7 +93,7 @@ const mapMasterClass = (item = {}) => ({
   views: item.views ?? "",
   videoUrl: item.videoUrl || item.video_url || "",
   category: item.category || "",
-  isActive: item.isActive ?? item.active ?? false,
+  isActive: item.isActive ?? item.is_active ?? item.active ?? false,
 });
 
 export default function MasterClassPage() {

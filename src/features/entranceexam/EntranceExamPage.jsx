@@ -49,6 +49,23 @@ const formatDateValue = (value) => {
   return "";
 };
 
+const normalizeStringArray = (value) => {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => (typeof item === "string" ? item.trim() : String(item || "").trim()))
+      .filter(Boolean);
+  }
+
+  if (typeof value === "string") {
+    return value
+      .split(/[\n,]/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+};
+
 const buildEntranceExamPayload = ({
   moduleId,
   streamId,
@@ -78,16 +95,16 @@ const buildEntranceExamPayload = ({
   examname,
   issuedate: formatDateValue(issuedate),
   lastdate: formatDateValue(lastdate),
+  exam_date: formatDateValue(examDate) || null,
+  mode: examMode || "",
+  total_mark: totalMark || "",
+  frequncy: frequency || "",
+  exam_pattern: examPattern || "",
+  top_institution: normalizeStringArray(topInstitutes),
+  subject: normalizeStringArray(subject),
   eligibility: eligibility || "",
   about: about || "",
-  examDate: formatDateValue(examDate),
-  examMode: examMode || "",
   duration: duration || "",
-  subject: subject || "",
-  totalMark: totalMark || "",
-  frequency: frequency || "",
-  examPattern: examPattern || "",
-  topInstitutes: topInstitutes || "",
   url: url || "",
 });
 
@@ -110,13 +127,15 @@ const mapEntranceExam = (item = {}) => ({
   eligibility: item.eligibility || "",
   about: item.about || "",
   examDate: item.examDate || item.exam_date || "",
-  examMode: item.examMode || item.exam_mode || "",
+  examMode: item.examMode || item.exam_mode || item.mode || "",
   duration: item.duration || "",
-  subject: item.subject || "",
+  subject: Array.isArray(item.subject) ? item.subject : normalizeStringArray(item.subject),
   totalMark: item.totalMark || item.total_mark || "",
-  frequency: item.frequency || "",
+  frequency: item.frequency || item.frequncy || "",
   examPattern: item.examPattern || item.exam_pattern || "",
-  topInstitutes: item.topInstitutes || item.top_institutes || "",
+  topInstitutes: Array.isArray(item.topInstitutes || item.top_institutes || item.top_institution)
+    ? item.topInstitutes || item.top_institutes || item.top_institution
+    : normalizeStringArray(item.topInstitutes || item.top_institutes || item.top_institution),
   url: item.url || "",
   moduleName: item.module?.title || item.moduleName || "",
   streamName: item.stream?.name || item.streamName || "",

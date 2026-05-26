@@ -117,7 +117,7 @@ export default function MasterClassForm({ onSubmit, initialValues, mode }) {
      
 
       <Form.Item
-        name="Category"
+        name="category"
         label="Category"
       >
         <Select disabled={isView} placeholder="Select category">

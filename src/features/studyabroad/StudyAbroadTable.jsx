@@ -47,8 +47,14 @@ export default function StudyAbroadTable({
       fixed: "left",
     },
     {
+      title: "Title",
+      dataIndex: "title",
+      width: 180,
+      render: ellipsis,
+    },
+    {
       title: "Country",
-      dataIndex: "country",
+      dataIndex: "countryName",
       width: 180,
       render: ellipsis,
     },

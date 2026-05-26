@@ -1,7 +1,22 @@
 import { useEffect } from "react";
-import { Button, Form, Input } from "antd";
+import { Button, Form, Input, Select } from "antd";
 import RichTextEditor from "../../components/ui/RichTextEditor";
 import { validationRules } from "../../utils/formValidation";
+
+const normalizeTagValues = (value) => {
+  if (Array.isArray(value)) {
+    return value.filter(Boolean);
+  }
+
+  if (typeof value === "string") {
+    return value
+      .split(/[\n,]/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+};
 
 export default function StudyAbroadForm({ onSubmit, initialValues, mode }) {
   const [form] = Form.useForm();
@@ -9,7 +24,13 @@ export default function StudyAbroadForm({ onSubmit, initialValues, mode }) {
 
   useEffect(() => {
     if (initialValues) {
-      form.setFieldsValue(initialValues);
+      form.setFieldsValue({
+        ...initialValues,
+        topUniversity: normalizeTagValues(initialValues.topUniversity),
+        scholarship: normalizeTagValues(initialValues.scholarship),
+        requirement: normalizeTagValues(initialValues.requirement),
+        popularCourses: normalizeTagValues(initialValues.popularCourses),
+      });
       return;
     }
 
@@ -29,7 +50,15 @@ export default function StudyAbroadForm({ onSubmit, initialValues, mode }) {
       </h3>
 
       <Form.Item
-        name="country"
+        name="title"
+        label="Title"
+        rules={[validationRules.required("Title")]}
+      >
+        <Input disabled={isView} placeholder="Enter title" />
+      </Form.Item>
+
+      <Form.Item
+        name="countryName"
         label="Country"
         rules={[validationRules.required("Country")]}
       >
@@ -37,7 +66,13 @@ export default function StudyAbroadForm({ onSubmit, initialValues, mode }) {
       </Form.Item>
 
       <Form.Item name="popularCourses" label="Popular Courses">
-        <Input disabled={isView} placeholder="Enter popular courses" />
+        <Select
+          mode="tags"
+          disabled={isView}
+          placeholder="Add popular courses"
+          tokenSeparators={[","]}
+          open={false}
+        />
       </Form.Item>
 
       <Form.Item
@@ -85,7 +120,13 @@ export default function StudyAbroadForm({ onSubmit, initialValues, mode }) {
         label="Top University"
         className="md:col-span-2"
       >
-        <RichTextEditor disabled={isView} height={220} />
+        <Select
+          mode="tags"
+          disabled={isView}
+          placeholder="Add top universities"
+          tokenSeparators={[","]}
+          open={false}
+        />
       </Form.Item>
 
       <Form.Item
@@ -93,7 +134,13 @@ export default function StudyAbroadForm({ onSubmit, initialValues, mode }) {
         label="Scholarship"
         className="md:col-span-2"
       >
-        <RichTextEditor disabled={isView} height={220} />
+        <Select
+          mode="tags"
+          disabled={isView}
+          placeholder="Add scholarships"
+          tokenSeparators={[","]}
+          open={false}
+        />
       </Form.Item>
 
       <Form.Item
@@ -101,7 +148,13 @@ export default function StudyAbroadForm({ onSubmit, initialValues, mode }) {
         label="Requirement"
         className="md:col-span-2"
       >
-        <RichTextEditor disabled={isView} height={220} />
+        <Select
+          mode="tags"
+          disabled={isView}
+          placeholder="Add requirements"
+          tokenSeparators={[","]}
+          open={false}
+        />
       </Form.Item>
 
       {!isView && (

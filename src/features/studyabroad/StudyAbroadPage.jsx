@@ -26,22 +26,49 @@ const normalizeList = (response) => {
   return [];
 };
 
+const normalizeStringArray = (value) => {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => (typeof item === "string" ? item.trim() : String(item || "").trim()))
+      .filter(Boolean);
+  }
+
+  if (typeof value === "string") {
+    return value
+      .split(/[\n,]/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+};
+
 const mapStudyAbroadItem = (item = {}) => ({
   id: item.id,
-  country: item.country || "",
+  title: item.title || "",
+  countryName: item.countryName || item.country_name || item.country || "",
   description: item.description || "",
   overview: item.overview || "",
-  visaAndWorkRights: item.visaAndWorkRights || item.visa_and_work_rights || "",
+  visaAndWorkRights: item.visaAndWorkRights || item.visa_and_work_rights || item.visa_work || "",
   livingCost: item.livingCost || item.living_cost || "",
-  tuitionCost: item.tuitionCost || item.tuition_cost || "",
-  topUniversity: item.topUniversity || item.top_university || "",
-  scholarship: item.scholarship || "",
-  requirement: item.requirement || "",
-  popularCourses: item.popularCourses || item.popular_courses || "",
+  tuitionCost: item.tuitionCost || item.tuition_cost || item.tution_cost || "",
+  topUniversity: Array.isArray(item.topUniversity || item.top_university)
+    ? item.topUniversity || item.top_university
+    : normalizeStringArray(item.topUniversity || item.top_university),
+  scholarship: Array.isArray(item.scholarship)
+    ? item.scholarship
+    : normalizeStringArray(item.scholarship),
+  requirement: Array.isArray(item.requirement || item.requirment)
+    ? item.requirement || item.requirment
+    : normalizeStringArray(item.requirement || item.requirment),
+  popularCourses: Array.isArray(item.popularCourses || item.popular_courses || item.popular_course)
+    ? item.popularCourses || item.popular_courses || item.popular_course
+    : normalizeStringArray(item.popularCourses || item.popular_courses || item.popular_course),
 });
 
 const buildStudyAbroadPayload = ({
-  country,
+  title,
+  countryName,
   description,
   overview,
   visaAndWorkRights,
@@ -52,16 +79,17 @@ const buildStudyAbroadPayload = ({
   requirement,
   popularCourses,
 }) => ({
-  country,
+  title: title || "",
+  country_name: countryName || "",
   description: description || "",
   overview: overview || "",
-  visaAndWorkRights: visaAndWorkRights || "",
-  livingCost: livingCost || "",
-  tuitionCost: tuitionCost || "",
-  topUniversity: topUniversity || "",
-  scholarship: scholarship || "",
-  requirement: requirement || "",
-  popularCourses: popularCourses || "",
+  visa_work: visaAndWorkRights || "",
+  living_cost: livingCost || "",
+  tution_cost: tuitionCost || "",
+  top_university: normalizeStringArray(topUniversity),
+  scholarship: normalizeStringArray(scholarship),
+  requirment: normalizeStringArray(requirement),
+  popular_course: normalizeStringArray(popularCourses),
 });
 
 export default function StudyAbroadPage() {
@@ -90,7 +118,7 @@ export default function StudyAbroadPage() {
   }, []);
 
   const filteredData = data.filter((item) =>
-    `${item.country} ${item.description} ${item.overview} ${item.livingCost} ${item.tuitionCost} ${item.popularCourses}`
+    `${item.title} ${item.countryName} ${item.description} ${item.overview} ${item.livingCost} ${item.tuitionCost} ${item.popularCourses}`
       .toLowerCase()
       .includes(search.toLowerCase())
   );

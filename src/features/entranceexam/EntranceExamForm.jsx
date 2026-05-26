@@ -6,6 +6,21 @@ import RichTextEditor from "../../components/ui/RichTextEditor";
 
 const { Option } = Select;
 
+const normalizeTagValues = (value) => {
+  if (Array.isArray(value)) {
+    return value.filter(Boolean);
+  }
+
+  if (typeof value === "string") {
+    return value
+      .split(/[\n,]/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+};
+
 export default function EntranceExamForm({
   onSubmit,
   initialValues,
@@ -28,6 +43,8 @@ export default function EntranceExamForm({
         issuedate: initialValues.issuedate ? dayjs(initialValues.issuedate) : null,
         lastdate: initialValues.lastdate ? dayjs(initialValues.lastdate) : null,
         examDate: initialValues.examDate ? dayjs(initialValues.examDate) : null,
+        subject: normalizeTagValues(initialValues.subject),
+        topInstitutes: normalizeTagValues(initialValues.topInstitutes),
       });
     } else {
       form.resetFields();
@@ -211,7 +228,13 @@ export default function EntranceExamForm({
       </Form.Item>
 
       <Form.Item name="subject" label="Subject">
-        <Input disabled={isView} placeholder="Enter subject" />
+        <Select
+          mode="tags"
+          disabled={isView}
+          placeholder="Add subjects"
+          tokenSeparators={[","]}
+          open={false}
+        />
       </Form.Item>
 
       <Form.Item name="totalMark" label="Total Mark">
@@ -235,7 +258,13 @@ export default function EntranceExamForm({
         label="Top Institutes"
         className="md:col-span-2"
       >
-        <Input.TextArea rows={3} disabled={isView} />
+        <Select
+          mode="tags"
+          disabled={isView}
+          placeholder="Add top institutes"
+          tokenSeparators={[","]}
+          open={false}
+        />
       </Form.Item>
 
       <Form.Item
