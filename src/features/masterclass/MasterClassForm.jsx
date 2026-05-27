@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Button, Form, Input, Select, Upload } from "antd";
+import { Button, DatePicker, Form, Input, Select, Upload } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import StatusSwitch from "../../components/ui/StatusSwitch";
 import {
@@ -35,9 +35,8 @@ export default function MasterClassForm({ onSubmit, initialValues, mode }) {
   const [form] = Form.useForm();
   const isView = mode === "view";
   const videoOptions = [
-    { label: "Career Video", value: "career_video" },
-    { label: "Export Video", value: "export_video" },
-   
+    { label: "Career Video", value: "Career Video" },
+    { label: "Export Video", value: "Export Video" },
   ];
 
   useEffect(() => {
@@ -85,12 +84,14 @@ export default function MasterClassForm({ onSubmit, initialValues, mode }) {
       <Form.Item
         name="time"
         label="Time"
-        rules={[
-          validationRules.required("Time"),
-          validationRules.duration("Time"),
-        ]}
+        rules={[validationRules.required("Time")]}
       >
-        <Input disabled={isView} placeholder="e.g. 1 hr or 30 min" />
+        <DatePicker
+          showTime
+          className="w-full"
+          disabled={isView}
+          placeholder="Select date and time"
+        />
       </Form.Item>
 
       <Form.Item
@@ -122,6 +123,7 @@ export default function MasterClassForm({ onSubmit, initialValues, mode }) {
       <Form.Item
         name="category"
         label="Category"
+        rules={[validationRules.required("Category")]}
       >
         <Select disabled={isView} placeholder="Select category">
           {videoOptions.map((option) => (

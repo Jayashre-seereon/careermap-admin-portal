@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Modal, message } from "antd";
+import dayjs from "dayjs";
 import MasterClassForm from "./MasterClassForm";
 import MasterClassTable from "./MasterClassTable";
 import {
@@ -24,6 +25,42 @@ const normalizeList = (response) => {
   }
 
   return [];
+};
+
+const MASTER_CLASS_CATEGORY_OPTIONS = [
+  { label: "Career Video", value: "Career Video" },
+  { label: "Export Video", value: "Export Video" },
+];
+
+const getCategoryLabel = (value) =>
+  MASTER_CLASS_CATEGORY_OPTIONS.find((item) => item.value === value)?.label || value || "";
+
+const normalizeBoolean = (...values) => {
+  const matchedValue = values.find((value) => value !== undefined && value !== null);
+
+  if (typeof matchedValue === "string") {
+    return matchedValue.toLowerCase() === "true" || matchedValue === "1";
+  }
+
+  return !!matchedValue;
+};
+
+const formatDateTimeValue = (value) => {
+  if (!value) {
+    return "";
+  }
+
+  if (typeof value === "string") {
+    const parsedDate = new Date(value);
+    return Number.isNaN(parsedDate.getTime()) ? "" : parsedDate.toISOString();
+  }
+
+  if (typeof value?.toDate === "function") {
+    const dateValue = value.toDate();
+    return Number.isNaN(dateValue.getTime()) ? "" : dateValue.toISOString();
+  }
+
+  return "";
 };
 
 const extractFile = (value) => {
@@ -53,9 +90,9 @@ const buildMasterClassPayload = ({
   isActive,
 }) => {
   const payload = {
-    title,
-    name,
-    time: time || "",
+    title: title || "",
+    name: name || "",
+    time: formatDateTimeValue(time),
     views: views || "0",
     video_url: videoUrl || "",
     category: category || "",
@@ -86,14 +123,16 @@ const buildMasterClassPayload = ({
 
 const mapMasterClass = (item = {}) => ({
   id: item.id,
-  image: item.image || null,
+  image: item.image || item.image_url || item.thumbnail || null,
   title: item.title || "",
-  name: item.name || "",
-  time: item.time || "",
-  views: item.views ?? "",
-  videoUrl: item.videoUrl || item.video_url || "",
-  category: item.category || "",
-  isActive: item.isActive ?? item.is_active ?? item.active ?? false,
+  name: item.name || item.speaker_name || item.speakerName || item.class_name || "",
+  time: item.time ? dayjs(item.time) : null,
+  timeLabel: item.time || "",
+  views: item.views ?? item.view_count ?? item.viewCount ?? "",
+  videoUrl: item.videoUrl || item.video_url || item.video_link || item.url || "",
+  category: item.category || item.category_type || item.type || "",
+  categoryLabel: getCategoryLabel(item.category || item.category_type || item.type || ""),
+  isActive: normalizeBoolean(item.isActive, item.is_active, item.active, item.status),
 });
 
 export default function MasterClassPage() {
@@ -122,7 +161,7 @@ export default function MasterClassPage() {
   }, []);
 
   const filteredData = data.filter((item) =>
-    `${item.title} ${item.name} ${item.time} ${item.views} ${item.videoUrl} ${item.category}`
+    `${item.title} ${item.name} ${item.time} ${item.views} ${item.videoUrl} ${item.categoryLabel}`
       .toLowerCase()
       .includes(search.toLowerCase())
   );

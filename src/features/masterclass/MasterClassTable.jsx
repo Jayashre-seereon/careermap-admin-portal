@@ -6,6 +6,7 @@ import {
   ReloadOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
+import dayjs from "dayjs";
 
 export default function MasterClassTable({
   data,
@@ -57,9 +58,10 @@ export default function MasterClassTable({
     },
     {
       title: "Time",
-      dataIndex: "time",
+      dataIndex: "timeLabel",
       width: 120,
-      render: (value) => value || "-",
+      render: (value) =>
+        value ? dayjs(value).format("DD MMM YYYY, hh:mm A") : "-",
     },
     {
       title: "Views",
@@ -83,7 +85,7 @@ export default function MasterClassTable({
    
     {
       title: "Category",
-      dataIndex: "category",
+      dataIndex: "categoryLabel",
       width: 180,
       render: ellipsis,
     },
