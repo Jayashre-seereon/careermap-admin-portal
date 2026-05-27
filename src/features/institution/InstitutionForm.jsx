@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Form, Input, Select, Upload, Button } from "antd";
+import { Form, Input, Select, Upload, Button, DatePicker } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { validationRules } from "../../utils/formValidation";
 import StatusSwitch from "../../components/ui/StatusSwitch";
@@ -113,7 +113,7 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
       </Form.Item>
 
       <Form.Item name="tentative_date" label="Tentative Date">
-        <Input disabled={disabled} placeholder="e.g. May 2026" />
+        <DatePicker disabled={disabled} placeholder="e.g. May 2026" />
       </Form.Item>
 
       <Form.Item name="url" label="URL" rules={[validationRules.url("URL")]}>

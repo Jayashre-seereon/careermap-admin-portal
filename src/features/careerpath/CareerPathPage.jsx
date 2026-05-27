@@ -39,6 +39,7 @@ const mapOption = (item = {}, labelKeys = []) => ({
 const mapCareerPath = (item = {}) => ({
   id: item.id,
   moduleId: item.moduleId || item.module?.id || undefined,
+  pathName: item.pathName || item.title || "",
   categoryId: item.categoryId || item.category?.id || undefined,
   secondcategoryId:
     item.secondcategoryId || item.secondcategory?.id || item.secondCategory?.id || undefined,
@@ -65,6 +66,7 @@ const mapCareerPath = (item = {}) => ({
 
 const buildCareerPathPayload = ({
   moduleId,
+  pathName,
   categoryId,
   secondcategoryId,
   subcategoryId,
@@ -75,6 +77,7 @@ const buildCareerPathPayload = ({
   anyother,
 }) => ({
   moduleId,
+  pathName: pathName || "",
   categoryId,
   secondcategoryId,
   subcategoryId,
@@ -182,7 +185,7 @@ export default function CareerPathPage() {
   }));
 
   const filteredData = tableData.filter((item) =>
-    `${item.moduleName} ${item.categoryName} ${item.secondCategoryName} ${item.subcategoryName} ${item.pathTypeName} ${item.graduation} ${item.aftergraduation} ${item.afterpostgraduation} ${item.anyother}`
+    `${item.moduleName} ${item.pathName} ${item.categoryName} ${item.secondCategoryName} ${item.subcategoryName} ${item.pathTypeName} ${item.graduation} ${item.aftergraduation} ${item.afterpostgraduation} ${item.anyother}`
       .toLowerCase()
       .includes(search.toLowerCase())
   );

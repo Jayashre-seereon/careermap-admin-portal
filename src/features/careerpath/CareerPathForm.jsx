@@ -16,16 +16,29 @@ export default function CareerPathForm({
 }) {
   const [form] = Form.useForm();
   const isView = mode === "view";
+  const careerLibraryModule = useMemo(
+    () =>
+      moduleOptions.find(
+        (item) => item.label?.trim().toLowerCase() === "career library"
+      ),
+    [moduleOptions]
+  );
   const selectedCategoryId = Form.useWatch("categoryId", form);
   const selectedSecondCategoryId = Form.useWatch("secondcategoryId", form);
 
   useEffect(() => {
     if (initialValues) {
-      form.setFieldsValue(initialValues);
+      form.setFieldsValue({
+        ...initialValues,
+        moduleId: initialValues.moduleId || careerLibraryModule?.id,
+      });
     } else {
       form.resetFields();
+      if (careerLibraryModule?.id) {
+        form.setFieldsValue({ moduleId: careerLibraryModule.id });
+      }
     }
-  }, [form, initialValues]);
+  }, [careerLibraryModule?.id, form, initialValues]);
 
   const filteredSecondCategories = useMemo(() => {
     if (!selectedCategoryId) {
@@ -50,6 +63,33 @@ export default function CareerPathForm({
     });
   }, [subcategoryOptions, selectedCategoryId, selectedSecondCategoryId]);
 
+  useEffect(() => {
+    const currentSecondCategoryId = form.getFieldValue("secondcategoryId");
+    const hasSecondCategory = filteredSecondCategories.some(
+      (item) => item.id === currentSecondCategoryId
+    );
+
+    if (currentSecondCategoryId && !hasSecondCategory) {
+      form.setFieldsValue({
+        secondcategoryId: undefined,
+        subcategoryId: undefined,
+      });
+    }
+  }, [filteredSecondCategories, form]);
+
+  useEffect(() => {
+    const currentSubcategoryId = form.getFieldValue("subcategoryId");
+    const hasSubcategory = filteredSubcategories.some(
+      (item) => item.id === currentSubcategoryId
+    );
+
+    if (currentSubcategoryId && !hasSubcategory) {
+      form.setFieldsValue({
+        subcategoryId: undefined,
+      });
+    }
+  }, [filteredSubcategories, form]);
+
   return (
     <Form
       layout="vertical"
@@ -63,11 +103,19 @@ export default function CareerPathForm({
       </h3>
 
       <Form.Item
+        name="pathName"
+        label="Name"
+        rules={[validationRules.required("Path name")]}
+      >
+        <Input disabled={isView} placeholder="Enter path name" />
+      </Form.Item>
+
+      <Form.Item
         name="moduleId"
         label="Select Module"
         rules={[validationRules.required("Module")]}
       >
-        <Select disabled={isView} placeholder="Select module">
+        <Select disabled placeholder="Select module">
           {moduleOptions.map((item) => (
             <Option key={item.id} value={item.id}>
               {item.label}
@@ -76,12 +124,23 @@ export default function CareerPathForm({
         </Select>
       </Form.Item>
 
+     
+
       <Form.Item
         name="categoryId"
         label="Category"
         rules={[validationRules.required("Category")]}
       >
-        <Select disabled={isView} placeholder="Select category">
+        <Select
+          disabled={isView}
+          placeholder="Select category"
+          onChange={() =>
+            form.setFieldsValue({
+              secondcategoryId: undefined,
+              subcategoryId: undefined,
+            })
+          }
+        >
           {categoryOptions.map((item) => (
             <Option key={item.id} value={item.id}>
               {item.label}
@@ -93,9 +152,17 @@ export default function CareerPathForm({
       <Form.Item
         name="secondcategoryId"
         label="2nd Category"
-        rules={[validationRules.required("2nd category")]}
       >
-        <Select disabled={isView} placeholder="Select 2nd category">
+        <Select
+          disabled={isView}
+          placeholder="Select 2nd category"
+          onChange={() =>
+            form.setFieldsValue({
+              subcategoryId: undefined,
+            })
+          }
+          allowClear
+        >
           {filteredSecondCategories.map((item) => (
             <Option key={item.id} value={item.id}>
               {item.label}
@@ -107,9 +174,8 @@ export default function CareerPathForm({
       <Form.Item
         name="subcategoryId"
         label="Subcategory"
-        rules={[validationRules.required("Subcategory")]}
       >
-        <Select disabled={isView} placeholder="Select subcategory">
+        <Select disabled={isView} placeholder="Select subcategory" allowClear>
           {filteredSubcategories.map((item) => (
             <Option key={item.id} value={item.id}>
               {item.label}

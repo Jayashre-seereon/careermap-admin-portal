@@ -32,6 +32,12 @@ export default function CareerPathTable({
       ellipsis: true,
     },
     {
+      title: <span className="text-[#9a2119] font-semibold">Name</span>,
+      dataIndex: "pathName",
+      width: 180,
+      ellipsis: true,
+    },
+    {
       title: <span className="text-[#9a2119] font-semibold">Category</span>,
       dataIndex: "categoryName",
       width: 160,

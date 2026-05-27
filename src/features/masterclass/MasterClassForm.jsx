@@ -85,9 +85,12 @@ export default function MasterClassForm({ onSubmit, initialValues, mode }) {
       <Form.Item
         name="time"
         label="Time"
-        rules={[validationRules.required("Time")]}
+        rules={[
+          validationRules.required("Time"),
+          validationRules.duration("Time"),
+        ]}
       >
-        <Input disabled={isView} placeholder="e.g. 45 min" />
+        <Input disabled={isView} placeholder="e.g. 1 hr or 30 min" />
       </Form.Item>
 
       <Form.Item

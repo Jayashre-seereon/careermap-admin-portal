@@ -113,7 +113,7 @@ export default function EntranceExamForm({
         Entrance Exam Details
       </h3>
 
-      <Form.Item
+      {/* <Form.Item
         name="moduleId"
         label="Select Module"
         rules={[validationRules.required("Module")]}
@@ -125,7 +125,7 @@ export default function EntranceExamForm({
             </Option>
           ))}
         </Select>
-      </Form.Item>
+      </Form.Item> */}
 
       <Form.Item
         name="streamId"
@@ -141,7 +141,7 @@ export default function EntranceExamForm({
         </Select>
       </Form.Item>
 
-      <Form.Item
+      {/* <Form.Item
         name="categoryId"
         label="Select Category"
         rules={[validationRules.required("Category")]}
@@ -181,7 +181,7 @@ export default function EntranceExamForm({
             </Option>
           ))}
         </Select>
-      </Form.Item>
+      </Form.Item> */}
 
       <Form.Item
         name="examname"
@@ -220,11 +220,19 @@ export default function EntranceExamForm({
       </Form.Item>
 
       <Form.Item name="examMode" label="Exam Mode">
-        <Input disabled={isView} placeholder="Online / Offline / Hybrid" />
+        <Select disabled={isView} placeholder="Select exam mode">
+          <Option value="online">Online</Option>
+          <Option value="offline">Offline</Option>
+          <Option value="hybrid">Hybrid</Option>
+        </Select>
       </Form.Item>
 
-      <Form.Item name="duration" label="Duration">
-        <Input disabled={isView} placeholder="e.g. 3 Hours" />
+      <Form.Item
+        name="duration"
+        label="Duration"
+        rules={[validationRules.duration("Duration")]}
+      >
+        <Input disabled={isView} placeholder="e.g. 1 hr or 30 min" />
       </Form.Item>
 
       <Form.Item name="subject" label="Subject">
