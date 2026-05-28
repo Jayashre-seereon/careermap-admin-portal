@@ -5,6 +5,11 @@ export const getSecondaryCategories = async () => {
   return res.data;
 };
 
+export const getSecondaryCategoriesByCategory = async (categoryId) => {
+  const res = await api.get(`/api/secondarycategories/category/${categoryId}`);
+  return res.data;
+};
+
 export const createSecondaryCategory = async (payload, config = {}) => {
   const res = await api.post("/api/secondarycategories/", payload, config);
   return res.data;
