@@ -421,6 +421,25 @@ body::after {
   max-width: 100%;
 }
 
+/* Keep Mentor TimePicker confirm action visible without hover */
+.mentor-time-picker-popup .ant-picker-footer,
+.mentor-time-picker-popup .ant-picker-footer .ant-picker-ranges,
+.mentor-time-picker-popup .ant-picker-footer .ant-picker-ok {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.mentor-time-picker-popup .ant-picker-footer .ant-picker-ok {
+  display: block !important;
+}
+
+.mentor-time-picker-popup .ant-picker-footer .ant-picker-ok .ant-btn {
+  min-width: 72px;
+  background: #1677ff !important;
+  border-color: #1677ff !important;
+  color: #fff !important;
+}
+
 @media (max-width: 1023px) {
   .custom-tabs .ant-tabs-nav {
     overflow-x: auto;

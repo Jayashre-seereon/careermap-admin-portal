@@ -9,8 +9,6 @@ import {
   getMentors,
   updateMentor,
 } from "../../api/mentor";
-import { getCategories } from "../../api/category";
-import { getSubCategories } from "../../api/subcategory";
 
 const getApiErrorMessage = (error, fallbackMessage) =>
   error.response?.data?.message || error.message || fallbackMessage;
@@ -62,6 +60,23 @@ const formatDateValue = (value) => {
   return "";
 };
 
+const formatDateForAvailability = (value) => {
+  if (!value) {
+    return "";
+  }
+
+  if (typeof value?.format === "function") {
+    return value.format("YYYY-MM-DD");
+  }
+
+  const parsedDate = new Date(value);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return String(value);
+  }
+
+  return dayjs(parsedDate).format("YYYY-MM-DD");
+};
+
 const formatTimeValue = (value) => {
   if (!value) {
     return "";
@@ -72,21 +87,109 @@ const formatTimeValue = (value) => {
   }
 
   if (typeof value?.format === "function") {
-    return value.format("HH:mm:ss");
+    return value.format("HH:mm");
   }
 
   return "";
 };
 
+const normalizeTimeValue = (value) => {
+  if (!value) {
+    return null;
+  }
+
+  if (typeof value?.format === "function") {
+    return value;
+  }
+
+  const text = String(value).trim();
+  if (!text) {
+    return null;
+  }
+
+  const normalizedText = text.length === 5 ? `${text}:00` : text;
+  const parsedTime = dayjs(`1970-01-01T${normalizedText}`);
+  return parsedTime.isValid() ? parsedTime : null;
+};
+
+const normalizeAvailability = (item = {}) => {
+  const availability = Array.isArray(item.availability) ? item.availability : [];
+
+  if (availability.length > 0) {
+    return availability
+      .map((entry) => ({
+        date: entry?.date ? dayjs(entry.date) : null,
+        timeSlots: Array.isArray(entry?.timeSlots) && entry.timeSlots.length > 0
+          ? entry.timeSlots.map(normalizeTimeValue).filter(Boolean)
+          : [null],
+      }))
+      .filter((entry) => entry.date || entry.timeSlots.some(Boolean));
+  }
+
+  const legacyDate = item.available_date || item.availableDate || "";
+  const legacyTime = item.available_time || item.availableTime || "";
+
+  if (!legacyDate && !legacyTime) {
+    return [];
+  }
+
+  const legacyTimeSlots = Array.isArray(legacyTime)
+    ? legacyTime.map(normalizeTimeValue).filter(Boolean)
+    : String(legacyTime)
+        .split(",")
+        .map((slot) => normalizeTimeValue(slot.trim()))
+        .filter(Boolean);
+
+  return [
+    {
+      date: legacyDate ? dayjs(legacyDate) : null,
+      timeSlots: legacyTimeSlots.length > 0 ? legacyTimeSlots : [null],
+    },
+  ];
+};
+
+const normalizeAvailabilityForPayload = (availability = []) =>
+  availability
+    .map((entry) => {
+      const date = formatDateForAvailability(entry?.date);
+      const timeSlots = Array.isArray(entry?.timeSlots)
+        ? entry.timeSlots.map(formatTimeValue).filter(Boolean)
+        : [];
+
+      if (!date && timeSlots.length === 0) {
+        return null;
+      }
+
+      return {
+        date,
+        timeSlots,
+      };
+    })
+    .filter(Boolean);
+
+const formatAvailabilitySummary = (availability = []) => {
+  if (!Array.isArray(availability) || availability.length === 0) {
+    return "-";
+  }
+
+  return availability
+    .map((entry) => {
+      const dateText = entry?.date ? dayjs(entry.date).format("DD MMM YYYY") : "-";
+      const timeText = Array.isArray(entry?.timeSlots) && entry.timeSlots.length > 0
+        ? entry.timeSlots.join(", ")
+        : "-";
+
+      return `${dateText}: ${timeText}`;
+    })
+    .join(" | ");
+};
+
 const buildMentorPayload = ({
-  categoryId,
-  subCategoryId,
   name,
   email,
   phone_number,
   dateof_birth,
-  available_date,
-  available_time,
+  availability,
   designation,
   education,
   placeof_word,
@@ -102,14 +205,10 @@ const buildMentorPayload = ({
   status,
 }) => {
   const payload = {
-    categoryId,
-    subCategoryId,
     name,
     email: email || "",
     phone_number: phone_number || "",
     dateof_birth: formatDateValue(dateof_birth),
-    available_date: formatDateValue(available_date),
-    available_time: formatTimeValue(available_time),
     designation: designation || "",
     education: education || "",
     placeof_word: placeof_word || "",
@@ -122,6 +221,7 @@ const buildMentorPayload = ({
     description: description || "",
     status: !!status,
   };
+  const normalizedAvailability = normalizeAvailabilityForPayload(availability);
 
   const imageFile = extractFile(image);
   const resumeFile = extractFile(resume);
@@ -141,6 +241,10 @@ const buildMentorPayload = ({
     formData.append("resume", resumeFile);
   }
 
+  if (normalizedAvailability.length > 0) {
+    formData.append("availability", JSON.stringify(normalizedAvailability));
+  }
+
   return {
     payload: formData,
     config: { headers: { "Content-Type": "multipart/form-data" } },
@@ -149,15 +253,10 @@ const buildMentorPayload = ({
 
 const mapMentor = (item = {}) => ({
   id: item.id,
-  categoryId: item.categoryId || item.category?.id || undefined,
-  subCategoryId:
-    item.subCategoryId || item.subcategoryId || item.subcategory?.id || undefined,
   name: item.name || "",
   email: item.email || "",
   phone_number: item.phone_number || "",
   dateof_birth: item.dateof_birth || "",
-  available_date: item.available_date || item.availableDate || "",
-  available_time: item.available_time || item.availableTime || "",
   designation: item.designation || "",
   education: item.education || "",
   placeof_word: item.placeof_word || "",
@@ -171,20 +270,7 @@ const mapMentor = (item = {}) => ({
   resume: item.resume || null,
   description: item.description || "",
   status: item.status ?? false,
-  categoryName: item.category?.title || item.categoryName || "",
-  subCategoryName:
-    item.subcategory?.title || item.subCategory?.title || item.subCategoryName || "",
-});
-
-const mapCategory = (item = {}) => ({
-  id: item.id,
-  title: item.title || item.name || "",
-});
-
-const mapSubcategory = (item = {}) => ({
-  id: item.id,
-  title: item.title || item.name || "",
-  categoryId: item.categoryId || item.category?.id || undefined,
+  availability: normalizeAvailability(item),
 });
 
 export default function MentorPage() {
@@ -195,8 +281,6 @@ export default function MentorPage() {
   const [mode, setMode] = useState("add");
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [categories, setCategories] = useState([]);
-  const [subcategories, setSubcategories] = useState([]);
 
   const loadMentors = async () => {
     try {
@@ -210,40 +294,18 @@ export default function MentorPage() {
     }
   };
 
-  const loadDropdowns = async () => {
-    try {
-      const [categoryResponse, subcategoryResponse] = await Promise.all([
-        getCategories(),
-        getSubCategories(),
-      ]);
-
-      setCategories(normalizeList(categoryResponse).map(mapCategory));
-      setSubcategories(normalizeList(subcategoryResponse).map(mapSubcategory));
-    } catch (error) {
-      messageApi.error(getApiErrorMessage(error, "Failed to load mentor options."));
-    }
-  };
-
   useEffect(() => {
     loadMentors();
-    loadDropdowns();
   }, []);
-
-  const getCategoryName = (id, fallbackName = "") =>
-    fallbackName || categories.find((item) => item.id === id)?.title || "";
-
-  const getSubcategoryName = (id, fallbackName = "") =>
-    fallbackName || subcategories.find((item) => item.id === id)?.title || "";
 
   const tableData = mentors.map((item) => ({
     ...item,
-    categoryName: getCategoryName(item.categoryId, item.categoryName),
-    subCategoryName: getSubcategoryName(item.subCategoryId, item.subCategoryName),
     dob: item.dateof_birth ? dayjs(item.dateof_birth).format("DD-MM-YYYY") : "-",
+    availabilitySummary: formatAvailabilitySummary(item.availability),
   }));
 
   const filteredMentors = tableData.filter((mentor) =>
-    `${mentor.name} ${mentor.email} ${mentor.phone_number} ${mentor.categoryName} ${mentor.subCategoryName} ${mentor.designation} ${mentor.education} ${mentor.available_date} ${mentor.available_time}`
+    `${mentor.name} ${mentor.email} ${mentor.phone_number} ${mentor.designation} ${mentor.education} ${mentor.availabilitySummary}`
       .toLowerCase()
       .includes(search.toLowerCase())
   );
@@ -329,8 +391,6 @@ export default function MentorPage() {
           onSubmit={handleSubmit}
           initialValues={selected}
           disabled={mode === "view"}
-          categoryOptions={categories}
-          subcategoryOptions={subcategories}
         />
       </Modal>
     </div>
