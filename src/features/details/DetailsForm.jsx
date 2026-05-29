@@ -60,7 +60,15 @@ function renderCommonFields(viewMode, options, onStreamChange, onCategoryChange,
         </p>
       </div>
 
-      <Form.Item name="stream" label="Stream">
+      <Form.Item
+        name="stream"
+        label={
+          <span>
+            Stream
+          </span>
+        }
+        rules={[validationRules.required("Stream")]}
+      >
         <Select
           disabled={viewMode}
           placeholder="Select stream"
@@ -70,7 +78,15 @@ function renderCommonFields(viewMode, options, onStreamChange, onCategoryChange,
         </Select>
       </Form.Item>
 
-      <Form.Item name="category" label="Category">
+      <Form.Item
+        name="category"
+        label={
+          <span>
+            Category 
+          </span>
+        }
+        rules={[validationRules.required("Category")]}
+      >
         <Select
           disabled={viewMode}
           placeholder="Select category"
