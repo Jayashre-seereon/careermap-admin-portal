@@ -41,8 +41,6 @@ const buildNotificationPayload = (values = {}) => ({
   title: values.title || "",
   message: values.message || "",
   target: values.target || "",
-  status: values.status || "",
-  type: values.type || "",
 });
 
 export default function NotificationsPage() {

@@ -4,27 +4,14 @@ import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../../features/auth/authStorage";
 import { useSessionStore } from "../../store/sessionStore";
 import { navSections } from "./navSections";
+import { getNotifications } from "../../api/notification";
 
-const notificationItems = [
-  {
-    id: "1",
-    title: "New Course Available",
-    message: "A new MBBS course was added for all users.",
-    time: "2 min ago",
-  },
-  {
-    id: "2",
-    title: "System Maintenance",
-    message: "Scheduled maintenance starts tonight at 11:00 PM.",
-    time: "1 hour ago",
-  },
-  {
-    id: "3",
-    title: "Profile Updated",
-    message: "Your admin profile details were updated successfully.",
-    time: "Today",
-  },
-];
+const stripHtml = (text = "") =>
+  String(text || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
 const flattenNavItems = (sections) =>
   sections.flatMap((section) =>
@@ -55,6 +42,8 @@ export default function Header({ activePage, onMenuClick }) {
   const [search, setSearch] = useState("");
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [notificationItems, setNotificationItems] = useState([]);
+  const [notificationLoading, setNotificationLoading] = useState(false);
   const userMenuRef = useRef(null);
   const notificationRef = useRef(null);
   const searchRef = useRef(null);
@@ -93,6 +82,40 @@ export default function Header({ activePage, onMenuClick }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    if (!isNotificationOpen) {
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadNotifications = async () => {
+      try {
+        setNotificationLoading(true);
+        const response = await getNotifications();
+        const list = Array.isArray(response?.data) ? response.data : [];
+
+        if (isMounted) {
+          setNotificationItems(list.slice(0, 5));
+        }
+      } catch {
+        if (isMounted) {
+          setNotificationItems([]);
+        }
+      } finally {
+        if (isMounted) {
+          setNotificationLoading(false);
+        }
+      }
+    };
+
+    loadNotifications();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isNotificationOpen]);
 
   const handleLogout = () => {
     logoutUser();
@@ -177,28 +200,42 @@ export default function Header({ activePage, onMenuClick }) {
                   }}
                   className="text-xs font-medium text-[#9a2119] hover:underline"
                 >
-                  View All
+                  See All
                 </button>
               </div>
 
-              <div className="space-y-3">
-                {notificationItems.map((item) => (
-                  <div
-                    key={item.id}
-                    className="rounded-xl border border-[#f1d6d3] bg-[#fffafa] p-3"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold text-slate-800">{item.title}</p>
-                        <p className="mt-1 text-xs text-slate-500">{item.message}</p>
+              {notificationLoading ? (
+                <div className="rounded-xl border border-[#f1d6d3] bg-[#fffafa] p-3 text-sm text-slate-500">
+                  Loading notifications...
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {notificationItems.length > 0 ? (
+                    notificationItems.map((item) => (
+                      <div
+                        key={item.id}
+                        className="rounded-xl border border-[#f1d6d3] bg-[#fffafa] p-3"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-slate-800">{item.title}</p>
+                            <p className="mt-1 text-xs text-slate-500">
+                              {stripHtml(item.message) || "-"}
+                            </p>
+                          </div>
+                          <span className="whitespace-nowrap text-[11px] text-slate-400">
+                            {item.createdAt ? new Date(item.createdAt).toLocaleString() : ""}
+                          </span>
+                        </div>
                       </div>
-                      <span className="whitespace-nowrap text-[11px] text-slate-400">
-                        {item.time}
-                      </span>
+                    ))
+                  ) : (
+                    <div className="rounded-xl border border-[#f1d6d3] bg-[#fffafa] p-3 text-sm text-slate-500">
+                      No notifications found.
                     </div>
-                  </div>
-                ))}
-              </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>

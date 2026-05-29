@@ -58,18 +58,7 @@ export default function NotificationsTable({
       width: 160,
       ellipsis: true,
     },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Type</span>,
-      dataIndex: "type",
-      width: 160,
-      render: (value) => <Tag color={getTagColor(value)}>{value || "-"}</Tag>,
-    },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Status</span>,
-      dataIndex: "status",
-      width: 130,
-      render: (value) => <Tag color={getTagColor(value)}>{value || "-"}</Tag>,
-    },
+   
     {
       title: <span className="text-[#9a2119] font-semibold">Action</span>,
       width: 150,

@@ -38,25 +38,9 @@ export default function NotificationsForm({ onSubmit, initialValues, disabled })
       <Form.Item
         name="target"
         label="Target"
-       
+        rules={[validationRules.required("Target")]}
       >
         <Input disabled={disabled} placeholder="Enter target" />
-      </Form.Item>
-
-      <Form.Item
-        name="type"
-        label="Type"
-       
-      >
-        <Input disabled={disabled} placeholder="Enter notification type" />
-      </Form.Item>
-
-      <Form.Item
-        name="status"
-        label="Status"
-       
-      >
-        <Input disabled={disabled} placeholder="Enter status" />
       </Form.Item>
 
       <Form.Item
