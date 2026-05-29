@@ -83,6 +83,7 @@ function renderCommonFields(viewMode, options, onCategoryChange, onSecondCategor
         <Select
           disabled={viewMode}
           placeholder="Select secondary category"
+          allowClear
           onChange={(value) => onSecondCategoryChange?.(value)}
         >
           {renderOptions(options.secondaryCategoryOptions)}
@@ -90,7 +91,7 @@ function renderCommonFields(viewMode, options, onCategoryChange, onSecondCategor
       </Form.Item>
 
       <Form.Item name="subcategory" label="Subcategory">
-        <Select disabled={viewMode} placeholder="Select subcategory">
+        <Select disabled={viewMode} placeholder="Select subcategory" allowClear>
           {renderOptions(options.subcategoryOptions)}
         </Select>
       </Form.Item>
@@ -98,7 +99,14 @@ function renderCommonFields(viewMode, options, onCategoryChange, onSecondCategor
   );
 }
 
-function renderSectionSpecificFields(section, viewMode, options, normalizeUpload, onAutoFill) {
+function renderSectionSpecificFields(
+  section,
+  viewMode,
+  options,
+  normalizeUpload,
+  onAutoFill,
+  filteredPathOptions = []
+) {
   if (section === "salary-range") {
     return (
       <>
@@ -208,24 +216,24 @@ function renderSectionSpecificFields(section, viewMode, options, normalizeUpload
             placeholder="Select path"
             onChange={(value) => onAutoFill?.("career-path", value)}
           >
-            {renderOptions(options.pathOptions)}
+            {renderOptions(filteredPathOptions)}
           </Select>
         </Form.Item>
 
         <Form.Item name="graduation" label="Graduation">
-          <Input disabled={viewMode} />
+          <Input disabled />
         </Form.Item>
 
         <Form.Item name="afterGraduation" label="After Graduation">
-          <Input disabled={viewMode} />
+          <Input disabled />
         </Form.Item>
 
         <Form.Item name="afterPostGraduation" label="After Post Graduation">
-          <Input disabled={viewMode} />
+          <Input disabled/>
         </Form.Item>
 
         <Form.Item name="anyOther" label="Any Other">
-          <Input disabled={viewMode} />
+          <Input disabled />
         </Form.Item>
       </>
     );
@@ -249,31 +257,31 @@ function renderSectionSpecificFields(section, viewMode, options, normalizeUpload
         </Form.Item>
 
         <Form.Item name="issue" label="Issue Date">
-          <DatePicker className="w-full" disabled={viewMode} />
+          <DatePicker className="w-full" disabled />
         </Form.Item>
 
         <Form.Item name="last" label="Last Date">
-          <DatePicker className="w-full" disabled={viewMode} />
+          <DatePicker className="w-full" disabled />
         </Form.Item>
 
         <Form.Item name="url" label="URL" className="md:col-span-2" rules={[validationRules.url("URL")]}>
-          <Input disabled={viewMode} />
+          <Input disabled />
         </Form.Item>
 
         <Form.Item name="about" label="About" className="md:col-span-2">
-          <RichTextEditor disabled={viewMode} height={180} />
+          <RichTextEditor disabled height={180} />
         </Form.Item>
 
         <Form.Item name="eligibility" label="Eligibility" className="md:col-span-2">
-          <Input.TextArea rows={2} disabled={viewMode} />
+          <Input.TextArea rows={2} disabled />
         </Form.Item>
 
         <Form.Item name="examDate" label="Exam Date">
-          <DatePicker className="w-full" disabled={viewMode} />
+          <DatePicker className="w-full" disabled/>
         </Form.Item>
 
         <Form.Item name="examMode" label="Exam Mode">
-          <Select disabled={viewMode} placeholder="Select exam mode">
+          <Select disabled placeholder="Select exam mode">
             <Option value="online">Online</Option>
             <Option value="offline">Offline</Option>
             <Option value="hybrid">Hybrid</Option>
@@ -281,29 +289,29 @@ function renderSectionSpecificFields(section, viewMode, options, normalizeUpload
         </Form.Item>
 
         <Form.Item name="duration" label="Duration">
-          <Input disabled={viewMode} />
+          <Input disabled/>
         </Form.Item>
 
         <Form.Item name="subject" label="Subject">
-          <Select mode="tags" disabled={viewMode} placeholder="Add subjects" tokenSeparators={[","]} open={false} />
+          <Select mode="tags" disabled placeholder="Add subjects" tokenSeparators={[","]} open={false} />
         </Form.Item>
 
         <Form.Item name="totalMark" label="Total Mark">
-          <Input disabled={viewMode} />
+          <Input disabled />
         </Form.Item>
 
         <Form.Item name="frequency" label="Frequency">
-          <Input disabled={viewMode} />
+          <Input disabled />
         </Form.Item>
 
         <Form.Item name="examPattern" label="Exam Pattern" className="md:col-span-2">
-          <RichTextEditor disabled={viewMode} height={220} />
+          <RichTextEditor disabled height={220} />
         </Form.Item>
 
         <Form.Item name="topInstitutes" label="Top Institutes" className="md:col-span-2">
           <Select
             mode="tags"
-            disabled={viewMode}
+           disabled
             placeholder="Add top institutes"
             tokenSeparators={[","]}
             open={false}
@@ -330,15 +338,15 @@ function renderSectionSpecificFields(section, viewMode, options, normalizeUpload
       </Form.Item>
 
       <Form.Item name="logo" label="Logo" valuePropName="fileList" getValueFromEvent={normalizeUpload}>
-        <Upload beforeUpload={() => false} disabled={viewMode} maxCount={1}>
-          <Button icon={<UploadOutlined />} disabled={viewMode}>
+        <Upload beforeUpload={() => false} disabled maxCount={1}>
+          <Button icon={<UploadOutlined />} disabled>
             Upload Logo
           </Button>
         </Upload>
       </Form.Item>
 
       <Form.Item name="type" label="Institution Type">
-        <Input disabled={viewMode} placeholder="Enter institution type" />
+        <Input disabled placeholder="Enter institution type" />
       </Form.Item>
 
       <Form.Item name="address" label="Address" className="md:col-span-2">
@@ -346,17 +354,17 @@ function renderSectionSpecificFields(section, viewMode, options, normalizeUpload
       </Form.Item>
 
       <Form.Item name="admission" label="Admission Process">
-        <Input disabled={viewMode} />
+        <Input disabled />
       </Form.Item>
 
       <Form.Item name="about" label="About" className="md:col-span-2">
-        <RichTextEditor disabled={viewMode} height={180} />
+        <RichTextEditor disabled height={180} />
       </Form.Item>
 
       <Form.Item name="coursesOffered" label="Courses Offered" className="md:col-span-2">
         <Select
           mode="tags"
-          disabled={viewMode}
+         disabled
           placeholder="Add courses offered"
           tokenSeparators={[","]}
           open={false}
@@ -364,27 +372,27 @@ function renderSectionSpecificFields(section, viewMode, options, normalizeUpload
       </Form.Item>
 
       <Form.Item name="date" label="Tentative Date">
-        <DatePicker className="w-full" disabled={viewMode} />
+        <DatePicker className="w-full" disabled />
       </Form.Item>
 
       <Form.Item name="url" label="URL" rules={[validationRules.url("URL")]}>
-        <Input disabled={viewMode} />
+        <Input disabled />
       </Form.Item>
 
       <Form.Item name="country" label="Country">
-        <Input disabled={viewMode} />
+        <Input disabled/>
       </Form.Item>
 
       <Form.Item name="state" label="State">
-        <Input disabled={viewMode} />
+        <Input disabled />
       </Form.Item>
 
       <Form.Item name="city" label="City">
-        <Input disabled={viewMode} />
+        <Input disabled />
       </Form.Item>
 
       <Form.Item name="district" label="District">
-        <Input disabled={viewMode} />
+        <Input disabled/>
       </Form.Item>
 
       <Form.Item
@@ -394,7 +402,7 @@ function renderSectionSpecificFields(section, viewMode, options, normalizeUpload
         getValueProps={(value) => ({ checked: value === "Yes" })}
         normalize={(checked) => (checked ? "Yes" : "No")}
       >
-        <StatusSwitch disabled={viewMode} checkedChildren="Yes" unCheckedChildren="No" />
+        <StatusSwitch disabled checkedChildren="Yes" unCheckedChildren="No" />
       </Form.Item>
     </>
   );
@@ -415,6 +423,25 @@ export default function DetailsForm({
   onCategoryChange,
   onSecondCategoryChange,
 }) {
+  const selectedCategory = Form.useWatch("category", form);
+  const selectedSecondCategory = Form.useWatch("secondCategory", form);
+
+  const handleCategoryChange = (value) => {
+    form.setFieldsValue({
+      secondCategory: undefined,
+      subcategory: undefined,
+      pathType: undefined,
+    });
+    onCategoryChange?.(value);
+  };
+
+  const handleSecondCategoryChange = (value) => {
+    form.setFieldsValue({
+      subcategory: undefined,
+    });
+    onSecondCategoryChange?.(value);
+  };
+
   const normalizedInitialValues = initialValues
     ? {
         ...initialValues,
@@ -437,6 +464,29 @@ export default function DetailsForm({
     }
   }, [form, initialValues, normalizedInitialValues]);
 
+  const filteredPathOptions = options.pathOptions.filter((item) => {
+    const matchesCategory = !selectedCategory || !item.categoryId || item.categoryId === selectedCategory;
+    const matchesSecondCategory =
+      !selectedSecondCategory || !item.secondcategoryId || item.secondcategoryId === selectedSecondCategory;
+
+    return matchesCategory && matchesSecondCategory;
+  });
+
+  useEffect(() => {
+    const currentPathType = form.getFieldValue("pathType");
+    const hasPathType = filteredPathOptions.some((item) => item.value === currentPathType);
+
+    if (currentPathType && !hasPathType) {
+      form.setFieldsValue({
+        pathType: undefined,
+        graduation: undefined,
+        afterGraduation: undefined,
+        afterPostGraduation: undefined,
+        anyOther: undefined,
+      });
+    }
+  }, [filteredPathOptions, form]);
+
   const handleAutoFill = (section, value) => {
     if (viewMode) {
       return;
@@ -452,9 +502,6 @@ export default function DetailsForm({
       form.setFieldsValue(
         mergeDefinedValues({
           stream: record.streamId || record.stream || undefined,
-          category: record.categoryId || record.category || undefined,
-          secondCategory: record.secondcategoryId || record.secondCategoryId || record.secondCategory || undefined,
-          subcategory: record.subcategoryId || record.subcategory || undefined,
           pathType: record.id,
           graduation: record.graduation,
           afterGraduation: record.aftergraduation || record.afterGraduation || "",
@@ -462,8 +509,6 @@ export default function DetailsForm({
           anyOther: record.anyother || record.anyOther || "",
         })
       );
-      onCategoryChange?.(record.categoryId || record.category);
-      onSecondCategoryChange?.(record.secondcategoryId || record.secondCategoryId || record.secondCategory);
       return;
     }
 
@@ -492,8 +537,6 @@ export default function DetailsForm({
         mergeDefinedValues({
           stream: record.streamId || record.stream || undefined,
           category: record.categoryId || record.category || undefined,
-          secondCategory: record.secondcategoryId || record.secondCategoryId || record.secondCategory || undefined,
-          subcategory: record.subcategoryId || record.subcategory || undefined,
           exam: record.id,
           issue: toDayjsValue(record.issuedate || record.issue),
           last: toDayjsValue(record.lastdate || record.last),
@@ -535,8 +578,6 @@ export default function DetailsForm({
         mergeDefinedValues({
           stream: record.streamId || record.stream || undefined,
           category: record.categoryId || record.category || undefined,
-          secondCategory: record.secondcategoryId || record.secondCategoryId || record.secondCategory || undefined,
-          subcategory: record.subcategoryId || record.subcategory || undefined,
           name: record.id,
           logo: record.logo || [],
           type: record.institute_type || record.type || "",
@@ -574,7 +615,7 @@ export default function DetailsForm({
       initialValues={normalizedInitialValues}
       className="grid grid-cols-1 gap-4 md:grid-cols-2"
     >
-      {renderCommonFields(viewMode, options, onCategoryChange, onSecondCategoryChange)}
+      {renderCommonFields(viewMode, options, handleCategoryChange, handleSecondCategoryChange)}
 
       <div className="md:col-span-2">
         <p className="mb-2 text-sm font-medium">Select Sections</p>
@@ -596,7 +637,14 @@ export default function DetailsForm({
         <div key={section} className="md:col-span-2">
           <p className="mb-2 text-sm font-medium">{sectionLabels[section]} Fields</p>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {renderSectionSpecificFields(section, viewMode, options, normalizeUpload, handleAutoFill)}
+            {renderSectionSpecificFields(
+              section,
+              viewMode,
+              options,
+              normalizeUpload,
+              handleAutoFill,
+              filteredPathOptions
+            )}
           </div>
         </div>
       ))}

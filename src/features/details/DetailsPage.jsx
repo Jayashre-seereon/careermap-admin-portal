@@ -396,6 +396,7 @@ const mapDetailsRecord = (record = {}) => {
   const careerPath = getCareerPathSource(record);
   const entranceExam = getEntranceExamSource(record);
   const institution = getInstitutionSource(record);
+  const hasSubcategory = record.subcategoryId != null;
 
   return {
     id: record.id,
@@ -417,8 +418,8 @@ const mapDetailsRecord = (record = {}) => {
       record.secondCategory?.name ||
       record.secondCategory?.title ||
       "",
-    subcategory: record.subcategoryId ?? record.subcategory?.id ?? undefined,
-    subcategoryName: record.subcategory?.title || record.subcategory?.name || "",
+    subcategory: hasSubcategory ? record.subcategoryId ?? record.subcategory?.id ?? undefined : undefined,
+    subcategoryName: hasSubcategory ? record.subcategory?.title || record.subcategory?.name || "" : "",
     salaryRanges: normalizeSalaryRanges(record.salaryRanges),
     names: normalizeJobScope(record.jobScope ?? record.names),
     pathType: record.pathType ?? record.pathTypeId ?? careerPath.id ?? careerPath.pathId ?? undefined,
@@ -565,7 +566,15 @@ export default function DetailsPage() {
   const loadPathOptions = async () => {
     const response = await getCareerPaths();
     const items = normalizeList(response);
-    setPathOptions(items.map((item) => mapOption(item, ["pathName", "title", "name"])));
+    setPathOptions(
+      items.map((item) => ({
+        ...mapOption(item, ["pathName", "title", "name"]),
+        categoryId: item.categoryId || item.category?.id || undefined,
+        secondcategoryId:
+          item.secondcategoryId || item.secondCategoryId || item.secondcategory?.id || item.secondCategory?.id || undefined,
+        subcategoryId: item.subcategoryId || item.subcategory?.id || undefined,
+      }))
+    );
   };
 
   const loadExamOptions = async () => {
@@ -664,9 +673,15 @@ export default function DetailsPage() {
     const payload = {
       streamId: commonValues.stream ?? null,
       categoryId: commonValues.category ?? null,
-      secondcategoryId: commonValues.secondCategory ?? null,
-      subcategoryId: commonValues.subcategory ?? null,
     };
+
+    if (commonValues.secondCategory) {
+      payload.secondcategoryId = commonValues.secondCategory;
+    }
+
+    if (commonValues.subcategory) {
+      payload.subcategoryId = commonValues.subcategory;
+    }
 
     if (selectedSections.includes("salary-range")) {
       payload.salaryRanges = (values.salaryRanges || [])
