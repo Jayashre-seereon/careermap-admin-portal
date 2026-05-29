@@ -1,54 +1,35 @@
-import { Table, Input, Tag ,Button} from "antd";
+import { Table, Input, Tag, Button } from "antd";
 import {
   EyeOutlined,
   SearchOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
-import { useState } from "react";
 
-const initialData = [
-  {
-    key: "1",
-    user: "Rahul Sharma",
-    email: "rahul@gmail.com",
-    time: "12 Mar 2025, 10:30 AM",
-    ip: "192.168.1.1",
-    device: "Chrome / Windows",
-    location: "Bhubaneswar, India",
-    status: "Success",
-  },
-  {
-    key: "2",
-    user: "Priya Das",
-    email: "priya@gmail.com",
-    time: "13 Mar 2025, 01:15 PM",
-    ip: "192.168.1.5",
-    device: "Safari / iPhone",
-    location: "Delhi, India",
-    status: "Failed",
-  },
-  {
-    key: "3",
-    user: "Amit Kumar",
-    email: "amit@gmail.com",
-    time: "14 Mar 2025, 08:45 PM",
-    ip: "192.168.1.9",
-    device: "Edge / Windows",
-    location: "Mumbai, India",
-    status: "Success",
-  },
-];
+const formatDateTime = (value) => {
+  if (!value) {
+    return "-";
+  }
 
-export default function LoginActivitiesTable({ onView }) {
-  const [search, setSearch] = useState("");
-  const [data] = useState(initialData);
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString();
+};
 
-  const filteredData = data.filter((item) =>
-    item.user.toLowerCase().includes(search.toLowerCase())
-  );
+const getDeviceLabel = (record = {}) => {
+  const device = record.device || "-";
+  const browser = record.browser || "-";
+  const os = record.os || "-";
 
-  const handleReset = () => setSearch("");
+  return `${device} / ${browser} / ${os}`;
+};
 
+export default function LoginActivitiesTable({
+  data = [],
+  loading,
+  search,
+  onSearch,
+  onReset,
+  onView,
+}) {
   const columns = [
     {
       title: <span className="text-[#9a2119] font-semibold">SL</span>,
@@ -56,45 +37,49 @@ export default function LoginActivitiesTable({ onView }) {
       width: 60,
     },
     {
-      title: <span className="text-[#9a2119] font-semibold">User</span>,
-      dataIndex: "user",
-    },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Email</span>,
-      dataIndex: "email",
+      title: <span className="text-[#9a2119] font-semibold">User ID</span>,
+      dataIndex: "userId",
+      width: 100,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Login Time</span>,
-      dataIndex: "time",
+      dataIndex: "loginAt",
+      width: 190,
+      render: (value) => formatDateTime(value),
     },
     {
-      title: <span className="text-[#9a2119] font-semibold">IP</span>,
-      dataIndex: "ip",
-    },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Device</span>,
-      dataIndex: "device",
+      title: <span className="text-[#9a2119] font-semibold">IP Address</span>,
+      dataIndex: "ipAddress",
+      width: 150,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Location</span>,
       dataIndex: "location",
+      width: 220,
+      ellipsis: true,
+    },
+    {
+      title: <span className="text-[#9a2119] font-semibold">Device</span>,
+      width: 220,
+      render: (_, record) => (
+        <span className="text-sm text-slate-700">{getDeviceLabel(record)}</span>
+      ),
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Status</span>,
-      dataIndex: "status",
-      render: (status) => {
-        let color = status === "Success" ? "green" : "red";
-        return <Tag color={color}>{status}</Tag>;
-      },
+      width: 120,
+      render: () => <Tag color="green">Success</Tag>,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Action</span>,
       align: "right",
+      width: 100,
       render: (_, record) => (
         <div className="flex justify-end">
           <Button
             onClick={() => onView(record)}
             className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
+            title="View login details"
           >
             <EyeOutlined />
           </Button>
@@ -105,47 +90,41 @@ export default function LoginActivitiesTable({ onView }) {
 
   return (
     <div className="w-full">
-
-      {/* MAIN HEADING */}
-      <h1 className="text-xl font-semibold text-[#9a2119] mb-6">
+      <h1 className="mb-6 text-xl font-semibold text-[#9a2119]">
         Login Activities Management
       </h1>
 
-      {/* CARD */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-5">
-
-        {/* HEADER */}
+      <div className="rounded-2xl border border-gray-200 bg-white p-5">
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
-          <h2 className="text-lg font-semibold text-[#9a2119]">
-            Login Activities
-          </h2>
+          <h2 className="text-lg font-semibold text-[#9a2119]">Login Activities</h2>
 
           <div className="flex w-full flex-wrap gap-3 sm:w-auto">
             <Input
-              placeholder="Search user..."
+              placeholder="Search user id, ip, location..."
               value={search}
               prefix={<SearchOutlined className="text-[#9a2119]" />}
               className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
-             
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => onSearch(e.target.value)}
             />
 
             <Button
-              onClick={handleReset}
-              style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}  >
+              onClick={onReset}
+              style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
+            >
               <ReloadOutlined />
               Reset
             </Button>
           </div>
         </div>
 
-        {/* TABLE */}
         <Table
           columns={columns}
-          dataSource={filteredData}
+          dataSource={data}
+          loading={loading}
           pagination={{ pageSize: 5 }}
           rowClassName="hover:bg-gray-50"
-          scroll={{ x: true }}
+          scroll={{ x: "max-content" }}
+          rowKey={(record) => record.id}
         />
       </div>
     </div>
