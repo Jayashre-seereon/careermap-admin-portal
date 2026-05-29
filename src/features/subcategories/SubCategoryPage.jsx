@@ -9,7 +9,7 @@ import {
   updateSubCategory,
 } from "../../api/subcategory";
 import { getCategories } from "../../api/category";
-import { getSecondaryCategories } from "../../api/secondaryCategory";
+import { getSecondaryCategoriesByCategory } from "../../api/secondaryCategory";
 import { getInstitutes } from "../../api/institute";
 
 const getApiErrorMessage = (error, fallbackMessage) =>
@@ -105,6 +105,7 @@ const mapCategory = (item = {}) => ({
 const mapSecondCategory = (item = {}) => ({
   id: item.id,
   name: item.name || item.title || "",
+  categoryId: item.categoryId || item.category?.id || item.category || undefined,
 });
 
 const mapInstitute = (item = {}) => ({
@@ -172,15 +173,12 @@ export default function SubCategoryPage() {
 
   const loadDropdowns = async () => {
     try {
-      const [categoryResponse, secondCategoryResponse, instituteResponse] =
-        await Promise.all([
-          getCategories(),
-          getSecondaryCategories(),
-          getInstitutes(),
-        ]);
+      const [categoryResponse, instituteResponse] = await Promise.all([
+        getCategories(),
+        getInstitutes(),
+      ]);
 
       setCategories(normalizeList(categoryResponse).map(mapCategory));
-      setSecondCategories(normalizeList(secondCategoryResponse).map(mapSecondCategory));
       setInstitutes(normalizeList(instituteResponse).map(mapInstitute));
     } catch (error) {
       messageApi.error(
@@ -193,6 +191,17 @@ export default function SubCategoryPage() {
     loadSubCategories();
     loadDropdowns();
   }, []);
+
+  const loadSecondCategoriesByCategory = async (categoryId) => {
+    if (!categoryId) {
+      setSecondCategories([]);
+      return;
+    }
+
+    const response = await getSecondaryCategoriesByCategory(categoryId);
+    const items = normalizeList(response);
+    setSecondCategories(items.map(mapSecondCategory));
+  };
 
   const getCategoryName = (id, fallbackName = "") => {
     if (fallbackName) {
@@ -271,6 +280,11 @@ export default function SubCategoryPage() {
     }
   };
 
+  const handleCategoryChange = async (categoryId) => {
+    setSecondCategories([]);
+    await loadSecondCategoriesByCategory(categoryId);
+  };
+
   return (
     <div className="w-full">
       {contextHolder}
@@ -280,27 +294,30 @@ export default function SubCategoryPage() {
       </h2>
 
       <div className="w-full">
-        <SubCategoryTable
-          data={filteredData}
-          loading={loading}
-          onAdd={() => {
-            setMode("add");
-            setSelected(null);
-            setOpen(true);
-          }}
-          onEdit={(record) => {
-            setMode("edit");
-            setSelected(record);
-            setOpen(true);
-          }}
-          onView={(record) => {
-            setMode("view");
-            setSelected(record);
-            setOpen(true);
-          }}
-          onDelete={handleDelete}
-          search={search}
-          setSearch={setSearch}
+      <SubCategoryTable
+        data={filteredData}
+        loading={loading}
+        onAdd={() => {
+          setMode("add");
+          setSelected(null);
+          setSecondCategories([]);
+          setOpen(true);
+        }}
+        onEdit={async (record) => {
+          setMode("edit");
+          setSelected(record);
+          await loadSecondCategoriesByCategory(record.categoryId);
+          setOpen(true);
+        }}
+        onView={async (record) => {
+          setMode("view");
+          setSelected(record);
+          await loadSecondCategoriesByCategory(record.categoryId);
+          setOpen(true);
+        }}
+        onDelete={handleDelete}
+        search={search}
+        setSearch={setSearch}
         />
       </div>
 
@@ -328,6 +345,7 @@ export default function SubCategoryPage() {
           categoryOptions={categories}
           secondCategoryOptions={secondCategories}
           institutionOptions={institutes}
+          onCategoryChange={handleCategoryChange}
         />
       </Modal>
     </div>

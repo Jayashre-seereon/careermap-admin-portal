@@ -36,9 +36,11 @@ export default function SubCategoryForm({
   categoryOptions = [],
   secondCategoryOptions = [],
   institutionOptions = [],
+  onCategoryChange,
 }) {
   const [form] = Form.useForm();
   const isView = mode === "view";
+  const selectedCategoryId = Form.useWatch("categoryId", form);
 
   useEffect(() => {
     if (initialValues) {
@@ -72,7 +74,14 @@ export default function SubCategoryForm({
           label="Category"
           rules={[validationRules.required("Category")]}
         >
-          <Select disabled={isView} placeholder="Select category">
+          <Select
+            disabled={isView}
+            placeholder="Select category"
+            onChange={(value) => {
+              form.setFieldsValue({ secondcategoryId: undefined });
+              onCategoryChange?.(value);
+            }}
+          >
             {categoryOptions.map((item) => (
               <Option key={item.id} value={item.id}>
                 {item.title || item.name}
@@ -86,7 +95,7 @@ export default function SubCategoryForm({
           label="2nd Category"
           rules={[validationRules.required("2nd category")]}
         >
-          <Select disabled={isView} placeholder="Select 2nd category">
+          <Select disabled={isView || !selectedCategoryId} placeholder="Select 2nd category">
             {secondCategoryOptions.map((item) => (
               <Option key={item.id} value={item.id}>
                 {item.name || item.title}
