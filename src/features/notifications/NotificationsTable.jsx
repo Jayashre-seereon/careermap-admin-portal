@@ -1,149 +1,141 @@
-import { Table, Input, Tag ,Button} from "antd";
+import { Button, Input, Popconfirm, Table, Tag } from "antd";
 import {
-  SearchOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  EyeOutlined,
   ReloadOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
-import { useState } from "react";
 
-const initialData = [
-  {
-    key: "1",
-    title: "New Course Available",
-    message: "New MBBS course added",
-    type: "Info",
-    target: "All Users",
-    status: "Active",
-    date: "12 Mar 2025",
-  },
-  {
-    key: "2",
-    title: "System Maintenance",
-    message: "System will be down tonight",
-    type: "Warning",
-    target: "All Users",
-    status: "Active",
-    date: "13 Mar 2025",
-  },
-];
+const stripHtml = (text = "") =>
+  String(text || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const getTagColor = (value = "") => {
+  const normalized = value.toLowerCase();
+
+  if (normalized === "sent" || normalized === "active") return "green";
+  if (normalized === "pending") return "gold";
+  if (normalized === "failed" || normalized === "inactive") return "red";
+  return "blue";
+};
 
 export default function NotificationsTable({
-  onMarkAsRead,
+  data = [],
+  loading,
+  search,
+  onSearch,
+  onAdd,
+  onView,
+  onEdit,
+  onDelete,
 }) {
-  const [search, setSearch] = useState("");
-  const [data, setData] = useState(initialData);
-
-  const filteredData = data.filter((item) =>
-    item.title.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const handleReset = () => setSearch("");
-  const handleMarkAsReadClick = () => {
-    setData((prev) => prev.map((item) => ({ ...item, status: "Read" })));
-    onMarkAsRead && onMarkAsRead();
-  };
-
   const columns = [
     {
       title: <span className="text-[#9a2119] font-semibold">SL</span>,
       render: (_, __, index) => index + 1,
-      width: 60,
+      width: 70,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Title</span>,
       dataIndex: "title",
+      width: 220,
+      ellipsis: true,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Message</span>,
       dataIndex: "message",
+      width: 320,
+      ellipsis: true,
+      render: (value) => stripHtml(value) || "-",
+    },
+    {
+      title: <span className="text-[#9a2119] font-semibold">Target</span>,
+      dataIndex: "target",
+      width: 160,
       ellipsis: true,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Type</span>,
       dataIndex: "type",
-      render: (type) => {
-        let color = "blue";
-        if (type === "Warning") color = "orange";
-        if (type === "Success") color = "green";
-        return <Tag color={color}>{type}</Tag>;
-      },
-    },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Target</span>,
-      dataIndex: "target",
+      width: 160,
+      render: (value) => <Tag color={getTagColor(value)}>{value || "-"}</Tag>,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Status</span>,
       dataIndex: "status",
-      render: (status) => (
-        <Tag color={status === "Active" ? "green" : "blue"}>
-          {status}
-        </Tag>
-      ),
+      width: 130,
+      render: (value) => <Tag color={getTagColor(value)}>{value || "-"}</Tag>,
     },
     {
-      title: <span className="text-[#9a2119] font-semibold">Date</span>,
-      dataIndex: "date",
+      title: <span className="text-[#9a2119] font-semibold">Action</span>,
+      width: 150,
+      fixed: "right",
+      render: (_, record) => (
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            className="border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
+            icon={<EyeOutlined />}
+            onClick={() => onView(record)}
+          />
+          <Button
+            className="border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
+            icon={<EditOutlined />}
+            onClick={() => onEdit(record)}
+          />
+          <Popconfirm
+            title="Are you sure you want to delete this notification?"
+            onConfirm={() => onDelete(record)}
+          >
+            <Button danger icon={<DeleteOutlined />} />
+          </Popconfirm>
+        </div>
+      ),
     },
   ];
 
   return (
-    <div className="w-full">
+    <div className="w-full bg-white p-5 rounded-2xl shadow-md border">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h2 className="text-lg font-semibold text-[#9a2119]">Notifications</h2>
 
-      <h1 className="text-xl font-semibold text-[#9a2119] mb-6">
-        Notifications Management
-      </h1>
+        <div className="flex flex-wrap items-center gap-3">
+          <Input
+            placeholder="Search notification..."
+            prefix={<SearchOutlined className="text-[#9a2119]" />}
+            value={search}
+            onChange={(event) => onSearch(event.target.value)}
+            className="w-full sm:w-72 h-8 rounded-md border-[#9a2119]"
+          />
 
-      <div className="bg-white rounded-2xl border border-gray-200 p-5">
+          <Button
+            onClick={() => onSearch("")}
+            style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
+          >
+            <ReloadOutlined />
+            Reset
+          </Button>
 
-        <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
-          <h2 className="text-lg font-semibold text-[#9a2119]">
-            Notifications
-          </h2>
-
-          <div className="flex w-full flex-wrap gap-3 sm:w-auto">
-            <Input
-              placeholder="Search..."
-              value={search}
-              prefix={<SearchOutlined className="text-[#9a2119]" />}
-              className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
-             
-              onChange={(e) => setSearch(e.target.value)}
-            />
-
-            <Button
-              onClick={handleReset}
-              style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}  >
-              <ReloadOutlined />
-              Reset
-            </Button>
-
-            <Button
-              onClick={handleMarkAsReadClick}
-              style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}  >
-              Mark as Read
-            </Button>
-          </div>
+          <Button
+            onClick={onAdd}
+            style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
+          >
+            + Add Notification
+          </Button>
         </div>
-
-        <Table
-          columns={columns}
-          dataSource={filteredData}
-          pagination={{ pageSize: 5 }}
-          rowClassName="hover:bg-gray-50"
-          scroll={{ x: true }}
-        />
       </div>
 
-      {/* BUTTON STYLES */}
-      <style jsx>{`
-        .btn-main {
-          background: #9a2119;
-          color: white;
-          padding: 0 16px;
-          height: 40px;
-          border-radius: 8px;
-        }
-      `}</style>
+      <Table
+        columns={columns}
+        dataSource={data}
+        loading={loading}
+        rowKey="id"
+        pagination={{ pageSize: 5 }}
+        scroll={{ x: "max-content" }}
+      />
     </div>
   );
 }
