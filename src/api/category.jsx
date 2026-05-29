@@ -5,6 +5,11 @@ export const getCategories = async () => {
   return res.data;
 };
 
+export const getCategoriesByStream = async (streamId) => {
+  const res = await api.get(`/api/categories/stream/${streamId}`);
+  return res.data;
+};
+
 export const createCategory = async (payload, config = {}) => {
   const res = await api.post("/api/categories/", payload, config);
   return res.data;

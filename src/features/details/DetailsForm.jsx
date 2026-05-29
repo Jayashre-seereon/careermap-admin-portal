@@ -50,7 +50,7 @@ function renderOptions(options) {
   });
 }
 
-function renderCommonFields(viewMode, options, onCategoryChange, onSecondCategoryChange) {
+function renderCommonFields(viewMode, options, onStreamChange, onCategoryChange, onSecondCategoryChange) {
   return (
     <>
       <div className="md:col-span-2">
@@ -61,7 +61,11 @@ function renderCommonFields(viewMode, options, onCategoryChange, onSecondCategor
       </div>
 
       <Form.Item name="stream" label="Stream">
-        <Select disabled={viewMode} placeholder="Select stream">
+        <Select
+          disabled={viewMode}
+          placeholder="Select stream"
+          onChange={(value) => onStreamChange?.(value)}
+        >
           {renderOptions(options.streamOptions)}
         </Select>
       </Form.Item>
@@ -420,6 +424,7 @@ export default function DetailsForm({
   sectionLabels,
   options,
   normalizeUpload,
+  onStreamChange,
   onCategoryChange,
   onSecondCategoryChange,
 }) {
@@ -615,7 +620,13 @@ export default function DetailsForm({
       initialValues={normalizedInitialValues}
       className="grid grid-cols-1 gap-4 md:grid-cols-2"
     >
-      {renderCommonFields(viewMode, options, handleCategoryChange, handleSecondCategoryChange)}
+      {renderCommonFields(
+        viewMode,
+        options,
+        onStreamChange,
+        handleCategoryChange,
+        handleSecondCategoryChange
+      )}
 
       <div className="md:col-span-2">
         <p className="mb-2 text-sm font-medium">Select Sections</p>

@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import DetailsTable from "./DetailsTable";
 import DetailsForm from "./DetailsForm";
 import { createDetails, deleteDetails, getDetails, updateDetails } from "../../api/details";
-import { getCategories } from "../../api/category";
+import { getCategoriesByStream } from "../../api/category";
 import { getCareerPaths } from "../../api/careerpath";
 import { getEntranceExams } from "../../api/entranceexam";
 import { getInstitutes } from "../../api/institute";
@@ -551,8 +551,15 @@ export default function DetailsPage() {
     setData(nextState.records);
   };
 
-  const loadCategories = async () => {
-    const response = await getCategories();
+  const loadCategories = async (streamId) => {
+    if (!streamId) {
+      setCategoryOptions([]);
+      setSecondaryCategoryOptions([]);
+      setSubcategoryOptions([]);
+      return;
+    }
+
+    const response = await getCategoriesByStream(streamId);
     const items = normalizeList(response);
     setCategoryOptions(items.map((item) => mapOption(item, ["title", "name"])));
   };
@@ -635,7 +642,6 @@ export default function DetailsPage() {
         await Promise.all([
           loadDetails(),
           loadStreams(),
-          loadCategories(),
           loadPathOptions(),
           loadExamOptions(),
           loadInstitutionOptions(),
@@ -711,6 +717,19 @@ export default function DetailsPage() {
     return payload;
   };
 
+  const handleStreamChange = async (streamId) => {
+    form.setFieldsValue({
+      category: undefined,
+      secondCategory: undefined,
+      subcategory: undefined,
+      pathType: undefined,
+    });
+    setCategoryOptions([]);
+    setSecondaryCategoryOptions([]);
+    setSubcategoryOptions([]);
+    await loadCategories(streamId);
+  };
+
   const handleCategoryChange = async (categoryId) => {
     await loadSecondaryCategories(categoryId);
   };
@@ -720,6 +739,7 @@ export default function DetailsPage() {
   };
 
   const prepareFormForRecord = async (record) => {
+    await loadCategories(record.stream);
     await loadSecondaryCategories(record.category);
     await loadSubCategories(record.secondCategory);
     return record;
@@ -891,6 +911,7 @@ export default function DetailsPage() {
             institutionOptions,
           }}
           normalizeUpload={(event) => (Array.isArray(event) ? event : event?.fileList || [])}
+          onStreamChange={handleStreamChange}
           onCategoryChange={handleCategoryChange}
           onSecondCategoryChange={handleSecondCategoryChange}
         />
