@@ -14,6 +14,7 @@ import {
   createQuiz,
   deleteQuiz,
   getQuizzes,
+  getQuizAttempts,
   updateQuiz,
 } from "../../api/quiz";
 
@@ -62,6 +63,7 @@ const mapQuiz = (item = {}) => ({
   from: formatDateForInput(item.from),
   to: formatDateForInput(item.to),
   duration: item.duration ?? "",
+  attemptsCount: item._count?.attempts ?? item.attemptsCount ?? 0,
   participants: Array.isArray(item.participants) ? item.participants : [],
 });
 
@@ -76,7 +78,8 @@ export default function QuizPage() {
   const [quizzes, setQuizzes] = useState([]);
   const [editingQuiz, setEditingQuiz] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [selectedQuizUsers, setSelectedQuizUsers] = useState(null);
+  const [selectedQuizAttempts, setSelectedQuizAttempts] = useState(null);
+  const [attemptsLoading, setAttemptsLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -179,6 +182,29 @@ export default function QuizPage() {
     }
   };
 
+  const handleOpenAttempts = async (quiz) => {
+    try {
+      setSelectedQuizAttempts({
+        quiz,
+        totalUsers: quiz.attemptsCount || 0,
+        data: [],
+      });
+      setAttemptsLoading(true);
+
+      const response = await getQuizAttempts(quiz.id);
+      setSelectedQuizAttempts({
+        quiz,
+        totalUsers: response?.totalUsers ?? quiz.attemptsCount ?? 0,
+        data: Array.isArray(response?.data) ? response.data : [],
+      });
+    } catch (error) {
+      messageApi.error(getApiErrorMessage(error, "Failed to load quiz attempts."));
+      setSelectedQuizAttempts(null);
+    } finally {
+      setAttemptsLoading(false);
+    }
+  };
+
   const columns = [
     {
       title: <span className="text-[#9a2119] font-semibold">Title</span>,
@@ -217,20 +243,20 @@ export default function QuizPage() {
       dataIndex: "duration",
     },
     {
-      title: <span className="text-[#9a2119] font-semibold">Attended Users</span>,
+      title: <span className="text-[#9a2119] font-semibold">Attempts</span>,
       render: (_, record) => {
-        const participants = record.participants || [];
+        const attemptsCount = record.attemptsCount || 0;
 
         return (
           <div className="flex items-center gap-3">
             <span className="rounded-full bg-[#fdf2f1] px-3 py-1 text-xs font-semibold text-[#9a2119]">
-              {participants.length}
+              {attemptsCount}
             </span>
             <Button
               type="button"
-              onClick={() => setSelectedQuizUsers(record)}
+              onClick={() => handleOpenAttempts(record)}
               className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
-              title="View attended users"
+              title="View quiz attempts"
             >
               <UserOutlined />
             </Button>
@@ -469,28 +495,36 @@ export default function QuizPage() {
       <Modal
         title={
           <span className="text-[#9a2119] font-semibold">
-            Attended Users{selectedQuizUsers ? ` - ${selectedQuizUsers.title}` : ""}
+            Quiz Attempts{selectedQuizAttempts ? ` - ${selectedQuizAttempts.quiz.title}` : ""}
           </span>
         }
-        open={Boolean(selectedQuizUsers)}
-        onCancel={() => setSelectedQuizUsers(null)}
+        open={Boolean(selectedQuizAttempts)}
+        onCancel={() => setSelectedQuizAttempts(null)}
         footer={null}
         destroyOnHidden
         width={720}
       >
         <Table
           rowKey="id"
+          loading={attemptsLoading}
           pagination={false}
-          dataSource={selectedQuizUsers?.participants || []}
+          dataSource={selectedQuizAttempts?.data || []}
           locale={{ emptyText: "No users have taken this quiz yet." }}
           columns={[
             {
-              title: <span className="text-[#9a2119] font-semibold">Attended User Name</span>,
-              dataIndex: "name",
+              title: <span className="text-[#9a2119] font-semibold">User Name</span>,
+              render: (_, record) =>
+                `${record?.user?.firstName || ""} ${record?.user?.lastName || ""}`.trim() ||
+                "-",
             },
             {
               title: <span className="text-[#9a2119] font-semibold">Email</span>,
-              dataIndex: "email",
+              render: (_, record) => record?.user?.email || "-",
+            },
+            {
+              title: <span className="text-[#9a2119] font-semibold">Correct</span>,
+              dataIndex: "correctAnswers",
+              width: 100,
             },
             {
               title: <span className="text-[#9a2119] font-semibold">Score</span>,
@@ -501,6 +535,10 @@ export default function QuizPage() {
               title: <span className="text-[#9a2119] font-semibold">Attended On</span>,
               dataIndex: "attendedOn",
               width: 140,
+              render: (_, record) => {
+                const value = record?.attemptedAt || record?.attendedOn;
+                return value ? new Date(value).toLocaleString() : "-";
+              },
             },
           ]}
         />

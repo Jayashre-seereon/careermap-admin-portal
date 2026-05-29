@@ -30,6 +30,11 @@ export const getQuizQuestions = async (quizId) => {
   return res.data;
 };
 
+export const getQuizAttempts = async (quizId) => {
+  const res = await api.get(`/api/quiz/${quizId}/attempts`);
+  return res.data;
+};
+
 export const createQuizQuestion = async (payload, config = {}) => {
   const res = await api.post("/api/quiz/question", payload, config);
   return res.data;
