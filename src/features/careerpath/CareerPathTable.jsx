@@ -6,22 +6,18 @@ import {
   SearchOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
-import { useState } from "react";
 
 export default function CareerPathTable({
   data,
+  loading,
   onView,
   onEdit,
   onDelete,
   onAdd,
+  search,
+  onSearch,
 }) {
-  const [search, setSearch] = useState("");
-
-  const filteredData = data.filter((item) =>
-    item.module.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const handleReset = () => setSearch("");
+  const handleReset = () => onSearch("");
 
   const columns = [
     {
@@ -31,83 +27,85 @@ export default function CareerPathTable({
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Module</span>,
-      dataIndex: "module",
+      dataIndex: "moduleName",
+      width: 160,
+      ellipsis: true,
+    },
+    {
+      title: <span className="text-[#9a2119] font-semibold">Name</span>,
+      dataIndex: "pathName",
+      width: 180,
+      ellipsis: true,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Category</span>,
-      dataIndex: "category",
+      dataIndex: "categoryName",
+      width: 160,
+      ellipsis: true,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">2nd Category</span>,
-      dataIndex: "secondCategory",
+      dataIndex: "secondCategoryName",
+      width: 180,
+      ellipsis: true,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Subcategory</span>,
-      dataIndex: "subcategory",
+      dataIndex: "subcategoryName",
+      width: 180,
+      ellipsis: true,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Path Type</span>,
-      dataIndex: "pathType",
-    },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Stream</span>,
-      dataIndex: "stream",
+      dataIndex: "pathTypeName",
+      width: 140,
+      ellipsis: true,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Graduation</span>,
       dataIndex: "graduation",
+      width: 160,
+      ellipsis: true,
     },
     {
-      title: <span className="text-[#9a2119] font-semibold">
-        After Graduation
-      </span>,
-      dataIndex: "afterGraduation",
+      title: <span className="text-[#9a2119] font-semibold">After Graduation</span>,
+      dataIndex: "aftergraduation",
+      width: 180,
+      ellipsis: true,
     },
     {
-      title: <span className="text-[#9a2119] font-semibold">
-        After Post Graduation
-      </span>,
-      dataIndex: "afterPostGraduation",
+      title: <span className="text-[#9a2119] font-semibold">After Post Graduation</span>,
+      dataIndex: "afterpostgraduation",
+      width: 220,
+      ellipsis: true,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Any Other</span>,
-      dataIndex: "anyOther",
+      dataIndex: "anyother",
+      width: 160,
+      ellipsis: true,
     },
     {
-      title: (
-        <span className="text-[#9a2119] font-semibold">Action</span>
-      ),
+      title: <span className="text-[#9a2119] font-semibold">Action</span>,
       key: "action",
-      align: "right", // ✅ FIX: right align column
+      align: "right",
+      width: 150,
       render: (_, record) => (
         <div className="flex justify-end gap-2">
-          {/* View */}
           <Button
             onClick={() => onView(record)}
-           className="w-8 h-8 flex items-center justify-center rounded-md 
-                       border border-[#9a2119] 
-                       text-[#9a2119]
-                       hover:border-[#e57373]
-                       hover:text-[#e57373]
-                      "
+            className="w-8 h-8 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
           >
             <EyeOutlined />
           </Button>
 
-          {/* Edit */}
           <Button
             onClick={() => onEdit(record)}
-           className="w-8 h-8 flex items-center justify-center rounded-md 
-                       border border-[#9a2119] 
-                       text-[#9a2119]
-                       hover:border-[#e57373]
-                       hover:text-[#e57373]
-                      "
+            className="w-8 h-8 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
           >
             <EditOutlined />
           </Button>
 
-          {/* Delete */}
           <Popconfirm
             title="Delete?"
             description="Are you sure you want to delete this career path?"
@@ -124,25 +122,21 @@ export default function CareerPathTable({
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 w-full">
-
-      {/* HEADER */}
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-        <h2 className="text-lg font-semibold text-[#9a2119]">
-          Career Path
-        </h2>
+        <h2 className="text-lg font-semibold text-[#9a2119]">Career Path</h2>
 
         <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
           <Input
-            placeholder="Search module..."
+            placeholder="Search career path..."
             value={search}
             prefix={<SearchOutlined className="text-[#9a2119]" />}
             className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => onSearch(e.target.value)}
           />
 
           <Button
             onClick={handleReset}
-              style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}    
+            style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
           >
             <ReloadOutlined />
             Reset
@@ -150,20 +144,21 @@ export default function CareerPathTable({
 
           <Button
             onClick={onAdd}
-            style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}
+            style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
           >
             + Add
           </Button>
         </div>
       </div>
 
-      {/* TABLE */}
       <Table
         columns={columns}
-        dataSource={filteredData}
+        dataSource={data}
+        loading={loading}
+        rowKey="id"
         pagination={{ pageSize: 5 }}
         rowClassName="hover:bg-gray-50"
-        scroll={{ x: true }} // ✅ important for large tables
+        scroll={{ x: "max-content" }}
       />
     </div>
   );

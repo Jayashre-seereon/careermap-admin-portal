@@ -9,6 +9,7 @@ import {
 
 export default function PathTypeTable({
   data,
+  loading,
   onView,
   onEdit,
   onDelete,
@@ -25,8 +26,8 @@ export default function PathTypeTable({
       width: 80,
     },
     {
-      title: <span className="text-[#9a2119] font-semibold">Title</span>,
-      dataIndex: "title",
+      title: <span className="text-[#9a2119] font-semibold">Path Type</span>,
+      dataIndex: "pathtype",
       width: 280,
       ellipsis: true,
     },
@@ -124,6 +125,8 @@ export default function PathTypeTable({
       <Table
         columns={columns}
         dataSource={data}
+        loading={loading}
+        rowKey="id"
         pagination={{ pageSize: 5 }}
         rowClassName="hover:bg-gray-50"
         scroll={{ x: "max-content" }}

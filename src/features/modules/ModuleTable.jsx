@@ -1,5 +1,5 @@
 import React from "react";
-import { Table, Button, Avatar, Space, Popconfirm, Input } from "antd";
+import { Table, Button, Space, Popconfirm, Input, Tag } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -8,62 +8,53 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 
-function ModuleTable({ data, onAddClick, onView, onEdit, onDelete, search, onSearch }) {
+function ModuleTable({
+  data,
+  onAddClick,
+  onView,
+  onEdit,
+  onDelete,
+  search,
+  onSearch,
+  loading,
+}) {
   const columns = [
     {
-      title: "SL No.",
-      render: (_, __, index) => index + 1,
+      title: "ID",
+      dataIndex: "id",
       width: 80,
     },
+    { title: "Title", dataIndex: "title", width: 240, ellipsis: true },
     {
-      title: "Image",
-      dataIndex: "image",
-      render: (img) => (
-        <Avatar
-          src={img}
-          size={45}
-          shape="square"
-          className="border border-[#9a2119]"
-        />
+      title: "Access",
+      dataIndex: "isFree",
+      render: (isFree) => (
+        <Tag color={isFree ? "green" : "red"}>
+          {isFree ? "Unlocked" : "Locked"}
+        </Tag>
       ),
-      width: 90,
-    },
-    { title: "Title", dataIndex: "title", width: 220, ellipsis: true },
-    { title: "Btn Text", dataIndex: "btnText", width: 180, ellipsis: true },
-    {
-      title: "URL",
-      dataIndex: "url",
-      render: (url) => (
-        <a
-          href={url}
-          target="_blank"
-          rel="noreferrer"
-          className="text-[#9a2119]"
-        >
-          Visit
-        </a>
-      ),
-      width: 120,
+      width: 140,
     },
     {
       title: "Action",
       fixed: "right",
       width: 150,
-      render: (_, record, index) => (
+      render: (_, record) => (
         <Space>
-          <Button  className="w-8 h-8 flex items-center justify-center rounded-md 
-                       border border-[#9a2119] 
-                       text-[#9a2119]
-                       hover:border-[#e57373]
-                       hover:text-[#e57373]
-                      " icon={<EyeOutlined />} onClick={() => onView(record)} />
-          <Button className="w-8 h-8 flex items-center justify-center rounded-md 
-                       border border-[#9a2119] 
-                       text-[#9a2119]
-                       hover:border-[#e57373]
-                       hover:text-[#e57373]
-                      " icon={<EditOutlined />} onClick={() => onEdit(record, index)} />
-          <Popconfirm title="Are you sure you want to delete this module?" onConfirm={() => onDelete(index)}>
+          <Button
+            className="w-8 h-8 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
+            icon={<EyeOutlined />}
+            onClick={() => onView(record)}
+          />
+          <Button
+            className="w-8 h-8 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
+            icon={<EditOutlined />}
+            onClick={() => onEdit(record)}
+          />
+          <Popconfirm
+            title="Are you sure you want to delete this module?"
+            onConfirm={() => onDelete(record.id)}
+          >
             <Button danger icon={<DeleteOutlined />} />
           </Popconfirm>
         </Space>
@@ -73,7 +64,6 @@ function ModuleTable({ data, onAddClick, onView, onEdit, onDelete, search, onSea
 
   return (
     <div className="w-full bg-white p-5 rounded-2xl shadow-md border">
-
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h2 className="text-lg font-semibold text-[#9a2119]">Module</h2>
         <div className="flex flex-wrap items-center gap-3">
@@ -97,13 +87,15 @@ function ModuleTable({ data, onAddClick, onView, onEdit, onDelete, search, onSea
           >
             + Add Module
           </Button>
+        
         </div>
       </div>
 
       <Table
         columns={columns}
         dataSource={data}
-        rowKey={(r, i) => i}
+        rowKey={(record) => record.id}
+        loading={loading}
         pagination={{ pageSize: 5 }}
         scroll={{ x: "max-content" }}
       />

@@ -3,14 +3,20 @@ import { Form, Input, Select, Button } from "antd";
 import RichTextEditor from "../../components/ui/RichTextEditor";
 import { validationRules } from "../../utils/formValidation";
 
-const { Option } = Select;
-
-export default function PlansForm({ onSubmit, initialValues, viewMode }) {
+export default function PlansForm({
+  onSubmit,
+  initialValues,
+  disabled,
+  moduleOptions = [],
+}) {
   const [form] = Form.useForm();
 
   useEffect(() => {
     if (initialValues) {
-      form.setFieldsValue(initialValues);
+      form.setFieldsValue({
+        ...initialValues,
+        moduleIds: initialValues.moduleIds || [],
+      });
     } else {
       form.resetFields();
     }
@@ -31,9 +37,9 @@ export default function PlansForm({ onSubmit, initialValues, viewMode }) {
       <Form.Item
         name="name"
         label="Plan Name"
-        rules={[validationRules.required("Plan name"), validationRules.charactersOnly("Plan name")]}
+        rules={[validationRules.required("Plan name")]}
       >
-        <Input disabled={viewMode} />
+        <Input disabled={disabled} />
       </Form.Item>
 
       <Form.Item
@@ -41,20 +47,39 @@ export default function PlansForm({ onSubmit, initialValues, viewMode }) {
         label="Price"
         rules={[validationRules.required("Price"), validationRules.decimal("Price")]}
       >
-        <Input disabled={viewMode} />
+        <Input disabled={disabled} />
       </Form.Item>
 
-      <Form.Item name="module" label="Module" className="md:col-span-2" rules={[validationRules.required("Module")]}>
-        <Select mode="multiple" disabled={viewMode}>
-          <Option value="Career Library">Career Library</Option>
-          <Option value="Career Assessment">Career Assessment</Option>
-          <Option value="Master Class">Master Class</Option>
-          <Option value="Book Your Mentor">Book Your Mentor</Option>
-          <Option value="Entrance Exam">Entrance Exam</Option>
-          <Option value="Institute">Institute</Option>
-          <Option value="Scholarship">Scholarship</Option>
-          <Option value="Quiz">Quiz</Option>
+      <Form.Item name="plan_type" label="Plan Type">
+        <Select disabled={disabled} placeholder="Select plan type" allowClear>
+          <Select.Option value="best seller">Best Seller</Select.Option>
+          <Select.Option value="recommended">Recommended</Select.Option>
         </Select>
+      </Form.Item>
+
+      <Form.Item
+        name="validity"
+        label="Validity"
+        rules={[validationRules.required("Validity")]}
+      >
+        <Input disabled={disabled} placeholder="e.g. 12 months" />
+      </Form.Item>
+
+      <Form.Item
+        name="moduleIds"
+        label="Modules"
+        className="md:col-span-2"
+        rules={[validationRules.required("Module")]}
+      >
+        <Select
+          mode="multiple"
+          disabled={disabled}
+          placeholder="Select modules"
+          options={moduleOptions.map((item) => ({
+            label: item.title,
+            value: item.id,
+          }))}
+        />
       </Form.Item>
 
       <Form.Item
@@ -63,18 +88,30 @@ export default function PlansForm({ onSubmit, initialValues, viewMode }) {
         className="md:col-span-2"
       >
         <RichTextEditor
-          disabled={viewMode}
+          disabled={disabled}
           placeholder="Enter plan features"
-          height={200}
+          height={180}
         />
       </Form.Item>
 
-      {!viewMode && (
+      <Form.Item
+        name="description"
+        label="Description"
+        className="md:col-span-2"
+      >
+        <RichTextEditor
+          disabled={disabled}
+          placeholder="Enter plan description"
+          height={180}
+        />
+      </Form.Item>
+
+      {!disabled && (
         <Button
           htmlType="submit"
           className="md:col-span-2 bg-[#9a2119] text-white"
         >
-          Add Plans
+          {initialValues ? "Update Plan" : "Add Plan"}
         </Button>
       )}
     </Form>

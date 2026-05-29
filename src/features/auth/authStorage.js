@@ -1,3 +1,5 @@
+import { useSessionStore } from "../../store/sessionStore";
+
 const AUTH_USER_KEY = "careermap_admin_user";
 const AUTH_SESSION_KEY = "careermap_admin_session";
 const AUTH_RESET_CODES_KEY = "careermap_admin_reset_codes";
@@ -56,6 +58,12 @@ const writeResetCodes = (codes) => {
 export const getUsers = () => readUsers();
 
 export const getCurrentUser = () => {
+  const sessionUser = useSessionStore.getState().user;
+
+  if (sessionUser) {
+    return sessionUser;
+  }
+
   const raw = localStorage.getItem(AUTH_SESSION_KEY);
   if (!raw) return null;
 
@@ -183,6 +191,7 @@ export const resetPasswordWithCode = ({ email, code, password }) => {
 };
 
 export const logoutUser = () => {
+  useSessionStore.getState().clearSession();
   localStorage.removeItem(AUTH_SESSION_KEY);
   emitAuthChange();
 };

@@ -48,6 +48,44 @@ const modules = {
   },
 };
 
+const htmlListFromArray = (items = []) => {
+  if (!Array.isArray(items) || items.length === 0) {
+    return "";
+  }
+
+  return `<ul>${items.map((item) => `<li>${String(item ?? "")}</li>`).join("")}</ul>`;
+};
+
+const normalizeEditorValue = (value) => {
+  if (Array.isArray(value)) {
+    if (value.length === 1 && typeof value[0] === "string") {
+      return value[0];
+    }
+
+    return htmlListFromArray(value);
+  }
+
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+
+      if (Array.isArray(parsed)) {
+        return htmlListFromArray(parsed);
+      }
+
+      return typeof parsed === "string" ? parsed : value;
+    } catch {
+      return value;
+    }
+  }
+
+  if (value == null) {
+    return "";
+  }
+
+  return String(value);
+};
+
 export default function RichTextEditor({
   value = "",
   onChange,
@@ -91,7 +129,7 @@ export default function RichTextEditor({
       return;
     }
 
-    const nextValue = value || "";
+    const nextValue = normalizeEditorValue(value);
 
     if (quill.root.innerHTML !== nextValue) {
       isPatchingValue.current = true;
