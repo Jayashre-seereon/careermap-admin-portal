@@ -72,6 +72,12 @@ export default function PlansTable({
       ellipsis: true,
     },
     {
+      title: <span className="text-[#9a2119] font-semibold">Plan Type</span>,
+      dataIndex: "plan_type",
+      width: 150,
+      render: (value) => value || "-",
+    },
+    {
       title: <span className="text-[#9a2119] font-semibold">Modules</span>,
       dataIndex: "modules",
       width: 240,

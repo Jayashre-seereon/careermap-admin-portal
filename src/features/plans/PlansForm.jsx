@@ -50,6 +50,13 @@ export default function PlansForm({
         <Input disabled={disabled} />
       </Form.Item>
 
+      <Form.Item name="plan_type" label="Plan Type">
+        <Select disabled={disabled} placeholder="Select plan type" allowClear>
+          <Select.Option value="best seller">Best Seller</Select.Option>
+          <Select.Option value="recommended">Recommended</Select.Option>
+        </Select>
+      </Form.Item>
+
       <Form.Item
         name="validity"
         label="Validity"

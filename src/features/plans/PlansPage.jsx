@@ -34,6 +34,7 @@ const mapPlan = (item = {}) => ({
   description: item.description || "",
   validity: item.validity || "",
   price: item.price || "",
+  plan_type: item.plan_type || item.planType || "",
   moduleIds: Array.isArray(item.modules) ? item.modules.map((module) => module.id) : [],
   modules: Array.isArray(item.modules) ? item.modules : [],
 });
@@ -44,6 +45,7 @@ const buildPlanPayload = ({
   description,
   validity,
   price,
+  plan_type,
   moduleIds,
 }) => ({
   name,
@@ -51,6 +53,7 @@ const buildPlanPayload = ({
   description: description || "",
   validity: validity || "",
   price: price || "",
+  plan_type: plan_type || null,
   moduleIds: Array.isArray(moduleIds) ? moduleIds : [],
 });
 
@@ -91,7 +94,7 @@ export default function PlansPage() {
   }, []);
 
   const filteredData = data.filter((item) =>
-    `${item.name} ${item.features} ${item.description} ${item.validity} ${item.price}`
+    `${item.name} ${item.features} ${item.description} ${item.validity} ${item.price} ${item.plan_type}`
       .toLowerCase()
       .includes(search.toLowerCase())
   );
