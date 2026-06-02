@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { Button, DatePicker, Form, Input, TimePicker, Upload } from "antd";
 import { MinusCircleOutlined, PlusOutlined, UploadOutlined } from "@ant-design/icons";
-import dayjs from "dayjs";
 import RichTextEditor from "../../components/ui/RichTextEditor";
 import StatusSwitch from "../../components/ui/StatusSwitch";
 import {
@@ -9,6 +8,7 @@ import {
   inputSanitizers,
   validationRules,
 } from "../../utils/formValidation";
+import { DATE_DISPLAY_FORMAT, parseDateValue } from "../../utils/date";
 
 const normalizeFile = (event) => {
   if (Array.isArray(event)) {
@@ -34,12 +34,7 @@ const toUploadFileList = (value, fallbackName) => {
 };
 
 const toDateValue = (value) => {
-  if (!value) {
-    return null;
-  }
-
-  const parsed = dayjs(value);
-  return parsed.isValid() ? parsed : null;
+  return parseDateValue(value);
 };
 
 const toTimeValue = (value) => {
@@ -201,7 +196,12 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
         </Form.Item>
 
         <Form.Item name="dateof_birth" label="Date of Birth">
-          <DatePicker className="w-full" disabled={disabled} />
+        <DatePicker
+          className="w-full"
+          disabled={disabled}
+          format={DATE_DISPLAY_FORMAT}
+          placeholder="DD-MM-YYYY"
+        />
         </Form.Item>
 
         <Form.Item
@@ -353,7 +353,12 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
                         rules={[validationRules.required("Available date")]}
                         className="mb-0"
                       >
-                        <DatePicker className="w-full" disabled={disabled} />
+                        <DatePicker
+                          className="w-full"
+                          disabled={disabled}
+                          format={DATE_DISPLAY_FORMAT}
+                          placeholder="DD-MM-YYYY"
+                        />
                       </Form.Item>
 
                       <Form.List name={[name, "timeSlots"]}>

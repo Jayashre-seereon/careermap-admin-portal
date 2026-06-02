@@ -8,6 +8,7 @@ import {
   getInstitutes,
   updateInstitute,
 } from "../../api/institute";
+import { formatDateDisplay, formatDateForPayload } from "../../utils/date";
 
 const extractFile = (value) => {
   if (Array.isArray(value) && value[0]?.originFileObj) {
@@ -23,22 +24,6 @@ const extractFile = (value) => {
   }
 
   return null;
-};
-
-const formatDateValue = (value) => {
-  if (!value) {
-    return "";
-  }
-
-  if (typeof value === "string") {
-    return value;
-  }
-
-  if (typeof value?.format === "function") {
-    return value.format("YYYY-MM-DD");
-  }
-
-  return "";
 };
 
 const normalizeStringArray = (value) => {
@@ -90,7 +75,7 @@ const buildInstitutePayload = ({
   is_top,
 }) => {
   const file = extractFile(logo);
-  const formattedDate = formatDateValue(tentative_date);
+  const formattedDate = formatDateForPayload(tentative_date);
   const formData = new FormData();
   formData.append("name", name);
   formData.append("address", address || "");
@@ -126,7 +111,7 @@ const mapInstitute = (item = {}) => ({
   courses_offered: Array.isArray(item.courses_offered || item.course_offered)
     ? item.courses_offered || item.course_offered
     : normalizeStringArray(item.courses_offered || item.course_offered),
-  tentative_date: item.tentative_date || "",
+  tentative_date: formatDateDisplay(item.tentative_date),
   institute_type: item.institute_type || "",
   url: item.url || "",
   country: item.country || item.countruy || "",

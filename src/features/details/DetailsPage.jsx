@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { Form, Modal, message } from "antd";
-import dayjs from "dayjs";
 import DetailsTable from "./DetailsTable";
 import DetailsForm from "./DetailsForm";
 import { createDetails, deleteDetails, getDetails, updateDetails } from "../../api/details";
@@ -11,6 +10,11 @@ import { getInstitutes } from "../../api/institute";
 import { getSecondaryCategoriesByCategory } from "../../api/secondaryCategory";
 import { getStreams } from "../../api/stream";
 import { getSubCategoriesBySecondCategory } from "../../api/subcategory";
+import {
+  formatDateDisplay,
+  formatDateForPayload as formatDateForApi,
+  parseDateValue,
+} from "../../utils/date";
 
 const SECTION_OPTIONS = [
   { label: "Salary Range", value: "salary-range" },
@@ -60,40 +64,11 @@ const normalizeStringArray = (value) => {
 };
 
 const normalizeDateValue = (value) => {
-  if (!value) {
-    return "";
-  }
-
-  if (typeof value === "string") {
-    return value.slice(0, 10);
-  }
-
-  if (typeof value?.format === "function") {
-    return value.format("YYYY-MM-DD");
-  }
-
-  return "";
+  return formatDateDisplay(value);
 };
 
 const toDayjsValue = (value) => {
-  if (!value) {
-    return null;
-  }
-
-  const parsed = dayjs(value);
-  return parsed.isValid() ? parsed : null;
-};
-
-const formatDateForPayload = (value) => {
-  if (!value) {
-    return "";
-  }
-
-  if (typeof value?.format === "function") {
-    return value.format("YYYY-MM-DD");
-  }
-
-  return normalizeDateValue(value);
+  return parseDateValue(value);
 };
 
 const normalizeNullableString = (value) => (value == null ? "" : String(value));
@@ -301,9 +276,9 @@ const normalizeSectionValues = (section, values) => {
 
     return {
       ...restSectionValues,
-      issuedate: formatDateForPayload(issue),
-      lastdate: formatDateForPayload(last),
-      exam_date: formatDateForPayload(examDate),
+      issuedate: formatDateForApi(issue),
+      lastdate: formatDateForApi(last),
+      exam_date: formatDateForApi(examDate),
       subject: normalizeStringArray(subject),
       top_institution: normalizeStringArray(topInstitutes),
       exam_pattern: examPattern || "",
@@ -316,7 +291,7 @@ const normalizeSectionValues = (section, values) => {
     ...restSectionValues,
     logo: restSectionValues.logo || [],
     coursesOffered: normalizeStringArray(coursesOffered),
-    tentative_date: formatDateForPayload(date),
+    tentative_date: formatDateForApi(date),
     isTop: restSectionValues.isTop || "No",
   };
 };

@@ -6,8 +6,8 @@ import {
   SearchOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
-import dayjs from "dayjs";
 import { Tooltip } from "antd";
+import { formatDateDisplay } from "../../utils/date";
 
 export default function EntranceExamTable({
   data,
@@ -22,12 +22,7 @@ export default function EntranceExamTable({
   const handleReset = () => onSearch("");
 
   const formatDate = (value) => {
-    if (!value) {
-      return "-";
-    }
-
-    const parsedDate = dayjs(value);
-    return parsedDate.isValid() ? parsedDate.format("DD-MM-YYYY") : value;
+    return formatDateDisplay(value);
   };
 
   const stripHtml = (text = "") => {

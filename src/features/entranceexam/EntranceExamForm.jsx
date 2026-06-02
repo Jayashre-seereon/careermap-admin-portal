@@ -1,8 +1,8 @@
 import { Form, Input, Select, Button, DatePicker } from "antd";
 import { useEffect, useMemo } from "react";
-import dayjs from "dayjs";
 import { validationRules } from "../../utils/formValidation";
 import RichTextEditor from "../../components/ui/RichTextEditor";
+import { DATE_DISPLAY_FORMAT, parseDateValue } from "../../utils/date";
 
 const { Option } = Select;
 
@@ -40,9 +40,9 @@ export default function EntranceExamForm({
     if (initialValues) {
       form.setFieldsValue({
         ...initialValues,
-        issuedate: initialValues.issuedate ? dayjs(initialValues.issuedate) : null,
-        lastdate: initialValues.lastdate ? dayjs(initialValues.lastdate) : null,
-        examDate: initialValues.examDate ? dayjs(initialValues.examDate) : null,
+        issuedate: parseDateValue(initialValues.issuedate),
+        lastdate: parseDateValue(initialValues.lastdate),
+        examDate: parseDateValue(initialValues.examDate),
         subject: normalizeTagValues(initialValues.subject),
         topInstitutes: normalizeTagValues(initialValues.topInstitutes),
       });
@@ -192,11 +192,21 @@ export default function EntranceExamForm({
       </Form.Item>
 
       <Form.Item name="issuedate" label="Issue Date">
-        <DatePicker className="w-full" disabled={isView} />
+        <DatePicker
+          className="w-full"
+          disabled={isView}
+          format={DATE_DISPLAY_FORMAT}
+          placeholder="DD-MM-YYYY"
+        />
       </Form.Item>
 
       <Form.Item name="lastdate" label="Last Date">
-        <DatePicker className="w-full" disabled={isView} />
+        <DatePicker
+          className="w-full"
+          disabled={isView}
+          format={DATE_DISPLAY_FORMAT}
+          placeholder="DD-MM-YYYY"
+        />
       </Form.Item>
 
       <Form.Item
@@ -216,7 +226,12 @@ export default function EntranceExamForm({
       </Form.Item>
 
       <Form.Item name="examDate" label="Exam Date">
-        <DatePicker className="w-full" disabled={isView} />
+        <DatePicker
+          className="w-full"
+          disabled={isView}
+          format={DATE_DISPLAY_FORMAT}
+          placeholder="DD-MM-YYYY"
+        />
       </Form.Item>
 
       <Form.Item name="examMode" label="Exam Mode">

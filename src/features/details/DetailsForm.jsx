@@ -1,20 +1,15 @@
 import { useEffect } from "react";
 import { Button, Checkbox, DatePicker, Form, Input, Select, Upload } from "antd";
 import { MinusCircleOutlined, UploadOutlined } from "@ant-design/icons";
-import dayjs from "dayjs";
 import StatusSwitch from "../../components/ui/StatusSwitch";
 import RichTextEditor from "../../components/ui/RichTextEditor";
 import { validationRules } from "../../utils/formValidation";
+import { DATE_DISPLAY_FORMAT, parseDateValue } from "../../utils/date";
 
 const { Option } = Select;
 
 const toDayjsValue = (value) => {
-  if (!value) {
-    return null;
-  }
-
-  const parsed = dayjs(value);
-  return parsed.isValid() ? parsed : null;
+  return parseDateValue(value);
 };
 
 const mergeDefinedValues = (values = {}) =>
@@ -277,11 +272,11 @@ function renderSectionSpecificFields(
         </Form.Item>
 
         <Form.Item name="issue" label="Issue Date">
-          <DatePicker className="w-full" disabled />
+          <DatePicker className="w-full" disabled format={DATE_DISPLAY_FORMAT} />
         </Form.Item>
 
         <Form.Item name="last" label="Last Date">
-          <DatePicker className="w-full" disabled />
+          <DatePicker className="w-full" disabled format={DATE_DISPLAY_FORMAT} />
         </Form.Item>
 
         <Form.Item name="url" label="URL" className="md:col-span-2" rules={[validationRules.url("URL")]}>
@@ -297,7 +292,7 @@ function renderSectionSpecificFields(
         </Form.Item>
 
         <Form.Item name="examDate" label="Exam Date">
-          <DatePicker className="w-full" disabled/>
+          <DatePicker className="w-full" disabled format={DATE_DISPLAY_FORMAT} />
         </Form.Item>
 
         <Form.Item name="examMode" label="Exam Mode">
@@ -392,7 +387,7 @@ function renderSectionSpecificFields(
       </Form.Item>
 
       <Form.Item name="date" label="Tentative Date">
-        <DatePicker className="w-full" disabled />
+        <DatePicker className="w-full" disabled format={DATE_DISPLAY_FORMAT} />
       </Form.Item>
 
       <Form.Item name="url" label="URL" rules={[validationRules.url("URL")]}>

@@ -13,6 +13,7 @@ import { getStreams } from "../../api/stream";
 import { getCategories } from "../../api/category";
 import { getSecondaryCategories } from "../../api/secondaryCategory";
 import { getSubCategories } from "../../api/subcategory";
+import { formatDateDisplay, formatDateForPayload } from "../../utils/date";
 
 const getApiErrorMessage = (error, fallbackMessage) =>
   error.response?.data?.message || error.message || fallbackMessage;
@@ -32,21 +33,7 @@ const normalizeList = (response) => {
 };
 
 const formatDateValue = (value) => {
-  if (!value) {
-    return "";
-  }
-
-  if (typeof value === "string") {
-    const parsedDate = new Date(value);
-    return Number.isNaN(parsedDate.getTime()) ? value : parsedDate.toISOString();
-  }
-
-  if (typeof value?.format === "function") {
-    const isoValue = value.toDate?.()?.toISOString?.();
-    return isoValue || value.format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
-  }
-
-  return "";
+  return formatDateForPayload(value);
 };
 
 const normalizeStringArray = (value) => {
@@ -122,11 +109,11 @@ const mapEntranceExam = (item = {}) => ({
     item.secondcategoryId || item.secondcategory?.id || item.secondCategory?.id || undefined,
   subcategoryId: item.subcategoryId || item.subcategory?.id || undefined,
   examname: item.examname || "",
-  issuedate: item.issuedate || "",
-  lastdate: item.lastdate || "",
+  issuedate: formatDateDisplay(item.issuedate),
+  lastdate: formatDateDisplay(item.lastdate),
   eligibility: item.eligibility || "",
   about: item.about || "",
-  examDate: item.examDate || item.exam_date || "",
+  examDate: formatDateDisplay(item.examDate || item.exam_date),
   examMode: item.examMode || item.exam_mode || item.mode || "",
   duration: item.duration || "",
   subject: Array.isArray(item.subject) ? item.subject : normalizeStringArray(item.subject),

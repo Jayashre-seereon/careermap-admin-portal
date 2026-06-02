@@ -1,10 +1,10 @@
 import { Form, Input, Select, Button, Upload, DatePicker } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useEffect } from "react";
-import dayjs from "dayjs";
 import RichTextEditor from "../../components/ui/RichTextEditor";
 import StatusSwitch from "../../components/ui/StatusSwitch";
 import { validationRules } from "../../utils/formValidation";
+import { DATE_DISPLAY_FORMAT, parseDateValue } from "../../utils/date";
 
 const { Option } = Select;
 
@@ -39,7 +39,7 @@ export default function ScholarshipForm({ onSubmit, initialValues, mode }) {
     if (initialValues) {
       form.setFieldsValue({
         ...initialValues,
-        deadline: initialValues.deadline ? dayjs(initialValues.deadline) : null,
+        deadline: parseDateValue(initialValues.deadline),
         image: toUploadFileList(initialValues.image, "scholarship-image"),
       });
     } else {
@@ -81,7 +81,12 @@ export default function ScholarshipForm({ onSubmit, initialValues, mode }) {
       </Form.Item>
 
       <Form.Item name="deadline" label="Deadline">
-        <DatePicker className="w-full" disabled={isView} />
+        <DatePicker
+          className="w-full"
+          disabled={isView}
+          format={DATE_DISPLAY_FORMAT}
+          placeholder="DD-MM-YYYY"
+        />
       </Form.Item>
 
       {/* <Form.Item name="is_free" label="Is Free" valuePropName="checked">

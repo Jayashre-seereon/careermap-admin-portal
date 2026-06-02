@@ -6,7 +6,7 @@ import {
   SearchOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
-import dayjs from "dayjs";
+import { formatDateDisplay } from "../../utils/date";
 
 export default function ScholarshipTable({
   data,
@@ -43,12 +43,7 @@ export default function ScholarshipTable({
   );
 
   const formatDate = (value) => {
-    if (!value) {
-      return "-";
-    }
-
-    const parsedDate = dayjs(value);
-    return parsedDate.isValid() ? parsedDate.format("DD-MM-YYYY") : value;
+    return formatDateDisplay(value);
   };
 
   const columns = [

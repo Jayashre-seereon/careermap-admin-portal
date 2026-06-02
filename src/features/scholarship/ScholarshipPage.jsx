@@ -8,6 +8,7 @@ import {
   getScholarships,
   updateScholarship,
 } from "../../api/scholarship";
+import { formatDateDisplay, formatDateForPayload } from "../../utils/date";
 
 const getApiErrorMessage = (error, fallbackMessage) =>
   error.response?.data?.message || error.message || fallbackMessage;
@@ -42,22 +43,6 @@ const extractFile = (value) => {
   return null;
 };
 
-const formatDateValue = (value) => {
-  if (!value) {
-    return "";
-  }
-
-  if (typeof value === "string") {
-    return value;
-  }
-
-  if (typeof value?.format === "function") {
-    return value.format("YYYY-MM-DD");
-  }
-
-  return "";
-};
-
 const buildScholarshipPayload = ({
   name,
   type,
@@ -76,7 +61,7 @@ const buildScholarshipPayload = ({
     url: url || "",
     is_free: !!is_free,
     price: price || "",
-    deadline: formatDateValue(deadline),
+    deadline: formatDateForPayload(deadline),
     eligibility: eligibility || "",
     requirement: requirement || "",
     description: description || "",
@@ -111,7 +96,7 @@ const mapScholarship = (item = {}) => ({
   url: item.url || "",
   is_free: item.is_free ?? false,
   price: item.price || "",
-  deadline: item.deadline || "",
+  deadline: formatDateDisplay(item.deadline),
   image: item.image || null,
   eligibility: item.eligibility || "",
   requirement: item.requirement || "",

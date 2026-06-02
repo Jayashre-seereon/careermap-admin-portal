@@ -4,6 +4,7 @@ import { UploadOutlined } from "@ant-design/icons";
 import { validationRules } from "../../utils/formValidation";
 import StatusSwitch from "../../components/ui/StatusSwitch";
 import RichTextEditor from "../../components/ui/RichTextEditor";
+import { DATE_DISPLAY_FORMAT, parseDateValue } from "../../utils/date";
 const { Option } = Select;
 
 function InstitutionForm({ onSubmit, initialValues, disabled }) {
@@ -25,6 +26,7 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
       courses_offered: Array.isArray(initialValues.courses_offered)
         ? initialValues.courses_offered
         : [],
+      tentative_date: parseDateValue(initialValues.tentative_date),
     });
   } else {
     form.resetFields();
@@ -113,7 +115,11 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
       </Form.Item>
 
       <Form.Item name="tentative_date" label="Tentative Date">
-        <DatePicker disabled={disabled} placeholder="e.g. May 2026" />
+        <DatePicker
+          disabled={disabled}
+          placeholder="DD-MM-YYYY"
+          format={DATE_DISPLAY_FORMAT}
+        />
       </Form.Item>
 
       <Form.Item name="url" label="URL" rules={[validationRules.url("URL")]}>

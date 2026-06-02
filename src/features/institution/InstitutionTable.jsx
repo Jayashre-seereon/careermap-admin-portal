@@ -6,6 +6,7 @@ import {
   SearchOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
+import { formatDateDisplay } from "../../utils/date";
 
 export default function InstitutionTable({
   data,
@@ -93,6 +94,7 @@ export default function InstitutionTable({
       title: "Tentative Date",
       dataIndex: "tentative_date",
       width: 140,
+      render: (value) => formatDateDisplay(value),
     },
     {
       title: "Institution Type",

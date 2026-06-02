@@ -9,6 +9,7 @@ import {
   getMentors,
   updateMentor,
 } from "../../api/mentor";
+import { formatDateDisplay, formatDateForPayload, parseDateValue } from "../../utils/date";
 
 const getApiErrorMessage = (error, fallbackMessage) =>
   error.response?.data?.message || error.message || fallbackMessage;
@@ -44,37 +45,11 @@ const extractFile = (value) => {
 };
 
 const formatDateValue = (value) => {
-  if (!value) {
-    return "";
-  }
-
-  if (typeof value === "string") {
-    const parsedDate = new Date(value);
-    return Number.isNaN(parsedDate.getTime()) ? value : parsedDate.toISOString();
-  }
-
-  if (typeof value?.toDate === "function") {
-    return value.toDate().toISOString();
-  }
-
-  return "";
+  return formatDateForPayload(value);
 };
 
 const formatDateForAvailability = (value) => {
-  if (!value) {
-    return "";
-  }
-
-  if (typeof value?.format === "function") {
-    return value.format("YYYY-MM-DD");
-  }
-
-  const parsedDate = new Date(value);
-  if (Number.isNaN(parsedDate.getTime())) {
-    return String(value);
-  }
-
-  return dayjs(parsedDate).format("YYYY-MM-DD");
+  return formatDateForPayload(value);
 };
 
 const formatTimeValue = (value) => {
@@ -118,7 +93,7 @@ const normalizeAvailability = (item = {}) => {
   if (availability.length > 0) {
     return availability
       .map((entry) => ({
-        date: entry?.date ? dayjs(entry.date) : null,
+        date: parseDateValue(entry?.date),
         timeSlots: Array.isArray(entry?.timeSlots) && entry.timeSlots.length > 0
           ? entry.timeSlots.map(normalizeTimeValue).filter(Boolean)
           : [null],
@@ -142,7 +117,7 @@ const normalizeAvailability = (item = {}) => {
 
   return [
     {
-      date: legacyDate ? dayjs(legacyDate) : null,
+      date: parseDateValue(legacyDate),
       timeSlots: legacyTimeSlots.length > 0 ? legacyTimeSlots : [null],
     },
   ];
@@ -174,7 +149,7 @@ const formatAvailabilitySummary = (availability = []) => {
 
   return availability
     .map((entry) => {
-      const dateText = entry?.date ? dayjs(entry.date).format("DD MMM YYYY") : "-";
+      const dateText = formatDateDisplay(entry?.date);
       const timeText = Array.isArray(entry?.timeSlots) && entry.timeSlots.length > 0
         ? entry.timeSlots.join(", ")
         : "-";
@@ -256,7 +231,7 @@ const mapMentor = (item = {}) => ({
   name: item.name || "",
   email: item.email || "",
   phone_number: item.phone_number || "",
-  dateof_birth: item.dateof_birth || "",
+  dateof_birth: formatDateDisplay(item.dateof_birth),
   designation: item.designation || "",
   education: item.education || "",
   placeof_word: item.placeof_word || "",
@@ -300,7 +275,7 @@ export default function MentorPage() {
 
   const tableData = mentors.map((item) => ({
     ...item,
-    dob: item.dateof_birth ? dayjs(item.dateof_birth).format("DD-MM-YYYY") : "-",
+    dob: formatDateDisplay(item.dateof_birth),
     availabilitySummary: formatAvailabilitySummary(item.availability),
   }));
 
