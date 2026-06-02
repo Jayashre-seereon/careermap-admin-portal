@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Modal, message } from "antd";
-import dayjs from "dayjs";
 import MasterClassForm from "./MasterClassForm";
 import MasterClassTable from "./MasterClassTable";
 import {
@@ -9,6 +8,7 @@ import {
   getMasterClasses,
   updateMasterClass,
 } from "../../api/masterclass";
+import { parseDateValue } from "../../utils/date";
 
 const getApiErrorMessage = (error, fallbackMessage) =>
   error.response?.data?.message || error.message || fallbackMessage;
@@ -162,8 +162,8 @@ const mapMasterClass = (item = {}) => ({
   image: item.image || item.image_url || item.thumbnail || null,
   title: item.title || "",
   name: item.name || item.speaker_name || item.speakerName || item.class_name || "",
-  time: item.time ? dayjs(item.time) : null,
-  timeLabel: item.time || "",
+  time: parseDateValue(item.time),
+  timeLabel: parseDateValue(item.time)?.format("DD-MM-YYYY HH:mm") || "",
   views: item.views ?? item.view_count ?? item.viewCount ?? "",
   videoUrl: item.videoUrl || item.video_url || item.video_link || item.url || "",
   category: item.category || item.category_type || item.type || "",

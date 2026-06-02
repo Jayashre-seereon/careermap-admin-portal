@@ -7,6 +7,7 @@ import {
   inputSanitizers,
   validationRules,
 } from "../../utils/formValidation";
+import { DATE_DISPLAY_FORMAT, parseDateValue } from "../../utils/date";
 
 const normalizeFile = (event) => {
   if (Array.isArray(event)) {
@@ -43,6 +44,7 @@ export default function MasterClassForm({ onSubmit, initialValues, mode }) {
     if (initialValues) {
       form.setFieldsValue({
         ...initialValues,
+        time: parseDateValue(initialValues.time),
         image: toUploadFileList(initialValues.image, "masterclass-image"),
       });
       return;
@@ -89,8 +91,10 @@ export default function MasterClassForm({ onSubmit, initialValues, mode }) {
         <DatePicker
           showTime
           className="w-full"
+          popupClassName="masterclass-date-picker-popup"
           disabled={isView}
-          placeholder="Select date and time"
+          format={`${DATE_DISPLAY_FORMAT} HH:mm`}
+          placeholder="DD-MM-YYYY HH:mm"
         />
       </Form.Item>
 
