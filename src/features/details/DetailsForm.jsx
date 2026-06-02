@@ -12,6 +12,29 @@ const toDayjsValue = (value) => {
   return parseDateValue(value);
 };
 
+const toUploadFileList = (value, fallbackName = "file") => {
+  if (!value) {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    return [
+      {
+        uid: value,
+        name: fallbackName,
+        status: "done",
+        url: value,
+      },
+    ];
+  }
+
+  return [];
+};
+
 const mergeDefinedValues = (values = {}) =>
   Object.fromEntries(
     Object.entries(values).filter(([, value]) => {
@@ -352,7 +375,13 @@ function renderSectionSpecificFields(
         </Select>
       </Form.Item>
 
-      <Form.Item name="logo" label="Logo" valuePropName="fileList" getValueFromEvent={normalizeUpload}>
+      <Form.Item
+        name="logo"
+        label="Logo"
+        valuePropName="fileList"
+        getValueFromEvent={normalizeUpload}
+        getValueProps={(value) => ({ fileList: Array.isArray(value) ? value : [] })}
+      >
         <Upload beforeUpload={() => false} disabled maxCount={1}>
           <Button icon={<UploadOutlined />} disabled>
             Upload Logo
@@ -461,7 +490,7 @@ export default function DetailsForm({
   const normalizedInitialValues = initialValues
     ? {
         ...initialValues,
-        logo: initialValues.logo || [],
+        logo: toUploadFileList(initialValues.logo, "details-logo"),
         issue: toDayjsValue(initialValues.issue),
         last: toDayjsValue(initialValues.last),
         examDate: toDayjsValue(initialValues.examDate),
@@ -595,7 +624,7 @@ export default function DetailsForm({
           stream: record.streamId || record.stream || undefined,
           category: record.categoryId || record.category || undefined,
           name: record.id,
-          logo: record.logo || [],
+          logo: toUploadFileList(record.logo, "institution-logo"),
           type: record.institute_type || record.type || "",
           address: record.address || "",
           admission: record.admission_process || record.admission || "",
@@ -619,7 +648,6 @@ export default function DetailsForm({
     <Form
       form={form}
       layout="vertical"
-      initialValues={initialValues}
       onFinish={onSubmit}
       onFinishFailed={({ errorFields }) => {
         const firstError = errorFields?.[0];

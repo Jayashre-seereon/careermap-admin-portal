@@ -63,7 +63,7 @@ const sortNewestFirst = (items = []) =>
 
 const MASTER_CLASS_CATEGORY_OPTIONS = [
   { label: "Career Video", value: "Career Video" },
-  { label: "Export Video", value: "Export Video" },
+  { label: "Expert Video", value: "Expert Video" },
 ];
 
 const getCategoryLabel = (value) =>

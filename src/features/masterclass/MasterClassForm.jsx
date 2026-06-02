@@ -36,7 +36,7 @@ export default function MasterClassForm({ onSubmit, initialValues, mode }) {
   const isView = mode === "view";
   const videoOptions = [
     { label: "Career Video", value: "Career Video" },
-    { label: "Export Video", value: "Export Video" },
+    { label: "Expert Video", value: "Expert Video" },
   ];
 
   useEffect(() => {
