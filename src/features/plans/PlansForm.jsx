@@ -1,7 +1,11 @@
 import { useEffect } from "react";
 import { Form, Input, Select, Button } from "antd";
 import RichTextEditor from "../../components/ui/RichTextEditor";
-import { validationRules } from "../../utils/formValidation";
+import {
+  getValueFromInput,
+  inputSanitizers,
+  validationRules,
+} from "../../utils/formValidation";
 
 export default function PlansForm({
   onSubmit,
@@ -58,11 +62,20 @@ export default function PlansForm({
       </Form.Item>
 
       <Form.Item
-        name="validity"
+        name="validity (months)"
         label="Validity"
-        rules={[validationRules.required("Validity")]}
+        getValueFromEvent={getValueFromInput(inputSanitizers.trim)}
+        rules={[
+          validationRules.required("Validity"),
+          {
+            validator: (_, value) =>
+              !value || /^\d+$/.test(String(value))
+                ? Promise.resolve()
+                : Promise.reject(new Error("Enter valid no.")),
+          },
+        ]}
       >
-        <Input disabled={disabled} placeholder="e.g. 12 months" />
+        <Input disabled={disabled} placeholder="e.g. 12" inputMode="numeric" />
       </Form.Item>
 
       <Form.Item
