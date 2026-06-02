@@ -144,7 +144,7 @@ export default function SubCategoryTable({
 
       <Table
         columns={columns}
-        dataSource={data}
+        dataSource={Array.isArray(data) ? [...data].reverse() : []}
         loading={loading}
         rowKey="id"
         pagination={{ pageSize: 5 }}

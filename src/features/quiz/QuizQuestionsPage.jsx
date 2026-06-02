@@ -380,7 +380,7 @@ export default function QuizQuestionsPage() {
         <Table
           rowKey="id"
           columns={columns}
-          dataSource={filteredQuestions}
+          dataSource={Array.isArray(filteredQuestions) ? [...filteredQuestions].reverse() : []}
           loading={loading}
           pagination={{ pageSize: 6 }}
           scroll={{ x: 1300 }}
@@ -554,3 +554,4 @@ export default function QuizQuestionsPage() {
     </section>
   );
 }
+

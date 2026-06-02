@@ -56,7 +56,7 @@ export default function AllUsers() {
 
   const columns = [
     {
-      title: <span className="text-[#9a2119] font-semibold">ID</span>,
+      title: <span className="text-[#9a2119] font-semibold">No.</span>,
       dataIndex: "id",
     },
     {
@@ -118,7 +118,7 @@ export default function AllUsers() {
 
       <Table
         columns={columns}
-        dataSource={filteredData}
+        dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
         pagination={{ pageSize: 5 }}
         rowClassName="hover:bg-gray-50"
         scroll={{ x: "max-content" }}

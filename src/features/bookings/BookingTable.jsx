@@ -171,7 +171,7 @@ export default function BookingTable() {
         {/* TABLE */}
         <Table
           columns={columns}
-          dataSource={filteredData}
+        dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
           pagination={{ pageSize: 5 }}
           scroll={{ x: "max-content" }}
         />

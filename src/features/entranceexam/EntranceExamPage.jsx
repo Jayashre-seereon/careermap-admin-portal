@@ -32,6 +32,40 @@ const normalizeList = (response) => {
   return [];
 };
 
+const getSortScore = (item = {}, index = 0) => {
+  const candidates = [
+    item.createdAt,
+    item.updatedAt,
+    item.created_at,
+    item.updated_at,
+    item.id,
+  ];
+
+  for (const value of candidates) {
+    if (value === undefined || value === null || value === "") {
+      continue;
+    }
+
+    const dateScore = Date.parse(value);
+    if (!Number.isNaN(dateScore)) {
+      return dateScore;
+    }
+
+    const numericScore = Number(value);
+    if (Number.isFinite(numericScore)) {
+      return numericScore;
+    }
+  }
+
+  return -index;
+};
+
+const sortNewestFirst = (items = []) =>
+  [...items]
+    .map((item, index) => ({ item, index }))
+    .sort((a, b) => getSortScore(b.item, b.index) - getSortScore(a.item, a.index))
+    .map(({ item }) => item);
+
 const formatDateValue = (value) => {
   return formatDateForPayload(value);
 };
@@ -102,6 +136,8 @@ const mapOption = (item = {}, labelKeys = []) => ({
 
 const mapEntranceExam = (item = {}) => ({
   id: item.id,
+  createdAt: item.createdAt,
+  updatedAt: item.updatedAt,
   moduleId: item.moduleId || item.module?.id || undefined,
   streamId: item.streamId || item.stream?.id || undefined,
   categoryId: item.categoryId || item.category?.id || undefined,
@@ -155,7 +191,7 @@ export default function EntranceExamPage() {
     try {
       setLoading(true);
       const response = await getEntranceExams();
-      setData(normalizeList(response).map(mapEntranceExam));
+      setData(sortNewestFirst(normalizeList(response).map(mapEntranceExam)));
     } catch (error) {
       messageApi.error(getApiErrorMessage(error, "Failed to load entrance exams."));
     } finally {

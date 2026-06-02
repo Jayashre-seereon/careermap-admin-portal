@@ -334,7 +334,7 @@ export default function QuizPage() {
         <Table
           rowKey="id"
           columns={columns}
-          dataSource={filteredQuizzes}
+          dataSource={Array.isArray(filteredQuizzes) ? [...filteredQuizzes].reverse() : []}
           loading={loading}
           pagination={{ pageSize: 6 }}
           scroll={{ x: 900 }}
@@ -508,7 +508,7 @@ export default function QuizPage() {
           rowKey="id"
           loading={attemptsLoading}
           pagination={false}
-          dataSource={selectedQuizAttempts?.data || []}
+          dataSource={Array.isArray(selectedQuizAttempts?.data) ? [...selectedQuizAttempts.data].reverse() : []}
           locale={{ emptyText: "No users have taken this quiz yet." }}
           columns={[
             {
@@ -546,3 +546,4 @@ export default function QuizPage() {
     </section>
   );
 }
+

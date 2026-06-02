@@ -20,9 +20,9 @@ function ModuleTable({
 }) {
   const columns = [
     {
-      title: "ID",
-      dataIndex: "id",
+      title: "No.",
       width: 80,
+      render: (_, __, index) => index + 1,
     },
     { title: "Title", dataIndex: "title", width: 240, ellipsis: true },
     {
@@ -93,7 +93,7 @@ function ModuleTable({
 
       <Table
         columns={columns}
-        dataSource={data}
+        dataSource={Array.isArray(data) ? [...data].reverse() : []}
         rowKey={(record) => record.id}
         loading={loading}
         pagination={{ pageSize: 5 }}

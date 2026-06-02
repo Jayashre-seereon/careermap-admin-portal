@@ -256,7 +256,7 @@ export default function LanguagePage() {
           <Table
             rowKey="key"
             columns={columns}
-            dataSource={filteredLanguages}
+            dataSource={Array.isArray(filteredLanguages) ? [...filteredLanguages].reverse() : []}
             pagination={{ pageSize: 6 }}
             scroll={{ x: 760 }}
             
@@ -312,3 +312,4 @@ export default function LanguagePage() {
     </>
   );
 }
+

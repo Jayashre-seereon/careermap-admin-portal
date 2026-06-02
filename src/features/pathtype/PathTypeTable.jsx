@@ -21,7 +21,7 @@ export default function PathTypeTable({
 
   const columns = [
     {
-      title: <span className="text-[#9a2119] font-semibold">ID</span>,
+      title: <span className="text-[#9a2119] font-semibold">No.</span>,
       render: (_, __, index) => index + 1,
       width: 80,
     },
@@ -124,7 +124,7 @@ export default function PathTypeTable({
       {/* TABLE */}
       <Table
         columns={columns}
-        dataSource={data}
+        dataSource={Array.isArray(data) ? [...data].reverse() : []}
         loading={loading}
         rowKey="id"
         pagination={{ pageSize: 5 }}

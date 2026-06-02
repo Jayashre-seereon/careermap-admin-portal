@@ -48,11 +48,6 @@ export default function InstitutionTable({
 
   const columns = [
     {
-      title: "ID",
-      dataIndex: "id",
-      width: 80,
-    },
-    {
       title: "Logo",
       dataIndex: "logo",
       width: 90,
@@ -201,7 +196,7 @@ export default function InstitutionTable({
 
       <Table
         columns={columns}
-        dataSource={data}
+        dataSource={Array.isArray(data) ? [...data].reverse() : []}
         rowKey={(record) => record.id}
         loading={loading}
         pagination={{ pageSize: 5 }}

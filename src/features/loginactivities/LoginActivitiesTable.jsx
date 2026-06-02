@@ -36,11 +36,7 @@ export default function LoginActivitiesTable({
       render: (_, __, index) => index + 1,
       width: 60,
     },
-    {
-      title: <span className="text-[#9a2119] font-semibold">User ID</span>,
-      dataIndex: "userId",
-      width: 100,
-    },
+   
     {
       title: <span className="text-[#9a2119] font-semibold">Login Time</span>,
       dataIndex: "loginAt",
@@ -119,7 +115,7 @@ export default function LoginActivitiesTable({
 
         <Table
           columns={columns}
-          dataSource={data}
+          dataSource={Array.isArray(data) ? [...data].reverse() : []}
           loading={loading}
           pagination={{ pageSize: 5 }}
           rowClassName="hover:bg-gray-50"
@@ -130,3 +126,4 @@ export default function LoginActivitiesTable({
     </div>
   );
 }
+

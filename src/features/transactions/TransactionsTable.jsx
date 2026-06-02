@@ -146,7 +146,7 @@ export default function TransactionsTable({ onView }) {
         {/* TABLE */}
         <Table
           columns={columns}
-          dataSource={filteredData}
+          dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
           pagination={{ pageSize: 5 }}
           rowClassName="hover:bg-gray-50"
           scroll={{ x: true }}
@@ -155,3 +155,4 @@ export default function TransactionsTable({ onView }) {
     </div>
   );
 }
+

@@ -111,7 +111,7 @@ export default function CategoryTable({ data, onAddClick, onView, onEdit, onDele
 
       <Table
         columns={columns}
-        dataSource={filtered}
+        dataSource={Array.isArray(filtered) ? [...filtered].reverse() : []}
         rowKey={(record) => record.id}
         loading={loading}
         pagination={{ pageSize: 5 }}

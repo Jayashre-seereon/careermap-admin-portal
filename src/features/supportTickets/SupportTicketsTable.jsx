@@ -104,7 +104,7 @@ export default function SupportTicketsTable({ title, data }) {
 
       <Table
         columns={columns}
-        dataSource={filteredData}
+        dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
         pagination={{ pageSize: 5 }}
         rowClassName="hover:bg-gray-50"
         scroll={{ x: "max-content" }}
@@ -112,3 +112,4 @@ export default function SupportTicketsTable({ title, data }) {
     </div>
   );
 }
+

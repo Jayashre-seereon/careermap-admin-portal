@@ -26,6 +26,40 @@ const normalizeList = (response) => {
   return [];
 };
 
+const getSortScore = (item = {}, index = 0) => {
+  const candidates = [
+    item.createdAt,
+    item.updatedAt,
+    item.created_at,
+    item.updated_at,
+    item.id,
+  ];
+
+  for (const value of candidates) {
+    if (value === undefined || value === null || value === "") {
+      continue;
+    }
+
+    const dateScore = Date.parse(value);
+    if (!Number.isNaN(dateScore)) {
+      return dateScore;
+    }
+
+    const numericScore = Number(value);
+    if (Number.isFinite(numericScore)) {
+      return numericScore;
+    }
+  }
+
+  return -index;
+};
+
+const sortNewestFirst = (items = []) =>
+  [...items]
+    .map((item, index) => ({ item, index }))
+    .sort((a, b) => getSortScore(b.item, b.index) - getSortScore(a.item, a.index))
+    .map(({ item }) => item);
+
 const normalizeStringArray = (value) => {
   if (Array.isArray(value)) {
     return value
@@ -45,6 +79,8 @@ const normalizeStringArray = (value) => {
 
 const mapStudyAbroadItem = (item = {}) => ({
   id: item.id,
+  createdAt: item.createdAt,
+  updatedAt: item.updatedAt,
   title: item.title || "",
   countryName: item.countryName || item.country_name || item.country || "",
   description: item.description || "",
@@ -105,7 +141,7 @@ export default function StudyAbroadPage() {
     try {
       setLoading(true);
       const response = await getStudyAbroadItems();
-      setData(normalizeList(response).map(mapStudyAbroadItem));
+      setData(sortNewestFirst(normalizeList(response).map(mapStudyAbroadItem)));
     } catch (error) {
       messageApi.error(getApiErrorMessage(error, "Failed to load study abroad items."));
     } finally {
