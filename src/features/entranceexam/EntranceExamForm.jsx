@@ -6,6 +6,27 @@ import { DATE_DISPLAY_FORMAT, parseDateValue } from "../../utils/date";
 
 const { Option } = Select;
 
+const validateSubjectTags = (_, value) => {
+  const subjects = Array.isArray(value) ? value : [];
+
+  if (subjects.length === 0) {
+    return Promise.reject(new Error("Subject name is required."));
+  }
+
+  const invalidSubject = subjects.find((subject) => {
+    const normalizedSubject = typeof subject === "string" ? subject.trim() : "";
+    return !normalizedSubject || !/^[A-Za-z\s]+$/.test(normalizedSubject);
+  });
+
+  if (invalidSubject) {
+    return Promise.reject(
+      new Error("Only characters are allowed in subject name.")
+    );
+  }
+
+  return Promise.resolve();
+};
+
 const normalizeTagValues = (value) => {
   if (Array.isArray(value)) {
     return value.filter(Boolean);
@@ -250,7 +271,11 @@ export default function EntranceExamForm({
         <Input disabled={isView} placeholder="e.g. 1 hr or 30 min" />
       </Form.Item>
 
-      <Form.Item name="subject" label="Subject">
+      <Form.Item
+        name="subject"
+        label="Subject"
+        rules={[{ validator: validateSubjectTags }]}
+      >
         <Select
           mode="tags"
           disabled={isView}
