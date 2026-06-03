@@ -28,16 +28,16 @@ function MentorTable({
       title: "Image",
       dataIndex: "image",
       render: (img) => <Avatar src={img} size={40} />,
-      width: 90,
+      width: 100,
     },
-    { title: "Name", dataIndex: "name", width: 170 },
-    { title: "Email", dataIndex: "email", width: 220, ellipsis: true },
-    { title: "Phone", dataIndex: "phone_number", width: 150 },
-    { title: "Date of Birth", dataIndex: "dob", width: 150 },
+    { title: "Name", dataIndex: "name", width: 100 },
+    { title: "Email", dataIndex: "email", width: 100, ellipsis: true },
+    { title: "Phone", dataIndex: "phone_number", width: 100 },
+    { title: "Date of Birth", dataIndex: "dob", width: 100 },
     {
       title: "Availability",
       dataIndex: "availabilityDisplay",
-      width: 360,
+      width: 100,
       render: (value, record) => {
         const entries = Array.isArray(value) && value.length > 0 ? value : [];
 
@@ -72,9 +72,9 @@ function MentorTable({
         );
       },
     },
-    { title: "Education", dataIndex: "education", width: 220, ellipsis: true },
-    { title: "Designation", dataIndex: "designation", width: 180, ellipsis: true },
-    { title: "Rank", dataIndex: "rank", width: 120, ellipsis: true },
+    { title: "Education", dataIndex: "education", width: 100, ellipsis: true },
+    { title: "Designation", dataIndex: "designation", width: 100, ellipsis: true },
+    { title: "Rank", dataIndex: "rank", width: 100, ellipsis: true },
     {
       title: "Status",
       dataIndex: "status",
