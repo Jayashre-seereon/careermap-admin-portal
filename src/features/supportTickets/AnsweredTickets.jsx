@@ -1,8 +1,17 @@
 import SupportTicketsTable from "./SupportTicketsTable";
-import { ticketsData } from "./ticketsData";
+import useHelpAndSupportTickets from "./useHelpAndSupportTickets";
+import { filterTicketsByStatus } from "./supportTicketsUtils";
 
 export default function AnsweredTickets() {
-  const answeredTickets = ticketsData.filter((ticket) => ticket.status === "Answered");
+  const { tickets, loading, updateTicketStatus } = useHelpAndSupportTickets();
+  const answeredTickets = filterTicketsByStatus(tickets, "answered");
 
-  return <SupportTicketsTable title="Answered Tickets" data={answeredTickets} />;
+  return (
+    <SupportTicketsTable
+      title="Answered Tickets"
+      data={answeredTickets}
+      loading={loading}
+      onUpdateStatus={updateTicketStatus}
+    />
+  );
 }
