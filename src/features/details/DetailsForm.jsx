@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Button, Checkbox, DatePicker, Form, Input, Select, Upload } from "antd";
+import { Button, Checkbox, DatePicker, Form, Input, InputNumber, Select, Upload } from "antd";
 import { MinusCircleOutlined, UploadOutlined } from "@ant-design/icons";
 import StatusSwitch from "../../components/ui/StatusSwitch";
 import RichTextEditor from "../../components/ui/RichTextEditor";
@@ -155,20 +155,74 @@ function renderSectionSpecificFields(
         <Form.List name="salaryRanges">
           {(fields, { add, remove }) => (
             <>
-              <div className="md:col-span-2 grid grid-cols-[1fr_1fr_32px] gap-2 text-sm text-slate-500">
+              <div className="md:col-span-2 grid grid-cols-[110px_1fr_1fr_32px] gap-2 text-sm text-slate-500">
+                <div>Unit</div>
                 <div>Minimum Salary</div>
                 <div>Maximum Salary</div>
                 <div />
               </div>
 
               {fields.map(({ key, name, ...restField }) => (
-                <div key={key} className="md:col-span-2 grid grid-cols-[1fr_1fr_32px] gap-2">
-                  <Form.Item {...restField} name={[name, "min"]} rules={[validationRules.required("Minimum salary")]}>
-                    <Input disabled={viewMode} placeholder="Minimum salary" />
+                <div key={key} className="md:col-span-2 grid grid-cols-[110px_1fr_1fr_32px] gap-2">
+                  <Form.Item
+                    {...restField}
+                    name={[name, "unit"]}
+                    rules={[validationRules.required("Unit")]}
+                  >
+                    <Select disabled={viewMode} placeholder="Unit">
+                      <Option value="Rs">Rs</Option>
+                      <Option value="usd">usd</Option>
+                    </Select>
                   </Form.Item>
 
-                  <Form.Item {...restField} name={[name, "max"]} rules={[validationRules.required("Maximum salary")]}>
-                    <Input disabled={viewMode} placeholder="Maximum salary" />
+                  <Form.Item
+                    {...restField}
+                    name={[name, "min"]}
+                    rules={[
+                      validationRules.required("Minimum salary"),
+                      validationRules.decimal("Minimum salary"),
+                    ]}
+                  >
+                    <InputNumber
+                      disabled={viewMode}
+                      placeholder="Minimum salary"
+                      className="w-full"
+                      stringMode
+                      controls={false}
+                      min={0}
+                      formatter={(value) =>
+                        value == null || value === ""
+                          ? ""
+                          : String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                      }
+                      parser={(value) => (value ? value.replace(/,/g, "") : "")}
+                      inputMode="decimal"
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    {...restField}
+                    name={[name, "max"]}
+                    rules={[
+                      validationRules.required("Maximum salary"),
+                      validationRules.decimal("Maximum salary"),
+                    ]}
+                  >
+                    <InputNumber
+                      disabled={viewMode}
+                      placeholder="Maximum salary"
+                      className="w-full"
+                      stringMode
+                      controls={false}
+                      min={0}
+                      formatter={(value) =>
+                        value == null || value === ""
+                          ? ""
+                          : String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                      }
+                      parser={(value) => (value ? value.replace(/,/g, "") : "")}
+                      inputMode="decimal"
+                    />
                   </Form.Item>
 
                   <div className="pt-[6px]">
@@ -186,7 +240,7 @@ function renderSectionSpecificFields(
 
               {!viewMode && (
                 <Form.Item className="md:col-span-2">
-                  <Button type="dashed" block onClick={() => add({ min: "", max: "" })}>
+                  <Button type="dashed" block onClick={() => add({ unit: "Rs", min: "", max: "" })}>
                     Add Salary Range
                   </Button>
                 </Form.Item>
@@ -470,6 +524,7 @@ export default function DetailsForm({
 }) {
   const selectedCategory = Form.useWatch("category", form);
   const selectedSecondCategory = Form.useWatch("secondCategory", form);
+  const salaryRanges = Form.useWatch("salaryRanges", form) || [];
 
   const handleCategoryChange = (value) => {
     form.setFieldsValue({

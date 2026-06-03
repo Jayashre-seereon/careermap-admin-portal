@@ -73,12 +73,48 @@ const toDayjsValue = (value) => {
 
 const normalizeNullableString = (value) => (value == null ? "" : String(value));
 
+const normalizeSalaryUnit = (value) => {
+  const text = normalizeNullableString(value).trim();
+
+  if (/usd/i.test(text)) {
+    return "usd";
+  }
+
+  return "Rs";
+};
+
+const normalizeSalaryAmount = (value) => {
+  const text = normalizeNullableString(value).trim();
+
+  if (!text) {
+    return "";
+  }
+
+  return text.replace(/,/g, "");
+};
+
+const splitSalaryValue = (value, fallbackUnit = "Rs") => {
+  const text = normalizeNullableString(value).trim();
+
+  if (!text) {
+    return { unit: normalizeSalaryUnit(fallbackUnit), amount: "" };
+  }
+
+  const unitMatch = text.match(/^(rs|usd)\s*/i);
+  const unit = normalizeSalaryUnit(unitMatch?.[1] || fallbackUnit);
+  const amount = normalizeSalaryAmount(text.replace(/^(rs|usd)\s*/i, ""));
+
+  return { unit, amount };
+};
+
 const toFloatOrNull = (value) => {
-  if (value === "" || value == null) {
+  const normalizedValue = normalizeSalaryAmount(value);
+
+  if (!normalizedValue) {
     return null;
   }
 
-  const parsed = typeof value === "number" ? value : Number.parseFloat(String(value));
+  const parsed = Number.parseFloat(normalizedValue);
   return Number.isFinite(parsed) ? parsed : null;
 };
 
@@ -97,7 +133,7 @@ const buildDefaultValues = (section = "salary-range") => {
   };
 
   if (section === "salary-range") {
-    return { ...common, salaryRanges: [{ min: "", max: "" }] };
+    return { ...common, salaryRanges: [{ unit: "Rs", min: "", max: "" }] };
   }
 
   if (section === "job-scope") {
@@ -300,10 +336,17 @@ const normalizeSalaryRanges = (value) => {
   const list = Array.isArray(value) ? value : [];
 
   return list
-    .map((item) => ({
-      min: normalizeNullableString(item?.minSalary ?? item?.min ?? ""),
-      max: normalizeNullableString(item?.maxSalary ?? item?.max ?? ""),
-    }))
+    .map((item) => {
+      const unitSource = item?.unit ?? item?.currency ?? item?.salaryUnit;
+      const minParsed = splitSalaryValue(item?.minSalary ?? item?.min ?? "", unitSource);
+      const maxParsed = splitSalaryValue(item?.maxSalary ?? item?.max ?? "", unitSource);
+
+      return {
+        unit: minParsed.unit || maxParsed.unit || normalizeSalaryUnit(unitSource),
+        min: minParsed.amount,
+        max: maxParsed.amount,
+      };
+    })
     .filter((item) => item.min || item.max);
 };
 
