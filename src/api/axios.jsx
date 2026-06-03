@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useSessionStore } from "../store/sessionStore";
+import { refreshAccessToken } from "./authApi";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -29,8 +30,12 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    const requestUrl = originalRequest?.url || "";
+    const isAuthEndpoint =
+      requestUrl.includes("/api/admin/auth/login") ||
+      requestUrl.includes("/api/admin/auth/refresh-token");
 
-    if (error.response?.status === 401 && !originalRequest?._retry) {
+    if (error.response?.status === 401 && !originalRequest?._retry && !isAuthEndpoint) {
       originalRequest._retry = true;
 
       try {
@@ -40,15 +45,11 @@ api.interceptors.response.use(
           throw new Error("Refresh token not found");
         }
 
-        // Replace this endpoint and payload with your backend refresh API.
-        const refreshResponse = await axios.post(
-          `${import.meta.env.VITE_API_URL}/auth/refresh`,
-          { refreshToken }
-        );
-
+        const refreshResponse = await refreshAccessToken(refreshToken);
         const newAccessToken =
-          refreshResponse.data?.accessToken ||
-          refreshResponse.data?.data?.accessToken ||
+          refreshResponse?.accessToken ||
+          refreshResponse?.data?.accessToken ||
+          refreshResponse?.data?.data?.accessToken ||
           "";
 
         if (!newAccessToken) {
@@ -56,6 +57,7 @@ api.interceptors.response.use(
         }
 
         useSessionStore.getState().setAccessToken(newAccessToken);
+        originalRequest.headers = originalRequest.headers || {};
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
         return api(originalRequest);
