@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import dayjs from "dayjs";
 import { Button, DatePicker, Form, Input, TimePicker, Upload } from "antd";
 import { MinusCircleOutlined, PlusOutlined, UploadOutlined } from "@ant-design/icons";
 import RichTextEditor from "../../components/ui/RichTextEditor";
@@ -56,25 +57,118 @@ const toTimeValue = (value) => {
   return parsed.isValid() ? parsed : null;
 };
 
+const normalizeTimeRangeValue = (value) => {
+  if (!value) {
+    return [null, null];
+  }
+
+  if (Array.isArray(value)) {
+    return [toTimeValue(value[0]), toTimeValue(value[1])];
+  }
+
+  if (typeof value === "string") {
+    const text = value.trim();
+    if (!text) {
+      return [null, null];
+    }
+
+    const [start = "", end = ""] = text.split("-").map((part) => part.trim());
+    if (start || end) {
+      return [toTimeValue(start), toTimeValue(end)];
+    }
+
+    return [toTimeValue(text), null];
+  }
+
+  if (typeof value?.format === "function") {
+    return [value, null];
+  }
+
+  return [null, null];
+};
+
+const formatTimeValue = (value) => {
+  if (!value) {
+    return "";
+  }
+
+  if (typeof value === "string") {
+    const text = value.trim();
+    if (!text) {
+      return "";
+    }
+
+    if (/^\d{2}:\d{2}(:\d{2})?$/.test(text)) {
+      return text.slice(0, 5);
+    }
+
+    return text;
+  }
+
+  if (typeof value?.format === "function") {
+    return value.format("HH:mm");
+  }
+
+  return "";
+};
+
+const formatTimeRangeValue = (value) => {
+  if (!value) {
+    return "";
+  }
+
+  if (Array.isArray(value)) {
+    const [start, end] = value;
+    const startText = formatTimeValue(start);
+    const endText = formatTimeValue(end);
+
+    if (startText && endText) {
+      return `${startText}-${endText}`;
+    }
+
+    return startText || endText || "";
+  }
+
+  if (typeof value === "string") {
+    const text = value.trim();
+    if (!text) {
+      return "";
+    }
+
+    const [start = "", end = ""] = text.split("-").map((part) => part.trim());
+    if (start && end) {
+      return `${formatTimeValue(start)}-${formatTimeValue(end)}`;
+    }
+
+    return formatTimeValue(text);
+  }
+
+  if (typeof value?.format === "function") {
+    return value.format("HH:mm");
+  }
+
+  return "";
+};
+
 const normalizeAvailability = (availability = []) => {
   if (!Array.isArray(availability) || availability.length === 0) {
-    return [{ date: null, timeSlots: [null] }];
+    return [{ date: null, timeSlots: [[null, null]] }];
   }
 
   const normalized = availability
     .map((entry) => {
       const timeSlots = Array.isArray(entry?.timeSlots) && entry.timeSlots.length > 0
-        ? entry.timeSlots.map(toTimeValue).filter(Boolean)
-        : [null];
+        ? entry.timeSlots.map(normalizeTimeRangeValue)
+        : [[null, null]];
 
       return {
         date: toDateValue(entry?.date),
         timeSlots,
       };
     })
-    .filter((entry) => entry.date || entry.timeSlots.some(Boolean));
+    .filter((entry) => entry.date || entry.timeSlots.some((slot) => slot?.some(Boolean)));
 
-  return normalized.length > 0 ? normalized : [{ date: null, timeSlots: [null] }];
+  return normalized.length > 0 ? normalized : [{ date: null, timeSlots: [[null, null]] }];
 };
 
 function MentorForm({ onSubmit, initialValues, disabled }) {
@@ -96,22 +190,22 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
     form.resetFields();
     form.setFieldsValue({
       status: true,
-      availability: [{ date: null, timeSlots: [null] }],
+      availability: [{ date: null, timeSlots: [[null, null]] }],
     });
   }, [form, initialValues]);
 
   const renderAvailabilityTimeSlots = (timeFields, addTimeSlot, removeTimeSlot) => (
     <>
       <div className="mb-2 flex items-center justify-between gap-3">
-        <span className="text-sm font-medium text-slate-700">Time Slots</span>
+        <span className="text-sm font-medium text-slate-700">Time Ranges</span>
         {!disabled && (
           <Button
             type="dashed"
             size="small"
-            onClick={() => addTimeSlot(null)}
+            onClick={() => addTimeSlot([null, null])}
             icon={<PlusOutlined />}
           >
-            Add Time
+            Add Time Range
           </Button>
         )}
       </div>
@@ -122,19 +216,30 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
             {...restField}
             name={name}
             className="mb-0 flex-1"
-            rules={[validationRules.required("Time slot")]}
+            rules={[
+              {
+                validator: (_, value) => {
+                  const [start, end] = Array.isArray(value) ? value : [];
+
+                  if (start && end) {
+                    return Promise.resolve();
+                  }
+
+                  return Promise.reject(new Error("Time range is required"));
+                },
+              },
+            ]}
           >
-            <TimePicker
+            <TimePicker.RangePicker
               className="w-full"
               popupClassName="mentor-time-picker-popup"
               disabled={disabled}
               format="HH:mm"
               use12Hours={false}
-              needConfirm
               showSecond={false}
               showNow={false}
               inputReadOnly
-              placeholder="Select time"
+              placeholder={["Start time", "End time"]}
             />
           </Form.Item>
 
@@ -151,8 +256,8 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
       ))}
 
       {!disabled && timeFields.length === 0 && (
-        <Button type="dashed" block onClick={() => addTimeSlot(null)} icon={<PlusOutlined />}>
-          Add Time
+        <Button type="dashed" block onClick={() => addTimeSlot([null, null])} icon={<PlusOutlined />}>
+          Add Time Range
         </Button>
       )}
     </>
@@ -164,7 +269,7 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
       form={form}
       onFinish={onSubmit}
       validateTrigger={["onChange", "onBlur"]}
-      initialValues={{ status: true, availability: [{ date: null, timeSlots: [null] }] }}
+      initialValues={{ status: true, availability: [{ date: null, timeSlots: [[null, null]] }] }}
     >
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <h3 className="md:col-span-2 lg:col-span-4 mb-1 text-lg font-semibold text-[#9a2119]">
@@ -388,7 +493,7 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
                   <Button
                     type="dashed"
                     block
-                    onClick={() => addDate({ date: null, timeSlots: [null] })}
+                    onClick={() => addDate({ date: null, timeSlots: [[null, null]] })}
                     icon={<PlusOutlined />}
                   >
                     Add Availability Date

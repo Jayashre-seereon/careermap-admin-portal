@@ -156,7 +156,7 @@ function renderSectionSpecificFields(
           {(fields, { add, remove }) => (
             <>
               <div className="md:col-span-2 grid grid-cols-[110px_1fr_1fr_32px] gap-2 text-sm text-slate-500">
-                <div>Unit</div>
+                <div>Currency</div>
                 <div>Minimum Salary</div>
                 <div>Maximum Salary</div>
                 <div />
@@ -166,12 +166,12 @@ function renderSectionSpecificFields(
                 <div key={key} className="md:col-span-2 grid grid-cols-[110px_1fr_1fr_32px] gap-2">
                   <Form.Item
                     {...restField}
-                    name={[name, "unit"]}
-                    rules={[validationRules.required("Unit")]}
+                    name={[name, "currency"]}
+                    rules={[validationRules.required("Currency")]}
                   >
-                    <Select disabled={viewMode} placeholder="Unit">
-                      <Option value="Rs">Rs</Option>
-                      <Option value="usd">usd</Option>
+                    <Select disabled={viewMode} placeholder="Currency">
+                      <Option value="INR">INR</Option>
+                      <Option value="USD">USD</Option>
                     </Select>
                   </Form.Item>
 
@@ -240,7 +240,7 @@ function renderSectionSpecificFields(
 
               {!viewMode && (
                 <Form.Item className="md:col-span-2">
-                  <Button type="dashed" block onClick={() => add({ unit: "Rs", min: "", max: "" })}>
+                  <Button type="dashed" block onClick={() => add({ currency: "INR", min: "", max: "" })}>
                     Add Salary Range
                   </Button>
                 </Form.Item>
@@ -524,7 +524,6 @@ export default function DetailsForm({
 }) {
   const selectedCategory = Form.useWatch("category", form);
   const selectedSecondCategory = Form.useWatch("secondCategory", form);
-  const salaryRanges = Form.useWatch("salaryRanges", form) || [];
 
   const handleCategoryChange = (value) => {
     form.setFieldsValue({

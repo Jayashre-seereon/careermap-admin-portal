@@ -73,14 +73,18 @@ const toDayjsValue = (value) => {
 
 const normalizeNullableString = (value) => (value == null ? "" : String(value));
 
-const normalizeSalaryUnit = (value) => {
+const normalizeSalaryCurrency = (value) => {
   const text = normalizeNullableString(value).trim();
 
   if (/usd/i.test(text)) {
-    return "usd";
+    return "USD";
   }
 
-  return "Rs";
+  if (/inr|rs/i.test(text)) {
+    return "INR";
+  }
+
+  return "INR";
 };
 
 const normalizeSalaryAmount = (value) => {
@@ -93,18 +97,18 @@ const normalizeSalaryAmount = (value) => {
   return text.replace(/,/g, "");
 };
 
-const splitSalaryValue = (value, fallbackUnit = "Rs") => {
+const splitSalaryValue = (value, fallbackCurrency = "INR") => {
   const text = normalizeNullableString(value).trim();
 
   if (!text) {
-    return { unit: normalizeSalaryUnit(fallbackUnit), amount: "" };
+    return { currency: normalizeSalaryCurrency(fallbackCurrency), amount: "" };
   }
 
-  const unitMatch = text.match(/^(rs|usd)\s*/i);
-  const unit = normalizeSalaryUnit(unitMatch?.[1] || fallbackUnit);
-  const amount = normalizeSalaryAmount(text.replace(/^(rs|usd)\s*/i, ""));
+  const currencyMatch = text.match(/^(inr|usd|rs)\s*/i);
+  const currency = normalizeSalaryCurrency(currencyMatch?.[1] || fallbackCurrency);
+  const amount = normalizeSalaryAmount(text.replace(/^(inr|usd|rs)\s*/i, ""));
 
-  return { unit, amount };
+  return { currency, amount };
 };
 
 const toFloatOrNull = (value) => {
@@ -133,7 +137,7 @@ const buildDefaultValues = (section = "salary-range") => {
   };
 
   if (section === "salary-range") {
-    return { ...common, salaryRanges: [{ unit: "Rs", min: "", max: "" }] };
+    return { ...common, salaryRanges: [{ currency: "INR", min: "", max: "" }] };
   }
 
   if (section === "job-scope") {
@@ -282,6 +286,7 @@ const normalizeSectionValues = (section, values) => {
     return {
       salaryRanges: (sectionValues.salaryRanges || [])
         .map((item) => ({
+          currency: normalizeSalaryCurrency(item?.currency ?? item?.unit),
           minSalary: toFloatOrNull(item?.min),
           maxSalary: toFloatOrNull(item?.max),
         }))
@@ -337,12 +342,12 @@ const normalizeSalaryRanges = (value) => {
 
   return list
     .map((item) => {
-      const unitSource = item?.unit ?? item?.currency ?? item?.salaryUnit;
-      const minParsed = splitSalaryValue(item?.minSalary ?? item?.min ?? "", unitSource);
-      const maxParsed = splitSalaryValue(item?.maxSalary ?? item?.max ?? "", unitSource);
+      const currencySource = item?.currency ?? item?.unit ?? item?.salaryUnit;
+      const minParsed = splitSalaryValue(item?.minSalary ?? item?.min ?? "", currencySource);
+      const maxParsed = splitSalaryValue(item?.maxSalary ?? item?.max ?? "", currencySource);
 
       return {
-        unit: minParsed.unit || maxParsed.unit || normalizeSalaryUnit(unitSource),
+        currency: minParsed.currency || maxParsed.currency || normalizeSalaryCurrency(currencySource),
         min: minParsed.amount,
         max: maxParsed.amount,
       };
@@ -522,7 +527,8 @@ const getRecordTitle = (record) => {
   if (record.sections?.includes("salary-range")) {
     const firstRange = record.salaryRanges?.[0];
     if (firstRange) {
-      return `${firstRange.min || "-"} - ${firstRange.max || "-"}`;
+      const currency = firstRange.currency || "INR";
+      return `${currency} ${firstRange.min || "-"} - ${firstRange.max || "-"}`;
     }
   }
 
@@ -710,6 +716,7 @@ export default function DetailsPage() {
     if (selectedSections.includes("salary-range")) {
       payload.salaryRanges = (values.salaryRanges || [])
         .map((item) => ({
+          currency: normalizeSalaryCurrency(item?.currency ?? item?.unit),
           minSalary: toFloatOrNull(item?.min),
           maxSalary: toFloatOrNull(item?.max),
         }))

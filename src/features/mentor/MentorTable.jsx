@@ -36,10 +36,41 @@ function MentorTable({
     { title: "Date of Birth", dataIndex: "dob", width: 150 },
     {
       title: "Availability",
-      dataIndex: "availabilitySummary",
-      width: 320,
-      ellipsis: true,
-      render: (value) => value || "-",
+      dataIndex: "availabilityDisplay",
+      width: 360,
+      render: (value, record) => {
+        const entries = Array.isArray(value) && value.length > 0 ? value : [];
+
+        if (entries.length === 0) {
+          return record.availabilitySummary || "-";
+        }
+
+        return (
+          <div className="space-y-2 whitespace-normal">
+            {entries.map((entry, index) => (
+              <div
+                key={`${entry.date}-${index}`}
+                className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2"
+              >
+                <div className="text-xs font-semibold uppercase tracking-wide text-[#9a2119]">
+                  {entry.date}
+                </div>
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {entry.timeSlots.length > 0 ? (
+                    entry.timeSlots.map((slot) => (
+                      <Tag key={`${entry.date}-${slot}`} color="red" className="mr-0">
+                        {slot}
+                      </Tag>
+                    ))
+                  ) : (
+                    <span className="text-sm text-slate-400">-</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      },
     },
     { title: "Education", dataIndex: "education", width: 220, ellipsis: true },
     { title: "Designation", dataIndex: "designation", width: 180, ellipsis: true },

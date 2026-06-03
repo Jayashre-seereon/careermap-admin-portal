@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Modal, message } from "antd";
-import dayjs from "dayjs";
 import MentorForm from "./MentorForm";
 import MentorTable from "./MentorTable";
 import {
@@ -52,13 +51,22 @@ const formatDateForAvailability = (value) => {
   return formatDateForPayload(value);
 };
 
-const formatTimeValue = (value) => {
+const formatTimeLabel = (value) => {
   if (!value) {
     return "";
   }
 
   if (typeof value === "string") {
-    return value;
+    const text = value.trim();
+    if (!text) {
+      return "";
+    }
+
+    if (/^\d{2}:\d{2}(:\d{2})?$/.test(text)) {
+      return text.slice(0, 5);
+    }
+
+    return text;
   }
 
   if (typeof value?.format === "function") {
@@ -68,23 +76,42 @@ const formatTimeValue = (value) => {
   return "";
 };
 
-const normalizeTimeValue = (value) => {
+const formatTimeRangeText = (value) => {
   if (!value) {
-    return null;
+    return "";
+  }
+
+  if (Array.isArray(value)) {
+    const [start, end] = value;
+    const startText = formatTimeLabel(start);
+    const endText = formatTimeLabel(end);
+
+    if (startText && endText) {
+      return `${startText}-${endText}`;
+    }
+
+    return startText || endText || "";
+  }
+
+  if (typeof value === "string") {
+    const text = value.trim();
+    if (!text) {
+      return "";
+    }
+
+    const parts = text.split("-").map((part) => part.trim()).filter(Boolean);
+    if (parts.length === 2) {
+      return `${formatTimeLabel(parts[0])}-${formatTimeLabel(parts[1])}`;
+    }
+
+    return formatTimeLabel(text);
   }
 
   if (typeof value?.format === "function") {
-    return value;
+    return value.format("HH:mm");
   }
 
-  const text = String(value).trim();
-  if (!text) {
-    return null;
-  }
-
-  const normalizedText = text.length === 5 ? `${text}:00` : text;
-  const parsedTime = dayjs(`1970-01-01T${normalizedText}`);
-  return parsedTime.isValid() ? parsedTime : null;
+  return "";
 };
 
 const normalizeAvailability = (item = {}) => {
@@ -95,10 +122,10 @@ const normalizeAvailability = (item = {}) => {
       .map((entry) => ({
         date: parseDateValue(entry?.date),
         timeSlots: Array.isArray(entry?.timeSlots) && entry.timeSlots.length > 0
-          ? entry.timeSlots.map(normalizeTimeValue).filter(Boolean)
-          : [null],
+          ? entry.timeSlots.map(formatTimeRangeText).filter(Boolean)
+          : [],
       }))
-      .filter((entry) => entry.date || entry.timeSlots.some(Boolean));
+      .filter((entry) => entry.date || entry.timeSlots.length > 0);
   }
 
   const legacyDate = item.available_date || item.availableDate || "";
@@ -109,18 +136,33 @@ const normalizeAvailability = (item = {}) => {
   }
 
   const legacyTimeSlots = Array.isArray(legacyTime)
-    ? legacyTime.map(normalizeTimeValue).filter(Boolean)
+    ? legacyTime.map(formatTimeRangeText).filter(Boolean)
     : String(legacyTime)
         .split(",")
-        .map((slot) => normalizeTimeValue(slot.trim()))
+        .map((slot) => formatTimeRangeText(slot.trim()))
         .filter(Boolean);
 
   return [
     {
       date: parseDateValue(legacyDate),
-      timeSlots: legacyTimeSlots.length > 0 ? legacyTimeSlots : [null],
+      timeSlots: legacyTimeSlots,
     },
   ];
+};
+
+const formatAvailabilityDisplay = (availability = []) => {
+  if (!Array.isArray(availability) || availability.length === 0) {
+    return [];
+  }
+
+  return availability
+    .map((entry) => ({
+      date: formatDateDisplay(entry?.date),
+      timeSlots: Array.isArray(entry?.timeSlots)
+        ? entry.timeSlots.map(formatTimeRangeText).filter(Boolean)
+        : [],
+    }))
+    .filter((entry) => entry.date !== "-" || entry.timeSlots.length > 0);
 };
 
 const normalizeAvailabilityForPayload = (availability = []) =>
@@ -128,7 +170,7 @@ const normalizeAvailabilityForPayload = (availability = []) =>
     .map((entry) => {
       const date = formatDateForAvailability(entry?.date);
       const timeSlots = Array.isArray(entry?.timeSlots)
-        ? entry.timeSlots.map(formatTimeValue).filter(Boolean)
+        ? entry.timeSlots.map(formatTimeRangeText).filter(Boolean)
         : [];
 
       if (!date && timeSlots.length === 0) {
@@ -143,19 +185,14 @@ const normalizeAvailabilityForPayload = (availability = []) =>
     .filter(Boolean);
 
 const formatAvailabilitySummary = (availability = []) => {
-  if (!Array.isArray(availability) || availability.length === 0) {
+  const displayEntries = formatAvailabilityDisplay(availability);
+
+  if (displayEntries.length === 0) {
     return "-";
   }
 
-  return availability
-    .map((entry) => {
-      const dateText = formatDateDisplay(entry?.date);
-      const timeText = Array.isArray(entry?.timeSlots) && entry.timeSlots.length > 0
-        ? entry.timeSlots.join(", ")
-        : "-";
-
-      return `${dateText}: ${timeText}`;
-    })
+  return displayEntries
+    .map((entry) => `${entry.date}: ${entry.timeSlots.length > 0 ? entry.timeSlots.join(", ") : "-"}`)
     .join(" | ");
 };
 
@@ -226,27 +263,32 @@ const buildMentorPayload = ({
   };
 };
 
-const mapMentor = (item = {}) => ({
-  id: item.id,
-  name: item.name || "",
-  email: item.email || "",
-  phone_number: item.phone_number || "",
-  dateof_birth: formatDateDisplay(item.dateof_birth),
-  designation: item.designation || "",
-  education: item.education || "",
-  placeof_word: item.placeof_word || "",
-  linkedin: item.linkedin || "",
-  facebook: item.facebook || "",
-  skill: item.skill || "",
-  experience: item.experience ?? "",
-  mentor_fees: item.mentor_fees || "",
-  rank: item.rank || "",
-  image: item.image || null,
-  resume: item.resume || null,
-  description: item.description || "",
-  status: item.status ?? false,
-  availability: normalizeAvailability(item),
-});
+const mapMentor = (item = {}) => {
+  const availability = normalizeAvailability(item);
+
+  return {
+    id: item.id,
+    name: item.name || "",
+    email: item.email || "",
+    phone_number: item.phone_number || "",
+    dateof_birth: formatDateDisplay(item.dateof_birth),
+    designation: item.designation || "",
+    education: item.education || "",
+    placeof_word: item.placeof_word || "",
+    linkedin: item.linkedin || "",
+    facebook: item.facebook || "",
+    skill: item.skill || "",
+    experience: item.experience ?? "",
+    mentor_fees: item.mentor_fees || "",
+    rank: item.rank || "",
+    image: item.image || null,
+    resume: item.resume || null,
+    description: item.description || "",
+    status: item.status ?? false,
+    availability,
+    availabilityDisplay: formatAvailabilityDisplay(availability),
+  };
+};
 
 export default function MentorPage() {
   const [messageApi, contextHolder] = message.useMessage();
