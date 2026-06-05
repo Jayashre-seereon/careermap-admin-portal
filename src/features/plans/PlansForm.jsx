@@ -49,7 +49,7 @@ export default function PlansForm({
       <Form.Item
         name="price"
         label="Price"
-        rules={[validationRules.required("Price"), validationRules.decimal("Price")]}
+        rules={[validationRules.required("Price")]}
       >
         <Input disabled={disabled} />
       </Form.Item>
