@@ -1,3 +1,4 @@
+import {React ,useState} from "react";
 import { Table, Input, Button, Popconfirm } from "antd";
 import {
   EyeOutlined,
@@ -6,7 +7,7 @@ import {
   SearchOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
-
+import { getSerialNumber } from "../../utils/slNo";
 export default function PathTypeTable({
   data,
   loading,
@@ -18,11 +19,11 @@ export default function PathTypeTable({
   search,
 }) {
   const handleReset = () => onSearch("");
-
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   const columns = [
     {
       title: <span className="text-[#9a2119] font-semibold">No.</span>,
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
       width: 80,
     },
     {
@@ -127,7 +128,8 @@ export default function PathTypeTable({
         dataSource={Array.isArray(data) ? [...data].reverse() : []}
         loading={loading}
         rowKey="id"
-        pagination={{ pageSize: 5 }}
+        pagination={pagination}
+        onChange={(pag) => setPagination(pag)}
         rowClassName="hover:bg-gray-50"
         scroll={{ x: "max-content" }}
         className="[&_.ant-table-cell]:align-middle"

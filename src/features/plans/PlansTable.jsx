@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Table, Input, Button, Popconfirm, Tooltip } from "antd";
 import {
   EyeOutlined,
@@ -6,7 +7,7 @@ import {
   SearchOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
-
+import { getSerialNumber } from "../../utils/slNo";
 const stripHtml = (text = "") => {
   const normalizedText = Array.isArray(text)
     ? text.join(", ")
@@ -40,11 +41,11 @@ export default function PlansTable({
       <span className="truncate block max-w-[220px]">{stripHtml(text) || "-"}</span>
     </Tooltip>
   );
-
+const [pagination, setPagination] = useState({ current: 1, pageSize: 5, });
   const columns = [
     {
       title: <span className="text-[#9a2119] font-semibold">SL</span>,
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
       width: 60,
     },
     {
@@ -166,7 +167,8 @@ export default function PlansTable({
           dataSource={Array.isArray(data) ? [...data].reverse() : []}
           loading={loading}
           rowKey="id"
-          pagination={{ pageSize: 5 }}
+           pagination={pagination}
+           onChange={(pag) => setPagination(pag)}
           rowClassName="hover:bg-gray-50"
           scroll={{ x: "max-content" }}
         />

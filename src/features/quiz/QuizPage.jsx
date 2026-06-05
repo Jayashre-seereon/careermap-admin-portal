@@ -17,7 +17,7 @@ import {
   getQuizAttempts,
   updateQuiz,
 } from "../../api/quiz";
-
+import {getSerialNumber} from "../../utils/slNo";
 const initialValues = {
   title: "",
   type: "Mock",
@@ -25,7 +25,6 @@ const initialValues = {
   to: "",
   duration: "",
 };
-
 const normalizeList = (response) => {
   const list = response?.data;
 
@@ -83,6 +82,7 @@ export default function QuizPage() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
 
+const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   const loadQuizzes = async () => {
     try {
       setLoading(true);
@@ -206,6 +206,11 @@ export default function QuizPage() {
   };
 
   const columns = [
+      {
+      title: <span className="text-[#9a2119] font-semibold">SL</span>,
+      render: (_, __, index) => getSerialNumber(index, pagination),
+      width: 60,
+    },
     {
       title: <span className="text-[#9a2119] font-semibold">Title</span>,
       dataIndex: "title",
@@ -336,7 +341,8 @@ export default function QuizPage() {
           columns={columns}
           dataSource={Array.isArray(filteredQuizzes) ? [...filteredQuizzes].reverse() : []}
           loading={loading}
-          pagination={{ pageSize: 6 }}
+          pagination={pagination}
+          onChange={(pag) => setPagination(pag)}
           scroll={{ x: 900 }}
           rowClassName="hover:bg-[#fff8f7]"
         />

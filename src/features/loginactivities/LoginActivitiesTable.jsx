@@ -4,7 +4,8 @@ import {
   SearchOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
-
+import { useState } from "react";
+import { getSerialNumber } from "../../utils/slNo";
 const formatDateTime = (value) => {
   if (!value) {
     return "-";
@@ -30,10 +31,11 @@ export default function LoginActivitiesTable({
   onReset,
   onView,
 }) {
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   const columns = [
     {
       title: <span className="text-[#9a2119] font-semibold">SL</span>,
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
       width: 60,
     },
    
@@ -117,7 +119,8 @@ export default function LoginActivitiesTable({
           columns={columns}
           dataSource={Array.isArray(data) ? [...data].reverse() : []}
           loading={loading}
-          pagination={{ pageSize: 5 }}
+          pagination={pagination}
+          onChange={(pag) => setPagination(pag)}
           rowClassName="hover:bg-gray-50"
           scroll={{ x: "max-content" }}
           rowKey={(record) => record.id}

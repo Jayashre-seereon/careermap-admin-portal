@@ -1,3 +1,5 @@
+import React from "react";
+import { useState } from "react";
 import { Table, Input, Tooltip, Button, Popconfirm } from "antd";
 import {
   EyeOutlined,
@@ -7,7 +9,7 @@ import {
   ReloadOutlined,
 } from "@ant-design/icons";
 import { formatDateDisplay } from "../../utils/date";
-
+import { getSerialNumber } from "../../utils/slNo";
 export default function ScholarshipTable({
   data,
   loading,
@@ -35,7 +37,7 @@ export default function ScholarshipTable({
       .replace(/\s+/g, " ")
       .trim();
   };
-
+const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   const ellipsis = (text) => (
     <Tooltip title={stripHtml(text) || "-"}>
       <span className="truncate block max-w-[200px]">{stripHtml(text) || "-"}</span>
@@ -49,7 +51,7 @@ export default function ScholarshipTable({
   const columns = [
     {
       title: "SL",
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
       width: 60,
       fixed: "left",
     },
@@ -178,7 +180,8 @@ export default function ScholarshipTable({
           dataSource={Array.isArray(data) ? [...data].reverse() : []}
           loading={loading}
           rowKey="id"
-          pagination={{ pageSize: 5 }}
+          pagination={pagination}
+          onChange={(pag) => setPagination(pag)}
           scroll={{ x: 1200 }}
         />
       </div>

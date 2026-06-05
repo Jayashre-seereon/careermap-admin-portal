@@ -1,3 +1,5 @@
+import React from "react";
+import { useState } from "react";
 import { Table, Input, Button, Popconfirm } from "antd";
 import {
   EyeOutlined,
@@ -8,7 +10,7 @@ import {
 } from "@ant-design/icons";
 import { Tooltip } from "antd";
 import { formatDateDisplay } from "../../utils/date";
-
+import { getSerialNumber } from "../../utils/slNo";
 export default function EntranceExamTable({
   data,
   loading,
@@ -19,6 +21,7 @@ export default function EntranceExamTable({
   onDelete,
   onAdd,
 }) {
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   const handleReset = () => onSearch("");
 
   const formatDate = (value) => {
@@ -50,7 +53,7 @@ export default function EntranceExamTable({
   const columns = [
     {
       title: <span className="text-[#9a2119] font-semibold">SL</span>,
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
       width: 70,
     },
     // {
@@ -214,7 +217,8 @@ export default function EntranceExamTable({
           dataSource={data}
           loading={loading}
           rowKey="id"
-          pagination={{ pageSize: 5 }}
+          pagination={pagination}
+          onChange={(pag) => setPagination(pag)}
           rowClassName="hover:bg-gray-50"
           scroll={{ x: "max-content" }}
         />

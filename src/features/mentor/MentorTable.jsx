@@ -1,4 +1,4 @@
-import React from "react";
+import {React,useState }from "react";
 import { Table, Button, Tag, Avatar, Space, Popconfirm, Input } from "antd";
 import {
   EyeOutlined,
@@ -8,6 +8,7 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 
+import { getSerialNumber } from "../../utils/slNo";
 function MentorTable({
   data,
   loading,
@@ -18,10 +19,11 @@ function MentorTable({
   search,
   onSearch,
 }) {
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   const columns = [
     {
       title: "SL No.",
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
       width: 80,
     },
     {
@@ -145,7 +147,8 @@ function MentorTable({
         dataSource={Array.isArray(data) ? [...data].reverse() : []}
         loading={loading}
         rowKey="id"
-        pagination={{ pageSize: 5 }}
+        pagination={pagination}
+        onChange={(pag) => setPagination(pag)}
         scroll={{ x: "max-content" }}
       />
     </div>

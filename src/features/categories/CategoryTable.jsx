@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Table, Button, Input, Space, Popconfirm, Tag } from "antd";
 import { EyeOutlined, EditOutlined, DeleteOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
-
+import { getSerialNumber } from "../../utils/slNo";
 const getPlainText = (value) => {
   if (!value) {
     return "";
@@ -16,7 +16,7 @@ const getPlainText = (value) => {
 
 export default function CategoryTable({ data, onAddClick, onView, onEdit, onDelete, loading }) {
   const [search, setSearch] = useState("");
-
+const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   const filtered = (data || []).filter((item) =>
   (item.title || "").toLowerCase().includes((search || "").toLowerCase())
 );
@@ -24,7 +24,7 @@ export default function CategoryTable({ data, onAddClick, onView, onEdit, onDele
   const columns = [
     {
       title: "SL",
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
       width: 70,
     },
     {
@@ -114,7 +114,8 @@ export default function CategoryTable({ data, onAddClick, onView, onEdit, onDele
         dataSource={Array.isArray(filtered) ? [...filtered].reverse() : []}
         rowKey={(record) => record.id}
         loading={loading}
-        pagination={{ pageSize: 5 }}
+        pagination={pagination}
+        onChange={(pag) => setPagination(pag)}
         scroll={{ x: "max-content" }}
       />
     </div>

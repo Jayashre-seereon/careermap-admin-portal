@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import { Avatar, Button, Input, Popconfirm, Space, Table, Tag, Tooltip } from "antd";
 import {
   DeleteOutlined,
@@ -6,7 +7,7 @@ import {
   ReloadOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-
+import { getSerialNumber } from "../../utils/slNo";
 export default function MasterClassTable({
   data,
   loading,
@@ -23,10 +24,12 @@ export default function MasterClassTable({
     </Tooltip>
   );
 
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
+
   const columns = [
     {
       title: "SL",
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
       width: 60,
       fixed: "left",
     },
@@ -166,7 +169,8 @@ export default function MasterClassTable({
           dataSource={data}
           loading={loading}
           rowKey="id"
-          pagination={{ pageSize: 5 }}
+          pagination={pagination}
+          onChange={(pag) => setPagination(pag)}
           scroll={{ x: 1200 }}
         />
       </div>

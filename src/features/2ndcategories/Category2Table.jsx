@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useState} from "react";
 import { Table, Button, Space, Input, Popconfirm } from "antd";
 import {
   EyeOutlined,
@@ -7,7 +7,7 @@ import {
   SearchOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
-
+import { getSerialNumber } from "../../utils/slNo";
 export default function Category2Table({
   data,
   loading,
@@ -18,14 +18,16 @@ export default function Category2Table({
   search,
   setSearch,
 }) {
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   const handleReset = () => setSearch("");
 
   const columns = [
     {
       title: "SL",
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
       width: 70,
     },
+    
     {
       title: "Category",
       dataIndex: "categoryName",
@@ -136,7 +138,8 @@ export default function Category2Table({
         dataSource={Array.isArray(data) ? [...data].reverse() : []}
         loading={loading}
         rowKey="id"
-        pagination={{ pageSize: 5 }}
+        pagination={pagination}
+        onChange={(pag) => setPagination(pag)}
         scroll={{ x: "max-content" }}
       />
     </div>

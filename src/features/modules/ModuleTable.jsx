@@ -1,4 +1,4 @@
-import React from "react";
+import {React,useState}from "react";
 import { Table, Button, Space, Popconfirm, Input, Tag } from "antd";
 import {
   EyeOutlined,
@@ -8,6 +8,7 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 
+import { getSerialNumber } from "../../utils/slNo";
 function ModuleTable({
   data,
   onAddClick,
@@ -18,11 +19,12 @@ function ModuleTable({
   onSearch,
   loading,
 }) {
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   const columns = [
     {
       title: "No.",
       width: 80,
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
     },
     { title: "Title", dataIndex: "title", width: 240, ellipsis: true },
     {
@@ -96,7 +98,8 @@ function ModuleTable({
         dataSource={Array.isArray(data) ? [...data].reverse() : []}
         rowKey={(record) => record.id}
         loading={loading}
-        pagination={{ pageSize: 5 }}
+        pagination={pagination}
+        onChange={(pag) => setPagination(pag)}
         scroll={{ x: "max-content" }}
       />
     </div>

@@ -1,3 +1,5 @@
+import React from "react";
+import { useState } from "react";
 import { Table, Input, Tooltip, Button, Popconfirm, Avatar } from "antd";
 import {
   EyeOutlined,
@@ -7,7 +9,7 @@ import {
   ReloadOutlined,
 } from "@ant-design/icons";
 import { formatDateDisplay } from "../../utils/date";
-
+import { getSerialNumber } from "../../utils/slNo";
 export default function InstitutionTable({
   data,
   onView,
@@ -18,6 +20,8 @@ export default function InstitutionTable({
   onSearch,
   loading,
 }) {
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
+
   const renderEllipsis = (text) => (
     <Tooltip title={text}>
       <span className="truncate block max-w-[200px]">{text || "-"}</span>
@@ -47,6 +51,11 @@ export default function InstitutionTable({
   );
 
   const columns = [
+    {
+      title: "S.No",
+      width: 60,
+      render: (_, __, index) => getSerialNumber(index, pagination),
+    },
     {
       title: "Logo",
       dataIndex: "logo",
@@ -199,7 +208,8 @@ export default function InstitutionTable({
         dataSource={Array.isArray(data) ? [...data].reverse() : []}
         rowKey={(record) => record.id}
         loading={loading}
-        pagination={{ pageSize: 5 }}
+        pagination={pagination}
+        onChange={(pag) => setPagination(pag)}
         scroll={{ x: "max-content" }}
       />
     </div>

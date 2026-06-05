@@ -3,7 +3,7 @@ import { Button, Form, Input, Modal, Select, Table, message } from "antd";
 import { EditOutlined, EyeOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { formatStatusClasses, formatStatusLabel, normalizeStatus } from "./supportTicketsUtils";
-
+import { getSerialNumber } from "../../utils/slNo";
 const STATUS_OPTIONS = [
   { label: "Pending", value: "pending" },
   { label: "Answered", value: "answered" },
@@ -18,7 +18,7 @@ export default function SupportTicketsTable({ title, data, loading, onUpdateStat
   const [editOpen, setEditOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-
+const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   const filteredData = useMemo(() => {
     const normalizedSearch = search.toLowerCase();
 
@@ -55,6 +55,11 @@ export default function SupportTicketsTable({ title, data, loading, onUpdateStat
   };
 
   const columns = [
+      {
+      title: <span className="text-[#9a2119] font-semibold">SL</span>,
+      render: (_, __, index) => getSerialNumber(index, pagination),
+      width: 70,
+    },
     {
       title: <span className="text-[#9a2119] font-semibold">Subject</span>,
       dataIndex: "subject",
@@ -129,7 +134,8 @@ export default function SupportTicketsTable({ title, data, loading, onUpdateStat
         columns={columns}
         dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
         loading={loading}
-        pagination={{ pageSize: 5 }}
+        pagination={pagination}
+        onChange={(pag) => setPagination(pag)}
         rowClassName="hover:bg-gray-50"
         scroll={{ x: "max-content" }}
       />

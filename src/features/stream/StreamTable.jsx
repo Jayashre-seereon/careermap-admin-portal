@@ -7,14 +7,17 @@ import {
   ReloadOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-
+import { useState } from "react";
+import { getSerialNumber } from "../../utils/slNo";
 function StreamTable({ data, onAddClick, onView, onEdit, onDelete, search, onSearch, loading }) {
   const handleReset = () => onSearch("");
+  
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   const columns = [
     {
       title: "No.",
       width: 80,
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
     },
     {
       title: "Image",
@@ -90,7 +93,8 @@ function StreamTable({ data, onAddClick, onView, onEdit, onDelete, search, onSea
         dataSource={Array.isArray(data) ? [...data].reverse() : []}
         rowKey={(record) => record.id}
         loading={loading}
-        pagination={{ pageSize: 5 }}
+       pagination={pagination}
+       onChange={(pag) => setPagination(pag)}
         scroll={{ x: "max-content" }}
       />
     </div>

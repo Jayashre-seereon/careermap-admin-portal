@@ -1,3 +1,4 @@
+import React ,{useState} from "react";
 import { Button, Input, Popconfirm, Space, Table, Tooltip } from "antd";
 import {
   DeleteOutlined,
@@ -6,7 +7,7 @@ import {
   ReloadOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-
+import { getSerialNumber } from "../../utils/slNo";
 const stripHtml = (text = "") => {
   const normalizedText = Array.isArray(text)
     ? text.join(", ")
@@ -38,11 +39,11 @@ export default function StudyAbroadTable({
       <span className="block max-w-[220px] truncate">{stripHtml(text) || "-"}</span>
     </Tooltip>
   );
-
+const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   const columns = [
     {
       title: "SL",
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
       width: 60,
       fixed: "left",
     },
@@ -159,7 +160,8 @@ export default function StudyAbroadTable({
           dataSource={data}
           loading={loading}
           rowKey="id"
-          pagination={{ pageSize: 5 }}
+          pagination={pagination}
+          onChange={(pag) => setPagination(pag)}
           scroll={{ x: 1300 }}
         />
       </div>

@@ -1,3 +1,4 @@
+import React,{useState} from "react";
 import { Button, Input, Popconfirm, Table, Tag } from "antd";
 import {
   DeleteOutlined,
@@ -6,7 +7,7 @@ import {
   ReloadOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-
+import { getSerialNumber } from "../../utils/slNo";
 const stripHtml = (text = "") =>
   String(text || "")
     .replace(/<[^>]*>/g, " ")
@@ -32,12 +33,13 @@ export default function NotificationsTable({
   onView,
   onEdit,
   onDelete,
-}) {
+}) 
+{
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   const columns = [
     {
       title: <span className="text-[#9a2119] font-semibold">SL</span>,
-      render: (_, __, index) => index + 1,
-      width: 70,
+      render: (_, __, index) => getSerialNumber(index, pagination),   width: 70,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Title</span>,
@@ -122,7 +124,8 @@ export default function NotificationsTable({
         dataSource={data}
         loading={loading}
         rowKey="id"
-        pagination={{ pageSize: 5 }}
+        pagination={pagination}
+        onChange={(pag) => setPagination(pag)}
         scroll={{ x: "max-content" }}
       />
     </div>

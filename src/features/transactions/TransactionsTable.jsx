@@ -5,7 +5,7 @@ import {
   ReloadOutlined,
 } from "@ant-design/icons";
 import { useState } from "react";
-
+import { getSerialNumber } from "../../utils/slNo";
 const initialData = [
   {
     key: "1",
@@ -43,6 +43,7 @@ export default function TransactionsTable({ onView }) {
   const [search, setSearch] = useState("");
   const [data] = useState(initialData);
 
+const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   const filteredData = data.filter((item) =>
     item.user.toLowerCase().includes(search.toLowerCase())
   );
@@ -52,7 +53,7 @@ export default function TransactionsTable({ onView }) {
   const columns = [
     {
       title: <span className="text-[#9a2119] font-semibold">SL</span>,
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
       width: 60,
     },
     {
@@ -147,7 +148,8 @@ export default function TransactionsTable({ onView }) {
         <Table
           columns={columns}
           dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
-          pagination={{ pageSize: 5 }}
+          pagination={pagination}
+          onChange={(pag) => setPagination(pag)}
           rowClassName="hover:bg-gray-50"
           scroll={{ x: true }}
         />

@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import { Button, Input, Popconfirm, Table } from "antd";
 import {
   DeleteOutlined,
@@ -7,6 +8,7 @@ import {
   ReloadOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
+import { getSerialNumber } from "../../utils/slNo";
 
 export default function DetailsTable({
   data,
@@ -21,18 +23,26 @@ export default function DetailsTable({
   summarizeRecord,
   sectionLabels,
 }) {
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 5,
+  });
+
   const columns = [
     {
       title: "SL",
       width: 60,
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
     },
     {
       title: "Section",
       width: 180,
       render: (_, record) => {
-        const sections = record.sections || (record.section ? [record.section] : []);
-        return sections.map((value) => sectionLabels[value] || value).join(", ");
+        const sections =
+          record.sections || (record.section ? [record.section] : []);
+        return sections
+          .map((value) => sectionLabels[value] || value)
+          .join(", ");
       },
     },
     {
@@ -56,20 +66,21 @@ export default function DetailsTable({
       title: "Secondary Category",
       dataIndex: "secondCategory",
       width: 180,
-      render: (value, record) => record.secondCategoryName || value || "-",
+      render: (value, record) =>
+        record.secondCategoryName || value || "-",
     },
     {
       title: "Subcategory",
       dataIndex: "subcategory",
       width: 150,
-      render: (value, record) => record.subcategoryName || value || "-",
+      render: (value, record) =>
+        record.subcategoryName || value || "-",
     },
     {
       title: "Details Type",
       width: 170,
       render: (_, record) => getRecordDetailsLabel(record),
     },
-   
     {
       title: "Action",
       width: 150,
@@ -116,7 +127,11 @@ export default function DetailsTable({
 
           <Button
             onClick={() => onSearch("")}
-            style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
+            style={{
+              background: "#9a2119",
+              borderColor: "#9a2119",
+              color: "white",
+            }}
           >
             <ReloadOutlined />
             Reset
@@ -124,7 +139,11 @@ export default function DetailsTable({
 
           <Button
             onClick={onAdd}
-            style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
+            style={{
+              background: "#9a2119",
+              borderColor: "#9a2119",
+              color: "white",
+            }}
           >
             <PlusOutlined />
             Add Details
@@ -136,7 +155,8 @@ export default function DetailsTable({
         columns={columns}
         dataSource={Array.isArray(data) ? [...data].reverse() : []}
         rowKey="id"
-        pagination={{ pageSize: 5 }}
+        pagination={pagination}
+        onChange={(pag) => setPagination(pag)}
         scroll={{ x: "max-content" }}
       />
     </div>
