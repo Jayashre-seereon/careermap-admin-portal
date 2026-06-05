@@ -124,15 +124,20 @@ export default function PlansPage() {
     }
   };
 
-  const handleDelete = async (record) => {
-    try {
-      await deletePlan(record.id);
-      messageApi.success("Plan deleted successfully.");
-      await loadPlans();
-    } catch (error) {
-      messageApi.error(getApiErrorMessage(error, "Failed to delete plan."));
+const handleDelete = async (record) => {
+  try {
+    await deletePlan(record.id);
+    messageApi.success("Plan deleted successfully.");
+    await loadPlans();
+  } catch (error) {
+    const errorMsg = error.response?.data?.message || "";
+    if (errorMsg.includes("violates RESTRICT")) {
+      messageApi.error("This plan is already purchased so cannot be deleted.");
+    } else {
+      messageApi.error("Failed to delete plan.");
     }
-  };
+  }
+};
 
   return (
     <>
