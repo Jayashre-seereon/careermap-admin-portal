@@ -21,27 +21,41 @@ import {
   LogInIcon,
   MapPin,
   MessageSquare,
+  Plane,
   Settings2,
   Tag,
   Users,
+  Video,
 } from "lucide-react";
 
 export const navSections = [
   {
     label: "MAIN",
-    items: [{ icon: LayoutDashboard, name: "Dashboard", path: "/dashboard" }],
+    items: [{ icon: LayoutDashboard, name: "Dashboard", path: "/dashboard" },
+        { icon: BookOpen, name: "Modules", path: "/modules" },
+   
+    ],
+    
   },
-  {
-    label: "USERS",
+   {
+    label: "BASIC INFORMATION",
     items: [
       { icon: GraduationCap, name: "Mentors", path: "/mentor" },
-      { icon: Users, name: "All Users", path: "/all_users" },
+      { icon: GitBranch, name: "Path Type", path: "/pathtype" },
+      { icon: MapPin, name: "Career Path", path: "/careerpath" },
+      { icon: ClipboardList, name: "Entrance Exam", path: "/entranceexam" },
+      { icon: Building2, name: "Institution", path: "/institution" },
+      { icon: Award, name: "Scholarship", path: "/scholarship" },
+      { icon: Video, name: "Master Class", path: "/masterclass" },
+      { icon: Plane, name: "Study Abroad", path: "/studyabroad" },
+      { icon: CreditCard, name: "Plans", path: "/plans" },
+      { icon: HelpCircle, name: "Quiz", path: "/quiz" },
+  
     ],
   },
   {
     label: "CAREER LIBRARY ",
     items: [
-      { icon: BookOpen, name: "Modules", path: "/modules" },
       { icon: Layers, name: "Stream", path: "/stream" },
       { icon: Tag, name: "Categories", path: "/categories" },
       { icon: Layers, name: "Second Categories", path: "/2ndcategories" },
@@ -49,34 +63,20 @@ export const navSections = [
       { icon: FileText, name: "Details", path: "/details" },
     ],
   },
-  {
-    label: "CONTENT",
+ {
+    label: "USERS DETAILS",
     items: [
-     
-      { icon: GitBranch, name: "Path Type", path: "/pathtype" },
-      { icon: MapPin, name: "Career Path", path: "/careerpath" },
-      { icon: ClipboardList, name: "Entrance Exam", path: "/entranceexam" },
-      { icon: Building2, name: "Institution", path: "/institution" },
-      { icon: Award, name: "Scholarship", path: "/scholarship" },
-    ],
-  },
-  {
-    label: "MANAGEMENT",
-    items: [
+      { icon: Users, name: "All Users", path: "/all_users" },
+      { icon: BellIcon, name: "Notifications", path: "/notifications" },
       { icon: Bell, name: "Subscribers", path: "/all_users/subscribers" },
       { icon: CalendarCheck, name: "Bookings", path: "/bookings" },
-      { icon: CreditCard, name: "Plans", path: "/plans" },
-      { icon: HelpCircle, name: "Quiz", path: "/quiz" },
-    ],
-  },
-  {
-    label: "REPORT",
-    items: [
       { icon: IndianRupeeIcon, name: "Transactions", path: "/transactions" },
       { icon: LogInIcon, name: "Login Activities", path: "/loginactivities" },
-      { icon: BellIcon, name: "Notifications", path: "/notifications" },
+      { icon: MessageSquare, name: "Support Tickets", path: "/support_tickets" },
+  
     ],
   },
+  
   // {
   //   label: "ORDERS",
   //   items: [{ icon: ListChecks, name: "All Orders", path: "/all_orders" }],
@@ -88,16 +88,11 @@ export const navSections = [
   //     { icon: FileText, name: "Job Application", path: "/job-applications" },
   //   ],
   // },
-  {
-    label: "SUPPORT",
-    items: [
-      { icon: MessageSquare, name: "Support Tickets", path: "/support_tickets" },
-      { icon: HelpCircle, name: "Personality Test", path: "/personality-test" },
-    ],
-  },
+ 
   {
     label: "PSYCHOMETRIC",
     items: [
+      { icon: HelpCircle, name: "Personality Test", path: "/personality-test" },
       { icon: Layers, name: "Domains", path: "/domains" },
       { icon: Briefcase, name: "Careers", path: "/careers" },
       { icon: MapPin, name: "Career Paths", path: "/career-paths" },

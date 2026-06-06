@@ -1,3 +1,4 @@
+import React from "react";
 import { Table, Input ,Button} from "antd";
 import {
   EyeOutlined,
@@ -6,7 +7,7 @@ import {
 } from "@ant-design/icons";
 import { useState } from "react";
 import { useOutletContext } from "react-router-dom";
-
+import { getSerialNumber } from "../../../utils/slNo";
 const data = [
   {
     key: "1",
@@ -47,7 +48,7 @@ const data = [
 export default function AllUsers() {
   const [search, setSearch] = useState("");
   const { setSelectedUser } = useOutletContext();
-
+const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   const filteredData = data.filter((item) =>
     item.user.toLowerCase().includes(search.toLowerCase())
   );
@@ -56,8 +57,9 @@ export default function AllUsers() {
 
   const columns = [
     {
-      title: <span className="text-[#9a2119] font-semibold">ID</span>,
+      title: <span className="text-[#9a2119] font-semibold">No.</span>,
       dataIndex: "id",
+      render: (_, __, index) => getSerialNumber(index, pagination),
     },
     {
       title: <span className="text-[#9a2119] font-semibold">User</span>,
@@ -118,8 +120,9 @@ export default function AllUsers() {
 
       <Table
         columns={columns}
-        dataSource={filteredData}
-        pagination={{ pageSize: 5 }}
+        dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
+        pagination={pagination}
+        onChange={(pag) => setPagination(pag)}
         rowClassName="hover:bg-gray-50"
         scroll={{ x: "max-content" }}
       />

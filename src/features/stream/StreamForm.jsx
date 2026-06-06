@@ -6,9 +6,23 @@ import { validationRules } from "../../utils/formValidation";
 function StreamForm({ onSubmit, initialValues, disabled }) {
   const [form] = Form.useForm();
 
+  const normalizeFile = (event) => {
+    if (Array.isArray(event)) {
+      return event;
+    }
+
+    return event?.fileList || [];
+  };
+
   useEffect(() => {
-    if (initialValues) form.setFieldsValue(initialValues);
-    else form.resetFields();
+    if (initialValues) {
+      form.setFieldsValue({
+        ...initialValues,
+        image: [],
+      });
+    } else {
+      form.resetFields();
+    }
   }, [form, initialValues]);
 
   return (
@@ -23,13 +37,23 @@ function StreamForm({ onSubmit, initialValues, disabled }) {
         <Input disabled={disabled} />
       </Form.Item>
 
-      <Form.Item name="image" label="Image">
-        <Upload beforeUpload={() => false} disabled={disabled}>
+      <Form.Item name="image" label="Image" valuePropName="fileList" getValueFromEvent={normalizeFile}>
+        <Upload beforeUpload={() => false} maxCount={1} disabled={disabled} listType="text">
           <Button icon={<UploadOutlined />} className="w-full">
             Upload Image
           </Button>
         </Upload>
       </Form.Item>
+
+      {initialValues?.image && typeof initialValues.image === "string" ? (
+        <div className="mb-4">
+          <img
+            src={initialValues.image}
+            alt={initialValues.name}
+            className="h-20 w-20 rounded-lg border object-cover"
+          />
+        </div>
+      ) : null}
 
       {!disabled && (
         <Button

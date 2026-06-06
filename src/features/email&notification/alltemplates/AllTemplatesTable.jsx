@@ -31,9 +31,9 @@ export default function AllTemplatesTable({ data, onEdit }) {
   ];
 
   return (
-    <Table
-      columns={columns}
-      dataSource={data}
+      <Table
+        columns={columns}
+        dataSource={Array.isArray(data) ? [...data].reverse() : []}
       pagination={{ pageSize: 6 }}
       rowKey="key"
       rowClassName="hover:bg-gray-50"

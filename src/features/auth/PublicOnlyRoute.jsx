@@ -1,10 +1,10 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { getCurrentUser } from "./authStorage";
+import { useSessionStore } from "../../store/sessionStore";
 
 export default function PublicOnlyRoute() {
-  const user = getCurrentUser();
+  const isAuthenticated = useSessionStore((state) => state.isAuthenticated);
 
-  if (user) {
+  if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
   }
 

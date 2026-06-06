@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useQuill } from "react-quilljs";
 import Quill from "quill";
 
@@ -54,6 +54,44 @@ const modules = {
   },
 };
 
+const htmlListFromArray = (items = []) => {
+  if (!Array.isArray(items) || items.length === 0) {
+    return "";
+  }
+
+  return `<ul>${items.map((item) => `<li>${String(item ?? "")}</li>`).join("")}</ul>`;
+};
+
+const normalizeEditorValue = (value) => {
+  if (Array.isArray(value)) {
+    if (value.length === 1 && typeof value[0] === "string") {
+      return value[0];
+    }
+
+    return htmlListFromArray(value);
+  }
+
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+
+      if (Array.isArray(parsed)) {
+        return htmlListFromArray(parsed);
+      }
+
+      return typeof parsed === "string" ? parsed : value;
+    } catch {
+      return value;
+    }
+  }
+
+  if (value == null) {
+    return "";
+  }
+
+  return String(value);
+};
+
 export default function RichTextEditor({
   value = "",
   onChange,
@@ -61,6 +99,7 @@ export default function RichTextEditor({
   placeholder = "Write here...",
   height = 180,
 }) {
+  const isPatchingValue = useRef(false);
   const { quill, quillRef } = useQuill({
     theme: "snow",
     placeholder,
@@ -72,11 +111,13 @@ export default function RichTextEditor({
       return;
     }
 
-    const nextValue = value || "";
+    const nextValue = normalizeEditorValue(value);
     const currentValue = quill.root.innerHTML === "<p><br></p>" ? "" : quill.root.innerHTML;
 
     if (currentValue !== nextValue) {
-      quill.clipboard.dangerouslyPasteHTML(nextValue || "<p><br></p>");
+      isPatchingValue.current = true;
+      quill.clipboard.dangerouslyPasteHTML(nextValue || "<p><br></p>", "silent");
+      isPatchingValue.current = false;
     }
 
     quill.enable(!disabled);
@@ -93,6 +134,10 @@ export default function RichTextEditor({
     }
 
     const handleTextChange = () => {
+      if (isPatchingValue.current) {
+        return;
+      }
+
       const html = quill.root.innerHTML === "<p><br></p>" ? "" : quill.root.innerHTML;
       onChange(html);
     };

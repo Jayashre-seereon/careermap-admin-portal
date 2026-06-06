@@ -1,4 +1,6 @@
-import { Table, Input, Tooltip, Button, Popconfirm } from "antd";
+import React from "react";
+import { useState } from "react";
+import { Table, Input, Tooltip, Button, Popconfirm, Avatar } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -6,53 +8,67 @@ import {
   SearchOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
-import { useState } from "react";
-
+import { formatDateDisplay } from "../../utils/date";
+import { getSerialNumber } from "../../utils/slNo";
 export default function InstitutionTable({
   data,
   onView,
   onEdit,
   onDelete,
-  onAdd,
+  onAddClick,
+  search,
+  onSearch,
+  loading,
 }) {
-  const [search, setSearch] = useState("");
-
-  const filteredData = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const handleReset = () => setSearch("");
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
 
   const renderEllipsis = (text) => (
     <Tooltip title={text}>
-      <span className="truncate block max-w-[200px]">{text}</span>
+      <span className="truncate block max-w-[200px]">{text || "-"}</span>
+    </Tooltip>
+  );
+
+  const stripHtml = (text = "") => {
+    const normalizedText = Array.isArray(text)
+      ? text.join(", ")
+      : typeof text === "string"
+        ? text
+        : text == null
+          ? ""
+          : String(text);
+
+    return normalizedText
+      .replace(/<[^>]*>/g, " ")
+      .replace(/&nbsp;/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
+
+  const renderHtmlEllipsis = (text) => (
+    <Tooltip title={stripHtml(text) || "-"}>
+      <span className="truncate block max-w-[200px]">{stripHtml(text) || "-"}</span>
     </Tooltip>
   );
 
   const columns = [
     {
-      title: "SL",
-      render: (_, __, index) => index + 1,
+      title: "S.No",
       width: 60,
-      fixed: "left",
-    },
-    {
-      title: "Name",
-      dataIndex: "name",
-      width: 220,
-      render: renderEllipsis,
+      render: (_, __, index) => getSerialNumber(index, pagination),
     },
     {
       title: "Logo",
       dataIndex: "logo",
       width: 90,
       render: (logo) => (
-        <img
-          src={logo}
-          alt="logo"
-          className="w-10 h-10 rounded-md object-cover border"
-        />
+        <Avatar src={logo || undefined} size={45} shape="square" />
       ),
+    },
+    {
+      title: "Name",
+      dataIndex: "name",
+      width: 220,
+      render: renderEllipsis,
     },
     {
       title: "Address",
@@ -62,29 +78,45 @@ export default function InstitutionTable({
     },
     {
       title: "Admission Process",
-      dataIndex: "admission",
+      dataIndex: "admission_process",
       width: 180,
       render: renderEllipsis,
     },
     {
+      title: "About",
+      dataIndex: "about",
+      width: 220,
+      render: renderHtmlEllipsis,
+    },
+    {
+      title: "Courses Offered",
+      dataIndex: "courses_offered",
+      width: 220,
+      render: renderHtmlEllipsis,
+    },
+    {
       title: "Tentative Date",
-      dataIndex: "date",
+      dataIndex: "tentative_date",
       width: 140,
+      render: (value) => formatDateDisplay(value),
     },
     {
       title: "Institution Type",
-      dataIndex: "type",
+      dataIndex: "institute_type",
       width: 140,
     },
     {
       title: "URL",
       dataIndex: "url",
       width: 120,
-      render: (url) => (
-        <a href={url} target="_blank" rel="noreferrer" className="text-blue-600">
-          Visit
-        </a>
-      ),
+      render: (url) =>
+        url ? (
+          <a href={url} target="_blank" rel="noreferrer" className="text-[#9a2119]">
+            Visit
+          </a>
+        ) : (
+          "-"
+        ),
     },
     {
       title: "Country",
@@ -97,6 +129,11 @@ export default function InstitutionTable({
       width: 120,
     },
     {
+      title: "City",
+      dataIndex: "city",
+      width: 120,
+    },
+    {
       title: "District",
       dataIndex: "district",
       width: 120,
@@ -104,49 +141,34 @@ export default function InstitutionTable({
     {
       title: "Action",
       align: "right",
-      fixed: "right",
-      width: 140,
+      width: 150,
       render: (_, record) => (
         <div className="flex justify-end gap-2">
           <Button
-            onClick={() => onView && onView(record)}
             className="w-8 h-8 flex items-center justify-center rounded-md 
                        border border-[#9a2119] 
                        text-[#9a2119]
                        hover:border-[#e57373]
-                       hover:text-[#e57373]
-                      "
+                       hover:text-[#e57373]"
+            onClick={() => onView(record)}
           >
             <EyeOutlined />
           </Button>
-
           <Button
-            onClick={() => onEdit && onEdit(record)}
             className="w-8 h-8 flex items-center justify-center rounded-md 
                        border border-[#9a2119] 
                        text-[#9a2119]
                        hover:border-[#e57373]
-                       hover:text-[#e57373]
-                      "
+                       hover:text-[#e57373]"
+            onClick={() => onEdit(record)}
           >
             <EditOutlined />
           </Button>
-
           <Popconfirm
-            title="Delete?"
-            description="Are you sure you want to delete this institution?"
-            okText="Yes"
-            cancelText="No"
-            onConfirm={() => onDelete && onDelete(record)}
+            title="Are you sure you want to delete this institute?"
+            onConfirm={() => onDelete(record)}
           >
-            <Button
-              className="w-8 h-8 flex items-center justify-center rounded-md 
-                         border border-red-500
-                         text-red-500
-                         hover:bg-red-50"
-            >
-              <DeleteOutlined />
-            </Button>
+            <Button danger icon={<DeleteOutlined />} />
           </Popconfirm>
         </div>
       ),
@@ -154,56 +176,42 @@ export default function InstitutionTable({
   ];
 
   return (
-    <div className="w-full">
-
-      {/* MAIN HEADING */}
-      <h1 className="text-xl font-semibold text-[#9a2119] mb-6">
-        Institution Management
-      </h1>
-
-      {/* CARD */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
-
-        {/* HEADER */}
-        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-          <h2 className="text-lg font-semibold text-[#9a2119]">
-            Institutions
-          </h2>
-
-          <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
-            <Input
-              placeholder="Search institution..."
-              value={search}
-              prefix={<SearchOutlined className="text-[#9a2119]" />}
-              className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
-              onChange={(e) => setSearch(e.target.value)}
-            />
-
-            <Button
-              onClick={handleReset}
-               style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}
-            >
-              <ReloadOutlined />
-              Reset
-            </Button>
-
-            <Button
-              onClick={onAdd}
-               style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}  >
-              + Add
-            </Button>
-          </div>
+    <div className="w-full bg-white p-5 rounded-2xl shadow-md border">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h2 className="text-lg font-semibold text-[#9a2119]">Institution</h2>
+        <div className="flex flex-wrap items-center gap-3">
+          <Input
+            placeholder="Search institution..."
+            prefix={<SearchOutlined className="text-[#9a2119]" />}
+            value={search}
+            onChange={(event) => onSearch(event.target.value)}
+            className="w-full sm:w-64 h-8 rounded-md border-[#9a2119]"
+          />
+          <Button
+            onClick={() => onSearch("")}
+            style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
+          >
+            <ReloadOutlined />
+            Reset
+          </Button>
+          <Button
+            onClick={onAddClick}
+            style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
+          >
+            + Add Institution
+          </Button>
         </div>
-
-        {/* TABLE */}
-        <Table
-          columns={columns}
-          dataSource={filteredData}
-          pagination={{ pageSize: 5 }}
-          rowClassName="hover:bg-gray-50"
-          scroll={{ x: 1400 }}  // 🔥 horizontal scroll
-        />
       </div>
+
+      <Table
+        columns={columns}
+        dataSource={Array.isArray(data) ? [...data].reverse() : []}
+        rowKey={(record) => record.id}
+        loading={loading}
+        pagination={pagination}
+        onChange={(pag) => setPagination(pag)}
+        scroll={{ x: "max-content" }}
+      />
     </div>
   );
 }

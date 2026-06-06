@@ -1,121 +1,369 @@
-import { useState } from "react";
-import { Modal } from "antd";
+import React, { useEffect, useState } from "react";
+import { Modal, message } from "antd";
 import EntranceExamTable from "./EntranceExamTable";
 import EntranceExamForm from "./EntranceExamForm";
-import dayjs from "dayjs";
+import {
+  createEntranceExam,
+  deleteEntranceExam,
+  getEntranceExams,
+  updateEntranceExam,
+} from "../../api/entranceexam";
+import { getModules } from "../../api/module";
+import { getStreams } from "../../api/stream";
+import { getCategories } from "../../api/category";
+import { getSecondaryCategories } from "../../api/secondaryCategory";
+import { getSubCategories } from "../../api/subcategory";
+import { formatDateDisplay, formatDateForPayload } from "../../utils/date";
 
-const initialData = [
-  {
-    key: "1",
-    module: "Career Library",
-    category: "Railways",
-    exam: "RRC Level 1 Exam (Group D posts)",
-    issueDate: "February 2025",
-    lastDate: "March 2025",
-    url: "https://www.rrbcdg.gov.in/",
-  },
-  {
-    key: "2",
-    module: "Career Library",
-    category: "Railways",
-    exam: "RRB Assistant Station Master Exam",
-    issueDate: "July 2025",
-    lastDate: "August 2025",
-    url: "https://www.rrbcdg.gov.in/",
-  },
-  {
-    key: "3",
-    module: "Career Library",
-    category: "Railways",
-    exam: "RRB Ministerial & Isolated Categories Exam",
-    issueDate: "April 2025",
-    lastDate: "May 2025",
-    url: "https://www.rrbcdg.gov.in/",
-  },
-];
+const getApiErrorMessage = (error, fallbackMessage) =>
+  error.response?.data?.message || error.message || fallbackMessage;
 
-export default function EntranceExamPage() {
-  const [data, setData] = useState(initialData);
-  const [open, setOpen] = useState(false);
-  const [viewMode, setViewMode] = useState(false);
-  const [editingData, setEditingData] = useState(null);
+const normalizeList = (response) => {
+  const list = response?.data;
 
-  const handleAdd = () => {
-    setEditingData(null);
-    setViewMode(false);
-    setOpen(true);
-  };
+  if (Array.isArray(list)) {
+    return list;
+  }
 
-  const handleView = (record) => {
-    setEditingData({
-      ...record,
-      issue: record.issueDate ? dayjs(record.issueDate) : null,
-      last: record.lastDate ? dayjs(record.lastDate) : null,
-    });
-    setViewMode(true);
-    setOpen(true);
-  };
+  if (list && typeof list === "object") {
+    return [list];
+  }
 
-  const handleEdit = (record) => {
-    setEditingData({
-      ...record,
-      issue: record.issueDate ? dayjs(record.issueDate) : null,
-      last: record.lastDate ? dayjs(record.lastDate) : null,
-    });
-    setViewMode(false);
-    setOpen(true);
-  };
+  return [];
+};
 
-  const handleSubmit = (values) => {
-    const normalizedValues = {
-      ...values,
-      issueDate: values.issue?.format ? values.issue.format("YYYY-MM-DD") : values.issue,
-      lastDate: values.last?.format ? values.last.format("YYYY-MM-DD") : values.last,
-    };
+const getSortScore = (item = {}, index = 0) => {
+  const candidates = [
+    item.createdAt,
+    item.updatedAt,
+    item.created_at,
+    item.updated_at,
+    item.id,
+  ];
 
-    if (editingData) {
-      setData((prev) =>
-        prev.map((item) =>
-          item.key === editingData.key ? { ...item, ...normalizedValues } : item
-        )
-      );
-    } else {
-      setData((prev) => [
-        ...prev,
-        { key: Date.now().toString(), ...normalizedValues },
-      ]);
+  for (const value of candidates) {
+    if (value === undefined || value === null || value === "") {
+      continue;
     }
 
-    setOpen(false);
-    setEditingData(null);
-    setViewMode(false);
+    const dateScore = Date.parse(value);
+    if (!Number.isNaN(dateScore)) {
+      return dateScore;
+    }
+
+    const numericScore = Number(value);
+    if (Number.isFinite(numericScore)) {
+      return numericScore;
+    }
+  }
+
+  return -index;
+};
+
+const sortNewestFirst = (items = []) =>
+  [...items]
+    .map((item, index) => ({ item, index }))
+    .sort((a, b) => getSortScore(b.item, b.index) - getSortScore(a.item, a.index))
+    .map(({ item }) => item);
+
+const formatDateValue = (value) => {
+  return formatDateForPayload(value);
+};
+
+const normalizeStringArray = (value) => {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => (typeof item === "string" ? item.trim() : String(item || "").trim()))
+      .filter(Boolean);
+  }
+
+  if (typeof value === "string") {
+    return value
+      .split(/[\n,]/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+};
+
+const buildEntranceExamPayload = ({
+  moduleId,
+  streamId,
+  categoryId,
+  secondcategoryId,
+  subcategoryId,
+  examname,
+  issuedate,
+  lastdate,
+  eligibility,
+  about,
+  examDate,
+  examMode,
+  duration,
+  subject,
+  totalMark,
+  frequency,
+  examPattern,
+  topInstitutes,
+  url,
+}) => ({
+  moduleId,
+  streamId,
+  categoryId,
+  secondcategoryId,
+  subcategoryId,
+  examname,
+  issuedate: formatDateValue(issuedate),
+  lastdate: formatDateValue(lastdate),
+  exam_date: formatDateValue(examDate) || null,
+  mode: examMode || "",
+  total_mark: totalMark || "",
+  frequncy: frequency || "",
+  exam_pattern: examPattern || "",
+  top_institution: normalizeStringArray(topInstitutes),
+  subject: normalizeStringArray(subject),
+  eligibility: eligibility || "",
+  about: about || "",
+  duration: duration || "",
+  url: url || "",
+});
+
+const mapOption = (item = {}, labelKeys = []) => ({
+  id: item.id,
+  label: labelKeys.map((key) => item[key]).find(Boolean) || "",
+});
+
+const mapEntranceExam = (item = {}) => ({
+  id: item.id,
+  createdAt: item.createdAt,
+  updatedAt: item.updatedAt,
+  moduleId: item.moduleId || item.module?.id || undefined,
+  streamId: item.streamId || item.stream?.id || undefined,
+  categoryId: item.categoryId || item.category?.id || undefined,
+  secondcategoryId:
+    item.secondcategoryId || item.secondcategory?.id || item.secondCategory?.id || undefined,
+  subcategoryId: item.subcategoryId || item.subcategory?.id || undefined,
+  examname: item.examname || "",
+  issuedate: formatDateDisplay(item.issuedate),
+  lastdate: formatDateDisplay(item.lastdate),
+  eligibility: item.eligibility || "",
+  about: item.about || "",
+  examDate: formatDateDisplay(item.examDate || item.exam_date),
+  examMode: item.examMode || item.exam_mode || item.mode || "",
+  duration: item.duration || "",
+  subject: Array.isArray(item.subject) ? item.subject : normalizeStringArray(item.subject),
+  totalMark: item.totalMark || item.total_mark || "",
+  frequency: item.frequency || item.frequncy || "",
+  examPattern: item.examPattern || item.exam_pattern || "",
+  topInstitutes: Array.isArray(item.topInstitutes || item.top_institutes || item.top_institution)
+    ? item.topInstitutes || item.top_institutes || item.top_institution
+    : normalizeStringArray(item.topInstitutes || item.top_institutes || item.top_institution),
+  url: item.url || "",
+  moduleName: item.module?.title || item.moduleName || "",
+  streamName: item.stream?.name || item.streamName || "",
+  categoryName: item.category?.title || item.category?.name || item.categoryName || "",
+  secondCategoryName:
+    item.secondcategory?.name ||
+    item.secondCategory?.name ||
+    item.secondcategory?.title ||
+    item.secondCategory?.title ||
+    item.secondCategoryName ||
+    "",
+  subcategoryName: item.subcategory?.title || item.subcategoryName || "",
+});
+
+export default function EntranceExamPage() {
+  const [messageApi, contextHolder] = message.useMessage();
+  const [data, setData] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState("add");
+  const [current, setCurrent] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState("");
+  const [modules, setModules] = useState([]);
+  const [streams, setStreams] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [secondCategories, setSecondCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
+
+  const loadEntranceExams = async () => {
+    try {
+      setLoading(true);
+      const response = await getEntranceExams();
+      setData(sortNewestFirst(normalizeList(response).map(mapEntranceExam)));
+    } catch (error) {
+      messageApi.error(getApiErrorMessage(error, "Failed to load entrance exams."));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDelete = (record) => {
-    setData((prev) => prev.filter((item) => item.key !== record.key));
+  const loadDropdowns = async () => {
+    try {
+      const [
+        moduleResponse,
+        streamResponse,
+        categoryResponse,
+        secondCategoryResponse,
+        subcategoryResponse,
+      ] = await Promise.all([
+        getModules(),
+        getStreams(),
+        getCategories(),
+        getSecondaryCategories(),
+        getSubCategories(),
+      ]);
+
+      setModules(normalizeList(moduleResponse).map((item) => mapOption(item, ["title", "name"])));
+      setStreams(normalizeList(streamResponse).map((item) => mapOption(item, ["name", "title"])));
+      setCategories(normalizeList(categoryResponse).map((item) => mapOption(item, ["title", "name"])));
+      setSecondCategories(
+        normalizeList(secondCategoryResponse).map((item) => ({
+          ...mapOption(item, ["name", "title"]),
+          categoryId: item.categoryId || item.category?.id || undefined,
+        }))
+      );
+      setSubcategories(
+        normalizeList(subcategoryResponse).map((item) => ({
+          ...mapOption(item, ["title", "name"]),
+          categoryId: item.categoryId || item.category?.id || undefined,
+          secondcategoryId:
+            item.secondcategoryId ||
+            item.secondCategoryId ||
+            item.secondcategory?.id ||
+            item.secondCategory?.id ||
+            undefined,
+        }))
+      );
+    } catch (error) {
+      messageApi.error(
+        getApiErrorMessage(error, "Failed to load entrance exam form options.")
+      );
+    }
+  };
+
+  useEffect(() => {
+    loadEntranceExams();
+    loadDropdowns();
+  }, []);
+
+  const getLabel = (items, id, fallback = "") => {
+    if (fallback) {
+      return fallback;
+    }
+
+    return items.find((item) => item.id === id)?.label || "";
+  };
+
+  const tableData = data.map((item) => ({
+    ...item,
+    moduleName: getLabel(modules, item.moduleId, item.moduleName),
+    streamName: getLabel(streams, item.streamId, item.streamName),
+    categoryName: getLabel(categories, item.categoryId, item.categoryName),
+    secondCategoryName: getLabel(
+      secondCategories,
+      item.secondcategoryId,
+      item.secondCategoryName
+    ),
+    subcategoryName: getLabel(subcategories, item.subcategoryId, item.subcategoryName),
+  }));
+
+  const filteredData = tableData.filter((item) =>
+    `${item.moduleName} ${item.streamName} ${item.categoryName} ${item.secondCategoryName} ${item.subcategoryName} ${item.examname} ${item.eligibility} ${item.examMode} ${item.subject} ${item.topInstitutes} ${item.url}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
+
+  const handleSubmit = async (values) => {
+    try {
+      const payload = buildEntranceExamPayload(values);
+
+      if (mode === "edit" && current) {
+        await updateEntranceExam(current.id, payload);
+        messageApi.success("Entrance exam updated successfully.");
+      } else {
+        await createEntranceExam(payload);
+        messageApi.success("Entrance exam created successfully.");
+      }
+
+      setOpen(false);
+      setCurrent(null);
+      await loadEntranceExams();
+    } catch (error) {
+      messageApi.error(
+        getApiErrorMessage(
+          error,
+          mode === "edit"
+            ? "Failed to update entrance exam."
+            : "Failed to create entrance exam."
+        )
+      );
+    }
+  };
+
+  const handleDelete = async (record) => {
+    try {
+      await deleteEntranceExam(record.id);
+      messageApi.success("Entrance exam deleted successfully.");
+      await loadEntranceExams();
+    } catch (error) {
+      messageApi.error(getApiErrorMessage(error, "Failed to delete entrance exam."));
+    }
   };
 
   return (
     <>
+      {contextHolder}
       <EntranceExamTable
-        data={data}
-        onAdd={handleAdd}
-        onView={handleView}
-        onEdit={handleEdit}
+        data={filteredData}
+        loading={loading}
+        search={search}
+        onSearch={setSearch}
+        onAdd={() => {
+          setCurrent(null);
+          setMode("add");
+          setOpen(true);
+        }}
+        onView={(record) => {
+          setCurrent(record);
+          setMode("view");
+          setOpen(true);
+        }}
+        onEdit={(record) => {
+          setCurrent(record);
+          setMode("edit");
+          setOpen(true);
+        }}
         onDelete={handleDelete}
       />
 
       <Modal
         open={open}
-        onCancel={() => setOpen(false)}
+        onCancel={() => {
+          setOpen(false);
+          setCurrent(null);
+        }}
         footer={null}
         width={900}
         destroyOnClose
+        title={
+          mode === "add"
+            ? "Add Entrance Exam"
+            : mode === "edit"
+              ? "Edit Entrance Exam"
+              : "View Entrance Exam"
+        }
       >
         <EntranceExamForm
           onSubmit={handleSubmit}
-          initialValues={editingData}
-          viewMode={viewMode}
+          initialValues={current}
+          mode={mode}
+          moduleOptions={modules}
+          streamOptions={streams}
+          categoryOptions={categories}
+          secondCategoryOptions={secondCategories}
+          subcategoryOptions={subcategories}
         />
       </Modal>
     </>

@@ -114,7 +114,7 @@ export default function ApprovedOrder({ setSelectedUser }) {
       {/* TABLE */}
       <Table
         columns={columns}
-        dataSource={filteredData}
+        dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
         pagination={{ pageSize: 5 }}
         rowClassName="hover:bg-gray-50"
         scroll={{ x: "max-content" }}

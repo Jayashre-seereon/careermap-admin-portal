@@ -4,6 +4,7 @@ const regex = {
   charactersOnly: /^[A-Za-z\s]+$/,
   numbersOnly: /^\d+$/,
   decimal: /^\d+(\.\d+)?$/,
+  duration: /^\d+\s*(hr|hrs|hour|hours|min|mins|minute|minutes)$/i,
   url:
     /^(https?:\/\/)?(www\.)?([A-Za-z0-9-]+\.)+[A-Za-z]{2,}(\/[\w\-./?%&=+#]*)?$/,
   noWhitespace: /^\S+$/,
@@ -119,6 +120,10 @@ export const validationMessages = {
     regex.url.test(value)
       ? ""
       : `Please enter a valid ${label.toLowerCase()}. Only links are allowed.`,
+  duration: (label = "Duration") => (value) =>
+    regex.duration.test(value)
+      ? ""
+      : `Please enter a valid ${label.toLowerCase()} like 1 hr or 30 min.`,
 };
 
 export const validationRules = {
@@ -140,6 +145,9 @@ export const validationRules = {
   }),
   decimal: (label = "This field") => ({
     validator: createCustomValidator(validationMessages.decimal(label)),
+  }),
+  duration: (label = "Duration") => ({
+    validator: createCustomValidator(validationMessages.duration(label)),
   }),
   url: (label = "URL") => ({
     validator: createPatternValidator(
