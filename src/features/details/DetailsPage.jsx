@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Form, Modal, message } from "antd";
 import DetailsTable from "./DetailsTable";
 import DetailsForm from "./DetailsForm";
-import { createDetails, deleteDetails, getDetails, updateDetails } from "../../api/details";
+import { createDetails, deleteDetails, getDetails, updateDetails,getDetailsById } from "../../api/details";
 import { getCategoriesByStream } from "../../api/category";
 import { getCareerPaths } from "../../api/careerpath";
 import { getEntranceExams } from "../../api/entranceexam";
@@ -181,48 +181,75 @@ const normalizeJobScope = (value) => {
 
 // ─── Source extractors ────────────────────────────────────────────────────────
 const getCareerPathSources = (record = {}) => {
-  // New format: careerPaths array
-  if (Array.isArray(record.careerPaths) && record.careerPaths.length > 0) return record.careerPaths;
-  // Legacy: nested objects
-  const legacy = record.careerpath || record.careerPath || record.careerpaths?.[0] || record.careerPaths?.[0] || {};
+  if (Array.isArray(record.careerpaths))
+    return record.careerpaths;
+
+  if (Array.isArray(record.careerPaths))
+    return record.careerPaths;
+
+  const legacy =
+    record.careerpath ||
+    record.careerPath ||
+    record.careerpaths?.[0] ||
+    record.careerPaths?.[0] ||
+    {};
+
   if (legacy?.id || record.pathType) {
-    return [{
-      pathType: record.pathType ?? record.pathTypeId ?? legacy.id ?? legacy.pathId ?? undefined,
-      graduation: record.graduation ?? legacy.graduation ?? "",
-      afterGraduation: record.afterGraduation ?? record.aftergraduation ?? legacy.aftergraduation ?? legacy.afterGraduation ?? "",
-      afterPostGraduation: record.afterPostGraduation ?? record.afterpostgraduation ?? legacy.afterpostgraduation ?? legacy.afterPostGraduation ?? "",
-      anyOther: record.anyOther ?? record.anyother ?? legacy.anyother ?? legacy.anyOther ?? "",
-      pathTypeName: record.pathTypeName || legacy.pathName || legacy.title || "",
-    }];
+    return [
+      {
+        pathType:
+          record.pathType ??
+          record.pathTypeId ??
+          legacy.id ??
+          legacy.pathId,
+        graduation: record.graduation ?? legacy.graduation ?? "",
+        afterGraduation:
+          record.afterGraduation ??
+          record.aftergraduation ??
+          legacy.aftergraduation ??
+          "",
+        afterPostGraduation:
+          record.afterPostGraduation ??
+          record.afterpostgraduation ??
+          legacy.afterpostgraduation ??
+          "",
+        anyOther:
+          record.anyOther ??
+          record.anyother ??
+          legacy.anyother ??
+          "",
+        pathTypeName:
+          record.pathTypeName ||
+          legacy.pathName ||
+          legacy.title ||
+          "",
+      },
+    ];
   }
+
   return [];
 };
 
 const getEntranceExamSources = (record = {}) => {
-  if (Array.isArray(record.entranceExams) && record.entranceExams.length > 0) return record.entranceExams;
-  const legacy = record.entranceexam || record.entranceExam || record.entranceexams?.[0] || record.entranceExams?.[0] || {};
+  if (Array.isArray(record.entranceexams))
+    return record.entranceexams;
+
+  if (Array.isArray(record.entranceExams))
+    return record.entranceExams;
+
+  const legacy =
+    record.entranceexam ||
+    record.entranceExam ||
+    record.entranceexams?.[0] ||
+    record.entranceExams?.[0] ||
+    {};
+
   if (legacy?.id || record.exam) {
-    return [{
-      exam: record.exam ?? record.examId ?? legacy.id ?? undefined,
-      examName: record.examName || legacy.examname || legacy.name || "",
-      issue: normalizeDateValue(record.issue ?? legacy.issuedate),
-      last: normalizeDateValue(record.last ?? legacy.lastdate),
-      url: record.url ?? legacy.url ?? "",
-      about: record.about ?? legacy.about ?? "",
-      eligibility: record.eligibility ?? legacy.eligibility ?? "",
-      examDate: normalizeDateValue(record.examDate ?? record.exam_date ?? legacy.exam_date ?? legacy.examDate),
-      examMode: record.examMode ?? record.mode ?? legacy.mode ?? legacy.examMode ?? "",
-      duration: record.duration ?? legacy.duration ?? "",
-      subject: normalizeStringArray(record.subject ?? legacy.subject),
-      totalMark: record.totalMark ?? record.total_mark ?? legacy.total_mark ?? legacy.totalMark ?? "",
-      frequency: record.frequency ?? record.frequncy ?? legacy.frequncy ?? legacy.frequency ?? "",
-      examPattern: record.examPattern ?? record.exam_pattern ?? legacy.exam_pattern ?? legacy.examPattern ?? "",
-      topInstitutes: normalizeStringArray(record.topInstitutes ?? record.top_institution ?? legacy.top_institution ?? legacy.topInstitutes),
-    }];
+    return [legacy];
   }
+
   return [];
 };
-
 const getInstitutionSources = (record = {}) => {
   if (Array.isArray(record.institutions) && record.institutions.length > 0) return record.institutions;
   const legacy = record.institution || record.institute || {};
@@ -508,7 +535,20 @@ export default function DetailsPage() {
     await loadSubCategories(record.secondCategory);
     return record;
   };
+const fetchDetailsRecord = async (id) => {
+  const response = await getDetailsById(id);
 
+  const apiData = response?.data?.data || response?.data;
+
+  console.log("GET BY ID RESPONSE", response);
+  console.log("API DATA", apiData);
+
+  const mapped = mapDetailsRecord(apiData);
+
+  console.log("MAPPED", mapped);
+
+  return mapped;
+};
   function handleOpenAdd() {
     setMode("add");
     setSelectedRecord(null);
@@ -519,32 +559,70 @@ export default function DetailsPage() {
     setOpen(true);
   }
 
-  async function handleOpenView(record) {
-    const nextRecord = await prepareFormForRecord(record);
-    const nextSections = deriveSections(nextRecord);
-    const drafts = buildDrafts(nextRecord);
-    setMode("view");
-    setSelectedRecord(nextRecord);
-    setSelectedSections(nextSections);
-    setDraftsBySection(drafts);
-    form.resetFields();
-    form.setFieldsValue(nextSections.reduce((acc, section) => ({ ...acc, ...drafts[section] }), getCommonValues(nextRecord)));
-    setOpen(true);
-  }
+async function handleOpenEdit(record) {
+  try {
+    const nextRecord = await fetchDetailsRecord(record.id);
 
-  async function handleOpenEdit(record) {
-    const nextRecord = await prepareFormForRecord(record);
+    await prepareFormForRecord(nextRecord);
+
     const nextSections = deriveSections(nextRecord);
     const drafts = buildDrafts(nextRecord);
+
     setMode("edit");
     setSelectedRecord(nextRecord);
     setSelectedSections(nextSections);
     setDraftsBySection(drafts);
-    form.resetFields();
-    form.setFieldsValue(nextSections.reduce((acc, section) => ({ ...acc, ...drafts[section] }), getCommonValues(nextRecord)));
-    setOpen(true);
-  }
 
+    form.resetFields();
+
+    form.setFieldsValue(
+      nextSections.reduce(
+        (acc, section) => ({
+          ...acc,
+          ...drafts[section],
+        }),
+        getCommonValues(nextRecord)
+      )
+    );
+
+    setOpen(true);
+  } catch (error) {
+    console.error(error);
+    messageApi.error("Failed to load details");
+  }
+}
+async function handleOpenView(record) {
+  try {
+    const nextRecord = await fetchDetailsRecord(record.id);
+
+    await prepareFormForRecord(nextRecord);
+
+    const nextSections = deriveSections(nextRecord);
+    const drafts = buildDrafts(nextRecord);
+
+    setMode("view");
+    setSelectedRecord(nextRecord);
+    setSelectedSections(nextSections);
+    setDraftsBySection(drafts);
+
+    form.resetFields();
+
+    form.setFieldsValue(
+      nextSections.reduce(
+        (acc, section) => ({
+          ...acc,
+          ...drafts[section],
+        }),
+        getCommonValues(nextRecord)
+      )
+    );
+
+    setOpen(true);
+  } catch (error) {
+    console.error(error);
+    messageApi.error("Failed to load details");
+  }
+}
   function handleClose() {
     setOpen(false);
     setMode("add");
