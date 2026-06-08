@@ -110,7 +110,7 @@ export default function CategoryForm({
           <Input disabled={disabled} />
         </Form.Item>
 
-        <Form.Item
+        {/* <Form.Item
           name="file"
           label="File"
           valuePropName="fileList"
@@ -140,7 +140,7 @@ export default function CategoryForm({
           >
             <Button icon={<UploadOutlined />}>Choose File</Button>
           </Upload>
-        </Form.Item>
+        </Form.Item> */}
 
         <Form.Item
           name="description"
@@ -178,7 +178,7 @@ export default function CategoryForm({
           />
         </Form.Item>
 
-        <Form.Item
+        {/* <Form.Item
           name="isUpgrade"
           label="Category Access"
           valuePropName="checked"
@@ -191,7 +191,7 @@ export default function CategoryForm({
             checkedChildren="Free"
             unCheckedChildren="Premium"
           />
-        </Form.Item>
+        </Form.Item> */}
       </div>
 
       {!disabled && (

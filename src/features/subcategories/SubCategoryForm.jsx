@@ -134,7 +134,7 @@ export default function SubCategoryForm({
           <Input disabled={isView} placeholder="Enter path ways" />
         </Form.Item>
 
-        <Form.Item
+        {/* <Form.Item
           name="file"
           label="File"
           valuePropName="fileList"
@@ -164,7 +164,7 @@ export default function SubCategoryForm({
           >
             <Button icon={<UploadOutlined />}>Upload</Button>
           </Upload>
-        </Form.Item>
+        </Form.Item> */}
 
         <Form.Item
           name="description"

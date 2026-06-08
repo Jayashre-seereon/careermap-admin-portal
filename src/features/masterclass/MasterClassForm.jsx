@@ -77,10 +77,10 @@ export default function MasterClassForm({ onSubmit, initialValues, mode }) {
 
       <Form.Item
         name="name"
-        label="Name"
-        rules={[validationRules.required("Name")]}
+        label="Mentor Name"
+        rules={[validationRules.required("Mentor Name")]}
       >
-        <Input disabled={isView} placeholder="Enter speaker or class name" />
+        <Input disabled={isView} placeholder="Enter mentor name" />
       </Form.Item>
 
       <Form.Item
@@ -98,17 +98,7 @@ export default function MasterClassForm({ onSubmit, initialValues, mode }) {
         />
       </Form.Item>
 
-      <Form.Item
-        name="views"
-        label="Views"
-        getValueFromEvent={getValueFromInput(inputSanitizers.numbersOnly)}
-        rules={[
-          validationRules.required("Views"),
-          validationRules.numbersOnly("Views"),
-        ]}
-      >
-        <Input disabled={isView} placeholder="Enter total views" />
-      </Form.Item>
+     
 
       <Form.Item
         name="videoUrl"

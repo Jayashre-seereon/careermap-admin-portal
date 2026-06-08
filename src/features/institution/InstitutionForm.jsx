@@ -59,9 +59,21 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
         valuePropName="fileList"
         getValueFromEvent={normalizeFile}
       >
-        <Upload beforeUpload={() => false} maxCount={1} disabled={disabled}>
-          <Button icon={<UploadOutlined />}>Upload</Button>
-        </Upload>
+       <Form.Item
+  name="logo"
+  label="Logo"
+  valuePropName="fileList"
+  getValueFromEvent={normalizeFile}
+>
+  <Upload
+    beforeUpload={() => false}
+    maxCount={1}
+    disabled={disabled}
+    accept=".jpg,.jpeg,.png,.webp,.pdf"
+  >
+    <Button icon={<UploadOutlined />}>Upload</Button>
+  </Upload>
+</Form.Item>
       </Form.Item>
 
       {initialValues?.logo && typeof initialValues.logo === "string" ? (

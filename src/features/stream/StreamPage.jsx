@@ -76,9 +76,15 @@ const getApiErrorMessage = (error, fallbackMessage) => {
     return "This stream already exists.";
   }
 
+  if (
+    typeof backendMessage === "string" &&
+    backendMessage.includes("Category_streamId_fkey")
+  ) {
+    return "Cannot delete this stream. It is linked to existing categories.";
+  }
+
   return backendMessage;
 };
-
 export default function StreamPage() {
   const [messageApi, contextHolder] = message.useMessage();
   const [streams, setStreams] = useState([]);

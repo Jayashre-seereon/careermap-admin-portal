@@ -34,90 +34,46 @@ const SECTION_LABELS = {
 
 const normalizeList = (response) => {
   const payload = response?.data?.data ?? response?.data;
-
-  if (Array.isArray(payload)) {
-    return payload;
-  }
-
-  if (payload && typeof payload === "object") {
-    return [payload];
-  }
-
+  if (Array.isArray(payload)) return payload;
+  if (payload && typeof payload === "object") return [payload];
   return [];
 };
 
 const normalizeStringArray = (value) => {
-  if (Array.isArray(value)) {
-    return value
-      .map((item) => (typeof item === "string" ? item.trim() : String(item || "").trim()))
-      .filter(Boolean);
-  }
-
-  if (typeof value === "string") {
-    return value
-      .split(/[\n,]/)
-      .map((item) => item.trim())
-      .filter(Boolean);
-  }
-
+  if (Array.isArray(value)) return value.map((item) => (typeof item === "string" ? item.trim() : String(item || "").trim())).filter(Boolean);
+  if (typeof value === "string") return value.split(/[\n,]/).map((item) => item.trim()).filter(Boolean);
   return [];
 };
 
-const normalizeDateValue = (value) => {
-  return formatDateDisplay(value);
-};
-
-const toDayjsValue = (value) => {
-  return parseDateValue(value);
-};
-
+const normalizeDateValue = (value) => formatDateDisplay(value);
+const toDayjsValue = (value) => parseDateValue(value);
 const normalizeNullableString = (value) => (value == null ? "" : String(value));
 
 const normalizeSalaryCurrency = (value) => {
   const text = normalizeNullableString(value).trim();
-
-  if (/usd/i.test(text)) {
-    return "USD";
-  }
-
-  if (/inr|rs/i.test(text)) {
-    return "INR";
-  }
-
+  if (/usd/i.test(text)) return "USD";
+  if (/inr|rs/i.test(text)) return "INR";
   return "INR";
 };
 
 const normalizeSalaryAmount = (value) => {
   const text = normalizeNullableString(value).trim();
-
-  if (!text) {
-    return "";
-  }
-
+  if (!text) return "";
   return text.replace(/,/g, "");
 };
 
 const splitSalaryValue = (value, fallbackCurrency = "INR") => {
   const text = normalizeNullableString(value).trim();
-
-  if (!text) {
-    return { currency: normalizeSalaryCurrency(fallbackCurrency), amount: "" };
-  }
-
+  if (!text) return { currency: normalizeSalaryCurrency(fallbackCurrency), amount: "" };
   const currencyMatch = text.match(/^(inr|usd|rs)\s*/i);
   const currency = normalizeSalaryCurrency(currencyMatch?.[1] || fallbackCurrency);
   const amount = normalizeSalaryAmount(text.replace(/^(inr|usd|rs)\s*/i, ""));
-
   return { currency, amount };
 };
 
 const toFloatOrNull = (value) => {
   const normalizedValue = normalizeSalaryAmount(value);
-
-  if (!normalizedValue) {
-    return null;
-  }
-
+  if (!normalizedValue) return null;
   const parsed = Number.parseFloat(normalizedValue);
   return Number.isFinite(parsed) ? parsed : null;
 };
@@ -128,69 +84,24 @@ const mapOption = (item = {}, labelKeys = []) => ({
   record: item,
 });
 
+// ─── Default values per section ───────────────────────────────────────────────
 const buildDefaultValues = (section = "salary-range") => {
-  const common = {
-    stream: undefined,
-    category: undefined,
-    secondCategory: undefined,
-    subcategory: undefined,
-  };
+  const common = { stream: undefined, category: undefined, secondCategory: undefined, subcategory: undefined };
 
-  if (section === "salary-range") {
-    return { ...common, salaryRanges: [{ currency: "INR", min: "", max: "" }] };
-  }
-
-  if (section === "job-scope") {
-    return { ...common, names: [""] };
-  }
-
+  if (section === "salary-range") return { ...common, salaryRanges: [{ currency: "INR", min: "", max: "" }] };
+  if (section === "job-scope") return { ...common, names: [""] };
   if (section === "career-path") {
-    return {
-      ...common,
-      pathType: undefined,
-      graduation: "",
-      afterGraduation: "",
-      afterPostGraduation: "",
-      anyOther: "",
-    };
+    return { ...common, careerPaths: [{ pathType: undefined, graduation: "", afterGraduation: "", afterPostGraduation: "", anyOther: "" }] };
   }
-
   if (section === "entrance-exam") {
     return {
       ...common,
-      exam: undefined,
-      issue: null,
-      last: null,
-      url: "",
-      about: "",
-      eligibility: "",
-      examDate: null,
-      examMode: undefined,
-      duration: "",
-      subject: [],
-      totalMark: "",
-      frequency: "",
-      examPattern: "",
-      topInstitutes: [],
+      entranceExams: [{ exam: undefined, issue: null, last: null, url: "", about: "", eligibility: "", examDate: null, examMode: undefined, duration: "", subject: [], totalMark: "", frequency: "", examPattern: "", topInstitutes: [] }],
     };
   }
-
   return {
     ...common,
-    name: undefined,
-    logo: [],
-    type: "",
-    address: "",
-    admission: "",
-    about: "",
-    coursesOffered: [],
-    date: null,
-    url: "",
-    country: "",
-    state: "",
-    district: "",
-    city: "",
-    isTop: "No",
+    institutions: [{ name: undefined, logo: [], type: "", address: "", admission: "", about: "", coursesOffered: [], date: null, url: "", country: "", state: "", city: "", district: "", isTop: "No" }],
   };
 };
 
@@ -204,148 +115,55 @@ const getCommonValues = (values = {}) => ({
 const getSectionFieldKeys = (section) => {
   if (section === "salary-range") return ["salaryRanges"];
   if (section === "job-scope") return ["names"];
-  if (section === "career-path") {
-    return ["pathType", "graduation", "afterGraduation", "afterPostGraduation", "anyOther"];
-  }
-  if (section === "entrance-exam") {
-    return [
-      "exam",
-      "issue",
-      "last",
-      "url",
-      "about",
-      "eligibility",
-      "examDate",
-      "examMode",
-      "duration",
-      "subject",
-      "totalMark",
-      "frequency",
-      "examPattern",
-      "topInstitutes",
-    ];
-  }
-  return [
-    "name",
-    "logo",
-    "type",
-    "address",
-    "admission",
-    "about",
-    "coursesOffered",
-    "date",
-    "url",
-    "country",
-    "state",
-    "district",
-    "city",
-    "isTop",
-  ];
+  if (section === "career-path") return ["careerPaths"];
+  if (section === "entrance-exam") return ["entranceExams"];
+  return ["institutions"];
 };
 
 const getSectionValues = (section, values = {}) =>
   getSectionFieldKeys(section).reduce((result, key) => {
-    if (values[key] !== undefined) {
-      result[key] = values[key];
-    }
+    const source = values ?? {};
+    if (source[key] !== undefined) result[key] = source[key];
     return result;
   }, {});
 
 const buildDrafts = (record = null) => {
   const commonValues = getCommonValues(record || {});
-  const activeSections = record?.sections || [];
+  const activeSections = deriveSections(record || {});
 
   return SECTION_OPTIONS.reduce((drafts, option) => {
     const baseValues = buildDefaultValues(option.value);
     const sectionValues = activeSections.includes(option.value) ? getSectionValues(option.value, record) : {};
+    drafts[option.value] = { ...baseValues, ...commonValues, ...sectionValues };
 
-    drafts[option.value] = {
-      ...baseValues,
-      ...commonValues,
-      ...sectionValues,
-    };
-
+    // Normalize dates inside arrays
     if (option.value === "entrance-exam") {
-      drafts[option.value].issue = toDayjsValue(drafts[option.value].issue);
-      drafts[option.value].last = toDayjsValue(drafts[option.value].last);
-      drafts[option.value].examDate = toDayjsValue(drafts[option.value].examDate);
+      drafts[option.value].entranceExams = (drafts[option.value].entranceExams || []).map((e) => ({
+        ...e,
+        issue: toDayjsValue(e?.issue),
+        last: toDayjsValue(e?.last),
+        examDate: toDayjsValue(e?.examDate),
+      }));
     }
-
     if (option.value === "institution") {
-      drafts[option.value].date = toDayjsValue(drafts[option.value].date);
+      drafts[option.value].institutions = (drafts[option.value].institutions || []).map((inst) => ({
+        ...inst,
+        date: toDayjsValue(inst?.date),
+      }));
     }
 
     return drafts;
   }, {});
 };
 
-const normalizeSectionValues = (section, values) => {
-  const sectionValues = getSectionValues(section, values);
-
-  if (section === "salary-range") {
-    return {
-      salaryRanges: (sectionValues.salaryRanges || [])
-        .map((item) => ({
-          currency: normalizeSalaryCurrency(item?.currency ?? item?.unit),
-          minSalary: toFloatOrNull(item?.min),
-          maxSalary: toFloatOrNull(item?.max),
-        }))
-        .filter((item) => item.minSalary !== null || item.maxSalary !== null),
-    };
-  }
-
-  if (section === "job-scope") {
-    return {
-      jobScope: (sectionValues.names || []).filter(Boolean),
-    };
-  }
-
-  if (section === "career-path") {
-    return sectionValues;
-  }
-
-  if (section === "entrance-exam") {
-    const {
-      issue,
-      last,
-      examDate,
-      examPattern,
-      subject,
-      topInstitutes,
-      ...restSectionValues
-    } = sectionValues;
-
-    return {
-      ...restSectionValues,
-      issuedate: formatDateForApi(issue),
-      lastdate: formatDateForApi(last),
-      exam_date: formatDateForApi(examDate),
-      subject: normalizeStringArray(subject),
-      top_institution: normalizeStringArray(topInstitutes),
-      exam_pattern: examPattern || "",
-    };
-  }
-
-  const { date, coursesOffered, ...restSectionValues } = sectionValues;
-
-  return {
-    ...restSectionValues,
-    logo: restSectionValues.logo || [],
-    coursesOffered: normalizeStringArray(coursesOffered),
-    tentative_date: formatDateForApi(date),
-    isTop: restSectionValues.isTop || "No",
-  };
-};
-
+// ─── Normalization helpers ────────────────────────────────────────────────────
 const normalizeSalaryRanges = (value) => {
   const list = Array.isArray(value) ? value : [];
-
   return list
     .map((item) => {
       const currencySource = item?.currency ?? item?.unit ?? item?.salaryUnit;
       const minParsed = splitSalaryValue(item?.minSalary ?? item?.min ?? "", currencySource);
       const maxParsed = splitSalaryValue(item?.maxSalary ?? item?.max ?? "", currencySource);
-
       return {
         currency: minParsed.currency || maxParsed.currency || normalizeSalaryCurrency(currencySource),
         min: minParsed.amount,
@@ -356,70 +174,94 @@ const normalizeSalaryRanges = (value) => {
 };
 
 const normalizeJobScope = (value) => {
-  if (Array.isArray(value)) {
-    return value
-      .map((item) => (typeof item === "string" ? item.trim() : String(item || "").trim()))
-      .filter(Boolean);
-  }
-
-  if (typeof value === "string") {
-    return value
-      .split(/[\n,]/)
-      .map((item) => item.trim())
-      .filter(Boolean);
-  }
-
+  if (Array.isArray(value)) return value.map((item) => (typeof item === "string" ? item.trim() : String(item || "").trim())).filter(Boolean);
+  if (typeof value === "string") return value.split(/[\n,]/).map((item) => item.trim()).filter(Boolean);
   return [];
 };
 
-const getCareerPathSource = (record = {}) =>
-  record.careerpath ||
-  record.careerPath ||
-  record.careerpaths?.[0] ||
-  record.careerPaths?.[0] ||
-  {};
+// ─── Source extractors ────────────────────────────────────────────────────────
+const getCareerPathSources = (record = {}) => {
+  // New format: careerPaths array
+  if (Array.isArray(record.careerPaths) && record.careerPaths.length > 0) return record.careerPaths;
+  // Legacy: nested objects
+  const legacy = record.careerpath || record.careerPath || record.careerpaths?.[0] || record.careerPaths?.[0] || {};
+  if (legacy?.id || record.pathType) {
+    return [{
+      pathType: record.pathType ?? record.pathTypeId ?? legacy.id ?? legacy.pathId ?? undefined,
+      graduation: record.graduation ?? legacy.graduation ?? "",
+      afterGraduation: record.afterGraduation ?? record.aftergraduation ?? legacy.aftergraduation ?? legacy.afterGraduation ?? "",
+      afterPostGraduation: record.afterPostGraduation ?? record.afterpostgraduation ?? legacy.afterpostgraduation ?? legacy.afterPostGraduation ?? "",
+      anyOther: record.anyOther ?? record.anyother ?? legacy.anyother ?? legacy.anyOther ?? "",
+      pathTypeName: record.pathTypeName || legacy.pathName || legacy.title || "",
+    }];
+  }
+  return [];
+};
 
-const getEntranceExamSource = (record = {}) =>
-  record.entranceexam ||
-  record.entranceExam ||
-  record.entranceexams?.[0] ||
-  record.entranceExams?.[0] ||
-  {};
+const getEntranceExamSources = (record = {}) => {
+  if (Array.isArray(record.entranceExams) && record.entranceExams.length > 0) return record.entranceExams;
+  const legacy = record.entranceexam || record.entranceExam || record.entranceexams?.[0] || record.entranceExams?.[0] || {};
+  if (legacy?.id || record.exam) {
+    return [{
+      exam: record.exam ?? record.examId ?? legacy.id ?? undefined,
+      examName: record.examName || legacy.examname || legacy.name || "",
+      issue: normalizeDateValue(record.issue ?? legacy.issuedate),
+      last: normalizeDateValue(record.last ?? legacy.lastdate),
+      url: record.url ?? legacy.url ?? "",
+      about: record.about ?? legacy.about ?? "",
+      eligibility: record.eligibility ?? legacy.eligibility ?? "",
+      examDate: normalizeDateValue(record.examDate ?? record.exam_date ?? legacy.exam_date ?? legacy.examDate),
+      examMode: record.examMode ?? record.mode ?? legacy.mode ?? legacy.examMode ?? "",
+      duration: record.duration ?? legacy.duration ?? "",
+      subject: normalizeStringArray(record.subject ?? legacy.subject),
+      totalMark: record.totalMark ?? record.total_mark ?? legacy.total_mark ?? legacy.totalMark ?? "",
+      frequency: record.frequency ?? record.frequncy ?? legacy.frequncy ?? legacy.frequency ?? "",
+      examPattern: record.examPattern ?? record.exam_pattern ?? legacy.exam_pattern ?? legacy.examPattern ?? "",
+      topInstitutes: normalizeStringArray(record.topInstitutes ?? record.top_institution ?? legacy.top_institution ?? legacy.topInstitutes),
+    }];
+  }
+  return [];
+};
 
-const getInstitutionSource = (record = {}) =>
-  record.institution || record.institutions?.[0] || record.institute || {};
+const getInstitutionSources = (record = {}) => {
+  if (Array.isArray(record.institutions) && record.institutions.length > 0) return record.institutions;
+  const legacy = record.institution || record.institute || {};
+  if (legacy?.id || record.name) return [legacy?.id ? legacy : record];
+  return [];
+};
 
 const deriveSections = (record = {}) => {
   const sections = [];
-
-  if (normalizeSalaryRanges(record.salaryRanges).length > 0) {
-    sections.push("salary-range");
-  }
-
-  if (normalizeJobScope(record.jobScope ?? record.names).length > 0) {
-    sections.push("job-scope");
-  }
-
-  if (getCareerPathSource(record)?.id || record.pathType || record.pathTypeName) {
-    sections.push("career-path");
-  }
-
-  if (getEntranceExamSource(record)?.id || record.exam || record.examName) {
-    sections.push("entrance-exam");
-  }
-
-  if (getInstitutionSource(record)?.id || record.name || record.institutionName) {
-    sections.push("institution");
-  }
-
+  if (normalizeSalaryRanges(record.salaryRanges).length > 0) sections.push("salary-range");
+  if (normalizeJobScope(record.jobScope ?? record.names).length > 0) sections.push("job-scope");
+  if (getCareerPathSources(record).length > 0) sections.push("career-path");
+  if (getEntranceExamSources(record).length > 0) sections.push("entrance-exam");
+  if (getInstitutionSources(record).length > 0) sections.push("institution");
   return sections.length > 0 ? sections : ["salary-range"];
 };
 
+const mapInstitution = (inst = {}) => ({
+  name: inst.institutionId ?? inst.id ?? inst.name ?? undefined,
+  institutionName: inst.institutionName || inst.institution?.name || inst.name || "",
+  logo: Array.isArray(inst.logo) ? inst.logo : [],
+  type: inst.type ?? inst.institute_type ?? "",
+  address: inst.address ?? "",
+  admission: inst.admission ?? inst.admission_process ?? "",
+  about: inst.about ?? "",
+  coursesOffered: normalizeStringArray(inst.coursesOffered ?? inst.course_offered ?? inst.courses_offered),
+  date: normalizeDateValue(inst.date ?? inst.tentative_date),
+  url: inst.url ?? "",
+  country: inst.country ?? inst.countruy ?? "",
+  state: inst.state ?? "",
+  district: inst.district ?? "",
+  city: inst.city ?? "",
+  isTop: inst.isTop ?? (inst.is_top ? "Yes" : "No"),
+});
+
 const mapDetailsRecord = (record = {}) => {
-  const careerPath = getCareerPathSource(record);
-  const entranceExam = getEntranceExamSource(record);
-  const institution = getInstitutionSource(record);
-  const hasSubcategory = record.subcategoryId != null;
+  const careerPathSources = getCareerPathSources(record);
+  const examSources = getEntranceExamSources(record);
+  const institutionSources = getInstitutionSources(record);
 
   return {
     id: record.id,
@@ -429,101 +271,70 @@ const mapDetailsRecord = (record = {}) => {
     streamName: record.stream?.name || "",
     category: record.categoryId ?? record.category?.id ?? undefined,
     categoryName: record.category?.title || record.category?.name || "",
-    secondCategory:
-      record.secondcategoryId ??
-      record.secondCategoryId ??
-      record.secondcategory?.id ??
-      record.secondCategory?.id ??
-      undefined,
-    secondCategoryName:
-      record.secondcategory?.name ||
-      record.secondcategory?.title ||
-      record.secondCategory?.name ||
-      record.secondCategory?.title ||
-      "",
-    subcategory: hasSubcategory ? record.subcategoryId ?? record.subcategory?.id ?? undefined : undefined,
-    subcategoryName: hasSubcategory ? record.subcategory?.title || record.subcategory?.name || "" : "",
+    secondCategory: record.secondcategoryId ?? record.secondCategoryId ?? record.secondcategory?.id ?? record.secondCategory?.id ?? undefined,
+    secondCategoryName: record.secondcategory?.name || record.secondcategory?.title || record.secondCategory?.name || record.secondCategory?.title || "",
+    subcategory: record.subcategoryId != null ? record.subcategoryId ?? record.subcategory?.id ?? undefined : undefined,
+    subcategoryName: record.subcategoryId != null ? record.subcategory?.title || record.subcategory?.name || "" : "",
     salaryRanges: normalizeSalaryRanges(record.salaryRanges),
     names: normalizeJobScope(record.jobScope ?? record.names),
-    pathType: record.pathType ?? record.pathTypeId ?? careerPath.id ?? careerPath.pathId ?? undefined,
-    pathTypeName: record.pathTypeName || careerPath.pathName || careerPath.title || "",
-    graduation: record.graduation ?? careerPath.graduation ?? "",
-    afterGraduation:
-      record.afterGraduation ??
-      record.aftergraduation ??
-      careerPath.aftergraduation ??
-      careerPath.afterGraduation ??
-      "",
-    afterPostGraduation:
-      record.afterPostGraduation ??
-      record.afterpostgraduation ??
-      careerPath.afterpostgraduation ??
-      careerPath.afterPostGraduation ??
-      "",
-    anyOther: record.anyOther ?? record.anyother ?? careerPath.anyother ?? careerPath.anyOther ?? "",
-    exam: record.exam ?? record.examId ?? entranceExam.id ?? undefined,
-    examName: record.examName || entranceExam.examname || entranceExam.name || "",
-    issue: normalizeDateValue(record.issue ?? entranceExam.issuedate),
-    last: normalizeDateValue(record.last ?? entranceExam.lastdate),
-    url: record.url ?? entranceExam.url ?? "",
-    about: record.about ?? institution.about ?? entranceExam.about ?? "",
-    eligibility: record.eligibility ?? entranceExam.eligibility ?? "",
-    examDate: normalizeDateValue(
-      record.examDate ?? record.exam_date ?? entranceExam.exam_date ?? entranceExam.examDate
-    ),
-    examMode: record.examMode ?? record.mode ?? entranceExam.mode ?? entranceExam.examMode ?? "",
-    duration: record.duration ?? entranceExam.duration ?? "",
-    subject: normalizeStringArray(record.subject ?? entranceExam.subject),
-    totalMark: record.totalMark ?? record.total_mark ?? entranceExam.total_mark ?? entranceExam.totalMark ?? "",
-    frequency: record.frequency ?? record.frequncy ?? entranceExam.frequncy ?? entranceExam.frequency ?? "",
-    examPattern:
-      record.examPattern ??
-      record.exam_pattern ??
-      entranceExam.exam_pattern ??
-      entranceExam.examPattern ??
-      "",
-    topInstitutes: normalizeStringArray(
-      record.topInstitutes ?? record.top_institution ?? entranceExam.top_institution ?? entranceExam.topInstitutes
-    ),
-    name: record.name ?? record.institutionId ?? institution.id ?? undefined,
-    institutionName: record.institutionName || institution.name || "",
-    logo: Array.isArray(record.logo) ? record.logo : [],
-    type: record.type ?? institution.institute_type ?? "",
-    address: record.address ?? institution.address ?? "",
-    admission: record.admission ?? record.admission_process ?? institution.admission_process ?? "",
-    coursesOffered: normalizeStringArray(
-      record.coursesOffered ?? record.course_offered ?? institution.course_offered ?? institution.courses_offered
-    ),
-    date: normalizeDateValue(record.date ?? record.tentative_date ?? institution.tentative_date),
-    country: record.country ?? record.countruy ?? institution.country ?? institution.countruy ?? "",
-    state: record.state ?? institution.state ?? "",
-    district: record.district ?? institution.district ?? "",
-    city: record.city ?? institution.city ?? "",
-    isTop: record.isTop ?? ((record.is_top ?? institution.is_top) ? "Yes" : "No"),
+    // Career Paths array
+    careerPaths: careerPathSources.length > 0
+      ? careerPathSources.map((cp) => ({
+          pathType: cp.pathType ?? cp.pathTypeId ?? cp.id ?? cp.pathId ?? undefined,
+          pathTypeName: cp.pathTypeName || cp.pathName || cp.title || "",
+          graduation: cp.graduation ?? "",
+          afterGraduation: cp.afterGraduation ?? cp.aftergraduation ?? "",
+          afterPostGraduation: cp.afterPostGraduation ?? cp.afterpostgraduation ?? "",
+          anyOther: cp.anyOther ?? cp.anyother ?? "",
+        }))
+      : [{ pathType: undefined, graduation: "", afterGraduation: "", afterPostGraduation: "", anyOther: "" }],
+    // Entrance Exams array
+    entranceExams: examSources.length > 0
+      ? examSources.map((ex) => ({
+          exam: ex.exam ?? ex.examId ?? ex.id ?? undefined,
+          examName: ex.examName || ex.examname || ex.name || "",
+          issue: ex.issue,
+          last: ex.last,
+          url: ex.url ?? "",
+          about: ex.about ?? "",
+          eligibility: ex.eligibility ?? "",
+          examDate: ex.examDate,
+          examMode: ex.examMode ?? ex.mode ?? "",
+          duration: ex.duration ?? "",
+          subject: Array.isArray(ex.subject) ? ex.subject : normalizeStringArray(ex.subject),
+          totalMark: ex.totalMark ?? ex.total_mark ?? "",
+          frequency: ex.frequency ?? ex.frequncy ?? "",
+          examPattern: ex.examPattern ?? ex.exam_pattern ?? "",
+          topInstitutes: Array.isArray(ex.topInstitutes) ? ex.topInstitutes : normalizeStringArray(ex.topInstitutes ?? ex.top_institution),
+        }))
+      : [{ exam: undefined, issue: null, last: null, url: "", about: "", eligibility: "", examDate: null, examMode: undefined, duration: "", subject: [], totalMark: "", frequency: "", examPattern: "", topInstitutes: [] }],
+    // Institutions array
+    institutions: institutionSources.length > 0
+      ? institutionSources.map(mapInstitution)
+      : [{ name: undefined, logo: [], type: "", address: "", admission: "", about: "", coursesOffered: [], date: null, url: "", country: "", state: "", city: "", district: "", isTop: "No" }],
+    // Legacy single fields for title display
+    pathTypeName: careerPathSources[0]?.pathTypeName || careerPathSources[0]?.pathName || "",
+    examName: examSources[0]?.examName || examSources[0]?.examname || "",
+    institutionName: institutionSources[0]?.institutionName || institutionSources[0]?.name || "",
   };
 };
 
-const buildDetailsState = (records = []) => ({
-  records: records.map(mapDetailsRecord),
-});
+const buildDetailsState = (records = []) => ({ records: records.map(mapDetailsRecord) });
 
 const getRecordTitle = (record) => {
   if (record.sections?.includes("career-path")) {
-    return record.pathTypeName || "-";
+    const names = (record.careerPaths || []).map((cp) => cp.pathTypeName).filter(Boolean);
+    return names.join(", ") || record.pathTypeName || "-";
   }
-
   if (record.sections?.includes("entrance-exam")) {
-    return record.examName || "-";
+    const names = (record.entranceExams || []).map((ex) => ex.examName).filter(Boolean);
+    return names.join(", ") || record.examName || "-";
   }
-
   if (record.sections?.includes("institution")) {
-    return record.institutionName || "-";
+    const names = (record.institutions || []).map((i) => i.institutionName || i.name).filter(Boolean);
+    return names.join(", ") || record.institutionName || "-";
   }
-
-  if (record.sections?.includes("job-scope")) {
-    return record.names?.join(", ") || "-";
-  }
-
+  if (record.sections?.includes("job-scope")) return record.names?.join(", ") || "-";
   if (record.sections?.includes("salary-range")) {
     const firstRange = record.salaryRanges?.[0];
     if (firstRange) {
@@ -531,7 +342,6 @@ const getRecordTitle = (record) => {
       return `${currency} ${firstRange.min || "-"} - ${firstRange.max || "-"}`;
     }
   }
-
   return record.subcategoryName || record.subcategory || `Details #${record.id}`;
 };
 
@@ -559,50 +369,34 @@ export default function DetailsPage() {
 
   const filteredData = useMemo(() => {
     const query = search.trim().toLowerCase();
-
-    if (!query) {
-      return data;
-    }
-
+    if (!query) return data;
     return data.filter((item) => JSON.stringify(item).toLowerCase().includes(query));
   }, [data, search]);
 
   const loadDetails = async () => {
     const response = await getDetails();
     const detailGroups = normalizeList(response);
-    const nextState = buildDetailsState(detailGroups);
-
-    setData(nextState.records);
+    setData(buildDetailsState(detailGroups).records);
   };
 
   const loadCategories = async (streamId) => {
-    if (!streamId) {
-      setCategoryOptions([]);
-      setSecondaryCategoryOptions([]);
-      setSubcategoryOptions([]);
-      return;
-    }
-
+    if (!streamId) { setCategoryOptions([]); setSecondaryCategoryOptions([]); setSubcategoryOptions([]); return; }
     const response = await getCategoriesByStream(streamId);
-    const items = normalizeList(response);
-    setCategoryOptions(items.map((item) => mapOption(item, ["title", "name"])));
+    setCategoryOptions(normalizeList(response).map((item) => mapOption(item, ["title", "name"])));
   };
 
   const loadStreams = async () => {
     const response = await getStreams();
-    const items = normalizeList(response);
-    setStreamOptions(items.map((item) => mapOption(item, ["name", "title"])));
+    setStreamOptions(normalizeList(response).map((item) => mapOption(item, ["name", "title"])));
   };
 
   const loadPathOptions = async () => {
     const response = await getCareerPaths();
-    const items = normalizeList(response);
     setPathOptions(
-      items.map((item) => ({
+      normalizeList(response).map((item) => ({
         ...mapOption(item, ["pathName", "title", "name"]),
         categoryId: item.categoryId || item.category?.id || undefined,
-        secondcategoryId:
-          item.secondcategoryId || item.secondCategoryId || item.secondcategory?.id || item.secondCategory?.id || undefined,
+        secondcategoryId: item.secondcategoryId || item.secondCategoryId || item.secondcategory?.id || item.secondCategory?.id || undefined,
         subcategoryId: item.subcategoryId || item.subcategory?.id || undefined,
       }))
     );
@@ -610,116 +404,61 @@ export default function DetailsPage() {
 
   const loadExamOptions = async () => {
     const response = await getEntranceExams();
-    const items = normalizeList(response);
-    setExamOptions(items.map((item) => mapOption(item, ["examname", "name", "title"])));
+    setExamOptions(normalizeList(response).map((item) => mapOption(item, ["examname", "name", "title"])));
   };
 
   const loadInstitutionOptions = async () => {
     const response = await getInstitutes();
-    const items = normalizeList(response);
-    setInstitutionOptions(items.map((item) => mapOption(item, ["name", "title"])));
+    setInstitutionOptions(normalizeList(response).map((item) => mapOption(item, ["name", "title"])));
   };
 
   const loadSecondaryCategories = async (categoryId) => {
-    if (!categoryId) {
-      setSecondaryCategoryOptions([]);
-      setSubcategoryOptions([]);
-      return;
-    }
-
+    if (!categoryId) { setSecondaryCategoryOptions([]); setSubcategoryOptions([]); return; }
     const response = await getSecondaryCategoriesByCategory(categoryId);
-    const items = normalizeList(response);
-    const nextOptions = items.map((item) => ({
-      ...mapOption(item, ["name", "title"]),
-      categoryId: item.categoryId || item.category?.id || undefined,
-    }));
-
+    const nextOptions = normalizeList(response).map((item) => ({ ...mapOption(item, ["name", "title"]), categoryId: item.categoryId || item.category?.id || undefined }));
     setSecondaryCategoryOptions(nextOptions);
-
     return nextOptions;
   };
 
   const loadSubCategories = async (secondCategoryId) => {
-    if (!secondCategoryId) {
-      setSubcategoryOptions([]);
-      return;
-    }
-
+    if (!secondCategoryId) { setSubcategoryOptions([]); return; }
     const response = await getSubCategoriesBySecondCategory(secondCategoryId);
-    const items = normalizeList(response);
-    const nextOptions = items.map((item) => ({
-      ...mapOption(item, ["title", "name"]),
-      categoryId: item.categoryId || item.category?.id || undefined,
-      secondcategoryId:
-        item.secondcategoryId || item.secondCategoryId || item.secondcategory?.id || item.secondCategory?.id || undefined,
-    }));
-
-    setSubcategoryOptions(nextOptions);
+    setSubcategoryOptions(
+      normalizeList(response).map((item) => ({
+        ...mapOption(item, ["title", "name"]),
+        categoryId: item.categoryId || item.category?.id || undefined,
+        secondcategoryId: item.secondcategoryId || item.secondCategoryId || item.secondcategory?.id || item.secondCategory?.id || undefined,
+      }))
+    );
   };
 
   useEffect(() => {
     let mounted = true;
-
     const bootstrap = async () => {
       try {
         setLoading(true);
-        await Promise.all([
-          loadDetails(),
-          loadStreams(),
-          loadPathOptions(),
-          loadExamOptions(),
-          loadInstitutionOptions(),
-        ]);
+        await Promise.all([loadDetails(), loadStreams(), loadPathOptions(), loadExamOptions(), loadInstitutionOptions()]);
       } catch (error) {
-        if (mounted) {
-          messageApi.error(error.response?.data?.message || error.message || "Failed to load details.");
-        }
+        if (mounted) messageApi.error(error.response?.data?.message || error.message || "Failed to load details.");
       } finally {
-        if (mounted) {
-          setLoading(false);
-        }
+        if (mounted) setLoading(false);
       }
     };
-
     bootstrap();
-
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [messageApi]);
 
   const isViewMode = mode === "view";
 
-  const getLabel = (items, id, fallback = "") => {
-    if (fallback) {
-      return fallback;
-    }
-
-    return items.find((item) => item.value === id)?.label || "";
-  };
-
   const buildSubmissionPayload = (values) => {
     const commonValues = getCommonValues(values);
-    const payload = {
-      streamId: commonValues.stream ?? null,
-      categoryId: commonValues.category ?? null,
-    };
-
-    if (commonValues.secondCategory) {
-      payload.secondcategoryId = commonValues.secondCategory;
-    }
-
-    if (commonValues.subcategory) {
-      payload.subcategoryId = commonValues.subcategory;
-    }
+    const payload = { streamId: commonValues.stream ?? null, categoryId: commonValues.category ?? null };
+    if (commonValues.secondCategory) payload.secondcategoryId = commonValues.secondCategory;
+    if (commonValues.subcategory) payload.subcategoryId = commonValues.subcategory;
 
     if (selectedSections.includes("salary-range")) {
       payload.salaryRanges = (values.salaryRanges || [])
-        .map((item) => ({
-          currency: normalizeSalaryCurrency(item?.currency ?? item?.unit),
-          minSalary: toFloatOrNull(item?.min),
-          maxSalary: toFloatOrNull(item?.max),
-        }))
+        .map((item) => ({ currency: normalizeSalaryCurrency(item?.currency ?? item?.unit), minSalary: toFloatOrNull(item?.min), maxSalary: toFloatOrNull(item?.max) }))
         .filter((item) => item.minSalary !== null || item.maxSalary !== null);
     }
 
@@ -727,41 +466,46 @@ export default function DetailsPage() {
       payload.jobScope = normalizeStringArray(values.names);
     }
 
-    if (selectedSections.includes("career-path") && values.pathType) {
-      payload.careerpathIds = [values.pathType];
+    if (selectedSections.includes("career-path")) {
+      const ids = (values.careerPaths || []).map((cp) => cp?.pathType).filter(Boolean);
+      if (ids.length > 0) {
+        payload.careerpaths = { set: ids.map((id) => ({ id })) };
+        payload.careerpathIds = ids;
+        payload.careerPathIds = ids;
+        payload.careerpathId = ids[0];
+      }
     }
 
-    if (selectedSections.includes("entrance-exam") && values.exam) {
-      payload.entranceexamIds = [values.exam];
+    if (selectedSections.includes("entrance-exam")) {
+      const ids = (values.entranceExams || []).map((ex) => ex?.exam).filter(Boolean);
+      if (ids.length > 0) {
+        payload.entranceexams = { set: ids.map((id) => ({ id })) };
+        payload.entranceexamIds = ids;
+        payload.entranceExamIds = ids;
+        payload.entranceexamId = ids[0];
+      }
     }
 
-    if (selectedSections.includes("institution") && values.name) {
-      payload.institutionIds = [values.name];
+    if (selectedSections.includes("institution")) {
+      const ids = (values.institutions || []).map((inst) => inst?.name).filter(Boolean);
+      if (ids.length > 0) {
+        payload.institutions = { set: ids.map((id) => ({ id })) };
+        payload.institutionIds = ids;
+        payload.institutionId = ids[0];
+      }
     }
 
     return payload;
   };
 
   const handleStreamChange = async (streamId) => {
-    form.setFieldsValue({
-      category: undefined,
-      secondCategory: undefined,
-      subcategory: undefined,
-      pathType: undefined,
-    });
-    setCategoryOptions([]);
-    setSecondaryCategoryOptions([]);
-    setSubcategoryOptions([]);
+    form.setFieldsValue({ category: undefined, secondCategory: undefined, subcategory: undefined });
+    setCategoryOptions([]); setSecondaryCategoryOptions([]); setSubcategoryOptions([]);
     await loadCategories(streamId);
   };
 
-  const handleCategoryChange = async (categoryId) => {
-    await loadSecondaryCategories(categoryId);
-  };
-
-  const handleSecondCategoryChange = async (secondCategoryId) => {
-    await loadSubCategories(secondCategoryId);
-  };
+  const handleCategoryChange = async (categoryId) => { await loadSecondaryCategories(categoryId); };
+  const handleSecondCategoryChange = async (secondCategoryId) => { await loadSubCategories(secondCategoryId); };
 
   const prepareFormForRecord = async (record) => {
     await loadCategories(record.stream);
@@ -782,35 +526,27 @@ export default function DetailsPage() {
 
   async function handleOpenView(record) {
     const nextRecord = await prepareFormForRecord(record);
+    const nextSections = deriveSections(nextRecord);
     const drafts = buildDrafts(nextRecord);
     setMode("view");
     setSelectedRecord(nextRecord);
-    setSelectedSections(nextRecord.sections || ["salary-range"]);
+    setSelectedSections(nextSections);
     setDraftsBySection(drafts);
     form.resetFields();
-    form.setFieldsValue(
-      (nextRecord.sections || ["salary-range"]).reduce(
-        (acc, section) => ({ ...acc, ...drafts[section] }),
-        getCommonValues(nextRecord)
-      )
-    );
+    form.setFieldsValue(nextSections.reduce((acc, section) => ({ ...acc, ...drafts[section] }), getCommonValues(nextRecord)));
     setOpen(true);
   }
 
   async function handleOpenEdit(record) {
     const nextRecord = await prepareFormForRecord(record);
+    const nextSections = deriveSections(nextRecord);
     const drafts = buildDrafts(nextRecord);
     setMode("edit");
     setSelectedRecord(nextRecord);
-    setSelectedSections(nextRecord.sections || ["salary-range"]);
+    setSelectedSections(nextSections);
     setDraftsBySection(drafts);
     form.resetFields();
-    form.setFieldsValue(
-      (nextRecord.sections || ["salary-range"]).reduce(
-        (acc, section) => ({ ...acc, ...drafts[section] }),
-        getCommonValues(nextRecord)
-      )
-    );
+    form.setFieldsValue(nextSections.reduce((acc, section) => ({ ...acc, ...drafts[section] }), getCommonValues(nextRecord)));
     setOpen(true);
   }
 
@@ -825,13 +561,8 @@ export default function DetailsPage() {
 
   function handleDelete(record) {
     deleteDetails(record.id)
-      .then(async () => {
-        messageApi.success("Details item deleted successfully.");
-        await loadDetails();
-      })
-      .catch((error) => {
-        messageApi.error(error.response?.data?.message || error.message || "Failed to delete details item.");
-      });
+      .then(async () => { messageApi.success("Details item deleted successfully."); await loadDetails(); })
+      .catch((error) => { messageApi.error(error.response?.data?.message || error.message || "Failed to delete details item."); });
   }
 
   function handleSectionChange(checkedValues) {
@@ -841,20 +572,13 @@ export default function DetailsPage() {
     const nextDrafts = {
       ...draftsBySection,
       ...nextSections.reduce((acc, section) => {
-        acc[section] = {
-          ...draftsBySection[section],
-          ...commonValues,
-          ...getSectionValues(section, currentValues),
-        };
+        acc[section] = { ...draftsBySection[section], ...commonValues, ...getSectionValues(section, currentValues) };
         return acc;
       }, {}),
     };
-
     setSelectedSections(nextSections);
     setDraftsBySection(nextDrafts);
-    form.setFieldsValue(
-      nextSections.reduce((acc, section) => ({ ...acc, ...nextDrafts[section] }), commonValues)
-    );
+    form.setFieldsValue(nextSections.reduce((acc, section) => ({ ...acc, ...nextDrafts[section] }), commonValues));
   }
 
   async function handleSubmit(values) {
@@ -906,15 +630,9 @@ export default function DetailsPage() {
         open={open}
         onCancel={handleClose}
         footer={null}
-        width={1000}
+        width={1100}
         destroyOnClose
-        title={
-          mode === "view"
-            ? "View Details"
-            : mode === "edit"
-              ? "Edit Details"
-              : "Add Details"
-        }
+        title={mode === "view" ? "View Details" : mode === "edit" ? "Edit Details" : "Add Details"}
       >
         <DetailsForm
           form={form}
@@ -926,15 +644,7 @@ export default function DetailsPage() {
           onCancel={handleClose}
           onSectionChange={handleSectionChange}
           sectionLabels={SECTION_LABELS}
-          options={{
-            streamOptions,
-            categoryOptions,
-            secondaryCategoryOptions,
-            subcategoryOptions,
-            pathOptions,
-            examOptions,
-            institutionOptions,
-          }}
+          options={{ streamOptions, categoryOptions, secondaryCategoryOptions, subcategoryOptions, pathOptions, examOptions, institutionOptions }}
           normalizeUpload={(event) => (Array.isArray(event) ? event : event?.fileList || [])}
           onStreamChange={handleStreamChange}
           onCategoryChange={handleCategoryChange}
