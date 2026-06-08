@@ -467,31 +467,26 @@ export default function DetailsPage() {
     }
 
     if (selectedSections.includes("career-path")) {
-      const ids = (values.careerPaths || []).map((cp) => cp?.pathType).filter(Boolean);
-      if (ids.length > 0) {
-        payload.careerpaths = { set: ids.map((id) => ({ id })) };
-        payload.careerpathIds = ids;
-        payload.careerPathIds = ids;
-        payload.careerpathId = ids[0];
-      }
-    }
+  const ids = (values.careerPaths || [])
+    .map((cp) => cp?.pathType)
+    .filter(Boolean);
+
+  if (ids.length > 0) {
+    payload.careerpathIds = ids;
+  }
+}
 
     if (selectedSections.includes("entrance-exam")) {
       const ids = (values.entranceExams || []).map((ex) => ex?.exam).filter(Boolean);
       if (ids.length > 0) {
-        payload.entranceexams = { set: ids.map((id) => ({ id })) };
-        payload.entranceexamIds = ids;
-        payload.entranceExamIds = ids;
-        payload.entranceexamId = ids[0];
+       payload.entranceexamIds = ids;
       }
     }
 
     if (selectedSections.includes("institution")) {
       const ids = (values.institutions || []).map((inst) => inst?.name).filter(Boolean);
       if (ids.length > 0) {
-        payload.institutions = { set: ids.map((id) => ({ id })) };
-        payload.institutionIds = ids;
-        payload.institutionId = ids[0];
+       payload.institutionIds = ids;
       }
     }
 
