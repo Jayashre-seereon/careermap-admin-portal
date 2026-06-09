@@ -53,7 +53,7 @@ export default function MasterClassTable({
       render: ellipsis,
     },
     {
-      title: "Name",
+      title: "Mentor Name",
       dataIndex: "name",
       width: 180,
       render: ellipsis,

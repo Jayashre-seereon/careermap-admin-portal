@@ -63,7 +63,7 @@ export default function PlansForm({
 
       <Form.Item
         name="validity"
-        label="Validity (in months)"
+        label="Validity (in days)"
         getValueFromEvent={getValueFromInput(inputSanitizers.trim)}
         rules={[
           validationRules.required("Validity"),

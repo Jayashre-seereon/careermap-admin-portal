@@ -76,9 +76,18 @@ export default function ScholarshipForm({ onSubmit, initialValues, mode }) {
         <Input disabled={isView} />
       </Form.Item>
 
-      <Form.Item name="price" label="Price">
-        <Input disabled={isView} />
-      </Form.Item>
+      <Form.Item
+  name="price"
+  label="Price"
+  rules={[
+    {
+      pattern: /^\d+(\.\d{1,2})?$/,
+      message: "Please enter a valid price.",
+    },
+  ]}
+>
+  <Input disabled={isView} />
+</Form.Item>
 
       <Form.Item name="deadline" label="Deadline">
         <DatePicker

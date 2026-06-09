@@ -19,3 +19,8 @@ export const deleteDetails = async (id) => {
   const res = await api.delete(`/api/details/${id}`);
   return res.data;
 };
+
+export const getDetailsById = async (id) => {
+  const res = await api.get(`/api/details/${id}`);
+  return res.data;
+};
