@@ -69,7 +69,7 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
     beforeUpload={() => false}
     maxCount={1}
     disabled={disabled}
-    accept=".jpg,.jpeg,.png,.webp,.pdf"
+    accept=".jpg,.jpeg,.png,.webp,.svg"
   >
     <Button icon={<UploadOutlined />}>Upload</Button>
   </Upload>
