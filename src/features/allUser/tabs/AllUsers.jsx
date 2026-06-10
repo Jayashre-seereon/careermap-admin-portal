@@ -1,57 +1,25 @@
 import React from "react";
+import { useEffect, useState } from "react";
 import { Table, Input ,Button} from "antd";
 import {
   EyeOutlined,
   SearchOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
-import { useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { getSerialNumber } from "../../../utils/slNo";
-const data = [
-  {
-    key: "1",
-    id: "USR001",
-    user: "Rahul Sharma",
-    email: "rahul@gmail.com",
-    joined: "2024-01-12",
-    balance: "$120",
-    mobile: "+91 9876543210",
-    address: "12 MG Road",
-    city: "Bhubaneswar",
-    state: "Odisha",
-    zip: "751001",
-    country: "India",
-    emailVerified: true,
-    mobileVerified: true,
-    twoFA: false,
-  },
-  {
-    key: "2",
-    id: "USR002",
-    user: "Priya Das",
-    email: "priya@gmail.com",
-    joined: "2024-02-05",
-    balance: "$80",
-    mobile: "+91 8765432109",
-    address: "45 Saheed Nagar",
-    city: "Bhubaneswar",
-    state: "Odisha",
-    zip: "751007",
-    country: "India",
-    emailVerified: true,
-    mobileVerified: false,
-    twoFA: true,
-  },
-];
+import { Tag } from "antd";
+
 
 export default function AllUsers() {
+  const [data, setData] = useState([]);
+  const { users, setSelectedUser } = useOutletContext();
   const [search, setSearch] = useState("");
-  const { setSelectedUser } = useOutletContext();
-const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
-  const filteredData = data.filter((item) =>
-    item.user.toLowerCase().includes(search.toLowerCase())
-  );
+ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
+  const filteredData = users.filter((item) =>
+  item.user.toLowerCase().includes(search.toLowerCase())
+);
+
 
   const handleReset = () => setSearch("");
 
@@ -70,17 +38,23 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
       dataIndex: "email",
     },
     {
-      title: <span className="text-[#9a2119] font-semibold">Joined At</span>,
-      dataIndex: "joined",
-    },
-    {
       title: <span className="text-[#9a2119] font-semibold">Mobile</span>,
       dataIndex: "mobile",
     },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Status</span>,
-      dataIndex: "status",
-    },
+   
+{
+  title: <span className="text-[#9a2119] font-semibold">Status</span>,
+  dataIndex: "status",
+  render: (status) => {
+    const isActive = status?.toLowerCase() === "active";
+
+    return (
+      <Tag color={isActive ? "green" : "red"} className="font-medium">
+        {status?.charAt(0).toUpperCase() + status?.slice(1)}
+      </Tag>
+    );
+  },
+},
     {
       title: <span className="text-[#9a2119] font-semibold">Action</span>,
       render: (_, record) => (
