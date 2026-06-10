@@ -66,13 +66,13 @@ export default function Active() {
       
     },
     {
-      title: <span className="text-[#9a2119] font-semibold">Joined At</span>,
-      dataIndex: "joined",
+      title: <span className="text-[#9a2119] font-semibold">Mobile</span>,
+      dataIndex: "mobile",
      
     },
     {
-      title: <span className="text-[#9a2119] font-semibold">Balance</span>,
-      dataIndex: "balance",
+      title: <span className="text-[#9a2119] font-semibold">Status</span>,
+      dataIndex: "status",
       
     },
     {

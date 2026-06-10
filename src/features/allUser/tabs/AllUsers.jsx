@@ -74,8 +74,12 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
       dataIndex: "joined",
     },
     {
-      title: <span className="text-[#9a2119] font-semibold">Balance</span>,
-      dataIndex: "balance",
+      title: <span className="text-[#9a2119] font-semibold">Mobile</span>,
+      dataIndex: "mobile",
+    },
+    {
+      title: <span className="text-[#9a2119] font-semibold">Status</span>,
+      dataIndex: "status",
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Action</span>,
