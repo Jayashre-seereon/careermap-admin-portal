@@ -89,6 +89,13 @@ export default function NotificationsTable({
   ];
 
   return (
+
+     <div className="w-full">
+
+      {/* MAIN HEADING */}
+      <h1 className="text-xl font-semibold text-[#9a2119] mb-6">
+        Notifications Management
+      </h1>
     <div className="w-full bg-white p-5 rounded-2xl shadow-md border">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h2 className="text-lg font-semibold text-[#9a2119]">Notifications</h2>
@@ -128,6 +135,7 @@ export default function NotificationsTable({
         onChange={(pag) => setPagination(pag)}
         scroll={{ x: "max-content" }}
       />
+    </div>
     </div>
   );
 }

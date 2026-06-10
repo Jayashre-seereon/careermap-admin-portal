@@ -8,7 +8,7 @@ import Active from "../features/allUser/tabs/Active";
 import Banned from "../features/allUser/tabs/Banned";
 import EmailUnverified from "../features/allUser/tabs/EmailUnverified";
 import MobileUnverified from "../features/allUser/tabs/MobileUnverified";
-import Subscribers from "../features/allUser/tabs/Subscribers";
+import Subscribers from "../features/Subscribers/Subscribers";
 import WithBalance from "../features/allUser/tabs/WithBalance";
 import NotificationToUser from "../features/allUser/tabs/NotificationToUser";
 import UserDetails from "../features/allUser/tabs/UserDetails";
@@ -79,6 +79,7 @@ import Question from "../features/psychometric/Question";
 import Section from "../features/psychometric/Section";
 import Student from "../features/psychometric/Student";
 import PersonalityTest from "../features/personalityTest/PersonalityTest";
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -116,7 +117,6 @@ export const router = createBrowserRouter([
               { path: "banned", element: <Banned /> },
               { path: "email-unverified", element: <EmailUnverified /> },
               { path: "mobile-unverified", element: <MobileUnverified /> },
-              { path: "subscribers", element: <Subscribers /> },
               { path: "with-balance", element: <WithBalance /> },
               { path: "notification", element: <NotificationToUser /> },
             ],
@@ -157,6 +157,7 @@ export const router = createBrowserRouter([
           { path: "studyabroad", element: <StudyAbroadPage /> },
           { path: "careerplan", element: <CareerPlanPage /> },
           { path: "bookings", element: <BookingTable /> },
+           { path: "subscribers", element: <Subscribers /> },
           { path: "plans", element: <PlansPage /> },
           { path: "subscriptions", element: <SubscriptionsPage /> },
           { path: "services", element: <ServicesPage /> },

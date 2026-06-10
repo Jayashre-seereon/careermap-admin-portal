@@ -59,11 +59,11 @@ export default function AllUsers() {
     { label: "All Users", key: "1" },
     { label: "Active", key: "2" },
     { label: "Banned", key: "3" },
-    { label: "Email Unverified", key: "4" },
-    { label: "Mobile Unverified", key: "5" },
-    { label: "Subscribers", key: "6" },
-    { label: "With Balance", key: "7" },
-    { label: "Notification to User", key: "9" },
+    // { label: "Email Unverified", key: "4" },
+    // { label: "Mobile Unverified", key: "5" },
+    // { label: "Subscribers", key: "6" },
+    // { label: "With Balance", key: "7" },
+    // { label: "Notification to User", key: "9" },
   ];
 
   return (
