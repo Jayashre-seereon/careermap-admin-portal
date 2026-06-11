@@ -68,7 +68,7 @@ export const navSections = [
     items: [
       { icon: Users, name: "All Users", path: "/all_users" },
       { icon: BellIcon, name: "Notifications", path: "/notifications" },
-      { icon: Bell, name: "Subscribers", path: "/all_users/subscribers" },
+      { icon: Bell, name: "Subscribers", path: "/subscribers" },
       { icon: CalendarCheck, name: "Bookings", path: "/bookings" },
       { icon: IndianRupeeIcon, name: "Transactions", path: "/transactions" },
       { icon: LogInIcon, name: "Login Activities", path: "/loginactivities" },

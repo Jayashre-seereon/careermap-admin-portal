@@ -43,16 +43,7 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
         return preview ? `${preview.slice(0, 80)}${preview.length > 80 ? "..." : ""}` : "";
       },
     },
-    {
-      title: "Is Upgrade",
-      dataIndex: "isUpgrade",
-      render: (val) => (
-        <Tag color={val === "Free" ? "green" : "red"}>
-          {val}
-        </Tag>
-      ),
-      width: 130,
-    },
+   
     {
       title: "Action",
       fixed: "right",
