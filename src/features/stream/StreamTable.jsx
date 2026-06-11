@@ -7,20 +7,23 @@ import {
   ReloadOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-
-function StreamTable({ data, onAddClick, onView, onEdit, onDelete, search, onSearch }) {
+import { useState } from "react";
+import { getSerialNumber } from "../../utils/slNo";
+function StreamTable({ data, onAddClick, onView, onEdit, onDelete, search, onSearch, loading }) {
   const handleReset = () => onSearch("");
+  
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   const columns = [
     {
-      title: "ID",
-      render: (_, __, index) => index + 1,
+      title: "No.",
       width: 80,
+      render: (_, __, index) => getSerialNumber(index, pagination),
     },
     {
       title: "Image",
       dataIndex: "image",
       render: (img) => (
-        <Avatar src={img} size={45} shape="square" />
+        <Avatar src={img || undefined} size={45} shape="square" />
       ),
       width: 90,
     },
@@ -34,7 +37,7 @@ function StreamTable({ data, onAddClick, onView, onEdit, onDelete, search, onSea
       title: "Action",
       align: "right",
       width: 150,
-      render: (_, record, index) => (
+      render: (_, record) => (
         <Space>
           <Button className="w-8 h-8 flex items-center justify-center rounded-md 
                        border border-[#9a2119] 
@@ -47,8 +50,8 @@ function StreamTable({ data, onAddClick, onView, onEdit, onDelete, search, onSea
                        text-[#9a2119]
                        hover:border-[#e57373]
                        hover:text-[#e57373]
-                      " icon={<EditOutlined />} onClick={() => onEdit(record, index)} />
-          <Popconfirm title="Are you sure you want to delete this stream?" onConfirm={() => onDelete(index)}>
+                      " icon={<EditOutlined />} onClick={() => onEdit(record)} />
+          <Popconfirm title="Are you sure you want to delete this stream?" onConfirm={() => onDelete(record.id)}>
             <Button danger icon={<DeleteOutlined />} />
           </Popconfirm>
         </Space>
@@ -87,9 +90,11 @@ function StreamTable({ data, onAddClick, onView, onEdit, onDelete, search, onSea
 
       <Table
         columns={columns}
-        dataSource={data}
-        rowKey={(r, i) => i}
-        pagination={{ pageSize: 5 }}
+        dataSource={Array.isArray(data) ? [...data].reverse() : []}
+        rowKey={(record) => record.id}
+        loading={loading}
+       pagination={pagination}
+       onChange={(pag) => setPagination(pag)}
         scroll={{ x: "max-content" }}
       />
     </div>

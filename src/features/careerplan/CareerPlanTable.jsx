@@ -147,7 +147,7 @@ export default function CareerPlanTable({
 
         <Table
           columns={columns}
-          dataSource={filteredData}
+          dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
           pagination={{ pageSize: 5 }}
           scroll={{ x: 1100 }}
         />

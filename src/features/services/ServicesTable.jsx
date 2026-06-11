@@ -124,7 +124,7 @@ export default function ServicesTable({
 
         <Table
           columns={columns}
-          dataSource={filteredData}
+          dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
           pagination={{ pageSize: 5 }}
           scroll={{ x: true }}
         />
@@ -132,3 +132,4 @@ export default function ServicesTable({
     </div>
   );
 }
+

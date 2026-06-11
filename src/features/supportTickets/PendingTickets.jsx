@@ -1,8 +1,17 @@
 import SupportTicketsTable from "./SupportTicketsTable";
-import { ticketsData } from "./ticketsData";
+import useHelpAndSupportTickets from "./useHelpAndSupportTickets";
+import { filterTicketsByStatus } from "./supportTicketsUtils";
 
 export default function PendingTickets() {
-  const pendingTickets = ticketsData.filter((ticket) => ticket.status === "Pending");
+  const { tickets, loading, updateTicketStatus } = useHelpAndSupportTickets();
+  const pendingTickets = filterTicketsByStatus(tickets, "pending");
 
-  return <SupportTicketsTable title="Pending Tickets" data={pendingTickets} />;
+  return (
+    <SupportTicketsTable
+      title="Pending Tickets"
+      data={pendingTickets}
+      loading={loading}
+      onUpdateStatus={updateTicketStatus}
+    />
+  );
 }

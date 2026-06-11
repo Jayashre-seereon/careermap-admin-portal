@@ -153,7 +153,7 @@ export default function JobPage() {
 
         <Table
           columns={columns}
-          dataSource={filteredJobs}
+          dataSource={Array.isArray(filteredJobs) ? [...filteredJobs].reverse() : []}
           pagination={{ pageSize: 5 }}
           rowClassName="hover:bg-gray-50"
           scroll={{ x: true }}
@@ -215,3 +215,4 @@ export default function JobPage() {
     </div>
   );
 }
+

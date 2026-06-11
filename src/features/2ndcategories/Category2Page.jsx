@@ -1,123 +1,330 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { Modal, message } from "antd";
 import Category2Table from "./Category2Table";
 import Category2Form from "./Category2Form";
-import { Modal } from "antd";
+import {
+  createSecondaryCategory,
+  deleteSecondaryCategory,
+  getSecondaryCategories,
+  updateSecondaryCategory,
+} from "../../api/secondaryCategory";
+import { getCategories } from "../../api/category";
+import { getInstitutes } from "../../api/institute";
 
-const initialData = [
-  {
-    id: 1,
-    category: "Medical",
-    name: "GENERAL COURSES/DEGREES",
-    institutions: "AIIMS DELHI, AIIMS BHOPAL",
-    howToBecome: "How to become a medical professional",
-    description: "",
-    image: "https://randomuser.me/api/portraits/men/32.jpg",
-  },
-  {
-    id: 2,
-    category: "Medical",
-    name: "ALLIED & PARA MEDICAL COURSES/DEGREES",
-    institutions: "SCB Medical College, CMC, Vellore",
-    howToBecome: "How to become an allied medical professional",
-    description: "",
-    image: "https://randomuser.me/api/portraits/women/44.jpg",
-  },
-  {
-    id: 3,
-    category: "Architecture & Planning",
-    name: "Architecture",
-    institutions: "Amrita Vishwam Vidyapeetham",
-    howToBecome: "How to become an architect",
-    description: "Architecture is a multidisciplinary field combining art, design, technology, and sustainability to create functional, safe, and visually appealing buildings and spaces. A bachelor’s degree typically spans 5 years, covering design studios, architectural history, building technology, CAD, model-making, and real-world projects. Admission in India is competitive, usually via NATA or JEE Paper 2. Graduates can work in architectural firms, urban planning, interior and landscape design, construction management, sustainable design, and heritage conservation. The profession requires creativity, spatial awareness, problem-solving, and technical expertise, making architects vital contributors to modern infrastructure, cultural identity, and sustainable urban development.",
-    image: "https://randomuser.me/api/portraits/men/32.jpg",
-  },
-];
+const getApiErrorMessage = (error, fallbackMessage) =>
+  error.response?.data?.message || error.message || fallbackMessage;
+
+const normalizeList = (response) => {
+  const list = response?.data;
+
+  if (Array.isArray(list)) {
+    return list;
+  }
+
+  if (list && typeof list === "object") {
+    return [list];
+  }
+
+  return [];
+};
+
+const extractFile = (value) => {
+  if (Array.isArray(value) && value[0]?.originFileObj) {
+    return value[0].originFileObj;
+  }
+
+  if (value?.fileList?.[0]?.originFileObj) {
+    return value.fileList[0].originFileObj;
+  }
+
+  if (value?.originFileObj) {
+    return value.originFileObj;
+  }
+
+  return null;
+};
+
+const htmlListFromArray = (items = []) => {
+  if (!Array.isArray(items) || items.length === 0) {
+    return "";
+  }
+
+  return `<ul>${items.map((item) => `<li>${item}</li>`).join("")}</ul>`;
+};
+
+const normalizeEditorValue = (value) => {
+  if (Array.isArray(value)) {
+    return htmlListFromArray(value);
+  }
+
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? htmlListFromArray(parsed) : value;
+    } catch {
+      return value;
+    }
+  }
+
+  return "";
+};
+
+const buildSecondaryCategoryPayload = ({
+  category,
+  institution,
+  name,
+  path,
+  image,
+  coverImage,
+  description,
+  specialisation,
+  importantFacts,
+}) => {
+  const payload = {
+    categoryId: category,
+    institutionId: institution || null,
+    name,
+    path: path || "",
+    description: description || "",
+    specialization: specialisation || "",
+    importandt_facts: importantFacts || "",
+  };
+
+  const imageFile = extractFile(image);
+  const coverImageFile = extractFile(coverImage);
+
+  if (!imageFile && !coverImageFile) {
+    return { payload, config: {} };
+  }
+
+  const formData = new FormData();
+
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      formData.append(key, value);
+    }
+  });
+
+  if (imageFile) {
+    formData.append("image", imageFile);
+  }
+
+  if (coverImageFile) {
+    formData.append("coverImage", coverImageFile);
+  }
+
+  return {
+    payload: formData,
+    config: { headers: { "Content-Type": "multipart/form-data" } },
+  };
+};
+
+const mapSecondaryCategory = (item = {}) => ({
+  id: item.id,
+  category: item.categoryId || item.category?.id || item.category || undefined,
+  categoryName: item.category?.name || item.categoryName || "",
+  institution:
+    item.institutionId || item.institution?.id || item.institution || undefined,
+  institutionName: item.institution?.name || item.institutionName || "",
+  name: item.name || "",
+  path: item.path || "",
+  image: item.image || null,
+  coverImage: item.coverImage || null,
+  description: item.description || "",
+  specialisation: normalizeEditorValue(
+    item.specialization || item.specialisation || ""
+  ),
+  importantFacts: normalizeEditorValue(
+    item.important_facts || item.importandt_facts || item.importantFacts
+  ),
+  createdAt: item.createdAt,
+  updatedAt: item.updatedAt,
+});
+
+const mapCategory = (item = {}) => ({
+  id: item.id,
+  title: item.title || item.name || "",
+});
+
+const mapInstitute = (item = {}) => ({
+  id: item.id,
+  name: item.name || "",
+});
 
 export default function Category2Page() {
-  const [data, setData] = useState(initialData);
+  const [messageApi, contextHolder] = message.useMessage();
+  const [data, setData] = useState([]);
   const [search, setSearch] = useState("");
-
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("add");
   const [selected, setSelected] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [institutes, setInstitutes] = useState([]);
 
-  // 🔍 FILTER LOGIC
-  const filteredData = data.filter((item) =>
-    `${item.category} ${item.name} ${item.description}`
+  const loadSecondaryCategories = async () => {
+    try {
+      setLoading(true);
+      const response = await getSecondaryCategories();
+      setData(normalizeList(response).map(mapSecondaryCategory));
+    } catch (error) {
+      messageApi.error(
+        getApiErrorMessage(error, "Failed to load secondary categories.")
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadDropdowns = async () => {
+    try {
+      const [categoryResponse, instituteResponse] = await Promise.all([
+        getCategories(),
+        getInstitutes(),
+      ]);
+
+      setCategories(normalizeList(categoryResponse).map(mapCategory));
+      setInstitutes(normalizeList(instituteResponse).map(mapInstitute));
+    } catch (error) {
+      messageApi.error(
+        getApiErrorMessage(
+          error,
+          "Failed to load category and institute options."
+        )
+      );
+    }
+  };
+
+  useEffect(() => {
+    loadSecondaryCategories();
+    loadDropdowns();
+  }, []);
+
+  const getCategoryName = (categoryId, fallbackName = "") => {
+    if (fallbackName) {
+      return fallbackName;
+    }
+
+    const matchedCategory = categories.find((item) => item.id === categoryId);
+    return matchedCategory?.title || matchedCategory?.name || "";
+  };
+
+  const getInstituteName = (institutionId, fallbackName = "") => {
+    if (fallbackName) {
+      return fallbackName;
+    }
+
+    const matchedInstitute = institutes.find((item) => item.id === institutionId);
+    return matchedInstitute?.name || "";
+  };
+
+  const tableData = data.map((item) => ({
+    ...item,
+    categoryName: getCategoryName(item.category, item.categoryName),
+    institutionName: getInstituteName(item.institution, item.institutionName),
+  }));
+
+  const filteredData = tableData.filter((item) =>
+    `${item.categoryName} ${item.name} ${item.institutionName} ${item.path} ${item.description}`
       .toLowerCase()
       .includes(search.toLowerCase())
   );
 
-  const handleAdd = () => {
-    setMode("add");
-    setSelected(null);
-    setOpen(true);
-  };
+  const handleSubmit = async (values) => {
+    try {
+      const { payload, config } = buildSecondaryCategoryPayload(values);
 
-  const handleEdit = (record) => {
-    setMode("edit");
-    setSelected(record);
-    setOpen(true);
-  };
+      if (mode === "edit" && selected) {
+        await updateSecondaryCategory(selected.id, payload, config);
+        messageApi.success("Secondary category updated successfully.");
+      } else {
+        await createSecondaryCategory(payload, config);
+        messageApi.success("Secondary category created successfully.");
+      }
 
-  const handleView = (record) => {
-    setMode("view");
-    setSelected(record);
-    setOpen(true);
-  };
-
-  const handleDelete = (id) => {
-    setData((prev) => prev.filter((item) => item.id !== id));
-  };
-
-  const handleSubmit = (values) => {
-    if (mode === "edit") {
-      setData((prev) =>
-        prev.map((item) => (item.id === selected.id ? { ...item, ...values } : item))
+      setOpen(false);
+      setSelected(null);
+      await loadSecondaryCategories();
+    } catch (error) {
+      messageApi.error(
+        getApiErrorMessage(
+          error,
+          mode === "edit"
+            ? "Failed to update secondary category."
+            : "Failed to create secondary category."
+        )
       );
-    } else {
-      setData((prev) => [...prev, { ...values, id: Date.now() }]);
     }
-    setOpen(false);
+  };
+
+  const handleDelete = async (record) => {
+    try {
+      await deleteSecondaryCategory(record.id);
+      messageApi.success("Secondary category deleted successfully.");
+      await loadSecondaryCategories();
+    } catch (error) {
+      messageApi.error(
+        getApiErrorMessage(error, "Failed to delete secondary category.")
+      );
+    }
   };
 
   return (
-   <div className="w-full"> {/* ✅ FIXED ALIGNMENT */}
+    <div className="w-full">
+      {contextHolder}
 
-      {/* Page Title */}
       <h2 className="text-xl font-semibold text-[#9a2119] mb-5">
         Secondary Category Management
       </h2>
 
-      {/* Table Section */}
       <div className="w-full">
-      <Category2Table
-        data={filteredData}
-        onAdd={handleAdd}
-        onEdit={handleEdit}
-        onView={handleView}
-        onDelete={handleDelete}
-        search={search}
-        setSearch={setSearch}
-      />
-</div>
+        <Category2Table
+          data={filteredData}
+          loading={loading}
+          onAdd={() => {
+            setMode("add");
+            setSelected(null);
+            setOpen(true);
+          }}
+          onEdit={(record) => {
+            setMode("edit");
+            setSelected(record);
+            setOpen(true);
+          }}
+          onView={(record) => {
+            setMode("view");
+            setSelected(record);
+            setOpen(true);
+          }}
+          onDelete={handleDelete}
+          search={search}
+          setSearch={setSearch}
+        />
+      </div>
+
       <Modal
         open={open}
-        onCancel={() => setOpen(false)}
+        onCancel={() => {
+          setOpen(false);
+          setSelected(null);
+        }}
         footer={null}
         width={1000}
+        destroyOnClose
         title={
           mode === "add"
-            ? "Add Category"
+            ? "Add Secondary Category"
             : mode === "edit"
-            ? "Edit Category"
-            : "View Category"
+              ? "Edit Secondary Category"
+              : "View Secondary Category"
         }
       >
         <Category2Form
           onSubmit={handleSubmit}
           initialValues={selected}
           mode={mode}
+          categoryOptions={categories}
+          institutionOptions={institutes}
         />
       </Modal>
     </div>

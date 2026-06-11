@@ -246,7 +246,7 @@ export default function LanguageKeywordsPage() {
           <Table
             rowKey="key"
             columns={columns}
-            dataSource={filteredKeywords}
+            dataSource={Array.isArray(filteredKeywords) ? [...filteredKeywords].reverse() : []}
             pagination={{ pageSize: 8 }}
             scroll={{ x: 720 }}
            
@@ -291,3 +291,4 @@ export default function LanguageKeywordsPage() {
     </>
   );
 }
+

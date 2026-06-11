@@ -5,203 +5,209 @@ import RichTextEditor from "../../components/ui/RichTextEditor";
 import { validationRules } from "../../utils/formValidation";
 
 const { Option } = Select;
-const institutionOptions = [
-  "AIIMS DELHI",
-  "AIIMS BHOPAL",
-  "AIIMS BHUBANESWAR",
-  "SCB Medical College",
-  "CMC, Vellore",
-  "KMC, Manipal",
-  "Amrita Vishwam Vidyapeetham",
-  "JIPMER, Puducherry",
-  "Saveetha Institute of Medical and Technical Sciences",
-  "Manipal College of Dental Sciences",
-].map((item) => ({ label: item, value: item }));
 
-const normalizeInstitutions = (value) => {
-  if (Array.isArray(value)) {
-    return value;
+const normalizeFile = (event) => {
+  if (Array.isArray(event)) {
+    return event;
   }
 
-  if (typeof value === "string") {
-    return value
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-  }
-
-  return [];
+  return event?.fileList || [];
 };
 
-function SubCategoryForm({ onSubmit, initialValues, viewMode }) {
+const toUploadFileList = (value, fallbackName) => {
+  if (!value || typeof value !== "string") {
+    return [];
+  }
+
+  return [
+    {
+      uid: value,
+      name: fallbackName,
+      status: "done",
+      url: value,
+    },
+  ];
+};
+
+export default function SubCategoryForm({
+  onSubmit,
+  initialValues,
+  mode,
+  categoryOptions = [],
+  secondCategoryOptions = [],
+  institutionOptions = [],
+  onCategoryChange,
+}) {
   const [form] = Form.useForm();
+  const isView = mode === "view";
+  const selectedCategoryId = Form.useWatch("categoryId", form);
 
   useEffect(() => {
     if (initialValues) {
       form.setFieldsValue({
         ...initialValues,
-        institutions: normalizeInstitutions(initialValues.institutions),
+        categoryId: initialValues.categoryId,
+        secondcategoryId: initialValues.secondcategoryId,
+        institutionId: initialValues.institutionId,
+        file: toUploadFileList(initialValues.file, "subcategory-file"),
+        coverImage: toUploadFileList(initialValues.coverImage, "subcategory-cover-image"),
       });
+    } else {
+      form.resetFields();
     }
-    else form.resetFields();
   }, [form, initialValues]);
-
-  const handleFinish = (values) => {
-    onSubmit({
-      ...values,
-      institutions: Array.isArray(values.institutions)
-        ? values.institutions.join(", ")
-        : values.institutions,
-    });
-    form.resetFields();
-  };
 
   return (
     <Form
-      layout="vertical"
       form={form}
-      onFinish={handleFinish}
+      layout="vertical"
+      onFinish={onSubmit}
       validateTrigger={["onChange", "onBlur"]}
-      className="grid grid-cols-1 md:grid-cols-2 gap-5"
     >
-      <h3 className="md:col-span-2 mb-1 text-lg font-semibold text-[#9a2119]">
-        Subcategory Details
-      </h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <h3 className="md:col-span-2 lg:col-span-3 mb-1 text-lg font-semibold text-[#9a2119]">
+          Subcategory Details
+        </h3>
 
-      {/* LEFT COLUMN */}
-
-      {/* Category */}
-      <Form.Item
-        name="category"
-        label="Select Category"
-        rules={[{ required: true }]}
-      >
-        <Select disabled={viewMode} size="large">
-          <Option value="Medical">Medical</Option>
-        </Select>
-      </Form.Item>
-
-      {/* 2nd Category */}
-      <Form.Item name="secondCategory" label="Select 2nd Category">
-        <Select disabled={viewMode} size="large">
-          <Option value="GENERAL COURSES/DEGREES">
-            GENERAL COURSES/DEGREES
-          </Option>
-        </Select>
-      </Form.Item>
-
-      {/* Title */}
-      <Form.Item
-        name="title"
-        label="Title"
-              >
-        <Input size="large" disabled={viewMode} placeholder="Title" />
-      </Form.Item>
-
-      {/* Path Ways */}
-      <Form.Item
-        name="howToBecome"
-        label="Path Ways"
-       
-      >
-        <Input
-          size="large"
-          disabled={viewMode}
-          placeholder="Path Ways"
-        />
-      </Form.Item>
-
-      {/* File */}
-      <Form.Item name="file" label="File">
-        <Upload beforeUpload={() => false} disabled={viewMode}>
-          <Button icon={<UploadOutlined />}>Choose File</Button>
-        </Upload>
-      </Form.Item>
-
-      {/* Cover Image */}
-      <Form.Item name="coverImage" label="Cover Image">
-        <Upload beforeUpload={() => false} disabled={viewMode}>
-          <Button icon={<UploadOutlined />}>Choose File</Button>
-        </Upload>
-      </Form.Item>
-
-      {/* Description */}
-      <Form.Item
-        name="description"
-        label="Description"
-        className="md:col-span-2"
-      >
-        <Input.TextArea
-          rows={4}
-          disabled={viewMode}
-          placeholder="Description"
-        />
-      </Form.Item>
-
-      {/* Specialisation */}
-      <Form.Item
-        name="specialisation"
-        label="Specialisation"
-        className="md:col-span-2"
-      >
-        <RichTextEditor
-          disabled={viewMode}
-          placeholder="Specialisation"
-          height={180}
-        />
-      </Form.Item>
-
-      {/* Important Facts */}
-      <Form.Item
-        name="importantFacts"
-        label="Important Facts"
-        className="md:col-span-2"
-      >
-        <RichTextEditor
-          disabled={viewMode}
-          placeholder="Important Facts"
-          height={180}
-        />
-      </Form.Item>
-
-      {/* Institutions */}
-      <Form.Item
-        name="institutions"
-        label="Select Institutions"
-        rules={[validationRules.required("Institutions")]}
-        className="md:col-span-2"
-      >
-        <Select
-          mode="multiple"
-          showSearch
-          allowClear
-          size="large"
-          disabled={viewMode}
-          placeholder="Search and select institutions"
-          optionFilterProp="label"
-          options={institutionOptions}
-        />
-      </Form.Item>
-
-      {/* Submit */}
-      {!viewMode && (
-        <div className="md:col-span-2 flex justify-end">
-          <Button
-            htmlType="submit"
-            block
-            size="large"
-            style={{
-              background: "#9a2119",
-              borderColor: "#9a2119",
+        <Form.Item
+          name="categoryId"
+          label="Category"
+          rules={[validationRules.required("Category")]}
+        >
+          <Select
+            disabled={isView}
+            placeholder="Select category"
+            onChange={(value) => {
+              form.setFieldsValue({ secondcategoryId: undefined });
+              onCategoryChange?.(value);
             }}
-            className="text-white px-8"
           >
-            Create
-          </Button>
-        </div>
+            {categoryOptions.map((item) => (
+              <Option key={item.id} value={item.id}>
+                {item.title || item.name}
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          name="secondcategoryId"
+          label="2nd Category"
+          rules={[validationRules.required("2nd category")]}
+        >
+          <Select disabled={isView || !selectedCategoryId} placeholder="Select 2nd category">
+            {secondCategoryOptions.map((item) => (
+              <Option key={item.id} value={item.id}>
+                {item.name || item.title}
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          name="institutionId"
+          label="Institution"
+          rules={[validationRules.required("Institution")]}
+        >
+          <Select
+            showSearch
+            allowClear
+            disabled={isView}
+            placeholder="Search and select institution"
+            optionFilterProp="label"
+            options={institutionOptions.map((item) => ({
+              label: item.name,
+              value: item.id,
+            }))}
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="title"
+          label="Title"
+          rules={[validationRules.required("Title")]}
+        >
+          <Input disabled={isView} placeholder="Enter title" />
+        </Form.Item>
+
+        <Form.Item name="path" label="Path Ways">
+          <Input disabled={isView} placeholder="Enter path ways" />
+        </Form.Item>
+
+        {/* <Form.Item
+          name="file"
+          label="File"
+          valuePropName="fileList"
+          getValueFromEvent={normalizeFile}
+        >
+          <Upload
+            beforeUpload={() => false}
+            disabled={isView}
+            maxCount={1}
+            listType="text"
+          >
+            <Button icon={<UploadOutlined />}>Upload</Button>
+          </Upload>
+        </Form.Item>
+
+        <Form.Item
+          name="coverImage"
+          label="Cover Image"
+          valuePropName="fileList"
+          getValueFromEvent={normalizeFile}
+        >
+          <Upload
+            beforeUpload={() => false}
+            disabled={isView}
+            maxCount={1}
+            listType="picture"
+          >
+            <Button icon={<UploadOutlined />}>Upload</Button>
+          </Upload>
+        </Form.Item> */}
+
+        <Form.Item
+          name="description"
+          label="Description"
+          className="md:col-span-2 lg:col-span-3"
+        >
+          <Input.TextArea rows={4} disabled={isView} />
+        </Form.Item>
+
+        <Form.Item
+          name="specialization"
+          label="Specialization"
+          className="md:col-span-2 lg:col-span-3"
+        >
+          <RichTextEditor
+            disabled={isView}
+            placeholder="Enter specialization"
+            height={160}
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="importandt_facts"
+          label="Important Facts"
+          className="md:col-span-2 lg:col-span-3"
+        >
+          <RichTextEditor
+            disabled={isView}
+            placeholder="Enter important facts"
+            height={160}
+          />
+        </Form.Item>
+      </div>
+
+      {!isView && (
+        <Button
+          htmlType="submit"
+          block
+          style={{ background: "#9a2119", borderColor: "#9a2119", color: "#fff" }}
+        >
+          {mode === "edit" ? "Update" : "Create"}
+        </Button>
       )}
     </Form>
   );
 }
-
-export default SubCategoryForm;

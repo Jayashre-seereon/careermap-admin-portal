@@ -1,101 +1,151 @@
-import React, { useMemo, useState } from "react";
-import { Modal } from "antd";
+import React, { useEffect, useState } from "react";
+import { Modal, message } from "antd";
 import PathTypeTable from "./PathTypeTable";
 import PathTypeForm from "./PathTypeForm";
+import { createPath, deletePath, getPaths, updatePath } from "../../api/path";
 
-const initialData = [
-  { key: "1", title: "Path 1" },
-  { key: "2", title: "Path 2" },
-  { key: "3", title: "Path 3" },
-  { key: "4", title: "Path 4" },
-  { key: "5", title: "Path 5" },
-  { key: "6", title: "Path 6" },
-  { key: "7", title: "Path 7" },
-];
+const getApiErrorMessage = (error, fallbackMessage) =>
+  error.response?.data?.message || error.message || fallbackMessage;
 
-function PathTypePage() {
-  const [data, setData] = useState(initialData);
+const normalizeList = (response) => {
+  const list = response?.data;
+
+  if (Array.isArray(list)) {
+    return list;
+  }
+
+  if (list && typeof list === "object") {
+    return [list];
+  }
+
+  return [];
+};
+
+const mapPath = (item = {}) => ({
+  id: item.id,
+  pathtype: item.pathtype || "",
+  createdAt: item.createdAt,
+  updatedAt: item.updatedAt,
+});
+
+export default function PathTypePage() {
+  const [messageApi, contextHolder] = message.useMessage();
+  const [data, setData] = useState([]);
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState(null);
-  const [viewMode, setViewMode] = useState(false);
+  const [mode, setMode] = useState("add");
+  const [loading, setLoading] = useState(false);
 
-  const filteredData = useMemo(
-    () =>
-      data.filter((item) =>
-        item.title.toLowerCase().includes(search.toLowerCase())
-      ),
-    [data, search]
-  );
-
-  // Submit
-  const handleSubmit = (values) => {
-    if (current) {
-      setData((prev) =>
-        prev.map((item) =>
-          item.key === current.key ? { ...item, ...values } : item
-        )
-      );
-    } else {
-      setData((prev) => [...prev, { key: `${Date.now()}`, ...values }]);
+  const loadPaths = async () => {
+    try {
+      setLoading(true);
+      const response = await getPaths();
+      setData(normalizeList(response).map(mapPath));
+    } catch (error) {
+      messageApi.error(getApiErrorMessage(error, "Failed to load path types."));
+    } finally {
+      setLoading(false);
     }
-
-    setOpen(false);
-    setCurrent(null);
   };
 
-  // Delete
-  const handleDelete = (record) => {
-    setData((prev) => prev.filter((item) => item.key !== record.key));
+  useEffect(() => {
+    loadPaths();
+  }, []);
+
+  const filteredData = data.filter((item) =>
+    item.pathtype.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleSubmit = async (values) => {
+    try {
+      if (mode === "edit" && current) {
+        await updatePath(current.id, values);
+        messageApi.success("Path type updated successfully.");
+      } else {
+        await createPath(values);
+        messageApi.success("Path type created successfully.");
+      }
+
+      setOpen(false);
+      setCurrent(null);
+      await loadPaths();
+    } catch (error) {
+      messageApi.error(
+        getApiErrorMessage(
+          error,
+          mode === "edit"
+            ? "Failed to update path type."
+            : "Failed to create path type."
+        )
+      );
+    }
+  };
+
+  const handleDelete = async (record) => {
+    try {
+      await deletePath(record.id);
+      messageApi.success("Path type deleted successfully.");
+      await loadPaths();
+    } catch (error) {
+      messageApi.error(getApiErrorMessage(error, "Failed to delete path type."));
+    }
   };
 
   return (
     <div className="w-full">
-      
-      {/* Title */}
+      {contextHolder}
+
       <h1 className="text-xl font-semibold text-[#9a2119] mb-4">
         Path Type Management
       </h1>
 
-      {/* Table */}
       <PathTypeTable
         data={filteredData}
+        loading={loading}
         onAdd={() => {
           setOpen(true);
           setCurrent(null);
-          setViewMode(false);
+          setMode("add");
         }}
-        onView={(rec) => {
-          setCurrent(rec);
+        onView={(record) => {
+          setCurrent(record);
           setOpen(true);
-          setViewMode(true);
+          setMode("view");
         }}
-        onEdit={(rec) => {
-          setCurrent(rec);
+        onEdit={(record) => {
+          setCurrent(record);
           setOpen(true);
-          setViewMode(false);
+          setMode("edit");
         }}
         onDelete={handleDelete}
-        data={filteredData}
         search={search}
         onSearch={setSearch}
       />
 
-      {/* Modal */}
       <Modal
         open={open}
         footer={null}
-        onCancel={() => setOpen(false)}
+        onCancel={() => {
+          setOpen(false);
+          setCurrent(null);
+        }}
         width={500}
+        destroyOnClose
+        title={
+          mode === "add"
+            ? "Add Path Type"
+            : mode === "edit"
+              ? "Edit Path Type"
+              : "View Path Type"
+        }
       >
         <PathTypeForm
           onSubmit={handleSubmit}
           initialValues={current}
-          viewMode={viewMode}
+          mode={mode}
         />
       </Modal>
     </div>
   );
 }
-
-export default PathTypePage;

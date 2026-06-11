@@ -1,7 +1,7 @@
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getCurrentUser } from "../../features/auth/authStorage";
+import { useSessionStore } from "../../store/sessionStore";
 import logoFull from "../../assets/logo_white.png";
 import logoCompact from "../../assets/logo_white_small.png";
 import { navSections } from "./navSections";
@@ -15,18 +15,9 @@ export default function Sidebar({
   onMobileClose,
 }) {
   const navigate = useNavigate();
-  const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
+  const currentUser = useSessionStore((state) => state.user);
   // Track which accordion items are open by their name
   const [openAccordions, setOpenAccordions] = useState({ "Email & Notification": true });
-
-  useEffect(() => {
-    const handleAuthChange = () => {
-      setCurrentUser(getCurrentUser());
-    };
-
-    window.addEventListener("careermap-auth-changed", handleAuthChange);
-    return () => window.removeEventListener("careermap-auth-changed", handleAuthChange);
-  }, []);
 
   const toggleAccordion = (name) => {
     setOpenAccordions((prev) => ({ ...prev, [name]: !prev[name] }));

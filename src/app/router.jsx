@@ -8,7 +8,7 @@ import Active from "../features/allUser/tabs/Active";
 import Banned from "../features/allUser/tabs/Banned";
 import EmailUnverified from "../features/allUser/tabs/EmailUnverified";
 import MobileUnverified from "../features/allUser/tabs/MobileUnverified";
-import Subscribers from "../features/allUser/tabs/Subscribers";
+import Subscribers from "../features/Subscribers/Subscribers";
 import WithBalance from "../features/allUser/tabs/WithBalance";
 import NotificationToUser from "../features/allUser/tabs/NotificationToUser";
 import UserDetails from "../features/allUser/tabs/UserDetails";
@@ -32,6 +32,8 @@ import CareerPathPage from "../features/careerpath/CareerPathPage";
 import EntranceExamPage from "../features/entranceexam/EntranceExamPage";
 import InstitutionPage from "../features/institution/InstitutionPage";
 import ScholarshipPage from "../features/scholarship/ScholarshipPage";
+import MasterClassPage from "../features/masterclass/MasterClassPage";
+import StudyAbroadPage from "../features/studyabroad/StudyAbroadPage";
 import CareerPlanPage from "../features/careerplan/CareerPlanPage";
 import AllOrder from "../features/allOrders/AllOrder";
 import ApprovedOrder from "../features/allOrders/ApprovedOrder";
@@ -77,6 +79,7 @@ import Question from "../features/psychometric/Question";
 import Section from "../features/psychometric/Section";
 import Student from "../features/psychometric/Student";
 import PersonalityTest from "../features/personalityTest/PersonalityTest";
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -114,7 +117,6 @@ export const router = createBrowserRouter([
               { path: "banned", element: <Banned /> },
               { path: "email-unverified", element: <EmailUnverified /> },
               { path: "mobile-unverified", element: <MobileUnverified /> },
-              { path: "subscribers", element: <Subscribers /> },
               { path: "with-balance", element: <WithBalance /> },
               { path: "notification", element: <NotificationToUser /> },
             ],
@@ -151,8 +153,11 @@ export const router = createBrowserRouter([
           { path: "entranceexam", element: <EntranceExamPage /> },
           { path: "institution", element: <InstitutionPage /> },
           { path: "scholarship", element: <ScholarshipPage /> },
+          { path: "masterclass", element: <MasterClassPage /> },
+          { path: "studyabroad", element: <StudyAbroadPage /> },
           { path: "careerplan", element: <CareerPlanPage /> },
           { path: "bookings", element: <BookingTable /> },
+           { path: "subscribers", element: <Subscribers /> },
           { path: "plans", element: <PlansPage /> },
           { path: "subscriptions", element: <SubscriptionsPage /> },
           { path: "services", element: <ServicesPage /> },

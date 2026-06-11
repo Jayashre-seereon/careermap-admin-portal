@@ -25,7 +25,7 @@ export default function CountriesTable({
 
   const columns = [
     {
-      title: <span className="text-[#9a2119] font-semibold">ID</span>,
+      title: <span className="text-[#9a2119] font-semibold">No.</span>,
       render: (_, __, index) => index + 1,
       width: 80,
     },
@@ -109,7 +109,7 @@ export default function CountriesTable({
 
         <Table
           columns={columns}
-          dataSource={filteredData}
+        dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
           pagination={{ pageSize: 5 }}
           rowClassName="hover:bg-gray-50"
           scroll={{ x: "max-content" }}

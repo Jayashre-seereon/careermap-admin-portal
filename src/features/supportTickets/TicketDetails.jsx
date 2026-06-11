@@ -7,14 +7,15 @@ import {
   SendOutlined,
 } from "@ant-design/icons";
 import { Input, Popconfirm, Upload, message } from "antd";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ticketsData } from "./ticketsData";
+import useHelpAndSupportTickets from "./useHelpAndSupportTickets";
+import { formatStatusLabel, normalizeStatus } from "./supportTicketsUtils";
 
 const { TextArea } = Input;
 
 const initialRepliesByTicket = {
-  TKT001: [
+  1: [
     {
       id: "R001",
       author: "Support Admin",
@@ -24,7 +25,7 @@ const initialRepliesByTicket = {
       attachments: ["payment-proof.pdf"],
     },
   ],
-  TKT002: [
+  2: [
     {
       id: "R002",
       author: "Support Admin",
@@ -37,11 +38,13 @@ const initialRepliesByTicket = {
 };
 
 function formatStatusTone(status) {
-  if (status === "Pending") {
+  const normalized = normalizeStatus(status);
+
+  if (normalized === "pending") {
     return "bg-yellow-100 text-yellow-800 border-yellow-200";
   }
 
-  if (status === "Answered") {
+  if (normalized === "answered") {
     return "bg-[#fdf2f1] text-[#9a2119] border-[#f3c7c3]";
   }
 
@@ -64,16 +67,39 @@ export default function TicketDetails() {
   const navigate = useNavigate();
   const { ticketId } = useParams();
   const [messageApi, contextHolder] = message.useMessage();
+  const { tickets, loading, updateTicketStatus } = useHelpAndSupportTickets(messageApi);
 
   const ticket = useMemo(
-    () => ticketsData.find((item) => item.id === ticketId),
-    [ticketId]
+    () => tickets.find((item) => String(item.id) === String(ticketId)),
+    [ticketId, tickets]
   );
 
-  const [status, setStatus] = useState(ticket?.status || "Pending");
+  const [status, setStatus] = useState("pending");
   const [replyText, setReplyText] = useState("");
   const [attachments, setAttachments] = useState([]);
   const [replies, setReplies] = useState(initialRepliesByTicket[ticketId] || []);
+
+  useEffect(() => {
+    setStatus(ticket?.status || "pending");
+    setReplies(initialRepliesByTicket[ticketId] || []);
+  }, [ticket, ticketId]);
+
+  const handleStatusChange = async (nextStatus) => {
+    if (!ticket) {
+      return;
+    }
+
+    await updateTicketStatus(ticket.id, nextStatus);
+    setStatus(normalizeStatus(nextStatus));
+  };
+
+  if (loading) {
+    return (
+      <div className="rounded-2xl border border-gray-200 bg-white p-6 text-slate-600">
+        Loading support ticket...
+      </div>
+    );
+  }
 
   if (!ticket) {
     return (
@@ -92,7 +118,7 @@ export default function TicketDetails() {
   const showSuccess = (content) => messageApi.success(content);
   const showError = (content) => messageApi.error(content);
 
-  const handleReply = () => {
+  const handleReply = async () => {
     if (!replyText.trim()) {
       showError("Please enter a reply before sending.");
       return;
@@ -115,7 +141,12 @@ export default function TicketDetails() {
     setReplies((prev) => [newReply, ...prev]);
     setReplyText("");
     setAttachments([]);
-    setStatus("Answered");
+    try {
+      await handleStatusChange("answered");
+      setStatus("answered");
+    } catch (error) {
+      showError(error.response?.data?.message || error.message || "Failed to update ticket status.");
+    }
     showSuccess("Reply sent successfully.");
   };
 
@@ -125,9 +156,13 @@ export default function TicketDetails() {
     showSuccess("Reply form cleared successfully.");
   };
 
-  const handleCloseTicket = () => {
-    setStatus("Closed");
-    showSuccess("Ticket closed successfully.");
+  const handleCloseTicket = async () => {
+    try {
+      await handleStatusChange("closed");
+      showSuccess("Ticket closed successfully.");
+    } catch (error) {
+      showError(error.response?.data?.message || error.message || "Failed to close ticket.");
+    }
   };
 
   const handleDeleteReply = (replyId) => {
@@ -188,10 +223,10 @@ export default function TicketDetails() {
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${formatStatusTone(status)}`}>
-                {status}
+                {formatStatusLabel(status)}
               </span>
               <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
-                {ticket.priority}
+                Support Ticket
               </span>
               <span className="text-sm font-semibold text-slate-700">{ticket.email}</span>
             </div>
@@ -201,7 +236,7 @@ export default function TicketDetails() {
             <p className="mt-3 text-sm leading-7 text-slate-600">{ticket.message}</p>
           </div>
 
-          {status !== "Closed" ? (
+          {normalizeStatus(status) !== "closed" ? (
             <Popconfirm
               title="Close this ticket?"
               description="The ticket status will change to closed."
