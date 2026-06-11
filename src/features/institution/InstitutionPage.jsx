@@ -68,7 +68,7 @@ const buildInstitutePayload = ({
   tentative_date,
   institute_type,
   url,
-  country,
+  countruy,
   state,
   city,
   district,
@@ -85,7 +85,7 @@ const buildInstitutePayload = ({
   formData.append("tentative_date", formattedDate);
   formData.append("institute_type", institute_type || "");
   formData.append("url", url || "");
-  formData.append("countruy", country || "");
+  formData.append("countruy", countruy ?? "India");
   formData.append("state", state || "");
   formData.append("city", city || "");
   formData.append("district", district || "");
@@ -114,7 +114,7 @@ const mapInstitute = (item = {}) => ({
   tentative_date: formatDateDisplay(item.tentative_date),
   institute_type: item.institute_type || "",
   url: item.url || "",
-  country: item.country || item.countruy || "",
+  countruy: item.countruy ?? item.countruy ?? "India",
   state: item.state || "",
   city: item.city || "",
   district: item.district || "",
@@ -222,7 +222,7 @@ export default function InstitutionPage() {
   };
 
   const filteredInstitutes = institutes.filter((item) =>
-    `${item.name} ${item.address} ${item.city} ${item.state} ${item.country} ${item.about} ${item.courses_offered}`
+    `${item.name} ${item.address} ${item.city} ${item.state} ${item.countruy} ${item.about} ${item.courses_offered}`
       .toLowerCase()
       .includes(search.toLowerCase())
   );

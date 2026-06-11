@@ -311,10 +311,10 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
 
         <Form.Item
           name="designation"
-          label="Designation"
-          rules={[validationRules.required("Designation")]}
+          label="Current Designation"
+          rules={[validationRules.required("Current Designation")]}
         >
-          <Input disabled={disabled} placeholder="Enter designation" />
+          <Input disabled={disabled} placeholder="Enter current designation" />
         </Form.Item>
 
         <Form.Item
@@ -325,8 +325,8 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
           <Input disabled={disabled} placeholder="Enter education field" />
         </Form.Item>
 
-        <Form.Item name="placeof_word" label="Place of Work">
-          <Input disabled={disabled} placeholder="Enter place of work" />
+        <Form.Item name="placeof_word" label="Current Organisation ">
+          <Input disabled={disabled} placeholder="Enter current organisation" />
         </Form.Item>
 
         <Form.Item
@@ -349,13 +349,15 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
 
         <Form.Item
           name="skill"
-          label="My Skills"
+          label="Areas of Expertise 
+"
           className="md:col-span-2"
         >
           <Input.TextArea
             rows={4}
             disabled={disabled}
-            placeholder="Enter skills separated by commas"
+            placeholder="Enter Areas of Expertise 
+ separated by commas"
           />
         </Form.Item>
 
@@ -377,10 +379,11 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
 
         <Form.Item
           name="rank"
-          label="Rank"
-          rules={[validationRules.decimal("Rank")]}
+          label="AIR / STATE RANK
+"
+          rules={[validationRules.decimal("AIR/State Rank")]}
         >
-          <Input disabled={disabled} placeholder="Enter rank" />
+          <Input disabled={disabled} placeholder="Enter AIR/State Rank" />
         </Form.Item>
 
         <Form.Item

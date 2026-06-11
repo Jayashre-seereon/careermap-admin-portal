@@ -33,43 +33,15 @@ export default function MasterClassTable({
       width: 60,
       fixed: "left",
     },
+   
     {
-      title: "Image",
-      dataIndex: "image",
-      width: 90,
-      render: (image) => (
-        <Avatar
-          src={image}
-          size={44}
-          shape="square"
-          className="border border-[#9a2119]"
-        />
-      ),
-    },
-    {
-      title: "Title",
+      title: "Video Topic",
       dataIndex: "title",
       width: 200,
       render: ellipsis,
     },
-    {
-      title: "Mentor Name",
-      dataIndex: "name",
-      width: 180,
-      render: ellipsis,
-    },
-    {
-      title: "Time",
-      dataIndex: "timeLabel",
-      width: 120,
-      render: (value) => value || "-",
-    },
-    {
-      title: "Views",
-      dataIndex: "views",
-      width: 100,
-      render: (value) => value || "0",
-    },
+    
+   
     {
       title: "Video URL",
       dataIndex: "videoUrl",
