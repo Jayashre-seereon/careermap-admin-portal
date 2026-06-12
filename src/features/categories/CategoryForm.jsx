@@ -126,7 +126,8 @@ export default function CategoryForm({
           </Upload>
         </Form.Item>
 
-        <Form.Item
+      */}
+         <Form.Item
           name="coverImage"
           label="Cover Image"
           valuePropName="fileList"
@@ -140,7 +141,7 @@ export default function CategoryForm({
           >
             <Button icon={<UploadOutlined />}>Choose File</Button>
           </Upload>
-        </Form.Item> */}
+        </Form.Item>
 
         <Form.Item
           name="description"

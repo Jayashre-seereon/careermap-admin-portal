@@ -142,6 +142,7 @@ const buildCategoryPayload = ({
 const mapCategory = (item = {}) => ({
   id: item.id,
   stream: item.streamId || item.stream?.id || item.stream || undefined,
+  streamObj: item.stream || null,
   institutions:
     item.institutionId || item.institution?.id || item.institution
       ? [item.institutionId || item.institution?.id || item.institution]

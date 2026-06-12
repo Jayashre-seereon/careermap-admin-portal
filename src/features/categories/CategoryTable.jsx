@@ -30,19 +30,21 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
     {
       title: "Title",
       dataIndex: "title",
-      width: 220,
+      width: 120,
       ellipsis: true,
     },
     {
-      title: "Description",
-      dataIndex: "description",
-      width: 360,
-      ellipsis: true,
-      render: (text) => {
-        const preview = getPlainText(text);
-        return preview ? `${preview.slice(0, 80)}${preview.length > 80 ? "..." : ""}` : "";
-      },
+  title: "Stream",
+  width: 150,
+  render: (_, record) => record.streamObj?.name || "-"
+},
+    {
+      title:"Cover Image",
+      dataIndex:"coverImage",
+      width:150,
+      render:(coverImage)=><img src={coverImage} alt="Cover" className="w-16 h-16 object-cover rounded" />
     },
+   
    
     {
       title: "Action",

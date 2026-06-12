@@ -134,6 +134,22 @@ export default function SubCategoryForm({
           <Input disabled={isView} placeholder="Enter path ways" />
         </Form.Item>
 
+         <Form.Item
+          name="coverImage"
+          label="Cover Image"
+          valuePropName="fileList"
+          getValueFromEvent={normalizeFile}
+        >
+          <Upload
+            beforeUpload={() => false}
+            disabled={isView}
+            maxCount={1}
+            listType="picture"
+          >
+            <Button icon={<UploadOutlined />}>Upload</Button>
+          </Upload>
+        </Form.Item> 
+
         {/* <Form.Item
           name="file"
           label="File"
@@ -150,21 +166,7 @@ export default function SubCategoryForm({
           </Upload>
         </Form.Item>
 
-        <Form.Item
-          name="coverImage"
-          label="Cover Image"
-          valuePropName="fileList"
-          getValueFromEvent={normalizeFile}
-        >
-          <Upload
-            beforeUpload={() => false}
-            disabled={isView}
-            maxCount={1}
-            listType="picture"
-          >
-            <Button icon={<UploadOutlined />}>Upload</Button>
-          </Upload>
-        </Form.Item> */}
+       */}
 
         <Form.Item
           name="description"
