@@ -36,8 +36,8 @@ export default function MasterClassForm({ onSubmit, initialValues, mode }) {
   const [form] = Form.useForm();
   const isView = mode === "view";
   const videoOptions = [
-    { label: "Career Video", value: "Career Video" },
-    { label: "Expert Video", value: "Expert Video" },
+    { label: "Career Videos", value: "Career Videos" },
+    { label: "Personality Development Videos ", value: "Personality Development Videos " },
   ];
 
   useEffect(() => {
@@ -69,13 +69,13 @@ export default function MasterClassForm({ onSubmit, initialValues, mode }) {
 
       <Form.Item
         name="title"
-        label="Title"
-        rules={[validationRules.required("Title")]}
+        label="Video Topic"
+        rules={[validationRules.required("Video Topic")]}
       >
-        <Input disabled={isView} placeholder="Enter title" />
+        <Input disabled={isView} placeholder="Enter video topic" />
       </Form.Item>
 
-      <Form.Item
+      {/* <Form.Item
         name="name"
         label="Mentor Name"
         rules={[validationRules.required("Mentor Name")]}
@@ -96,7 +96,7 @@ export default function MasterClassForm({ onSubmit, initialValues, mode }) {
           format={`${DATE_DISPLAY_FORMAT} HH:mm`}
           placeholder="DD-MM-YYYY HH:mm"
         />
-      </Form.Item>
+      </Form.Item> */}
 
      
 
@@ -140,7 +140,7 @@ export default function MasterClassForm({ onSubmit, initialValues, mode }) {
         />
       </Form.Item>
 
-      <Form.Item
+      {/* <Form.Item
         name="image"
         label="Image"
         valuePropName="fileList"
@@ -150,7 +150,7 @@ export default function MasterClassForm({ onSubmit, initialValues, mode }) {
         <Upload beforeUpload={() => false} maxCount={1} disabled={isView} listType="picture">
           <Button icon={<UploadOutlined />}>Upload Image</Button>
         </Upload>
-      </Form.Item>
+      </Form.Item> */}
 
       {!isView && (
         <Button

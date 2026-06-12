@@ -114,8 +114,7 @@ export default function Category2Form({
         <Form.Item name="path" label="Path Ways">
           <Input disabled={isView} placeholder="Enter path ways" />
         </Form.Item>
-
-        {/* <Form.Item
+        <Form.Item
           name="coverImage"
           label="Cover Image"
           valuePropName="fileList"
@@ -130,6 +129,8 @@ export default function Category2Form({
             <Button icon={<UploadOutlined />}>Upload</Button>
           </Upload>
         </Form.Item>
+
+        {/* 
 
         <Form.Item
           name="image"

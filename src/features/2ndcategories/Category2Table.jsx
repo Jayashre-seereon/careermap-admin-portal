@@ -41,6 +41,21 @@ export default function Category2Table({
       ellipsis: true,
     },
     {
+      title: "Cover Image",
+      dataIndex: "coverImage",
+      render: (img) =>
+        img ? (
+          <img
+            src={img}
+            alt=""
+            className="w-16 h-16 object-cover rounded"
+          />
+        ) : (
+          <span className="text-gray-400">No image</span>
+        ),
+      width: 100,
+    },
+    {
       title: "Institute",
       dataIndex: "institutionName",
       ellipsis: true,
@@ -50,29 +65,10 @@ export default function Category2Table({
       title: "Path ways",
       dataIndex: "path",
       ellipsis: true,
-      width: 260,
+      width: 100,
     },
-    {
-      title: "Description",
-      dataIndex: "description",
-      ellipsis: true,
-      width: 300,
-    },
-    {
-      title: "Image",
-      dataIndex: "image",
-      render: (img) =>
-        img ? (
-          <img
-            src={img}
-            alt=""
-            className="w-12 h-12 rounded-full object-cover"
-          />
-        ) : (
-          <span className="text-gray-400">No image</span>
-        ),
-      width: 90,
-    },
+   
+    
     {
       title: "Action",
       fixed: "right",

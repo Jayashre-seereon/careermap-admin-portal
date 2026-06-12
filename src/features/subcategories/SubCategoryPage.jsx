@@ -72,24 +72,25 @@ const buildSubCategoryPayload = ({
   const coverImageValue = extractFile(coverImage);
 
   if (!fileValue && !coverImageValue) {
-    return { payload, config: {} };
+    return { payload, config: {} };  // ✅ no image = plain JSON, types preserved
   }
 
   const formData = new FormData();
 
-  Object.entries(payload).forEach(([key, value]) => {
-    if (value !== undefined && value !== null) {
-      formData.append(key, value);
-    }
-  });
+  // ✅ Cast IDs to Number so server receives integers, not strings
+  if (categoryId != null)       formData.append("categoryId", Number(categoryId));
+  if (secondcategoryId != null) formData.append("secondcategoryId", Number(secondcategoryId));
+  if (institutionId != null)    formData.append("institutionId", Number(institutionId));
 
-  if (fileValue) {
-    formData.append("file", fileValue);
-  }
+  // ✅ String fields appended normally
+  formData.append("title", title || "");
+  formData.append("path", path || "");
+  formData.append("description", description || "");
+  formData.append("specialization", specialization || "");
+  formData.append("importandt_facts", importandt_facts || "");
 
-  if (coverImageValue) {
-    formData.append("coverImage", coverImageValue);
-  }
+  if (fileValue)       formData.append("file", fileValue);
+  if (coverImageValue) formData.append("coverImage", coverImageValue);
 
   return {
     payload: formData,

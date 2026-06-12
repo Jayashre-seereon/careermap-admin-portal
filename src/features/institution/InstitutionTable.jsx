@@ -120,7 +120,7 @@ export default function InstitutionTable({
     },
     {
       title: "Country",
-      dataIndex: "country",
+      dataIndex: "countruy",
       width: 120,
     },
     {
@@ -176,6 +176,10 @@ export default function InstitutionTable({
   ];
 
   return (
+     <div className="w-full">
+      <h1 className="text-xl font-semibold text-[#9a2119] mb-4">
+        Institution Management
+      </h1>
     <div className="w-full bg-white p-5 rounded-2xl shadow-md border">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h2 className="text-lg font-semibold text-[#9a2119]">Institution</h2>
@@ -212,6 +216,7 @@ export default function InstitutionTable({
         onChange={(pag) => setPagination(pag)}
         scroll={{ x: "max-content" }}
       />
+    </div>
     </div>
   );
 }

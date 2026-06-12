@@ -34,56 +34,41 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
       width: 220,
       ellipsis: true,
     },
+     {
+      title: "Title",
+      dataIndex: "title",
+      width: 180,
+      ellipsis: true,
+    },
+     {
+      title: "Cover Image",
+      dataIndex: "coverImage",
+      width: 110,
+      render: (img) =>
+        img ? (
+          <img src={img} alt="" className="w-16 h-16 object-cover rounded" />
+        ) : (
+          <span className="text-gray-400">No image</span>
+        ),
+    },
     {
       title: "Institution",
       dataIndex: "institutionName",
       width: 220,
       ellipsis: true,
     },
-    {
-      title: "Title",
-      dataIndex: "title",
-      width: 180,
-      ellipsis: true,
-    },
+   
+    
     {
       title: "Path",
       dataIndex: "path",
-      width: 200,
+      width: 100,
       ellipsis: true,
       render: (text) => text || "-",
     },
-    {
-      title: "File",
-      dataIndex: "file",
-      width: 140,
-      render: (value) =>
-        value ? (
-          <a href={value} target="_blank" rel="noreferrer">
-            View file
-          </a>
-        ) : (
-          <span className="text-gray-400">No file</span>
-        ),
-    },
-    {
-      title: "Cover Image",
-      dataIndex: "coverImage",
-      width: 110,
-      render: (img) =>
-        img ? (
-          <img src={img} alt="" className="w-12 h-12 rounded object-cover" />
-        ) : (
-          <span className="text-gray-400">No image</span>
-        ),
-    },
-    {
-      title: "Description",
-      dataIndex: "description",
-      width: 280,
-      ellipsis: true,
-      render: (text) => text || "-",
-    },
+   
+   
+   
     {
       title: "Action",
       fixed: "right",
