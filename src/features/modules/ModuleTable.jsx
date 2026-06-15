@@ -27,6 +27,22 @@ function ModuleTable({
       render: (_, __, index) => getSerialNumber(index, pagination),
     },
     { title: "Title", dataIndex: "title", width: 240, ellipsis: true },
+    // Add this column between "Title" and "Access":
+{
+  title: "Image",
+  dataIndex: "image",
+  width: 80,
+  render: (image) =>
+    image ? (
+      <img
+        src={image}
+        alt="module"
+        style={{ width: 40, height: 40, borderRadius: 6, objectFit: "cover" }}
+      />
+    ) : (
+      <span className="text-gray-400 text-xs">—</span>
+    ),
+},
     {
       title: "Access",
       dataIndex: "isFree",
