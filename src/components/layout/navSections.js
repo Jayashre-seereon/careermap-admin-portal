@@ -26,6 +26,7 @@ import {
   Tag,
   Users,
   Video,
+  Key,
 } from "lucide-react";
 
 export const navSections = [
@@ -33,7 +34,9 @@ export const navSections = [
     label: "MAIN",
     items: [{ icon: LayoutDashboard, name: "Dashboard", path: "/dashboard" },
         { icon: BookOpen, name: "Modules", path: "/modules" },
-   
+        {icon:Key, name: "Permissions", path: "/permissions" },
+        {icon:Users, name: "Staff", path: "/staff" },
+        
     ],
     
   },
@@ -76,6 +79,9 @@ export const navSections = [
   
     ],
   },
+  {label: "COUNSELING", items: [
+    { icon: HelpCircle, name: "Counseling", path: "/counseling" },
+  ]},
   
   // {
   //   label: "ORDERS",
@@ -88,6 +94,7 @@ export const navSections = [
   //     { icon: FileText, name: "Job Application", path: "/job-applications" },
   //   ],
   // },
+  
  
   {
     label: "PSYCHOMETRIC",

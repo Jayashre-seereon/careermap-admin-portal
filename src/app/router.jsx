@@ -79,7 +79,9 @@ import Question from "../features/psychometric/Question";
 import Section from "../features/psychometric/Section";
 import Student from "../features/psychometric/Student";
 import PersonalityTest from "../features/personalityTest/PersonalityTest";
-
+import Counseling from "../features/counseling/counseling";
+import Staff from "../features/staff/Staff";
+import Permission from "../features/permission/Permission";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -108,10 +110,8 @@ export const router = createBrowserRouter([
           { index: true, element: <Navigate to="/dashboard" replace /> },
           { path: "dashboard", element: <DashboardPage /> },
           { path: "mentor", element: <MentorPage /> },
-          {
-            path: "all_users",
-            element: <AllUsers />,
-            children: [
+          { path: "all_users",element: <AllUsers />,
+    children: [
               { index: true, element: <AllUsersTab /> },
               { path: "active", element: <Active /> },
               { path: "banned", element: <Banned /> },
@@ -193,7 +193,10 @@ export const router = createBrowserRouter([
           { path: "questions", element: <Question /> },
           { path: "sections", element: <Section /> },
           { path: "students", element: <Student /> },
-          { path: "personality-test", element: <PersonalityTest /> }
+          { path: "personality-test", element: <PersonalityTest /> },
+          { path: "counseling", element: <Counseling /> },
+          { path: "staff", element: <Staff /> },
+          { path: "permissions", element: <Permission /> }
         ],
       },
     ],
