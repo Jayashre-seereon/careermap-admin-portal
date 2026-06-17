@@ -1,6 +1,6 @@
 import React from "react";
 
-/* ===== REFINED PARTICLES (unchanged) ===== */
+ /* ===== REFINED PARTICLES (unchanged) ===== */
 const PARTICLES = [
   { x: 8,  y: 10, size: 50, opacity: 0.12, duration: 6,   delay: 0 },
   { x: 80, y: 8,  size: 40, opacity: 0.12, duration: 7,   delay: 0.5 },
