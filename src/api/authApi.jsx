@@ -19,3 +19,8 @@ export const refreshAccessToken = async (refreshToken) => {
 
   return res.data;
 };
+
+export const staffLogin = async (email, password) => {
+  const res = await authClient.post("/api/staff/login", { email, password });
+  return res.data;
+};

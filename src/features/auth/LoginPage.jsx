@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { message } from "antd";
 import { LockKeyhole, Mail, ArrowRight } from "lucide-react";
-import { login } from "../../api/authApi";
+import { login ,staffLogin} from "../../api/authApi";
 import { useSessionStore } from "../../store/sessionStore";
 
 const inputClassName =
@@ -28,50 +28,56 @@ export default function LoginPage() {
     password: "",
   });
   const [loading, setLoading] = useState(false);
-
+  const [loginAs, setLoginAs] = useState("admin");
   const redirectTo = location.state?.from?.pathname || "/dashboard";
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+const handleSubmit = async (event) => {
+  event.preventDefault();
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
+
+    if (loginAs === "admin") {
       const response = await login(form.email, form.password);
       const payload = response?.data || response || {};
-      const accessToken = getTokenValue(payload, [
-        "accessToken",
-        "access_token",
-        "token",
-        "jwt",
-      ]);
-      const refreshToken = getTokenValue(payload, [
-        "refreshToken",
-        "refresh_token",
-      ]);
+      const accessToken = getTokenValue(payload, ["accessToken", "access_token", "token", "jwt"]);
+      const refreshToken = getTokenValue(payload, ["refreshToken", "refresh_token"]);
       const user = payload.user || payload.admin || payload.profile || null;
 
       if (!accessToken) {
         throw new Error("Access token not found in login response.");
       }
 
-      setSession({
-        accessToken,
-        refreshToken,
-        user,
-      });
+      setSession({ accessToken, refreshToken, user, loginType: "admin" });
+    } else {
+      const response = await staffLogin(form.email, form.password);
 
-      messageApi.success("Login successful.");
-      navigate(redirectTo, { replace: true });
-    } catch (error) {
-      messageApi.error(error.response?.data?.message || error.message || "Login failed.");
-    } finally {
-      setLoading(false);
+      if (!response?.token || !response?.staff) {
+        throw new Error("Invalid staff login response.");
+      }
+
+      setSession({
+        accessToken: response.token,
+        refreshToken: "",
+        user: { name: response.staff.name, email: response.staff.email },
+        loginType: "staff",
+        role: response.staff.role,
+        permissions: response.staff.role?.permissions || [],
+      });
     }
-  };
+
+    messageApi.success("Login successful.");
+    navigate(redirectTo, { replace: true });
+  } catch (error) {
+    messageApi.error(error.response?.data?.message || error.message || "Login failed.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div>
@@ -130,6 +136,28 @@ export default function LoginPage() {
           {loading ? "Logging in..." : "Login"}
           <ArrowRight size={16} />
         </button>
+        <div className="mb-5 flex items-center justify-center gap-6">
+  <label className="flex items-center gap-2 text-sm font-medium text-slate-600">
+    <input
+      type="radio"
+      name="loginAs"
+      checked={loginAs === "admin"}
+      onChange={() => setLoginAs("admin")}
+      className="accent-[#9a2119]"
+    />
+    Admin
+  </label>
+  <label className="flex items-center gap-2 text-sm font-medium text-slate-600">
+    <input
+      type="radio"
+      name="loginAs"
+      checked={loginAs === "staff"}
+      onChange={() => setLoginAs("staff")}
+      className="accent-[#9a2119]"
+    />
+    Staff
+  </label>
+</div>
       </form>
 
      
