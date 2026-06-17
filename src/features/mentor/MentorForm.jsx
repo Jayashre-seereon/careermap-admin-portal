@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect ,useState} from "react";
 import dayjs from "dayjs";
 import { Button, DatePicker, Form, Input, TimePicker, Upload } from "antd";
 import { MinusCircleOutlined, PlusOutlined, UploadOutlined } from "@ant-design/icons";
@@ -173,6 +173,7 @@ const normalizeAvailability = (availability = []) => {
 
 function MentorForm({ onSubmit, initialValues, disabled }) {
   const [form] = Form.useForm();
+const [count, setCount] = useState(0);
 
   useEffect(() => {
     if (initialValues) {
@@ -413,16 +414,20 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
         </Form.Item>
 
         <Form.Item
-          name="description"
-          label="Description"
-          className="md:col-span-2 lg:col-span-3"
-        >
-          <RichTextEditor
-            disabled={disabled}
-            placeholder="Enter mentor description"
-            height={180}
-          />
-        </Form.Item>
+  name="description"
+  label={`Description (${count}/200 words)`}
+  help={count > 200 ? "Max 200 words allowed" : ""}
+  validateStatus={count > 200 ? "error" : ""}
+   className="md:col-span-2 lg:col-span-4" 
+>
+  <RichTextEditor
+    onChange={(value) => {
+      const text = value?.replace(/<[^>]+>/g, "") || "";
+      const words = text.trim().split(/\s+/).filter(Boolean);
+      setCount(words.length);
+    }}
+  />
+</Form.Item>
 
         <Form.Item
           name="status"
