@@ -1,3 +1,5 @@
+import React from "react";
+import { useState } from "react";
 import { Table, Input, Tooltip, Button, Popconfirm } from "antd";
 import {
   EyeOutlined,
@@ -6,33 +8,50 @@ import {
   SearchOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
-import { useState } from "react";
-
+import { formatDateDisplay } from "../../utils/date";
+import { getSerialNumber } from "../../utils/slNo";
 export default function ScholarshipTable({
   data,
+  loading,
+  search,
+  onSearch,
   onView,
   onEdit,
   onDelete,
   onAdd,
 }) {
-  const [search, setSearch] = useState("");
+  const handleReset = () => onSearch("");
 
-  const filteredData = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const stripHtml = (text = "") => {
+    const normalizedText = Array.isArray(text)
+      ? text.join(", ")
+      : typeof text === "string"
+        ? text
+        : text == null
+          ? ""
+          : String(text);
 
-  const handleReset = () => setSearch("");
-
+    return normalizedText
+      .replace(/<[^>]*>/g, " ")
+      .replace(/&nbsp;/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
+const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   const ellipsis = (text) => (
-    <Tooltip title={text}>
-      <span className="truncate block max-w-[200px]">{text}</span>
+    <Tooltip title={stripHtml(text) || "-"}>
+      <span className="truncate block max-w-[200px]">{stripHtml(text) || "-"}</span>
     </Tooltip>
   );
+
+  const formatDate = (value) => {
+    return formatDateDisplay(value);
+  };
 
   const columns = [
     {
       title: "SL",
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
       width: 60,
       fixed: "left",
     },
@@ -42,19 +61,32 @@ export default function ScholarshipTable({
       width: 120,
     },
     {
-      title: "Class",
-      dataIndex: "class",
-      width: 120,
-    },
-    {
       title: "Name",
       dataIndex: "name",
       width: 220,
       render: ellipsis,
     },
     {
-      title: "Short Description",
-      dataIndex: "desc",
+      title: "Price",
+      dataIndex: "price",
+      width: 120,
+      render: (text) => text || "-",
+    },
+    {
+      title: "Deadline",
+      dataIndex: "deadline",
+      width: 140,
+      render: (text) => formatDate(text),
+    },
+    {
+      title: "Eligibility",
+      dataIndex: "eligibility",
+      width: 220,
+      render: ellipsis,
+    },
+    {
+      title: "Description",
+      dataIndex: "description",
       width: 250,
       render: ellipsis,
     },
@@ -62,11 +94,14 @@ export default function ScholarshipTable({
       title: "URL",
       dataIndex: "url",
       width: 140,
-      render: (url) => (
-        <a href={url} target="_blank" rel="noreferrer" className="text-blue-600">
-          Visit
-        </a>
-      ),
+      render: (url) =>
+        url ? (
+          <a href={url} target="_blank" rel="noreferrer" className="text-blue-600">
+            Visit
+          </a>
+        ) : (
+          "-"
+        ),
     },
     {
       title: "Action",
@@ -74,7 +109,6 @@ export default function ScholarshipTable({
       fixed: "right",
       width: 140,
       render: (_, record) => (
-        
         <div className="flex justify-end gap-2">
           <Button
             onClick={() => onView && onView(record)}
@@ -89,8 +123,6 @@ export default function ScholarshipTable({
           >
             <EditOutlined />
           </Button>
-
-         
 
           <Popconfirm
             title="Delete?"
@@ -108,16 +140,11 @@ export default function ScholarshipTable({
 
   return (
     <div className="w-full">
-
-      {/* MAIN HEADING */}
       <h1 className="text-xl font-semibold text-[#9a2119] mb-6">
         Scholarship Management
       </h1>
 
-      {/* CARD */}
       <div className="bg-white rounded-2xl shadow-sm border p-5">
-
-        {/* HEADER */}
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <h2 className="text-lg font-semibold text-[#9a2119]">
             Scholarships
@@ -128,20 +155,21 @@ export default function ScholarshipTable({
               placeholder="Search..."
               value={search}
               prefix={<SearchOutlined />}
-             className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
-             
-              onChange={(e) => setSearch(e.target.value)}
+              className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
+              onChange={(e) => onSearch(e.target.value)}
             />
 
             <Button
               onClick={handleReset}
-               style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}  >
+              style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
+            >
               <ReloadOutlined /> Reset
             </Button>
 
             <Button
               onClick={onAdd}
-               style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}  >
+              style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
+            >
               + Add
             </Button>
           </div>
@@ -149,9 +177,11 @@ export default function ScholarshipTable({
 
         <Table
           columns={columns}
-          dataSource={filteredData}
-          rowKey="key"
-          pagination={{ pageSize: 5 }}
+          dataSource={Array.isArray(data) ? [...data].reverse() : []}
+          loading={loading}
+          rowKey="id"
+          pagination={pagination}
+          onChange={(pag) => setPagination(pag)}
           scroll={{ x: 1200 }}
         />
       </div>

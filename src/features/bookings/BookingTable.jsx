@@ -1,3 +1,4 @@
+import React from "react";
 import { Table, Input, Tag, Modal,Button } from "antd";
 import {
   EyeOutlined,
@@ -5,6 +6,8 @@ import {
   ReloadOutlined,
 } from "@ant-design/icons";
 import { useState } from "react";
+import { getSerialNumber } from "../../utils/slNo";
+
 
 const initialData = [
   {
@@ -45,7 +48,7 @@ const initialData = [
 export default function BookingTable() {
   const [search, setSearch] = useState("");
   const [data] = useState(initialData);
-
+ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   // Modal state
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(null);
@@ -59,7 +62,7 @@ export default function BookingTable() {
   const columns = [
     {
       title: "SL",
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
       width: 60,
     },
     {
@@ -171,8 +174,9 @@ export default function BookingTable() {
         {/* TABLE */}
         <Table
           columns={columns}
-          dataSource={filteredData}
-          pagination={{ pageSize: 5 }}
+        dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
+          pagination={pagination}
+          onChange={(pag) => setPagination(pag)}
           scroll={{ x: "max-content" }}
         />
       </div>

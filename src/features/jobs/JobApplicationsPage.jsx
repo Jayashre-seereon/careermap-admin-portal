@@ -119,7 +119,7 @@ export default function JobApplicationsPage() {
 
         <Table
           columns={columns}
-          dataSource={filteredApplications}
+          dataSource={Array.isArray(filteredApplications) ? [...filteredApplications].reverse() : []}
           pagination={{ pageSize: 5 }}
           rowClassName="hover:bg-gray-50"
           scroll={{ x: true }}
@@ -145,3 +145,4 @@ export default function JobApplicationsPage() {
     </div>
   );
 }
+

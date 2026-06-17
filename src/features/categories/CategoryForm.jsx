@@ -6,33 +6,45 @@ import StatusSwitch from "../../components/ui/StatusSwitch";
 import { validationRules } from "../../utils/formValidation";
 
 const { Option } = Select;
-const institutionOptions = [
-  "AIIMS DELHI",
-  "AIIMS BHOPAL",
-  "AIIMS BHUBANESWAR",
-  "SCB Medical College",
-  "CMC, Vellore",
-  "KMC, Manipal",
-  "Amrita Vishwam Vidyapeetham",
-  "JIPMER, Puducherry",
-].map((item) => ({ label: item, value: item }));
 
-const normalizeInstitutions = (value) => {
+const normalizeInstitutionValue = (value) => {
   if (Array.isArray(value)) {
-    return value;
+    return value[0];
   }
 
-  if (typeof value === "string") {
-    return value
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-  }
-
-  return [];
+  return value;
 };
 
-export default function CategoryForm({ onSubmit, initialValues, disabled }) {
+const normalizeFile = (event) => {
+  if (Array.isArray(event)) {
+    return event;
+  }
+
+  return event?.fileList || [];
+};
+
+const toUploadFileList = (value, fallbackName) => {
+  if (!value || typeof value !== "string") {
+    return [];
+  }
+
+  return [
+    {
+      uid: value,
+      name: fallbackName,
+      status: "done",
+      url: value,
+    },
+  ];
+};
+
+export default function CategoryForm({
+  onSubmit,
+  initialValues,
+  disabled,
+  streamOptions = [],
+  institutionOptions = [],
+}) {
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -40,30 +52,23 @@ export default function CategoryForm({ onSubmit, initialValues, disabled }) {
       form.setFieldsValue({
         isUpgrade: "Free",
         ...initialValues,
-        institutions: normalizeInstitutions(initialValues.institutions),
+        institutions: normalizeInstitutionValue(initialValues.institutions),
+        file: toUploadFileList(initialValues.file, "category-file"),
+        coverImage: toUploadFileList(initialValues.coverImage, "cover-image"),
       });
+    } else {
+      form.resetFields();
     }
-    else form.resetFields();
   }, [form, initialValues]);
-
-  const handleFinish = (values) => {
-    onSubmit({
-      ...values,
-      institutions: Array.isArray(values.institutions)
-        ? values.institutions.join(", ")
-        : values.institutions,
-    });
-  };
 
   return (
     <Form
       layout="vertical"
       form={form}
-      onFinish={handleFinish}
+      onFinish={onSubmit}
       validateTrigger={["onChange", "onBlur"]}
       initialValues={{ isUpgrade: "Free" }}
     >
-      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <h3 className="md:col-span-2 mb-1 text-lg font-semibold text-[#9a2119]">
           Category Details
@@ -71,8 +76,11 @@ export default function CategoryForm({ onSubmit, initialValues, disabled }) {
 
         <Form.Item name="stream" label="Stream" rules={[{ required: true }]}>
           <Select placeholder="Select Stream" disabled={disabled}>
-            <Option value="Science">Science</Option>
-            <Option value="Commerce">Commerce</Option>
+            {streamOptions.map((item) => (
+              <Option key={item.id} value={item.id}>
+                {item.name}
+              </Option>
+            ))}
           </Select>
         </Form.Item>
 
@@ -82,47 +90,76 @@ export default function CategoryForm({ onSubmit, initialValues, disabled }) {
           rules={[validationRules.required("Institutions")]}
         >
           <Select
-            mode="multiple"
             showSearch
             allowClear
             disabled={disabled}
             placeholder="Search and select institutions"
             optionFilterProp="label"
-            options={institutionOptions}
+            options={institutionOptions.map((item) => ({
+              label: item.name,
+              value: item.id,
+            }))}
+          />
+        </Form.Item>
+
+        <Form.Item name="title" label="Title">
+          <Input disabled={disabled} />
+        </Form.Item>
+
+        <Form.Item name="howToBecome" label="Path Ways">
+          <Input disabled={disabled} />
+        </Form.Item>
+
+        {/* <Form.Item
+          name="file"
+          label="File"
+          valuePropName="fileList"
+          getValueFromEvent={normalizeFile}
+        >
+          <Upload
+            beforeUpload={() => false}
+            disabled={disabled}
+            maxCount={1}
+            listType="picture"
+          >
+            <Button icon={<UploadOutlined />}>Choose File</Button>
+          </Upload>
+        </Form.Item>
+
+      */}
+         <Form.Item
+          name="coverImage"
+          label="Cover Image"
+          valuePropName="fileList"
+          getValueFromEvent={normalizeFile}
+        >
+          <Upload
+            beforeUpload={() => false}
+            disabled={disabled}
+            maxCount={1}
+            listType="picture"
+          >
+            <Button icon={<UploadOutlined />}>Choose File</Button>
+          </Upload>
+        </Form.Item>
+
+        <Form.Item
+          name="description"
+          label="Description"
+          className="md:col-span-2"
+        >
+          <RichTextEditor
+            disabled={disabled}
+            placeholder="Enter description"
+            height={160}
           />
         </Form.Item>
 
         <Form.Item
-          name="title"
-          label="Title"
-             >
-          <Input disabled={disabled} />
-        </Form.Item>
-
-        <Form.Item
-          name="howToBecome"
-          label="Path Ways"
-               >
-          <Input disabled={disabled} />
-        </Form.Item>
-
-        <Form.Item name="file" label="File">
-          <Upload beforeUpload={() => false} disabled={disabled}>
-            <Button icon={<UploadOutlined />}>Choose File</Button>
-          </Upload>
-        </Form.Item>
-
-        <Form.Item name="coverImage" label="Cover Image">
-          <Upload beforeUpload={() => false} disabled={disabled}>
-            <Button icon={<UploadOutlined />}>Choose File</Button>
-          </Upload>
-        </Form.Item>
-
-        <Form.Item name="description" label="Description" className="md:col-span-2">
-          <Input.TextArea rows={3} disabled={disabled} />
-        </Form.Item>
-
-        <Form.Item name="specialisation" label="Specialisation" className="md:col-span-2">
+          name="specialisation"
+          label="Specialisation"
+          className="md:col-span-2"
+        >
           <RichTextEditor
             disabled={disabled}
             placeholder="Enter specialisation"
@@ -130,7 +167,11 @@ export default function CategoryForm({ onSubmit, initialValues, disabled }) {
           />
         </Form.Item>
 
-        <Form.Item name="importantFacts" label="Important Facts" className="md:col-span-2">
+        <Form.Item
+          name="importantFacts"
+          label="Important Facts"
+          className="md:col-span-2"
+        >
           <RichTextEditor
             disabled={disabled}
             placeholder="Enter important facts"
@@ -138,7 +179,7 @@ export default function CategoryForm({ onSubmit, initialValues, disabled }) {
           />
         </Form.Item>
 
-        <Form.Item
+        {/* <Form.Item
           name="isUpgrade"
           label="Category Access"
           valuePropName="checked"
@@ -151,8 +192,7 @@ export default function CategoryForm({ onSubmit, initialValues, disabled }) {
             checkedChildren="Free"
             unCheckedChildren="Premium"
           />
-        </Form.Item>
-
+        </Form.Item> */}
       </div>
 
       {!disabled && (

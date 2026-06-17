@@ -71,6 +71,13 @@ export default function Subscribers() {
   ];
 
   return (
+
+ <div className="w-full">
+
+      {/* MAIN HEADING */}
+      <h1 className="text-xl font-semibold text-[#9a2119] mb-6">
+        Subscribers List
+      </h1>
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
       {/* HEADER */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -99,11 +106,12 @@ export default function Subscribers() {
       {/* TABLE */}
       <Table
         columns={columns}
-        dataSource={filteredData}
+        dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
         pagination={{ pageSize: 5 }}
         rowClassName="hover:bg-gray-50"
         scroll={{ x: "max-content" }}
       />
+    </div>
     </div>
   );
 }

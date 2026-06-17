@@ -233,7 +233,7 @@ export default function PersonalityTest() {
         <Table
           rowKey="id"
           columns={columns}
-          dataSource={filteredQuestions}
+          dataSource={Array.isArray(filteredQuestions) ? [...filteredQuestions].reverse() : []}
           pagination={{ pageSize: 6 }}
           scroll={{ x: 1300 }}
           rowClassName="hover:bg-[#fff8f7]"
@@ -405,3 +405,4 @@ export default function PersonalityTest() {
     </section>
   );
 }
+

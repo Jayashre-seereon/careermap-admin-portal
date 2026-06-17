@@ -170,7 +170,7 @@ export default function SocialCredentialPage() {
 
           <Table
             columns={columns}
-            dataSource={filteredCredentials}
+            dataSource={Array.isArray(filteredCredentials) ? [...filteredCredentials].reverse() : []}
             pagination={{ pageSize: 5 }}
             rowClassName="hover:bg-gray-50"
             scroll={{ x: true }}
@@ -268,3 +268,4 @@ export default function SocialCredentialPage() {
     </>
   );
 }
+

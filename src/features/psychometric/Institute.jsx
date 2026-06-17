@@ -297,7 +297,7 @@ export default function Institute() {
 
         <Table
           columns={columns}
-          dataSource={filteredData}
+          dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
           rowKey="id"
           pagination={{ pageSize: 5 }}
           scroll={{ x: "max-content" }}
@@ -329,3 +329,4 @@ export default function Institute() {
     </div>
   );
 }
+
