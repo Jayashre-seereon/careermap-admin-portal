@@ -34,7 +34,7 @@ export const navSections = [
     label: "MAIN",
     items: [{ icon: LayoutDashboard, name: "Dashboard", path: "/dashboard" },
         { icon: BookOpen, name: "Modules", path: "/modules" },
-        {icon:Key, name: "Permissions", path: "/permissions" },
+       { icon: Key, name: "Permissions", path: "/permissions", module: "Permissions" },
         {icon:Users, name: "Staff", path: "/staff" },
         
     ],
@@ -47,13 +47,11 @@ export const navSections = [
       { icon: GitBranch, name: "Path Type", path: "/pathtype" },
       { icon: MapPin, name: "Career Path", path: "/careerpath" },
       { icon: ClipboardList, name: "Entrance Exam", path: "/entranceexam" },
-      { icon: Building2, name: "Institution", path: "/institution" },
-      { icon: Award, name: "Scholarship", path: "/scholarship" },
-      { icon: Video, name: "Master Class", path: "/masterclass" },
-      { icon: Plane, name: "Study Abroad", path: "/studyabroad" },
-      { icon: CreditCard, name: "Plans", path: "/plans" },
-      { icon: HelpCircle, name: "Quiz", path: "/quiz" },
-  
+     { icon: Building2, name: "Institution", path: "/institution", module: "Institution" },  { icon: Award, name: "Scholarship", path: "/scholarship" },
+    { icon: Video, name: "Master Class", path: "/masterclass", module: "Master Class" },
+    { icon: CreditCard, name: "Plans", path: "/plans", module: "PlansQuiz" },
+     { icon: HelpCircle, name: "Quiz", path: "/quiz", module: "PlansQuiz" },
+ 
     ],
   },
   {

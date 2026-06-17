@@ -79,7 +79,7 @@ import Question from "../features/psychometric/Question";
 import Section from "../features/psychometric/Section";
 import Student from "../features/psychometric/Student";
 import PersonalityTest from "../features/personalityTest/PersonalityTest";
-import Counseling from "../features/counseling/counseling";
+import Counseling from "../features/counseling/Counseling";
 import Staff from "../features/staff/Staff";
 import Permission from "../features/permission/Permission";
 export const router = createBrowserRouter([
