@@ -33,18 +33,10 @@ function Permission() {
     fetchData();
   }, []);
 
-  // Backend returns a single `module` string per record.
-  // Normalize it into `modules` array just so the table UI (which
-  // renders a `modules` tag list) and the form (Checkbox.Group expects
-  // an array) keep working without changing their code.
-  const normalizeRecord = (record) => ({
-    ...record,
-    modules: Array.isArray(record.modules)
-      ? record.modules
-      : record.module
-      ? [record.module]
-      : [],
-  });
+const normalizeRecord = (record) => ({
+  ...record,
+  modules: record.modules || [],
+});
 
   const fetchData = async () => {
     try {
@@ -61,49 +53,59 @@ function Permission() {
     }
   };
 
-  // Form gives us { roleId, modules: [...] }.
-  // Backend expects a plain string field, so we unwrap the first
-  // selected module before sending. Single API call, no loop.
-  const handleAdd = async (values) => {
-    try {
-      const { roleId, modules = [] } = values;
-      await createPermission({
-        roleId,
-        module: modules[0] || "",
-      });
-      await fetchData();
-      setOpen(false);
-    } catch (err) {
-      console.error(err);
-      throw err;
-    }
-  };
+const handleAdd = async (values) => {
+  try {
+    const { roleId, modules = [] } = values;
 
-  const handleUpdate = async (values) => {
-    try {
-      const { roleId, modules = [] } = values;
-      await updatePermission(editId, {
-        roleId,
-        module: modules[0] || "",
-      });
-      await fetchData();
-      setOpen(false);
-      setEditId(null);
-    } catch (err) {
-      console.error(err);
-      throw err;
-    }
-  };
+    await createPermission({
+      roleId,
+      modules, // ✅ send full array
+    });
 
-  const handleDelete = async (record) => {
-    try {
-      if (!record?.id) return;
-      await deletePermission(record.id);
-      await fetchData();
-    } catch (err) {
-      console.error(err);
-    }
-  };
+    await fetchData();
+    setOpen(false);
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
+};
+
+ const handleUpdate = async (values) => {
+  try {
+    const { roleId, modules = [] } = values;
+
+    await updatePermission(editId, {
+      roleId,
+      modules, // ✅ send full array
+    });
+
+    await fetchData();
+    setOpen(false);
+    setEditId(null);
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
+};
+ const handleDelete = async (record) => {
+  try {
+    if (!record?.roleId) return;
+
+    // find all records with same roleId
+    const recordsToDelete = sections.filter(
+      (item) => item.roleId === record.roleId
+    );
+
+    // delete all one by one
+    await Promise.all(
+      recordsToDelete.map((item) => deletePermission(item.id))
+    );
+
+    await fetchData();
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   const handleView = (record) => {
     setSelected(normalizeRecord(record));
@@ -120,13 +122,33 @@ function Permission() {
 
   const modalTitle =
     mode === "add" ? "Add Permission" : mode === "edit" ? "Edit Permission" : "View Permission";
+const groupedData = Object.values(
+  sections.reduce((acc, item) => {
+    if (!acc[item.roleId]) {
+      acc[item.roleId] = {
+        ...item,
+        modules: [],
+      };
+    }
 
+    // push module into array
+    if (item.module) {
+      acc[item.roleId].modules.push(item.module);
+    }
+
+    if (Array.isArray(item.modules)) {
+      acc[item.roleId].modules.push(...item.modules);
+    }
+
+    return acc;
+  }, {})
+);
   return (
     <div className="space-y-5">
       <h2 className="text-xl font-bold text-[#9a2119]">Role Permissions Management</h2>
 
       <PermissionTable
-        data={filteredSections}
+        data={groupedData}
         roles={roles}
         loading={loading}
         search={search}

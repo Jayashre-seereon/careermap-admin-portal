@@ -113,24 +113,7 @@ function PermissionForm({ roles = [], onSubmit, initialValues, disabled }) {
           </Checkbox.Group>
         </Form.Item>
 
-        {selectedRole && (
-          <div className="md:col-span-2">
-            <p className="mb-2 text-sm font-medium text-gray-600">
-              Staff assigned to this role
-            </p>
-            {selectedRole.users?.length ? (
-              <div className="flex flex-wrap gap-2">
-                {selectedRole.users.map((user) => (
-                  <Tag key={user.id} color="#9a2119">
-                    {user.name}
-                  </Tag>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-400">No staff assigned yet</p>
-            )}
-          </div>
-        )}
+       
       </div>
 
       {!disabled && (
