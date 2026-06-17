@@ -21,18 +21,26 @@ const DEFAULT_MODULES = [
   { title: "Study Abroad", isFree: false },
 ];
 
-const buildModulePayload = ({ title, isFree }) => ({
-  payload: {
-    title,
-    markas_free: isFree,
-  },
-  config: {},
-});
+// Update buildModulePayload to handle image
+const buildModulePayload = ({ title, isFree, image }) => {
+  const formData = new FormData();
+  formData.append("title", title);
+  formData.append("markas_free", isFree ?? false);
+  if (image?.file) {
+    formData.append("image", image.file);
+  }
+  return {
+    payload: formData,
+    config: { headers: { "Content-Type": "multipart/form-data" } },
+  };
+};
 
+// Update mapModule to include image
 const mapModule = (item = {}) => ({
   id: item.id,
   title: item.title || "",
   isFree: item.isFree ?? item.markas_free ?? false,
+  image: item.image || null,
   createdAt: item.createdAt,
   updatedAt: item.updatedAt,
 });
