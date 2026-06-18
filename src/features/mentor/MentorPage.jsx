@@ -211,6 +211,7 @@ const buildMentorPayload = ({
   experience,
   mentor_fees,
   rank,
+  year,   
   image,
   resume,
   description,
@@ -230,6 +231,7 @@ const buildMentorPayload = ({
     experience: experience ? Number(experience) : 0,
     mentor_fees: mentor_fees || "",
     rank: rank || "",
+    year: year ? Number(year) : null,
     description: description || "",
     status: !!status,
   };
@@ -281,6 +283,7 @@ const mapMentor = (item = {}) => {
     experience: item.experience ?? "",
     mentor_fees: item.mentor_fees || "",
     rank: item.rank || "",
+    year: item.year ?? "",
     image: item.image || null,
     resume: item.resume || null,
     description: item.description || "",
