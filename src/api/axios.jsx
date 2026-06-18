@@ -37,10 +37,15 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401 && !originalRequest?._retry && !isAuthEndpoint) {
       originalRequest._retry = true;
-
+        const { refreshToken, loginType } = useSessionStore.getState();
+        if (loginType === "staff") {
+    return Promise.reject(error);
+  }
       try {
-        const { refreshToken } = useSessionStore.getState();
-
+        // const { refreshToken } = useSessionStore.getState();
+        if (!refreshToken) {
+      throw new Error("Refresh token not found");
+    }
         if (!refreshToken) {
           throw new Error("Refresh token not found");
         }

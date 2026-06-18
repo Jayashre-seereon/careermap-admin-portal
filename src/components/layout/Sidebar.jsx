@@ -25,12 +25,9 @@ export default function Sidebar({
 const visibleSections = navSections
   .map((section) => ({
     ...section,
-    items: section.items
-      .filter((item) => hasPermission(item.module))
-      .map((item) => ({
-        ...item,
-        children: item.children?.filter((child) => hasPermission(child.module)),
-      })),
+    items: section.items.filter((item) =>
+      hasPermission(item.module)
+    ),
   }))
   .filter((section) => section.items.length > 0);
   return (
