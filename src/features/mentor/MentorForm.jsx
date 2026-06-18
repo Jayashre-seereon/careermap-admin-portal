@@ -1,4 +1,4 @@
-import React, { useEffect ,useState} from "react";
+import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { Button, DatePicker, Form, Input, TimePicker, Upload } from "antd";
 import { MinusCircleOutlined, PlusOutlined, UploadOutlined } from "@ant-design/icons";
@@ -173,7 +173,7 @@ const normalizeAvailability = (availability = []) => {
 
 function MentorForm({ onSubmit, initialValues, disabled }) {
   const [form] = Form.useForm();
-const [count, setCount] = useState(0);
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
     if (initialValues) {
@@ -302,12 +302,12 @@ const [count, setCount] = useState(0);
         </Form.Item>
 
         <Form.Item name="dateof_birth" label="Date of Birth">
-        <DatePicker
-          className="w-full"
-          disabled={disabled}
-          format={DATE_DISPLAY_FORMAT}
-          placeholder="DD-MM-YYYY"
-        />
+          <DatePicker
+            className="w-full"
+            disabled={disabled}
+            format={DATE_DISPLAY_FORMAT}
+            placeholder="DD-MM-YYYY"
+          />
         </Form.Item>
 
         <Form.Item
@@ -386,6 +386,13 @@ const [count, setCount] = useState(0);
         >
           <Input disabled={disabled} placeholder="Enter AIR/State Rank" />
         </Form.Item>
+        <Form.Item
+          name="year"
+          label="Year"
+          rules={[validationRules.numbersOnly("Year")]}
+        >
+          <Input disabled={disabled} placeholder="Enter year" />
+        </Form.Item>
 
         <Form.Item
           name="image"
@@ -414,20 +421,20 @@ const [count, setCount] = useState(0);
         </Form.Item>
 
         <Form.Item
-  name="description"
-  label={`Description (${count}/200 words)`}
-  help={count > 200 ? "Max 200 words allowed" : ""}
-  validateStatus={count > 200 ? "error" : ""}
-   className="md:col-span-2 lg:col-span-4" 
->
-  <RichTextEditor
-    onChange={(value) => {
-      const text = value?.replace(/<[^>]+>/g, "") || "";
-      const words = text.trim().split(/\s+/).filter(Boolean);
-      setCount(words.length);
-    }}
-  />
-</Form.Item>
+          name="description"
+          label={`Description (${count}/200 words)`}
+          help={count > 200 ? "Max 200 words allowed" : ""}
+          validateStatus={count > 200 ? "error" : ""}
+          className="md:col-span-2 lg:col-span-4"
+        >
+          <RichTextEditor
+            onChange={(value) => {
+              const text = value?.replace(/<[^>]+>/g, "") || "";
+              const words = text.trim().split(/\s+/).filter(Boolean);
+              setCount(words.length);
+            }}
+          />
+        </Form.Item>
 
         <Form.Item
           name="status"
