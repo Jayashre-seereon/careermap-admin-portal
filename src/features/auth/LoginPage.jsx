@@ -68,6 +68,8 @@ const handleSubmit = async (event) => {
         role: response.staff.role,
         permissions: response.staff.role?.permissions || [],
       });
+      console.log("Staff Login Response:", response);
+  console.log("Store After Login:", useSessionStore.getState());
     }
 
     messageApi.success("Login successful.");

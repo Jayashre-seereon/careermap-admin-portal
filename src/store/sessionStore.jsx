@@ -160,15 +160,17 @@ export const useSessionStore = create((set, get) => ({
 
   // loginType === "admin" always passes (admins bypass module-level checks).
   // loginType === "staff" checks the staff's permissions array for that module + action.
-  hasPermission: (moduleName, action = "canView") => {
-    const { loginType, permissions } = get();
+ hasPermission: (moduleName, action = "canView") => {
+  const { loginType, permissions } = get();
 
-    if (!moduleName) return true;
-    if (loginType !== "staff") return true;
+  if (loginType !== "staff") return true;
 
-    const entry = permissions?.find((p) => p.module === moduleName);
-    return Boolean(entry?.[action]);
-  },
+  const permission = permissions?.find(
+    (p) => p.module === moduleName
+  );
+
+  return Boolean(permission?.[action]);
+},
 }));
 
 export { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, USER_KEY, LOGIN_TYPE_KEY, ROLE_KEY, PERMISSIONS_KEY };

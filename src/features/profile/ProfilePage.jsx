@@ -52,11 +52,11 @@ export default function ProfilePage() {
       <div>
         <h1 className="text-2xl font-bold text-[#9a2119]">Profile</h1>
         <p className="mt-1 text-sm text-slate-500">
-          Update your admin profile details, image, and password.
+         admin profile details.
         </p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+     <div className="grid gap-6">
         <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-6 flex flex-wrap items-center gap-4">
             <Avatar
@@ -86,7 +86,7 @@ export default function ProfilePage() {
               name="name"
               rules={[{ required: true, message: "Please enter your name." }]}
             >
-              <Input placeholder="Enter name" className="h-10" />
+              <Input placeholder="Enter name" className="h-10" disabled />
             </Form.Item>
 
             <Form.Item
@@ -97,83 +97,16 @@ export default function ProfilePage() {
                 { type: "email", message: "Please enter a valid email." },
               ]}
             >
-              <Input placeholder="Enter email" className="h-10" />
+              <Input placeholder="Enter email" className="h-10" disabled />
             </Form.Item>
 
-            <div className="mb-6">
-              <label className="mb-2 block text-sm font-medium text-slate-700">Upload Image</label>
-              <Upload {...uploadProps}>
-                <Button icon={<UploadOutlined />} className="h-10">
-                  Upload profile image
-                </Button>
-              </Upload>
-            </div>
+          
 
-            <Button
-              type="primary"
-              icon={<SaveOutlined />}
-              onClick={handleSaveProfile}
-              className="h-10 w-full border-none bg-[#9a2119] px-5 hover:!bg-[#c4392e] sm:w-auto"
-            >
-              Save Profile
-            </Button>
+          
           </Form>
         </section>
 
-        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="mb-5 flex items-center gap-2">
-            <LockOutlined className="text-[#9a2119]" />
-            <h2 className="text-lg font-semibold text-[#9a2119]">Change Password</h2>
-          </div>
-
-          <Form form={passwordForm} layout="vertical">
-            <Form.Item
-              label="Current Password"
-              name="currentPassword"
-              rules={[{ required: true, message: "Please enter current password." }]}
-            >
-              <Input.Password placeholder="Enter current password" className="h-10" />
-            </Form.Item>
-
-            <Form.Item
-              label="New Password"
-              name="newPassword"
-              rules={[
-                { required: true, message: "Please enter new password." },
-                { min: 6, message: "Use at least 6 characters." },
-              ]}
-            >
-              <Input.Password placeholder="Enter new password" className="h-10" />
-            </Form.Item>
-
-            <Form.Item
-              label="Confirm Password"
-              name="confirmPassword"
-              dependencies={["newPassword"]}
-              rules={[
-                { required: true, message: "Please confirm the new password." },
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    if (!value || getFieldValue("newPassword") === value) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(new Error("Passwords do not match."));
-                  },
-                }),
-              ]}
-            >
-              <Input.Password placeholder="Confirm new password" className="h-10" />
-            </Form.Item>
-
-            <Button
-              type="primary"
-              onClick={handleChangePassword}
-              className="h-10 w-full border-none bg-[#9a2119] px-5 hover:!bg-[#c4392e] sm:w-auto"
-            >
-              Save Password
-            </Button>
-          </Form>
-        </section>
+      
       </div>
     </div>
   );
