@@ -19,3 +19,8 @@ export const deleteNotification = async (id) => {
   const res = await api.delete(`/api/notification/${id}`);
   return res.data;
 };
+
+export const getAdminNotification=async()=>{
+  const res = await api.get(`/api/adminnotification`);
+  return res.data;
+};  
