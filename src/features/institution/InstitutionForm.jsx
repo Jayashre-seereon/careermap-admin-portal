@@ -6,6 +6,10 @@ import StatusSwitch from "../../components/ui/StatusSwitch";
 import RichTextEditor from "../../components/ui/RichTextEditor";
 import { DATE_DISPLAY_FORMAT } from "../../utils/date";
 import { getIndianStates, getDistrictsByState } from "../../utils/locationHelper";
+import { getCategories } from "../../api/category";
+import { getSecondaryCategoriesByCategory } from "../../api/secondaryCategory";
+import { getSubCategoriesBySecondCategory } from "../../api/subcategory";
+
 import dayjs from "dayjs";
 const { Option } = Select;
 
@@ -14,6 +18,9 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
   const [states, setStates] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [form] = Form.useForm();
+  const [categories, setCategories] = useState([]);
+  const [secondaryCategories, setSecondaryCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
 
   useEffect(() => {
     setStates(getIndianStates());
@@ -24,6 +31,60 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
     return event?.fileList || [];
   };
 
+  const fetchCategories = async () => {
+    try {
+      const res = await getCategories();
+      setCategories(res.data || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // isInit=true means this call is part of populating the form from
+  // initialValues (edit/view). In that case we must NOT clear the
+  // secondcategoryId/subcategoryId fields that were just set.
+  const handleCategoryChange = async (categoryId, isInit = false) => {
+    try {
+      if (!isInit) {
+        form.setFieldsValue({
+          secondcategoryId: undefined,
+          subcategoryId: undefined,
+        });
+        setSubCategories([]);
+      }
+
+      if (!categoryId) {
+        setSecondaryCategories([]);
+        return;
+      }
+
+      const res = await getSecondaryCategoriesByCategory(categoryId);
+      setSecondaryCategories(res.data || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSecondCategoryChange = async (secondCategoryId, isInit = false) => {
+    try {
+      if (!isInit) {
+        form.setFieldsValue({
+          subcategoryId: undefined,
+        });
+      }
+
+      if (!secondCategoryId) {
+        setSubCategories([]);
+        return;
+      }
+
+      const res = await getSubCategoriesBySecondCategory(secondCategoryId);
+      setSubCategories(res.data || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handleStateChange = (value) => {
     const selectedState = states.find((s) => s.name === value);
     if (selectedState) {
@@ -31,31 +92,63 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
     }
   };
 
-useEffect(() => {
-  if (initialValues) {
-    form.setFieldsValue({
-      ...initialValues,
-      countruy: initialValues?.countruy ?? initialValues?.country ?? "India",
+  // Populate static fields + build labelInValue-shaped objects for the
+  // three cascading dropdowns so they show NAMES instead of raw ids.
+  useEffect(() => {
+    if (initialValues) {
+      form.setFieldsValue({
+        ...initialValues,
+        countruy: initialValues?.countruy ?? initialValues?.country ?? "India",
 
-      // ✅ FIX LOGO
-      logo: initialValues?.logo
-        ? [
-            {
-              uid: "-1",
-              name: "logo.png",
-              status: "done",
-              url: initialValues.logo,
-            },
-          ]
-        : [],
+        // ✅ FIX CATEGORY DROPDOWNS
+        categoryId: initialValues?.categoryId
+          ? { value: initialValues.categoryId, label: initialValues.categoryName }
+          : undefined,
+        secondcategoryId: initialValues?.secondcategoryId
+          ? { value: initialValues.secondcategoryId, label: initialValues.secondCategoryName }
+          : undefined,
+        subcategoryId: initialValues?.subcategoryId
+          ? { value: initialValues.subcategoryId, label: initialValues.subCategoryName }
+          : undefined,
 
-      // ✅ FIX DATE
-      tentative_date: initialValues?.tentative_date
-        ? dayjs(initialValues.tentative_date, DATE_DISPLAY_FORMAT)
-        : null,
-    });
-  }
-}, [initialValues, form]);
+        // ✅ FIX LOGO
+        logo: initialValues?.logo
+          ? [
+              {
+                uid: "-1",
+                name: "logo.png",
+                status: "done",
+                url: initialValues.logo,
+              },
+            ]
+          : [],
+
+        // ✅ FIX DATE
+        tentative_date: initialValues?.tentative_date
+          ? dayjs(initialValues.tentative_date, DATE_DISPLAY_FORMAT)
+          : null,
+      });
+    }
+  }, [initialValues, form]);
+
+  // Load category options, then preload dependent dropdown OPTIONS
+  // (not just labels) so the user can immediately reopen and change them.
+  useEffect(() => {
+    const init = async () => {
+      await fetchCategories();
+
+      if (initialValues?.categoryId) {
+        await handleCategoryChange(initialValues.categoryId, true);
+      }
+
+      if (initialValues?.secondcategoryId) {
+        await handleSecondCategoryChange(initialValues.secondcategoryId, true);
+      }
+    };
+
+    init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialValues]);
 
   return (
     <Form
@@ -69,6 +162,53 @@ useEffect(() => {
       <h3 className="md:col-span-2 lg:col-span-4 text-lg font-semibold text-[#9a2119]">
         Institution Details
       </h3>
+
+      {/* CATEGORY */}
+      <Form.Item name="categoryId" label="Category">
+        <Select
+          labelInValue
+          disabled={disabled}
+          placeholder="Select Category"
+          onChange={(val) => handleCategoryChange(val?.value)}
+        >
+          {categories.map((cat) => (
+            <Option key={cat.id} value={cat.id}>
+              {cat.title}
+            </Option>
+          ))}
+        </Select>
+      </Form.Item>
+
+      {/* SECONDARY CATEGORY */}
+      <Form.Item name="secondcategoryId" label="Secondary Category">
+        <Select
+          labelInValue
+          disabled={disabled}
+          placeholder="Select Secondary Category"
+          onChange={(val) => handleSecondCategoryChange(val?.value)}
+        >
+          {secondaryCategories.map((sec) => (
+            <Option key={sec.id} value={sec.id}>
+              {sec.name}
+            </Option>
+          ))}
+        </Select>
+      </Form.Item>
+
+      {/* SUB CATEGORY */}
+      <Form.Item name="subcategoryId" label="Sub Category">
+        <Select
+          labelInValue
+          disabled={disabled}
+          placeholder="Select Sub Category"
+        >
+          {subCategories.map((sub) => (
+            <Option key={sub.id} value={sub.id}>
+              {sub.title}
+            </Option>
+          ))}
+        </Select>
+      </Form.Item>
 
       {/* ROW 1 */}
       <Form.Item
@@ -84,15 +224,8 @@ useEffect(() => {
         label="Logo"
         valuePropName="fileList"
         getValueFromEvent={normalizeFile}
-       
       >
-        <Upload
-          beforeUpload={() => false}
-          maxCount={1}
-          disabled={disabled}
-          
-          
-        >
+        <Upload beforeUpload={() => false} maxCount={1} disabled={disabled}>
           <Button icon={<UploadOutlined />}>Upload</Button>
         </Upload>
       </Form.Item>
@@ -138,11 +271,7 @@ useEffect(() => {
 
       <Form.Item name="state" label="State">
         {countruy === "India" ? (
-          <Select
-            disabled={disabled}
-            onChange={handleStateChange}
-            showSearch
-          >
+          <Select disabled={disabled} onChange={handleStateChange} showSearch>
             {states.map((state) => (
               <Option key={state.isoCode} value={state.name}>
                 {state.name}
@@ -172,10 +301,8 @@ useEffect(() => {
       <Form.Item name="city" label="City">
         <Input disabled={disabled} />
       </Form.Item>
- <Form.Item
-        name="courses_offered"
-        label="Courses Offered (B.Tech, MBA)"
-      >
+
+      <Form.Item name="courses_offered" label="Courses Offered (B.Tech, MBA)">
         <Select
           mode="tags"
           disabled={disabled}
@@ -184,11 +311,10 @@ useEffect(() => {
           open={false}
         />
       </Form.Item>
+
       <Form.Item name="is_top" label="Is Top" valuePropName="checked">
         <StatusSwitch disabled={disabled} />
       </Form.Item>
-
-     
 
       {/* FULL WIDTH */}
       <Form.Item

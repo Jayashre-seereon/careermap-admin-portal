@@ -5,7 +5,7 @@ import { logoutUser } from "../../features/auth/authStorage";
 import { useSessionStore } from "../../store/sessionStore";
 import { navSections } from "./navSections";
 import { getAdminNotification } from "../../api/notification";
-
+import { logoutApi } from "../../api/authApi";
 const stripHtml = (text = "") =>
   String(text || "")
     .replace(/<[^>]*>/g, " ")
@@ -125,10 +125,16 @@ console.log("DATA:", response?.data);
     };
   }, [isNotificationOpen]);
 
-  const handleLogout = () => {
-    logoutUser();
+ const handleLogout = async () => {
+  try {
+    await logoutApi(); // ✅ call backend logout
+  } catch (error) {
+    console.log("Logout API error:", error);
+  } finally {
+    logoutUser(); // clear local storage/session
     navigate("/login", { replace: true });
-  };
+  }
+};
 
   const handleGoToProfile = () => {
     setIsUserMenuOpen(false);

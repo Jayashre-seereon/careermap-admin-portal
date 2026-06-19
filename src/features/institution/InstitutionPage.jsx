@@ -59,6 +59,9 @@ const normalizeStringArray = (value) => {
 };
 
 const buildInstitutePayload = ({
+  categoryId,
+  secondcategoryId,
+  subcategoryId,
   name,
   logo,
   address,
@@ -77,6 +80,12 @@ const buildInstitutePayload = ({
   const file = extractFile(logo);
   const formattedDate = formatDateForPayload(tentative_date);
   const formData = new FormData();
+
+  // categoryId / secondcategoryId / subcategoryId are labelInValue
+  // objects ({ value, label }) coming from the Select fields.
+  formData.append("categoryId", categoryId?.value || "");
+  formData.append("secondcategoryId", secondcategoryId?.value || "");
+  formData.append("subcategoryId", subcategoryId?.value || "");
   formData.append("name", name);
   formData.append("address", address || "");
   formData.append("admission_process", admission_process || "");
@@ -103,6 +112,15 @@ const buildInstitutePayload = ({
 
 const mapInstitute = (item = {}) => ({
   id: item.id,
+  categoryId: item.categoryId,
+  secondcategoryId: item.secondcategoryId,
+  subcategoryId: item.subcategoryId,
+  // ✅ Names used by InstitutionForm to build labelInValue objects
+  // so Category / Secondary Category / Sub Category show NAMES
+  // (not raw ids) in both edit and view mode.
+  categoryName: item.category?.title,
+  secondCategoryName: item.secondaryCategory?.name,
+  subCategoryName: item.subCategory?.title,
   name: item.name || "",
   logo: item.logo || item.image || null,
   address: item.address || "",
@@ -114,7 +132,7 @@ const mapInstitute = (item = {}) => ({
   tentative_date: formatDateDisplay(item.tentative_date),
   institute_type: item.institute_type || "",
   url: item.url || "",
-  countruy: item.countruy ?? item.countruy ?? "India",
+  countruy: item.countruy ?? item.country ?? "India",
   state: item.state || "",
   city: item.city || "",
   district: item.district || "",
