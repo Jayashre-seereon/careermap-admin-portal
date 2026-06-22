@@ -44,6 +44,9 @@ const extractFile = (value) => {
 };
 
 const buildScholarshipPayload = ({
+  categoryId,
+  secondcategoryId,
+  subcategoryId,
   name,
   type,
   url,
@@ -56,6 +59,9 @@ const buildScholarshipPayload = ({
   description,
 }) => {
   const payload = {
+    categoryId: categoryId?.value || "",
+    secondcategoryId: secondcategoryId?.value || "",
+    subcategoryId: subcategoryId?.value || "",
     name,
     type,
     url: url || "",
@@ -91,6 +97,15 @@ const buildScholarshipPayload = ({
 
 const mapScholarship = (item = {}) => ({
   id: item.id,
+  categoryId: item.categoryId,
+  secondcategoryId: item.secondcategoryId,
+  subcategoryId: item.subcategoryId,
+  // ✅ Names used by ScholarshipForm to build labelInValue objects
+  // so Category / Secondary Category / Sub Category show NAMES
+  // (not raw ids) in both edit and view mode.
+  categoryName: item.category?.title,
+  secondCategoryName: item.secondaryCategory?.name,
+  subCategoryName: item.subCategory?.title,
   name: item.name || "",
   type: item.type || "",
   url: item.url || "",

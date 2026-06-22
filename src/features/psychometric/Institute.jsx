@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Button, Form, Input, Modal, Popconfirm, Table } from "antd";
+import { useEffect, useState } from "react";
+import { Button, Form, Input, Modal, Popconfirm, Table, message } from "antd";
 import {
   DeleteOutlined,
   EditOutlined,
@@ -9,20 +9,64 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 import { getValueFromInput, inputSanitizers, validationRules } from "../../utils/formValidation";
+import {
+  createInstitute,
+  deleteInstitute,
+  getInstitutes,
+  updateInstitute,
+} from "../../api/institutions";
 
-const INITIAL_DATA = [
-  {
-    id: "institute-1",
-    name: "Career Map Institute",
-    email: "info@careermap.io",
-    address: "Bhubaneswar, Odisha",
-    contactPerson: "Admin Team",
-    mobile: "9876543210",
-    allowedStudents: "250",
-  },
-];
+const getApiErrorMessage = (error, fallbackMessage) =>
+  error.response?.data?.message || error.message || fallbackMessage;
 
-function InstituteForm({ form, initialValues, viewMode, onSubmit, onCancel }) {
+const normalizeList = (response) => {
+  const list = response?.data;
+  if (Array.isArray(list)) return list;
+  if (list && typeof list === "object") return [list];
+  return [];
+};
+
+// backend -> frontend
+const mapInstitute = (item = {}) => ({
+  id: item.id,
+  name: item.name || "",
+  email: item.email || "",
+  contactPerson: item.contract_person || "",
+  mobile: item.mobile || "",
+  address: item.address || "",
+  allowedStudents: item.limit ?? "",
+});
+
+// frontend -> backend
+const buildInstitutePayload = ({
+  name,
+  email,
+  password,
+  contactPerson,
+  mobile,
+  address,
+  allowedStudents,
+}) => {
+  const payload = {
+    name,
+    email,
+    contract_person: contactPerson,
+    mobile,
+    address,
+    limit: allowedStudents ? Number(allowedStudents) : undefined,
+  };
+
+  if (password) {
+    payload.password = password;
+  }
+
+  return payload;
+};
+
+function InstituteForm({ form, mode, initialValues, onSubmit, onCancel }) {
+  const isView = mode === "view";
+  const isAdd = mode === "add";
+
   return (
     <Form
       form={form}
@@ -35,26 +79,32 @@ function InstituteForm({ form, initialValues, viewMode, onSubmit, onCancel }) {
       <Form.Item
         name="name"
         label="Name"
-        rules={[
-          validationRules.required("Name"),
-          validationRules.maxLength(100, "Name"),
-        ]}
+        rules={[validationRules.required("Name"), validationRules.maxLength(100, "Name")]}
         getValueFromEvent={getValueFromInput(inputSanitizers.trim)}
       >
-        <Input disabled={viewMode} placeholder="Enter institute name" />
+        <Input disabled={isView} placeholder="Enter institute name" />
       </Form.Item>
 
       <Form.Item
         name="email"
         label="Email"
-        rules={[
-          validationRules.required("Email"),
-          validationRules.email("Email"),
-        ]}
+        rules={[validationRules.required("Email"), validationRules.email("Email")]}
         getValueFromEvent={getValueFromInput(inputSanitizers.trim)}
       >
-        <Input disabled={viewMode} placeholder="Enter email" />
+        <Input disabled={isView} placeholder="Enter email" />
       </Form.Item>
+
+      {!isView && (
+        <Form.Item
+          name="password"
+          label="Password"
+          rules={isAdd ? [validationRules.required("Password")] : []}
+        >
+          <Input.Password
+            placeholder={isAdd ? "Enter password" : "Leave blank to keep current password"}
+          />
+        </Form.Item>
+      )}
 
       <Form.Item
         name="contactPerson"
@@ -65,19 +115,16 @@ function InstituteForm({ form, initialValues, viewMode, onSubmit, onCancel }) {
         ]}
         getValueFromEvent={getValueFromInput(inputSanitizers.trim)}
       >
-        <Input disabled={viewMode} placeholder="Enter contact person" />
+        <Input disabled={isView} placeholder="Enter contact person" />
       </Form.Item>
 
       <Form.Item
         name="mobile"
         label="Mobile"
-        rules={[
-          validationRules.required("Mobile"),
-          validationRules.phone("Mobile"),
-        ]}
+        rules={[validationRules.required("Mobile"), validationRules.phone("Mobile")]}
         getValueFromEvent={getValueFromInput(inputSanitizers.phone)}
       >
-        <Input disabled={viewMode} placeholder="Enter mobile number" maxLength={15} />
+        <Input disabled={isView} placeholder="Enter mobile number" maxLength={15} />
       </Form.Item>
 
       <Form.Item
@@ -89,31 +136,28 @@ function InstituteForm({ form, initialValues, viewMode, onSubmit, onCancel }) {
         ]}
         getValueFromEvent={getValueFromInput(inputSanitizers.numbersOnly)}
       >
-        <Input disabled={viewMode} placeholder="Enter allowed students" />
+        <Input disabled={isView} placeholder="Enter allowed students" />
       </Form.Item>
 
       <Form.Item
         name="address"
         label="Address"
         className="md:col-span-2"
-        rules={[
-          validationRules.required("Address"),
-          validationRules.maxLength(300, "Address"),
-        ]}
+        rules={[validationRules.required("Address"), validationRules.maxLength(300, "Address")]}
         getValueFromEvent={getValueFromInput(inputSanitizers.trim)}
       >
-        <Input.TextArea disabled={viewMode} rows={4} placeholder="Enter address" />
+        <Input.TextArea disabled={isView} rows={4} placeholder="Enter address" />
       </Form.Item>
 
       <div className="md:col-span-2 mt-2 flex items-center justify-end gap-2">
-        <Button onClick={onCancel}>{viewMode ? "Back" : "Cancel"}</Button>
-        {!viewMode && (
+        <Button onClick={onCancel}>{isView ? "Back" : "Cancel"}</Button>
+        {!isView && (
           <Button
             htmlType="submit"
             style={{ background: "#9a2119", borderColor: "#9a2119" }}
             className="text-white"
           >
-            {initialValues ? "Update Institute" : "Create Institute"}
+            {mode === "edit" ? "Update Institute" : "Create Institute"}
           </Button>
         )}
       </div>
@@ -122,70 +166,46 @@ function InstituteForm({ form, initialValues, viewMode, onSubmit, onCancel }) {
 }
 
 export default function Institute() {
+  const [messageApi, contextHolder] = message.useMessage();
   const [form] = Form.useForm();
-  const [data, setData] = useState(INITIAL_DATA);
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("add");
   const [selectedRecord, setSelectedRecord] = useState(null);
 
-  const filteredData = useMemo(() => {
-    const query = search.trim().toLowerCase();
-
-    if (!query) {
-      return data;
+  const loadInstitutes = async () => {
+    try {
+      setLoading(true);
+      const response = await getInstitutes();
+      setData(normalizeList(response).map(mapInstitute));
+    } catch (error) {
+      messageApi.error(getApiErrorMessage(error, "Failed to load institutes."));
+    } finally {
+      setLoading(false);
     }
+  };
 
-    return data.filter((item) =>
-      [item.name, item.email, item.address, item.contactPerson, item.mobile, item.allowedStudents]
-        .join(" ")
-        .toLowerCase()
-        .includes(query)
-    );
-  }, [data, search]);
+  useEffect(() => {
+    loadInstitutes();
+  }, []);
 
-  const isViewMode = mode === "view";
+  const filteredData = data.filter((item) =>
+    [item.name, item.email, item.address, item.contactPerson, item.mobile, item.allowedStudents]
+      .join(" ")
+      .toLowerCase()
+      .includes(search.trim().toLowerCase())
+  );
 
   const columns = [
-    {
-      title: "SL",
-      width: 70,
-      render: (_, __, index) => index + 1,
-    },
-    {
-      title: "Name",
-      dataIndex: "name",
-      width: 180,
-    },
-    {
-      title: "Email",
-      dataIndex: "email",
-      width: 220,
-    },
-    {
-      title: "Address",
-      dataIndex: "address",
-      width: 240,
-      render: (value) => value || "-",
-    },
-    {
-      title: "Contact Person",
-      dataIndex: "contactPerson",
-      width: 180,
-      render: (value) => value || "-",
-    },
-    {
-      title: "Mobile",
-      dataIndex: "mobile",
-      width: 150,
-      render: (value) => value || "-",
-    },
-    {
-      title: "Allowed Students",
-      dataIndex: "allowedStudents",
-      width: 160,
-      render: (value) => value || "-",
-    },
+    { title: "SL", width: 70, render: (_, __, index) => index + 1 },
+    { title: "Name", dataIndex: "name", width: 180 },
+    { title: "Email", dataIndex: "email", width: 220 },
+    { title: "Address", dataIndex: "address", width: 240, render: (v) => v || "-" },
+    { title: "Contact Person", dataIndex: "contactPerson", width: 180, render: (v) => v || "-" },
+    { title: "Mobile", dataIndex: "mobile", width: 150, render: (v) => v || "-" },
+    { title: "Allowed Students", dataIndex: "allowedStudents", width: 160, render: (v) => v || "-" },
     {
       title: "Action",
       width: 150,
@@ -244,24 +264,43 @@ export default function Institute() {
     form.resetFields();
   }
 
-  function handleDelete(record) {
-    setData((prev) => prev.filter((item) => item.id !== record.id));
+  async function handleDelete(record) {
+    try {
+      await deleteInstitute(record.id);
+      messageApi.success("Institute deleted successfully.");
+      await loadInstitutes();
+    } catch (error) {
+      messageApi.error(getApiErrorMessage(error, "Failed to delete institute."));
+    }
   }
 
-  function handleSubmit(values) {
-    if (mode === "edit" && selectedRecord) {
-      setData((prev) =>
-        prev.map((item) => (item.id === selectedRecord.id ? { ...item, ...values } : item))
-      );
-    } else {
-      setData((prev) => [...prev, { id: `institute-${Date.now()}`, ...values }]);
-    }
+  async function handleSubmit(values) {
+    try {
+      const payload = buildInstitutePayload(values);
 
-    handleClose();
+      if (mode === "edit" && selectedRecord) {
+        await updateInstitute(selectedRecord.id, payload);
+        messageApi.success("Institute updated successfully.");
+      } else {
+        await createInstitute(payload);
+        messageApi.success("Institute created successfully.");
+      }
+
+      handleClose();
+      await loadInstitutes();
+    } catch (error) {
+      messageApi.error(
+        getApiErrorMessage(
+          error,
+          mode === "edit" ? "Failed to update institute." : "Failed to create institute."
+        )
+      );
+    }
   }
 
   return (
     <div className="space-y-5">
+      {contextHolder}
       <h2 className="text-xl font-bold text-[#9a2119]">Institute Management</h2>
 
       <div className="rounded-2xl border bg-white p-6 shadow-sm">
@@ -273,10 +312,9 @@ export default function Institute() {
               placeholder="Search institutes..."
               prefix={<SearchOutlined className="text-[#9a2119]" />}
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
             />
-
             <Button
               onClick={() => setSearch("")}
               style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
@@ -284,7 +322,6 @@ export default function Institute() {
               <ReloadOutlined />
               Reset
             </Button>
-
             <Button
               onClick={handleOpenAdd}
               style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
@@ -299,6 +336,7 @@ export default function Institute() {
           columns={columns}
           dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
           rowKey="id"
+          loading={loading}
           pagination={{ pageSize: 5 }}
           scroll={{ x: "max-content" }}
         />
@@ -310,18 +348,12 @@ export default function Institute() {
         footer={null}
         width={900}
         destroyOnClose
-        title={
-          mode === "view"
-            ? "View Institute"
-            : mode === "edit"
-              ? "Edit Institute"
-              : "Add Institute"
-        }
+        title={mode === "view" ? "View Institute" : mode === "edit" ? "Edit Institute" : "Add Institute"}
       >
         <InstituteForm
           form={form}
+          mode={mode}
           initialValues={selectedRecord}
-          viewMode={isViewMode}
           onSubmit={handleSubmit}
           onCancel={handleClose}
         />
@@ -329,4 +361,3 @@ export default function Institute() {
     </div>
   );
 }
-

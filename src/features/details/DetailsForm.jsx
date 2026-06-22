@@ -73,6 +73,9 @@ function renderCommonFields(viewMode, options, onStreamChange, onCategoryChange,
           {renderOptions(options.subcategoryOptions)}
         </Select>
       </Form.Item>
+      <Form.Item name="description" label="Description" className="col-span-4">
+        <Input.TextArea rows={4} disabled={viewMode} placeholder="Enter description here..." />
+      </Form.Item>
     </>
   );
 }
@@ -358,17 +361,17 @@ function renderEntranceExamFields(viewMode, options, onAutoFill) {
                     </Select>
                   </Form.Item>
 
-                  <Form.Item {...restField} name={[name, "examMode"]} label="Exam Mode">
+                  {/* <Form.Item {...restField} name={[name, "examMode"]} label="Exam Mode">
                     <Select disabled={viewMode} placeholder="Select exam mode">
                       <Option value="online">Online</Option>
                       <Option value="offline">Offline</Option>
                       <Option value="hybrid">Hybrid</Option>
                     </Select>
-                  </Form.Item>
+                  </Form.Item> */}
 
-                  <Form.Item {...restField} name={[name, "frequency"]} label="Frequency">
+                  {/* <Form.Item {...restField} name={[name, "frequency"]} label="Frequency">
                     <Input disabled={viewMode} />
-                  </Form.Item>
+                  </Form.Item> */}
 
                   {/* Row 2 */}
                   <Form.Item {...restField} name={[name, "issue"]} label="Issue Date">
@@ -379,22 +382,22 @@ function renderEntranceExamFields(viewMode, options, onAutoFill) {
                     <DatePicker className="w-full" disabled={viewMode} format={DATE_DISPLAY_FORMAT} />
                   </Form.Item>
 
-                  <Form.Item {...restField} name={[name, "examDate"]} label="Exam Date">
+                  {/* <Form.Item {...restField} name={[name, "examDate"]} label="Exam Date">
                     <DatePicker className="w-full" disabled={viewMode} format={DATE_DISPLAY_FORMAT} />
-                  </Form.Item>
+                  </Form.Item> */}
 
-                  <Form.Item {...restField} name={[name, "duration"]} label="Duration">
+                  {/* <Form.Item {...restField} name={[name, "duration"]} label="Duration">
                     <Input disabled={viewMode} />
-                  </Form.Item>
+                  </Form.Item> */}
 
                   {/* Row 3 */}
-                  <Form.Item {...restField} name={[name, "totalMark"]} label="Total Mark">
+                  {/* <Form.Item {...restField} name={[name, "totalMark"]} label="Total Mark">
                     <Input disabled={viewMode} />
-                  </Form.Item>
+                  </Form.Item> */}
 
-                  <Form.Item {...restField} name={[name, "subject"]} label="Subject">
+                  {/* <Form.Item {...restField} name={[name, "subject"]} label="Subject">
                     <Select mode="tags" disabled={viewMode} placeholder="Add subjects" tokenSeparators={[","]} open={false} />
-                  </Form.Item>
+                  </Form.Item> */}
 
                   <Form.Item
                     {...restField}
@@ -405,22 +408,22 @@ function renderEntranceExamFields(viewMode, options, onAutoFill) {
                     <Input disabled={viewMode} />
                   </Form.Item>
 
-                  <Form.Item {...restField} name={[name, "topInstitutes"]} label="Top Institutes">
+                  {/* <Form.Item {...restField} name={[name, "topInstitutes"]} label="Top Institutes">
                     <Select mode="tags" disabled={viewMode} placeholder="Add top institutes" tokenSeparators={[","]} open={false} />
-                  </Form.Item>
+                  </Form.Item> */}
 
                   {/* Row 4: full-width */}
-                  <Form.Item {...restField} name={[name, "eligibility"]} label="Eligibility" className="col-span-4">
+                  {/* <Form.Item {...restField} name={[name, "eligibility"]} label="Eligibility" className="col-span-4">
                     <Input.TextArea rows={2} disabled={viewMode} />
-                  </Form.Item>
+                  </Form.Item> */}
 
-                  <Form.Item {...restField} name={[name, "about"]} label="About" className="col-span-4">
+                  {/* <Form.Item {...restField} name={[name, "about"]} label="About" className="col-span-4">
                     <RichTextEditor disabled={viewMode} height={180} />
-                  </Form.Item>
+                  </Form.Item> */}
 
-                  <Form.Item {...restField} name={[name, "examPattern"]} label="Exam Pattern" className="col-span-4">
+                  {/* <Form.Item {...restField} name={[name, "examPattern"]} label="Exam Pattern" className="col-span-4">
                     <RichTextEditor disabled={viewMode} height={200} />
-                  </Form.Item>
+                  </Form.Item> */}
                 </div>
               </div>
             ))}
@@ -509,7 +512,7 @@ function renderInstitutionFields(viewMode, options, normalizeUpload, onAutoFill)
                     <Input disabled={viewMode} placeholder="Institution type" />
                   </Form.Item>
 
-                  <Form.Item {...restField} name={[name, "country"]} label="Country">
+                  {/* <Form.Item {...restField} name={[name, "country"]} label="Country">
                     <Input disabled={viewMode} />
                   </Form.Item>
 
@@ -523,15 +526,15 @@ function renderInstitutionFields(viewMode, options, normalizeUpload, onAutoFill)
 
                   <Form.Item {...restField} name={[name, "district"]} label="District">
                     <Input disabled={viewMode} />
-                  </Form.Item>
+                  </Form.Item> */}
 
-                  <Form.Item {...restField} name={[name, "admission"]} label="Admission Process">
+                  {/* <Form.Item {...restField} name={[name, "admission"]} label="Admission Process">
                     <Input disabled={viewMode} />
                   </Form.Item>
 
                   <Form.Item {...restField} name={[name, "date"]} label="Tentative Date">
                     <DatePicker className="w-full" disabled={viewMode} format={DATE_DISPLAY_FORMAT} />
-                  </Form.Item>
+                  </Form.Item> */}
 
                   <Form.Item {...restField} name={[name, "url"]} label="URL" rules={[validationRules.url("URL")]}>
                     <Input disabled={viewMode} />
@@ -552,13 +555,13 @@ function renderInstitutionFields(viewMode, options, normalizeUpload, onAutoFill)
                     <Input.TextArea rows={2} disabled={viewMode} />
                   </Form.Item>
 
-                  <Form.Item {...restField} name={[name, "coursesOffered"]} label="Courses Offered" className="col-span-4">
+                  {/* <Form.Item {...restField} name={[name, "coursesOffered"]} label="Courses Offered" className="col-span-4">
                     <Select mode="tags" disabled={viewMode} placeholder="Add courses offered" tokenSeparators={[","]} open={false} />
-                  </Form.Item>
+                  </Form.Item> */}
 
-                  <Form.Item {...restField} name={[name, "about"]} label="About" className="col-span-4">
+                  {/* <Form.Item {...restField} name={[name, "about"]} label="About" className="col-span-4">
                     <RichTextEditor disabled={viewMode} height={180} />
-                  </Form.Item>
+                  </Form.Item> */}
                 </div>
               </div>
             ))}
@@ -618,6 +621,7 @@ export default function DetailsForm({
   const normalizedInitialValues = initialValues
     ? {
         ...initialValues,
+        description: initialValues.description || "",
         // Career Paths array
         careerPaths: Array.isArray(initialValues.careerPaths) && initialValues.careerPaths.length > 0
           ? initialValues.careerPaths

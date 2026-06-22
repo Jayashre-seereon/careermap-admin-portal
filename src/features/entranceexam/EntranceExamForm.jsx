@@ -1,5 +1,5 @@
 import { Form, Input, Select, Button, DatePicker } from "antd";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { validationRules } from "../../utils/formValidation";
 import RichTextEditor from "../../components/ui/RichTextEditor";
 import { DATE_DISPLAY_FORMAT, parseDateValue } from "../../utils/date";
@@ -46,16 +46,16 @@ export default function EntranceExamForm({
   onSubmit,
   initialValues,
   mode,
-  moduleOptions = [],
   streamOptions = [],
   categoryOptions = [],
   secondCategoryOptions = [],
   subcategoryOptions = [],
+  onStreamChange,
+  onCategoryChange,
+  onSecondCategoryChange,
 }) {
   const [form] = Form.useForm();
   const isView = mode === "view";
-  const selectedCategoryId = Form.useWatch("categoryId", form);
-  const selectedSecondCategoryId = Form.useWatch("secondcategoryId", form);
 
   useEffect(() => {
     if (initialValues) {
@@ -72,55 +72,29 @@ export default function EntranceExamForm({
     }
   }, [form, initialValues]);
 
-  const filteredSecondCategories = useMemo(() => {
-    if (!selectedCategoryId) {
-      return secondCategoryOptions;
-    }
-
-    return secondCategoryOptions.filter(
-      (item) => !item.categoryId || item.categoryId === selectedCategoryId
-    );
-  }, [secondCategoryOptions, selectedCategoryId]);
-
-  const filteredSubcategories = useMemo(() => {
-    return subcategoryOptions.filter((item) => {
-      const matchesCategory =
-        !selectedCategoryId || !item.categoryId || item.categoryId === selectedCategoryId;
-      const matchesSecondCategory =
-        !selectedSecondCategoryId ||
-        !item.secondcategoryId ||
-        item.secondcategoryId === selectedSecondCategoryId;
-
-      return matchesCategory && matchesSecondCategory;
+  const handleStreamChange = (streamId) => {
+    form.setFieldsValue({
+      categoryId: undefined,
+      secondcategoryId: undefined,
+      subcategoryId: undefined,
     });
-  }, [subcategoryOptions, selectedCategoryId, selectedSecondCategoryId]);
+    onStreamChange?.(streamId);
+  };
 
-  useEffect(() => {
-    const currentSecondCategoryId = form.getFieldValue("secondcategoryId");
-    const hasSecondCategory = filteredSecondCategories.some(
-      (item) => item.id === currentSecondCategoryId
-    );
+  const handleCategoryChange = (categoryId) => {
+    form.setFieldsValue({
+      secondcategoryId: undefined,
+      subcategoryId: undefined,
+    });
+    onCategoryChange?.(categoryId);
+  };
 
-    if (currentSecondCategoryId && !hasSecondCategory) {
-      form.setFieldsValue({
-        secondcategoryId: undefined,
-        subcategoryId: undefined,
-      });
-    }
-  }, [filteredSecondCategories, form]);
-
-  useEffect(() => {
-    const currentSubcategoryId = form.getFieldValue("subcategoryId");
-    const hasSubcategory = filteredSubcategories.some(
-      (item) => item.id === currentSubcategoryId
-    );
-
-    if (currentSubcategoryId && !hasSubcategory) {
-      form.setFieldsValue({
-        subcategoryId: undefined,
-      });
-    }
-  }, [filteredSubcategories, form]);
+  const handleSecondCategoryChange = (secondCategoryId) => {
+    form.setFieldsValue({
+      subcategoryId: undefined,
+    });
+    onSecondCategoryChange?.(secondCategoryId);
+  };
 
   return (
     <Form
@@ -128,48 +102,42 @@ export default function EntranceExamForm({
       layout="vertical"
       onFinish={onSubmit}
       validateTrigger={["onChange", "onBlur"]}
-      className="grid grid-cols-1 md:grid-cols-2 gap-4"
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
     >
-      <h3 className="md:col-span-2 mb-1 text-lg font-semibold text-[#9a2119]">
+      <h3 className="md:col-span-2 lg:col-span-4 mb-1 text-lg font-semibold text-[#9a2119]">
         Entrance Exam Details
       </h3>
-
-      {/* <Form.Item
-        name="moduleId"
-        label="Select Module"
-        rules={[validationRules.required("Module")]}
-      >
-        <Select disabled={isView} placeholder="Select module">
-          {moduleOptions.map((item) => (
-            <Option key={item.id} value={item.id}>
-              {item.label}
-            </Option>
-          ))}
-        </Select>
-      </Form.Item> */}
 
       <Form.Item
         name="streamId"
         label="Stream"
         rules={[validationRules.required("Stream")]}
       >
-        <Select disabled={isView} placeholder="Select Stream">
+        <Select
+          disabled={isView}
+          placeholder="Select Stream"
+          onChange={handleStreamChange}
+        >
           {streamOptions.map((item) => (
-            <Option key={item.id} value={item.id}>
+            <Option key={item.value} value={item.value}>
               {item.label}
             </Option>
           ))}
         </Select>
       </Form.Item>
 
-      {/* <Form.Item
+      <Form.Item
         name="categoryId"
         label="Select Category"
         rules={[validationRules.required("Category")]}
       >
-        <Select disabled={isView} placeholder="Select category">
+        <Select
+          disabled={isView}
+          placeholder="Select category"
+          onChange={handleCategoryChange}
+        >
           {categoryOptions.map((item) => (
-            <Option key={item.id} value={item.id}>
+            <Option key={item.value} value={item.value}>
               {item.label}
             </Option>
           ))}
@@ -181,9 +149,13 @@ export default function EntranceExamForm({
         label="2nd Category"
         rules={[validationRules.required("2nd category")]}
       >
-        <Select disabled={isView} placeholder="Select 2nd Category">
-          {filteredSecondCategories.map((item) => (
-            <Option key={item.id} value={item.id}>
+        <Select
+          disabled={isView}
+          placeholder="Select 2nd Category"
+          onChange={handleSecondCategoryChange}
+        >
+          {secondCategoryOptions.map((item) => (
+            <Option key={item.value} value={item.value}>
               {item.label}
             </Option>
           ))}
@@ -196,13 +168,13 @@ export default function EntranceExamForm({
         rules={[validationRules.required("Subcategory")]}
       >
         <Select disabled={isView} placeholder="Select Subcategory">
-          {filteredSubcategories.map((item) => (
-            <Option key={item.id} value={item.id}>
+          {subcategoryOptions.map((item) => (
+            <Option key={item.value} value={item.value}>
               {item.label}
             </Option>
           ))}
         </Select>
-      </Form.Item> */}
+      </Form.Item>
 
       <Form.Item
         name="examname"
@@ -229,23 +201,7 @@ export default function EntranceExamForm({
           placeholder="DD-MM-YYYY"
         />
       </Form.Item>
-
-      <Form.Item
-        name="eligibility"
-        label="Eligibility"
-        className="md:col-span-2"
-      >
-        <Input.TextArea rows={3} disabled={isView} />
-      </Form.Item>
-
-      <Form.Item
-        name="about"
-        label="About"
-        className="md:col-span-2"
-      >
-        <Input.TextArea rows={3} disabled={isView} />
-      </Form.Item>
-
+{/* 
       <Form.Item name="examDate" label="Exam Date">
         <DatePicker
           className="w-full"
@@ -294,17 +250,8 @@ export default function EntranceExamForm({
       </Form.Item>
 
       <Form.Item
-        name="examPattern"
-        label="Exam Pattern"
-        className="md:col-span-2"
-      >
-        <RichTextEditor disabled={isView} height={220} />
-      </Form.Item>
-
-      <Form.Item
         name="topInstitutes"
         label="Top Institutes"
-        className="md:col-span-2"
       >
         <Select
           mode="tags"
@@ -313,19 +260,43 @@ export default function EntranceExamForm({
           tokenSeparators={[","]}
           open={false}
         />
-      </Form.Item>
+      </Form.Item> */}
 
       <Form.Item
         name="url"
         label="URL"
-        className="md:col-span-2"
         rules={[validationRules.url("URL")]}
       >
         <Input disabled={isView} />
       </Form.Item>
 
+      {/* FULL WIDTH FIELDS */}
+      {/* <Form.Item
+        name="eligibility"
+        label="Eligibility"
+        className="md:col-span-2 lg:col-span-4"
+      >
+        <Input.TextArea rows={3} disabled={isView} />
+      </Form.Item>
+
+      <Form.Item
+        name="about"
+        label="About"
+        className="md:col-span-2 lg:col-span-4"
+      >
+        <Input.TextArea rows={3} disabled={isView} />
+      </Form.Item>
+
+      <Form.Item
+        name="examPattern"
+        label="Exam Pattern"
+        className="md:col-span-2 lg:col-span-4"
+      >
+        <RichTextEditor disabled={isView} height={220} />
+      </Form.Item> */}
+
       {!isView && (
-        <div className="md:col-span-2">
+        <div className="md:col-span-2 lg:col-span-4">
           <Button
             htmlType="submit"
             block

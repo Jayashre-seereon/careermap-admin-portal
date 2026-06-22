@@ -8,11 +8,10 @@ import {
   getEntranceExams,
   updateEntranceExam,
 } from "../../api/entranceexam";
-import { getModules } from "../../api/module";
 import { getStreams } from "../../api/stream";
-import { getCategories } from "../../api/category";
-import { getSecondaryCategories } from "../../api/secondaryCategory";
-import { getSubCategories } from "../../api/subcategory";
+import { getCategoriesByStream } from "../../api/category";
+import { getSecondaryCategoriesByCategory } from "../../api/secondaryCategory";
+import { getSubCategoriesBySecondCategory } from "../../api/subcategory";
 import { formatDateDisplay, formatDateForPayload } from "../../utils/date";
 
 const getApiErrorMessage = (error, fallbackMessage) =>
@@ -88,7 +87,6 @@ const normalizeStringArray = (value) => {
 };
 
 const buildEntranceExamPayload = ({
-  moduleId,
   streamId,
   categoryId,
   secondcategoryId,
@@ -108,7 +106,6 @@ const buildEntranceExamPayload = ({
   topInstitutes,
   url,
 }) => ({
-  moduleId,
   streamId,
   categoryId,
   secondcategoryId,
@@ -129,8 +126,9 @@ const buildEntranceExamPayload = ({
   url: url || "",
 });
 
+// Returns options in {value, label} shape, as used by EntranceExamForm
 const mapOption = (item = {}, labelKeys = []) => ({
-  id: item.id,
+  value: item.id,
   label: labelKeys.map((key) => item[key]).find(Boolean) || "",
 });
 
@@ -138,7 +136,6 @@ const mapEntranceExam = (item = {}) => ({
   id: item.id,
   createdAt: item.createdAt,
   updatedAt: item.updatedAt,
-  moduleId: item.moduleId || item.module?.id || undefined,
   streamId: item.streamId || item.stream?.id || undefined,
   categoryId: item.categoryId || item.category?.id || undefined,
   secondcategoryId:
@@ -160,7 +157,6 @@ const mapEntranceExam = (item = {}) => ({
     ? item.topInstitutes || item.top_institutes || item.top_institution
     : normalizeStringArray(item.topInstitutes || item.top_institutes || item.top_institution),
   url: item.url || "",
-  moduleName: item.module?.title || item.moduleName || "",
   streamName: item.stream?.name || item.streamName || "",
   categoryName: item.category?.title || item.category?.name || item.categoryName || "",
   secondCategoryName:
@@ -181,11 +177,11 @@ export default function EntranceExamPage() {
   const [current, setCurrent] = useState(null);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
-  const [modules, setModules] = useState([]);
-  const [streams, setStreams] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [secondCategories, setSecondCategories] = useState([]);
-  const [subcategories, setSubcategories] = useState([]);
+
+  const [streamOptions, setStreamOptions] = useState([]);
+  const [categoryOptions, setCategoryOptions] = useState([]);
+  const [secondCategoryOptions, setSecondCategoryOptions] = useState([]);
+  const [subcategoryOptions, setSubcategoryOptions] = useState([]);
 
   const loadEntranceExams = async () => {
     try {
@@ -199,81 +195,91 @@ export default function EntranceExamPage() {
     }
   };
 
-  const loadDropdowns = async () => {
+  const loadStreams = async () => {
     try {
-      const [
-        moduleResponse,
-        streamResponse,
-        categoryResponse,
-        secondCategoryResponse,
-        subcategoryResponse,
-      ] = await Promise.all([
-        getModules(),
-        getStreams(),
-        getCategories(),
-        getSecondaryCategories(),
-        getSubCategories(),
-      ]);
-
-      setModules(normalizeList(moduleResponse).map((item) => mapOption(item, ["title", "name"])));
-      setStreams(normalizeList(streamResponse).map((item) => mapOption(item, ["name", "title"])));
-      setCategories(normalizeList(categoryResponse).map((item) => mapOption(item, ["title", "name"])));
-      setSecondCategories(
-        normalizeList(secondCategoryResponse).map((item) => ({
-          ...mapOption(item, ["name", "title"]),
-          categoryId: item.categoryId || item.category?.id || undefined,
-        }))
-      );
-      setSubcategories(
-        normalizeList(subcategoryResponse).map((item) => ({
-          ...mapOption(item, ["title", "name"]),
-          categoryId: item.categoryId || item.category?.id || undefined,
-          secondcategoryId:
-            item.secondcategoryId ||
-            item.secondCategoryId ||
-            item.secondcategory?.id ||
-            item.secondCategory?.id ||
-            undefined,
-        }))
-      );
+      const response = await getStreams();
+      setStreamOptions(normalizeList(response).map((item) => mapOption(item, ["name", "title"])));
     } catch (error) {
-      messageApi.error(
-        getApiErrorMessage(error, "Failed to load entrance exam form options.")
-      );
+      messageApi.error(getApiErrorMessage(error, "Failed to load streams."));
+    }
+  };
+
+  const loadCategories = async (streamId) => {
+    if (!streamId) {
+      setCategoryOptions([]);
+      setSecondCategoryOptions([]);
+      setSubcategoryOptions([]);
+      return;
+    }
+
+    try {
+      const response = await getCategoriesByStream(streamId);
+      setCategoryOptions(normalizeList(response).map((item) => mapOption(item, ["title", "name"])));
+    } catch (error) {
+      messageApi.error(getApiErrorMessage(error, "Failed to load categories."));
+    }
+  };
+
+  const loadSecondCategories = async (categoryId) => {
+    if (!categoryId) {
+      setSecondCategoryOptions([]);
+      setSubcategoryOptions([]);
+      return;
+    }
+
+    try {
+      const response = await getSecondaryCategoriesByCategory(categoryId);
+      setSecondCategoryOptions(normalizeList(response).map((item) => mapOption(item, ["name", "title"])));
+    } catch (error) {
+      messageApi.error(getApiErrorMessage(error, "Failed to load secondary categories."));
+    }
+  };
+
+  const loadSubcategories = async (secondCategoryId) => {
+    if (!secondCategoryId) {
+      setSubcategoryOptions([]);
+      return;
+    }
+
+    try {
+      const response = await getSubCategoriesBySecondCategory(secondCategoryId);
+      setSubcategoryOptions(normalizeList(response).map((item) => mapOption(item, ["title", "name"])));
+    } catch (error) {
+      messageApi.error(getApiErrorMessage(error, "Failed to load subcategories."));
     }
   };
 
   useEffect(() => {
     loadEntranceExams();
-    loadDropdowns();
+    loadStreams();
   }, []);
 
-  const getLabel = (items, id, fallback = "") => {
-    if (fallback) {
-      return fallback;
-    }
-
-    return items.find((item) => item.id === id)?.label || "";
-  };
-
-  const tableData = data.map((item) => ({
-    ...item,
-    moduleName: getLabel(modules, item.moduleId, item.moduleName),
-    streamName: getLabel(streams, item.streamId, item.streamName),
-    categoryName: getLabel(categories, item.categoryId, item.categoryName),
-    secondCategoryName: getLabel(
-      secondCategories,
-      item.secondcategoryId,
-      item.secondCategoryName
-    ),
-    subcategoryName: getLabel(subcategories, item.subcategoryId, item.subcategoryName),
-  }));
-
-  const filteredData = tableData.filter((item) =>
-    `${item.moduleName} ${item.streamName} ${item.categoryName} ${item.secondCategoryName} ${item.subcategoryName} ${item.examname} ${item.eligibility} ${item.examMode} ${item.subject} ${item.topInstitutes} ${item.url}`
+  const filteredData = data.filter((item) =>
+    `${item.streamName} ${item.categoryName} ${item.secondCategoryName} ${item.subcategoryName} ${item.examname} ${item.eligibility} ${item.examMode} ${item.subject} ${item.topInstitutes} ${item.url}`
       .toLowerCase()
       .includes(search.toLowerCase())
   );
+
+  const handleStreamChange = async (streamId) => {
+    await loadCategories(streamId);
+  };
+
+  const handleCategoryChange = async (categoryId) => {
+    await loadSecondCategories(categoryId);
+  };
+
+  const handleSecondCategoryChange = async (secondCategoryId) => {
+    await loadSubcategories(secondCategoryId);
+  };
+
+  // Preloads the full cascade (category -> 2nd category -> subcategory
+  // options) for an existing record so the dropdowns have the right
+  // option lists ready before the modal opens.
+  const prepareCascadeForRecord = async (record) => {
+    await loadCategories(record.streamId);
+    await loadSecondCategories(record.categoryId);
+    await loadSubcategories(record.secondcategoryId);
+  };
 
   const handleSubmit = async (values) => {
     try {
@@ -323,14 +329,19 @@ export default function EntranceExamPage() {
         onAdd={() => {
           setCurrent(null);
           setMode("add");
+          setCategoryOptions([]);
+          setSecondCategoryOptions([]);
+          setSubcategoryOptions([]);
           setOpen(true);
         }}
-        onView={(record) => {
+        onView={async (record) => {
+          await prepareCascadeForRecord(record);
           setCurrent(record);
           setMode("view");
           setOpen(true);
         }}
-        onEdit={(record) => {
+        onEdit={async (record) => {
+          await prepareCascadeForRecord(record);
           setCurrent(record);
           setMode("edit");
           setOpen(true);
@@ -359,11 +370,13 @@ export default function EntranceExamPage() {
           onSubmit={handleSubmit}
           initialValues={current}
           mode={mode}
-          moduleOptions={modules}
-          streamOptions={streams}
-          categoryOptions={categories}
-          secondCategoryOptions={secondCategories}
-          subcategoryOptions={subcategories}
+          streamOptions={streamOptions}
+          categoryOptions={categoryOptions}
+          secondCategoryOptions={secondCategoryOptions}
+          subcategoryOptions={subcategoryOptions}
+          onStreamChange={handleStreamChange}
+          onCategoryChange={handleCategoryChange}
+          onSecondCategoryChange={handleSecondCategoryChange}
         />
       </Modal>
     </>

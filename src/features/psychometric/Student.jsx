@@ -1,5 +1,15 @@
-import { useMemo, useState } from "react";
-import { Button, Form, Input, Modal, Popconfirm, Select, Table } from "antd";
+import { useEffect, useState } from "react";
+import {
+  Button,
+  DatePicker,
+  Form,
+  Input,
+  Modal,
+  Popconfirm,
+  Select,
+  Table,
+  message,
+} from "antd";
 import {
   DeleteOutlined,
   EditOutlined,
@@ -9,32 +19,82 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 import { getValueFromInput, inputSanitizers, validationRules } from "../../utils/formValidation";
+import { DATE_DISPLAY_FORMAT, formatDateDisplay, formatDateForPayload, parseDateValue } from "../../utils/date";
+import { getInstitutes } from "../../api/institutions";
+import {
+  createStudent,
+  deleteStudent,
+  getStudents,
+  updateStudent,
+} from "../../api/student";
 
 const { Option } = Select;
 
-const INSTITUTION_OPTIONS = [
-  "Career Map Institute",
-  "Odisha Career School",
-  "Future Vision Academy",
-];
+const GENDER_OPTIONS = ["Male", "Female", "Other"];
 
-const INITIAL_DATA = [
-  {
-    id: "student-1",
-    registerInstitution: "Career Map Institute",
-    name: "Rahul Das",
-    email: "rahul.das@example.com",
-    age: "16",
-    studentClass: "10",
-    school: "DAV Public School",
-    location: "Bhubaneswar",
-    subjectsStream: "Science",
-    careerAspiration: "Doctor",
-    parentalOccupation: "Teacher",
-  },
-];
+const getApiErrorMessage = (error, fallbackMessage) =>
+  error.response?.data?.message || error.message || fallbackMessage;
 
-function StudentForm({ form, initialValues, viewMode, onSubmit, onCancel }) {
+const normalizeList = (response) => {
+  const list = response?.data;
+  if (Array.isArray(list)) return list;
+  if (list && typeof list === "object") return [list];
+  return [];
+};
+
+// Strip "+91" (or any leading +) so the input only ever shows the bare 10 digits
+const stripCountryCode = (value) => {
+  const text = (value || "").trim();
+  if (!text) return "";
+  return text.replace(/^\+91/, "").replace(/^\+/, "");
+};
+
+// Always re-add "+91" before sending to the backend
+const formatMobileForPayload = (value) => {
+  const digits = (value || "").trim();
+  if (!digits) return "";
+  return `+91${digits}`;
+};
+
+// backend -> frontend
+const mapStudent = (item = {}) => ({
+  id: item.id,
+  registerInstitution: item.instituteId,
+  firstName: item.firstName || "",
+  lastName:item.lastName || "",
+  username:item.username || "",
+  email: item.email || "",
+  mobile: stripCountryCode(item.mobile),
+  gender: item.gender || undefined,
+  dob: parseDateValue(item.dataOfBirth),
+  address: item.address || "",
+});
+
+// frontend -> backend
+// NOTE: backend key is "dataOfBirth" (confirmed from API response), not "dateOfBirth"
+const buildStudentPayload = ({
+  registerInstitution,
+  firstName,
+  lastName,
+  username,
+  email,
+  mobile,
+  gender,
+  dob,
+  address,
+}) => ({
+  instituteId: registerInstitution,
+  firstName,
+  lastName,
+  username,
+  email,
+  mobile: formatMobileForPayload(mobile),
+  gender,
+  dataOfBirth: formatDateForPayload(dob),
+  address,
+});
+
+function StudentForm({ form, initialValues, viewMode, onSubmit, onCancel, institutes, institutesLoading }) {
   return (
     <Form
       form={form}
@@ -49,22 +109,44 @@ function StudentForm({ form, initialValues, viewMode, onSubmit, onCancel }) {
         label="Register Institution"
         rules={[validationRules.required("Register institution")]}
       >
-        <Select disabled={viewMode} placeholder="-- Select Institution --">
-          {INSTITUTION_OPTIONS.map((option) => (
-            <Option key={option} value={option}>
-              {option}
+        <Select
+          disabled={viewMode}
+          loading={institutesLoading}
+          placeholder="-- Select Institution --"
+          showSearch
+          optionFilterProp="children"
+        >
+          {institutes.map((institute) => (
+            <Option key={institute.id} value={institute.id}>
+              {institute.name}
             </Option>
           ))}
         </Select>
       </Form.Item>
 
       <Form.Item
-        name="name"
-        label="Name"
-        rules={[validationRules.required("Name"), validationRules.maxLength(100, "Name")]}
+        name="firstName"
+        label="First Name"
+        rules={[validationRules.required("First Name"), validationRules.maxLength(50, "First Name")]}
         getValueFromEvent={getValueFromInput(inputSanitizers.trim)}
       >
-        <Input disabled={viewMode} placeholder="Enter student name" />
+        <Input disabled={viewMode} placeholder="Enter first name" />
+      </Form.Item>
+        <Form.Item
+        name="lastName"
+        label="Last Name"
+        rules={[validationRules.required("Last Name"), validationRules.maxLength(50, "Last Name")]}
+        getValueFromEvent={getValueFromInput(inputSanitizers.trim)}
+      >
+        <Input disabled={viewMode} placeholder="Enter last name" />
+      </Form.Item>
+        <Form.Item
+        name="username"
+        label="User Name"
+        rules={[validationRules.required("User Name"), validationRules.maxLength(50, "User Name")]}
+        getValueFromEvent={getValueFromInput(inputSanitizers.trim)}
+      >
+        <Input disabled={viewMode} placeholder="Enter user name" />
       </Form.Item>
 
       <Form.Item
@@ -77,76 +159,54 @@ function StudentForm({ form, initialValues, viewMode, onSubmit, onCancel }) {
       </Form.Item>
 
       <Form.Item
-        name="age"
-        label="Age"
-        rules={[validationRules.required("Age"), validationRules.numbersOnly("Age")]}
+        name="mobile"
+        label="Mobile"
+        rules={[validationRules.required("Mobile"), validationRules.phone("Mobile")]}
         getValueFromEvent={getValueFromInput(inputSanitizers.numbersOnly)}
       >
-        <Input disabled={viewMode} placeholder="Enter age" maxLength={2} />
+        <Input
+          addonBefore="+91"
+          disabled={viewMode}
+          placeholder="Enter 10-digit mobile number"
+          maxLength={10}
+        />
       </Form.Item>
 
       <Form.Item
-        name="studentClass"
-        label="Class"
-        rules={[validationRules.required("Class"), validationRules.maxLength(50, "Class")]}
-        getValueFromEvent={getValueFromInput(inputSanitizers.trim)}
+        name="gender"
+        label="Gender"
+        rules={[validationRules.required("Gender")]}
       >
-        <Input disabled={viewMode} placeholder="Enter class" />
+        <Select disabled={viewMode} placeholder="-- Select Gender --">
+          {GENDER_OPTIONS.map((option) => (
+            <Option key={option} value={option}>
+              {option}
+            </Option>
+          ))}
+        </Select>
       </Form.Item>
 
       <Form.Item
-        name="school"
-        label="School"
-        rules={[validationRules.required("School"), validationRules.maxLength(150, "School")]}
-        getValueFromEvent={getValueFromInput(inputSanitizers.trim)}
+        name="dob"
+        label="Date of Birth"
+        rules={[validationRules.required("Date of birth")]}
       >
-        <Input disabled={viewMode} placeholder="Enter school name" />
+        <DatePicker
+          className="w-full"
+          disabled={viewMode}
+          format={DATE_DISPLAY_FORMAT}
+          placeholder="DD-MM-YYYY"
+        />
       </Form.Item>
 
       <Form.Item
-        name="location"
-        label="Location"
-        rules={[validationRules.required("Location"), validationRules.maxLength(150, "Location")]}
-        getValueFromEvent={getValueFromInput(inputSanitizers.trim)}
-      >
-        <Input disabled={viewMode} placeholder="Enter location" />
-      </Form.Item>
-
-      <Form.Item
-        name="subjectsStream"
-        label="Subjects/Stream"
-        rules={[
-          validationRules.required("Subjects/Stream"),
-          validationRules.maxLength(150, "Subjects/Stream"),
-        ]}
-        getValueFromEvent={getValueFromInput(inputSanitizers.trim)}
-      >
-        <Input disabled={viewMode} placeholder="Enter subjects or stream" />
-      </Form.Item>
-
-      <Form.Item
-        name="careerAspiration"
-        label="Career Aspiration"
-        rules={[
-          validationRules.required("Career aspiration"),
-          validationRules.maxLength(150, "Career aspiration"),
-        ]}
-        getValueFromEvent={getValueFromInput(inputSanitizers.trim)}
-      >
-        <Input disabled={viewMode} placeholder="Enter career aspiration" />
-      </Form.Item>
-
-      <Form.Item
-        name="parentalOccupation"
-        label="Parental Occupation"
+        name="address"
+        label="Address"
         className="md:col-span-2"
-        rules={[
-          validationRules.required("Parental occupation"),
-          validationRules.maxLength(150, "Parental occupation"),
-        ]}
+        rules={[validationRules.required("Address"), validationRules.maxLength(300, "Address")]}
         getValueFromEvent={getValueFromInput(inputSanitizers.trim)}
       >
-        <Input disabled={viewMode} placeholder="Enter parental occupation" />
+        <Input.TextArea disabled={viewMode} rows={4} placeholder="Enter address" />
       </Form.Item>
 
       <div className="md:col-span-2 mt-2 flex items-center justify-end gap-2">
@@ -166,38 +226,64 @@ function StudentForm({ form, initialValues, viewMode, onSubmit, onCancel }) {
 }
 
 export default function Student() {
+  const [messageApi, contextHolder] = message.useMessage();
   const [form] = Form.useForm();
-  const [data, setData] = useState(INITIAL_DATA);
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [institutes, setInstitutes] = useState([]);
+  const [institutesLoading, setInstitutesLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("add");
   const [selectedRecord, setSelectedRecord] = useState(null);
 
-  const filteredData = useMemo(() => {
-    const query = search.trim().toLowerCase();
-
-    if (!query) {
-      return data;
+  const loadStudents = async () => {
+    try {
+      setLoading(true);
+      const response = await getStudents();
+      setData(normalizeList(response).map(mapStudent));
+    } catch (error) {
+      messageApi.error(getApiErrorMessage(error, "Failed to load students."));
+    } finally {
+      setLoading(false);
     }
+  };
 
-    return data.filter((item) =>
-      [
-        item.registerInstitution,
-        item.name,
-        item.email,
-        item.age,
-        item.studentClass,
-        item.school,
-        item.location,
-        item.subjectsStream,
-        item.careerAspiration,
-        item.parentalOccupation,
-      ]
-        .join(" ")
-        .toLowerCase()
-        .includes(query)
-    );
-  }, [data, search]);
+  const loadInstitutes = async () => {
+    try {
+      setInstitutesLoading(true);
+      const response = await getInstitutes();
+      setInstitutes(normalizeList(response));
+    } catch (error) {
+      messageApi.error(getApiErrorMessage(error, "Failed to load institutions."));
+    } finally {
+      setInstitutesLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadStudents();
+    loadInstitutes();
+  }, []);
+
+  const institutionName = (id) => institutes.find((inst) => inst.id === id)?.name || "-";
+
+  const filteredData = data.filter((item) =>
+    [
+      institutionName(item.registerInstitution),
+      item.firstName,
+      item.lastName,
+      item.username,
+      item.email,
+      item.mobile,
+      item.gender,
+      formatDateDisplay(item.dob),
+      item.address,
+    ]
+      .join(" ")
+      .toLowerCase()
+      .includes(search.trim().toLowerCase())
+  );
 
   const isViewMode = mode === "view";
 
@@ -229,86 +315,66 @@ export default function Student() {
     form.resetFields();
   }
 
-  function handleDelete(record) {
-    setData((prev) => prev.filter((item) => item.id !== record.id));
+  async function handleDelete(record) {
+    try {
+      await deleteStudent(record.id);
+      messageApi.success("Student deleted successfully.");
+      await loadStudents();
+    } catch (error) {
+      messageApi.error(getApiErrorMessage(error, "Failed to delete student."));
+    }
   }
 
-  function handleSubmit(values) {
-    if (mode === "edit" && selectedRecord) {
-      setData((prev) =>
-        prev.map((item) => (item.id === selectedRecord.id ? { ...item, ...values } : item))
-      );
-    } else {
-      setData((prev) => [...prev, { id: `student-${Date.now()}`, ...values }]);
-    }
+  async function handleSubmit(values) {
+    try {
+      const payload = buildStudentPayload(values);
 
-    handleClose();
+      if (mode === "edit" && selectedRecord) {
+        await updateStudent(selectedRecord.id, payload);
+        messageApi.success("Student updated successfully.");
+      } else {
+        await createStudent(payload);
+        messageApi.success("Student created successfully.");
+      }
+
+      handleClose();
+      await loadStudents();
+    } catch (error) {
+      messageApi.error(
+        getApiErrorMessage(
+          error,
+          mode === "edit" ? "Failed to update student." : "Failed to create student."
+        )
+      );
+    }
   }
 
   const columns = [
-    {
-      title: "SL",
-      width: 70,
-      render: (_, __, index) => index + 1,
-    },
+    { title: "SL", width: 70, render: (_, __, index) => index + 1 },
     {
       title: "Institution",
       dataIndex: "registerInstitution",
       width: 190,
-      render: (value) => value || "-",
+      render: (value) => institutionName(value),
     },
+    { title: "First Name", dataIndex: "firstName", width: 150 },
+    {title:"Last Name", dataIndex:"lastName",width:150},
+    {title:"User Name", dataIndex:"username",width:150},
+    { title: "Email", dataIndex: "email", width: 220 },
     {
-      title: "Name",
-      dataIndex: "name",
-      width: 170,
-    },
-    {
-      title: "Email",
-      dataIndex: "email",
-      width: 220,
-    },
-    {
-      title: "Age",
-      dataIndex: "age",
-      width: 90,
-      render: (value) => value || "-",
-    },
-    {
-      title: "Class",
-      dataIndex: "studentClass",
-      width: 110,
-      render: (value) => value || "-",
-    },
-    {
-      title: "School",
-      dataIndex: "school",
-      width: 180,
-      render: (value) => value || "-",
-    },
-    {
-      title: "Location",
-      dataIndex: "location",
+      title: "Mobile",
+      dataIndex: "mobile",
       width: 150,
-      render: (value) => value || "-",
+      render: (value) => (value ? `+91${value}` : "-"),
     },
+    { title: "Gender", dataIndex: "gender", width: 100, render: (v) => v || "-" },
     {
-      title: "Subjects/Stream",
-      dataIndex: "subjectsStream",
-      width: 170,
-      render: (value) => value || "-",
+      title: "Date of Birth",
+      dataIndex: "dob",
+      width: 140,
+      render: (value) => formatDateDisplay(value),
     },
-    {
-      title: "Career Aspiration",
-      dataIndex: "careerAspiration",
-      width: 180,
-      render: (value) => value || "-",
-    },
-    {
-      title: "Parental Occupation",
-      dataIndex: "parentalOccupation",
-      width: 180,
-      render: (value) => value || "-",
-    },
+    { title: "Address", dataIndex: "address", width: 220, render: (v) => v || "-" },
     {
       title: "Action",
       width: 150,
@@ -341,6 +407,7 @@ export default function Student() {
 
   return (
     <div className="space-y-5">
+      {contextHolder}
       <h2 className="text-xl font-bold text-[#9a2119]">Student Management</h2>
 
       <div className="rounded-2xl border bg-white p-6 shadow-sm">
@@ -355,7 +422,6 @@ export default function Student() {
               onChange={(event) => setSearch(event.target.value)}
               className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
             />
-
             <Button
               onClick={() => setSearch("")}
               style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
@@ -363,7 +429,6 @@ export default function Student() {
               <ReloadOutlined />
               Reset
             </Button>
-
             <Button
               onClick={handleOpenAdd}
               style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
@@ -378,6 +443,7 @@ export default function Student() {
           columns={columns}
           dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
           rowKey="id"
+          loading={loading}
           pagination={{ pageSize: 5 }}
           scroll={{ x: "max-content" }}
         />
@@ -387,15 +453,9 @@ export default function Student() {
         open={open}
         onCancel={handleClose}
         footer={null}
-        width={980}
+        width={800}
         destroyOnClose
-        title={
-          mode === "view"
-            ? "View Student"
-            : mode === "edit"
-              ? "Edit Student"
-              : "Add Student"
-        }
+        title={mode === "view" ? "View Student" : mode === "edit" ? "Edit Student" : "Add Student"}
       >
         <StudentForm
           form={form}
@@ -403,9 +463,10 @@ export default function Student() {
           viewMode={isViewMode}
           onSubmit={handleSubmit}
           onCancel={handleClose}
+          institutes={institutes}
+          institutesLoading={institutesLoading}
         />
       </Modal>
     </div>
   );
 }
-
