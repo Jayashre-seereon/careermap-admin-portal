@@ -233,26 +233,26 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
       <Form.Item name="institute_type" label="Institution Type">
         <Input disabled={disabled} />
       </Form.Item>
-
+{/* 
       <Form.Item name="admission_process" label="Admission Process">
         <Input disabled={disabled} />
-      </Form.Item>
+      </Form.Item> */}
 
       {/* ROW 2 */}
-      <Form.Item name="tentative_date" label="Tentative Date">
+      {/* <Form.Item name="tentative_date" label="Tentative Date">
         <DatePicker
           disabled={disabled}
           placeholder="DD-MM-YYYY"
           format={DATE_DISPLAY_FORMAT}
           className="w-full"
         />
-      </Form.Item>
+      </Form.Item> */}
 
       <Form.Item name="url" label="URL" rules={[validationRules.url("URL")]}>
         <Input disabled={disabled} />
       </Form.Item>
 
-      <Form.Item name="countruy" label="Country">
+      {/* <Form.Item name="countruy" label="Country">
         <Select
           disabled={disabled}
           onChange={(val) => {
@@ -283,7 +283,7 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
         )}
       </Form.Item>
 
-      {/* ROW 3 */}
+   
       <Form.Item name="district" label="District">
         {countruy === "India" ? (
           <Select disabled={disabled} showSearch>
@@ -310,7 +310,7 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
           tokenSeparators={[","]}
           open={false}
         />
-      </Form.Item>
+      </Form.Item> */}
 
       <Form.Item name="is_top" label="Is Top" valuePropName="checked">
         <StatusSwitch disabled={disabled} />
@@ -325,13 +325,13 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
         <Input.TextArea rows={2} disabled={disabled} />
       </Form.Item>
 
-      <Form.Item
+      {/* <Form.Item
         name="about"
         label="About"
         className="md:col-span-2 lg:col-span-4"
       >
         <RichTextEditor disabled={disabled} height={220} />
-      </Form.Item>
+      </Form.Item> */}
 
       {/* SUBMIT */}
       {!disabled && (

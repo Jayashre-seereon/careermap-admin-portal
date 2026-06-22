@@ -86,7 +86,7 @@ const mapOption = (item = {}, labelKeys = []) => ({
 
 // ─── Default values per section ───────────────────────────────────────────────
 const buildDefaultValues = (section = "salary-range") => {
-  const common = { stream: undefined, category: undefined, secondCategory: undefined, subcategory: undefined };
+  const common = { stream: undefined, category: undefined, secondCategory: undefined, subcategory: undefined ,description: "",};
 
   if (section === "salary-range") return { ...common, salaryRanges: [{ currency: "INR", min: "", max: "" }] };
   if (section === "job-scope") return { ...common, names: [""] };
@@ -110,6 +110,7 @@ const getCommonValues = (values = {}) => ({
   category: values.category,
   secondCategory: values.secondCategory,
   subcategory: values.subcategory,
+  description: values.description,
 });
 
 const getSectionFieldKeys = (section) => {
@@ -301,6 +302,7 @@ const mapDetailsRecord = (record = {}) => {
     secondCategory: record.secondcategoryId ?? record.secondCategoryId ?? record.secondcategory?.id ?? record.secondCategory?.id ?? undefined,
     secondCategoryName: record.secondcategory?.name || record.secondcategory?.title || record.secondCategory?.name || record.secondCategory?.title || "",
     subcategory: record.subcategoryId != null ? record.subcategoryId ?? record.subcategory?.id ?? undefined : undefined,
+    description: record.description ?? "",
     subcategoryName: record.subcategoryId != null ? record.subcategory?.title || record.subcategory?.name || "" : "",
     salaryRanges: normalizeSalaryRanges(record.salaryRanges),
     names: normalizeJobScope(record.jobScope ?? record.names),
@@ -479,7 +481,7 @@ export default function DetailsPage() {
 
   const buildSubmissionPayload = (values) => {
     const commonValues = getCommonValues(values);
-    const payload = { streamId: commonValues.stream ?? null, categoryId: commonValues.category ?? null };
+    const payload = { streamId: commonValues.stream ?? null, categoryId: commonValues.category ?? null,description: commonValues.description ?? null };
     if (commonValues.secondCategory) payload.secondcategoryId = commonValues.secondCategory;
     if (commonValues.subcategory) payload.subcategoryId = commonValues.subcategory;
 

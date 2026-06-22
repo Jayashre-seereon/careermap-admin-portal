@@ -201,7 +201,7 @@ export default function EntranceExamForm({
           placeholder="DD-MM-YYYY"
         />
       </Form.Item>
-
+{/* 
       <Form.Item name="examDate" label="Exam Date">
         <DatePicker
           className="w-full"
@@ -260,7 +260,7 @@ export default function EntranceExamForm({
           tokenSeparators={[","]}
           open={false}
         />
-      </Form.Item>
+      </Form.Item> */}
 
       <Form.Item
         name="url"
@@ -271,7 +271,7 @@ export default function EntranceExamForm({
       </Form.Item>
 
       {/* FULL WIDTH FIELDS */}
-      <Form.Item
+      {/* <Form.Item
         name="eligibility"
         label="Eligibility"
         className="md:col-span-2 lg:col-span-4"
@@ -293,7 +293,7 @@ export default function EntranceExamForm({
         className="md:col-span-2 lg:col-span-4"
       >
         <RichTextEditor disabled={isView} height={220} />
-      </Form.Item>
+      </Form.Item> */}
 
       {!isView && (
         <div className="md:col-span-2 lg:col-span-4">

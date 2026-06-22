@@ -197,6 +197,9 @@ const formatAvailabilitySummary = (availability = []) => {
 };
 
 const buildMentorPayload = ({
+   categoryId,
+  secondcategoryId,
+  subcategoryId,
   name,
   email,
   phone_number,
@@ -218,6 +221,9 @@ const buildMentorPayload = ({
   status,
 }) => {
   const payload = {
+     categoryId: categoryId?.value || "",
+  secondcategoryId: secondcategoryId?.value || "",
+  subCategoryId: subcategoryId?.value || "",
     name,
     email: email || "",
     phone_number: phone_number || "",
@@ -270,6 +276,13 @@ const mapMentor = (item = {}) => {
 
   return {
     id: item.id,
+     categoryId: item.categoryId,
+  secondcategoryId: item.secondcategoryId,
+  subcategoryId: item.subCategoryId,
+
+  categoryName: item.category?.title,
+  secondCategoryName: item.secondcategory?.name,
+  subCategoryName: item.subcategory?.title,
     name: item.name || "",
     email: item.email || "",
     phone_number: item.phone_number || "",

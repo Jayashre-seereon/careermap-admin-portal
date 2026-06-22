@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
-import { Button, DatePicker, Form, Input, TimePicker, Upload } from "antd";
+import { Button, DatePicker, Form, Input, TimePicker, Upload,Select } from "antd";
 import { MinusCircleOutlined, PlusOutlined, UploadOutlined } from "@ant-design/icons";
 import RichTextEditor from "../../components/ui/RichTextEditor";
 import StatusSwitch from "../../components/ui/StatusSwitch";
+import { getCategories } from "../../api/category";
+import { getSecondaryCategoriesByCategory } from "../../api/secondaryCategory";
+import { getSubCategoriesBySecondCategory } from "../../api/subcategory";
+const { Option } = Select;
 import {
   getValueFromInput,
   inputSanitizers,
@@ -174,7 +178,9 @@ const normalizeAvailability = (availability = []) => {
 function MentorForm({ onSubmit, initialValues, disabled }) {
   const [form] = Form.useForm();
   const [count, setCount] = useState(0);
-
+  const [categories, setCategories] = useState([]);
+const [secondaryCategories, setSecondaryCategories] = useState([]);
+const [subCategories, setSubCategories] = useState([]);
   useEffect(() => {
     if (initialValues) {
       form.setFieldsValue({
@@ -184,6 +190,17 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
         availability: normalizeAvailability(initialValues.availability),
         image: toUploadFileList(initialValues.image, "mentor-image"),
         resume: toUploadFileList(initialValues.resume, "mentor-resume"),
+        categoryId: initialValues?.categoryId
+  ? { value: initialValues.categoryId, label: initialValues.categoryName }
+  : undefined,
+
+secondcategoryId: initialValues?.secondcategoryId
+  ? { value: initialValues.secondcategoryId, label: initialValues.secondCategoryName }
+  : undefined,
+
+subcategoryId: initialValues?.subcategoryId
+  ? { value: initialValues.subcategoryId, label: initialValues.subCategoryName }
+  : undefined,
       });
       return;
     }
@@ -194,7 +211,54 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
       availability: [{ date: null, timeSlots: [[null, null]] }],
     });
   }, [form, initialValues]);
+useEffect(() => {
+  fetchCategories();
+}, []);
 
+const fetchCategories = async () => {
+  const res = await getCategories();
+  setCategories(res.data || []);
+};
+const handleCategoryChange = async (categoryId, isInit = false) => {
+  if (!isInit) {
+    form.setFieldsValue({
+      secondcategoryId: undefined,
+      subcategoryId: undefined,
+    });
+    setSubCategories([]);
+  }
+
+  if (!categoryId) return;
+
+  const res = await getSecondaryCategoriesByCategory(categoryId);
+  setSecondaryCategories(res.data || []);
+};
+
+const handleSecondCategoryChange = async (secondCategoryId, isInit = false) => {
+  if (!isInit) {
+    form.setFieldsValue({ subcategoryId: undefined });
+  }
+
+  if (!secondCategoryId) return;
+
+  const res = await getSubCategoriesBySecondCategory(secondCategoryId);
+  setSubCategories(res.data || []);
+};
+useEffect(() => {
+  const init = async () => {
+    await fetchCategories();
+
+    if (initialValues?.categoryId) {
+      await handleCategoryChange(initialValues.categoryId, true);
+    }
+
+    if (initialValues?.secondcategoryId) {
+      await handleSecondCategoryChange(initialValues.secondcategoryId, true);
+    }
+  };
+
+  init();
+}, [initialValues]);
   const renderAvailabilityTimeSlots = (timeFields, addTimeSlot, removeTimeSlot) => (
     <>
       <div className="mb-2 flex items-center justify-between gap-3">
@@ -276,7 +340,52 @@ function MentorForm({ onSubmit, initialValues, disabled }) {
         <h3 className="md:col-span-2 lg:col-span-4 mb-1 text-lg font-semibold text-[#9a2119]">
           Mentor Details
         </h3>
+          {/* CATEGORY */}
+<Form.Item name="categoryId" label="Category">
+  <Select
+    labelInValue
+    disabled={disabled}
+    placeholder="Select Category"
+    onChange={(val) => handleCategoryChange(val?.value)}
+  >
+    {categories.map((cat) => (
+      <Option key={cat.id} value={cat.id}>
+        {cat.title}
+      </Option>
+    ))}
+  </Select>
+</Form.Item>
 
+{/* SECOND CATEGORY */}
+<Form.Item name="secondcategoryId" label="Secondary Category">
+  <Select
+    labelInValue
+    disabled={disabled}
+    placeholder="Select Secondary Category"
+    onChange={(val) => handleSecondCategoryChange(val?.value)}
+  >
+    {secondaryCategories.map((sec) => (
+      <Option key={sec.id} value={sec.id}>
+        {sec.name}
+      </Option>
+    ))}
+  </Select>
+</Form.Item>
+
+{/* SUB CATEGORY */}
+<Form.Item name="subcategoryId" label="Sub Category">
+  <Select
+    labelInValue
+    disabled={disabled}
+    placeholder="Select Sub Category"
+  >
+    {subCategories.map((sub) => (
+      <Option key={sub.id} value={sub.id}>
+        {sub.title}
+      </Option>
+    ))}
+  </Select>
+</Form.Item>
         <Form.Item
           name="name"
           label="Name"
