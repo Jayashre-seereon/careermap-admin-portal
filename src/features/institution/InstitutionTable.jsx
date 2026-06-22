@@ -76,30 +76,30 @@ export default function InstitutionTable({
       width: 220,
       render: renderEllipsis,
     },
-    {
-      title: "Admission Process",
-      dataIndex: "admission_process",
-      width: 180,
-      render: renderEllipsis,
-    },
-    {
-      title: "About",
-      dataIndex: "about",
-      width: 220,
-      render: renderHtmlEllipsis,
-    },
-    {
-      title: "Courses Offered",
-      dataIndex: "courses_offered",
-      width: 220,
-      render: renderHtmlEllipsis,
-    },
-    {
-      title: "Tentative Date",
-      dataIndex: "tentative_date",
-      width: 140,
-      render: (value) => formatDateDisplay(value),
-    },
+    // {
+    //   title: "Admission Process",
+    //   dataIndex: "admission_process",
+    //   width: 180,
+    //   render: renderEllipsis,
+    // },
+    // {
+    //   title: "About",
+    //   dataIndex: "about",
+    //   width: 220,
+    //   render: renderHtmlEllipsis,
+    // },
+    // {
+    //   title: "Courses Offered",
+    //   dataIndex: "courses_offered",
+    //   width: 220,
+    //   render: renderHtmlEllipsis,
+    // },
+    // {
+    //   title: "Tentative Date",
+    //   dataIndex: "tentative_date",
+    //   width: 140,
+    //   render: (value) => formatDateDisplay(value),
+    // },
     {
       title: "Institution Type",
       dataIndex: "institute_type",
@@ -118,26 +118,26 @@ export default function InstitutionTable({
           "-"
         ),
     },
-    {
-      title: "Country",
-      dataIndex: "countruy",
-      width: 120,
-    },
-    {
-      title: "State",
-      dataIndex: "state",
-      width: 120,
-    },
-    {
-      title: "City",
-      dataIndex: "city",
-      width: 120,
-    },
-    {
-      title: "District",
-      dataIndex: "district",
-      width: 120,
-    },
+    // {
+    //   title: "Country",
+    //   dataIndex: "countruy",
+    //   width: 120,
+    // },
+    // {
+    //   title: "State",
+    //   dataIndex: "state",
+    //   width: 120,
+    // },
+    // {
+    //   title: "City",
+    //   dataIndex: "city",
+    //   width: 120,
+    // },
+    // {
+    //   title: "District",
+    //   dataIndex: "district",
+    //   width: 120,
+    // },
     {
       title: "Action",
       align: "right",
