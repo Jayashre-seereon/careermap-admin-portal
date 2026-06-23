@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import api from "./axios";
 const authClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   headers: {
@@ -22,5 +22,13 @@ export const refreshAccessToken = async (refreshToken) => {
 
 export const staffLogin = async (email, password) => {
   const res = await authClient.post("/api/staff/login", { email, password });
+  return res.data;
+};
+
+export const logout = async (refreshToken) => {
+  const res = await api.post("/api/admin/auth/logout", {
+    refreshToken,
+  });
+
   return res.data;
 };

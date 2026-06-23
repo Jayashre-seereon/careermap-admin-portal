@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Bell, ChevronDown, LogOut, Menu, Search, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { logoutUser } from "../../features/auth/authStorage";
+// import { logoutUser } from "../../features/auth/authStorage";
 import { useSessionStore } from "../../store/sessionStore";
 import { navSections } from "./navSections";
 import { getNotifications } from "../../api/notification";
-
+import { logout } from "../../api/authApi";
 const stripHtml = (text = "") =>
   String(text || "")
     .replace(/<[^>]*>/g, " ")
@@ -117,10 +117,20 @@ export default function Header({ activePage, onMenuClick }) {
     };
   }, [isNotificationOpen]);
 
-  const handleLogout = () => {
-    logoutUser();
+const handleLogout = async () => {
+  try {
+    const { refreshToken } = useSessionStore.getState();
+
+    if (refreshToken) {
+      await logout(refreshToken);
+    }
+  } catch (error) {
+    console.error("Logout API Error:", error);
+  } finally {
+    useSessionStore.getState().clearSession();
     navigate("/login", { replace: true });
-  };
+  }
+};
 
   const handleGoToProfile = () => {
     setIsUserMenuOpen(false);
