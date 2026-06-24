@@ -25,6 +25,7 @@ import RequireAuth from "../features/auth/RequireAuth";
 import PublicOnlyRoute from "../features/auth/PublicOnlyRoute";
 import AuthLayout from "../features/auth/AuthLayout";
 import LoginPage from "../features/auth/LoginPage";
+import InstituteLoginPage from "../features/auth/InstituteLoginPage";
 import SignupPage from "../features/auth/SignupPage";
 import ForgotPasswordPage from "../features/auth/ForgotPasswordPage";
 import RootRedirect from "../features/auth/RootRedirect";
@@ -83,6 +84,8 @@ import PersonalityTest from "../features/personalityTest/PersonalityTest";
 import Counseling from "../features/counseling/Counseling";
 import Staff from "../features/staff/Staff";
 import Permission from "../features/permission/Permission";
+import InstituteLayout from "../components/institute/InstituteLayout";
+import InstituteDashboardPage from "../pages/InstituteDashboardPage";
 
 export const router = createBrowserRouter([
   {
@@ -96,8 +99,24 @@ export const router = createBrowserRouter([
         element: <AuthLayout />,
         children: [
           { path: "/login", element: <LoginPage /> },
+          { path: "/institute/login", element: <InstituteLoginPage /> },
           { path: "/signup", element: <SignupPage /> },
           { path: "/forgot-password", element: <ForgotPasswordPage /> },
+        ],
+      },
+    ],
+  },
+  {
+    element: (
+      <RequireAuth allowedLoginTypes={["institute"]} loginPath="/institute/login" />
+    ),
+    children: [
+      {
+        path: "/institute",
+        element: <InstituteLayout />,
+        children: [
+          { index: true, element: <Navigate to="/institute/dashboard" replace /> },
+          { path: "dashboard", element: <InstituteDashboardPage /> },
         ],
       },
     ],

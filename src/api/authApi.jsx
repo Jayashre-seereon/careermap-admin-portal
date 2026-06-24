@@ -25,6 +25,11 @@ export const staffLogin = async (email, password) => {
   return res.data;
 };
 
+export const instituteLogin = async (email, password) => {
+  const res = await authClient.post("/api/institutcreate/login", { email, password });
+  return res.data;
+};
+
 export const logoutApi = () => {
   return api.post("/api/admin/auth/logout");
 };
