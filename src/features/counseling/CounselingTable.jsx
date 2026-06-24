@@ -6,6 +6,7 @@ import {
   EyeOutlined,
   ReloadOutlined,
   SearchOutlined,
+  DownloadOutlined
 } from "@ant-design/icons";
 
 const stripHtml = (value = "") =>
@@ -26,6 +27,7 @@ function CounselingTable({
   onDelete,
   search,
   onSearch,
+  onDownload
 }) {
   const columns = [
     { title: "#", render: (_, __, index) => index + 1, width: 70 },
@@ -60,31 +62,42 @@ function CounselingTable({
       ellipsis: true,
       render: (text) => getPreviewText(text, 42),
     },
-    {
-      title: "Actions",
-      fixed: "right",
-      width: 150,
-      render: (_, record) => (
-        <Space>
-          <Button
-            className="w-8 h-8 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
-            icon={<EyeOutlined />}
-            onClick={() => onView(record)}
-          />
-          <Button
-            className="w-8 h-8 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
-            icon={<EditOutlined />}
-            onClick={() => onEdit(record)}
-          />
-          <Popconfirm
-            title="Are you sure you want to delete this counseling?"
-            onConfirm={() => onDelete(record)}
-          >
-            <Button danger icon={<DeleteOutlined />} />
-          </Popconfirm>
-        </Space>
-      ),
-    },
+   {
+  title: "Actions",
+  fixed: "right",
+  width: 200,
+  render: (_, record) => (
+    <Space>
+      <Button
+       className="w-8 h-8 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
+          
+        icon={<EyeOutlined />}
+        onClick={() => onView(record)}
+      />
+
+      <Button
+       className="w-8 h-8 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
+          
+        icon={<EditOutlined />}
+        onClick={() => onEdit(record)}
+      />
+
+      <Button
+       className="w-8 h-8 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
+          
+        icon={<DownloadOutlined />}   // ✅ NEW BUTTON
+        onClick={() => onDownload(record)}
+      />
+
+      <Popconfirm
+        title="Are you sure you want to delete this counseling?"
+        onConfirm={() => onDelete(record)}
+      >
+        <Button danger icon={<DeleteOutlined />} />
+      </Popconfirm>
+    </Space>
+  ),
+}
   ];
 
   return (
