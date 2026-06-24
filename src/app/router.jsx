@@ -83,6 +83,7 @@ import Student from "../features/psychometric/Student";
 import PersonalityTest from "../features/personalityTest/PersonalityTest";
 import Counseling from "../features/counseling/Counseling";
 import Staff from "../features/staff/Staff";
+import RolePage from "../features/role/RolePage";
 import Permission from "../features/permission/Permission";
 import InstituteLayout from "../components/institute/InstituteLayout";
 import InstituteDashboardPage from "../pages/InstituteDashboardPage";
@@ -465,6 +466,14 @@ export const router = createBrowserRouter([
             element: (
               <PermissionRoute module="Staff">
                 <Staff />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "roles",
+            element: (
+              <PermissionRoute module="Roles">
+                <RolePage />
               </PermissionRoute>
             ),
           },

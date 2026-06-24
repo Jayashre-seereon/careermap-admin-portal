@@ -13,6 +13,7 @@ const pageNameMap = {
   "/support_tickets": "Support Tickets",
   "/permissions": "Permissions",
   "/staff" :"Staff",
+  "/roles": "Roles",
   "/counseling":"Counseling",
   "/personality-test":"Personality Test",
   "/stream": "Stream",

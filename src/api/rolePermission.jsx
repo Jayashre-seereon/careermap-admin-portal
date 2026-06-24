@@ -5,6 +5,21 @@ export const getRoles = async () => {
   return res.data;
 };
 
+export const createRole = async (payload, config = {}) => {
+  const res = await api.post("/api/role/", payload, config);
+  return res.data;
+};
+
+export const updateRole = async (id, payload, config = {}) => {
+  const res = await api.put(`/api/role/${id}/`, payload, config);
+  return res.data;
+};
+
+export const deleteRole = async (id) => {
+  const res = await api.delete(`/api/role/${id}/`);
+  return res.data;
+};
+
 export const getPermissions = async () => {
   const res = await api.get("/api/permissions/");
   return res.data;
