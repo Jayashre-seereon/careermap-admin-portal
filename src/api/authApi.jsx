@@ -20,6 +20,23 @@ export const refreshAccessToken = async (refreshToken) => {
   return res.data;
 };
 
+export const forgotPassword = async (email) => {
+  const res = await authClient.post("/api/admin/auth/forgot-password", {
+    email,
+  });
+
+  return res.data;
+};
+
+export const resetPassword = async (token, password) => {
+  const res = await authClient.post("/api/admin/auth/reset-password", {
+    token,
+    password,
+  });
+
+  return res.data;
+};
+
 export const staffLogin = async (email, password) => {
   const res = await authClient.post("/api/staff/login", { email, password });
   return res.data;
@@ -46,3 +63,6 @@ export const instituteLogin = async (email, password) => {
   const res = await authClient.post("/api/institutcreate/login", { email, password });
   return res.data;
 };
+
+export const getApiErrorMessage = (error, fallbackMessage = "Something went wrong") =>
+  error?.response?.data?.message || error?.message || fallbackMessage;

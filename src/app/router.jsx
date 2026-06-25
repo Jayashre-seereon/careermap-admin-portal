@@ -28,6 +28,7 @@ import LoginPage from "../features/auth/LoginPage";
 import InstituteLoginPage from "../features/auth/InstituteLoginPage";
 import SignupPage from "../features/auth/SignupPage";
 import ForgotPasswordPage from "../features/auth/ForgotPasswordPage";
+import ResetPasswordPage from "../features/auth/ResetPasswordPage";
 import RootRedirect from "../features/auth/RootRedirect";
 import PathTypePage from "../features/pathtype/PathTypePage";
 import CareerPathPage from "../features/careerpath/CareerPathPage";
@@ -93,6 +94,34 @@ export const router = createBrowserRouter([
     path: "/",
     element: <RootRedirect />,
   },
+ 
+ 
+
+  {
+    path: "/forgot-password",
+    element: <ForgotPasswordPage />,
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPasswordPage />,
+  },
+  {
+    path: "/admin",
+    element: <PublicOnlyRoute />,
+    children: [
+      {
+        element: <AuthLayout />,
+        children: [
+          { index: true, element: <Navigate to="/admin/login" replace /> },
+          { path: "login", element: <LoginPage /> },
+          { path: "signup", element: <SignupPage /> },
+          { path: "forgot-password", element: <ForgotPasswordPage /> },
+          { path: "reset-password", element: <ResetPasswordPage /> },
+          { path: "reset-password/:token", element: <ResetPasswordPage /> },
+        ],
+      },
+    ],
+  },
   {
     element: <PublicOnlyRoute />,
     children: [
@@ -103,6 +132,8 @@ export const router = createBrowserRouter([
           { path: "/institute/login", element: <InstituteLoginPage /> },
           { path: "/signup", element: <SignupPage /> },
           { path: "/forgot-password", element: <ForgotPasswordPage /> },
+          { path: "/reset-password", element: <ResetPasswordPage /> },
+          { path: "/reset-password/:token", element: <ResetPasswordPage /> },
         ],
       },
     ],
