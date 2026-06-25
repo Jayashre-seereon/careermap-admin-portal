@@ -172,7 +172,7 @@ function StudentForm({ form, initialValues, viewMode, onSubmit, onCancel, instit
         />
       </Form.Item>
 
-      <Form.Item
+      {/* <Form.Item
         name="gender"
         label="Gender"
         rules={[validationRules.required("Gender")]}
@@ -184,9 +184,9 @@ function StudentForm({ form, initialValues, viewMode, onSubmit, onCancel, instit
             </Option>
           ))}
         </Select>
-      </Form.Item>
+      </Form.Item> */}
 
-      <Form.Item
+      {/* <Form.Item
         name="dob"
         label="Date of Birth"
         rules={[validationRules.required("Date of birth")]}
@@ -197,9 +197,9 @@ function StudentForm({ form, initialValues, viewMode, onSubmit, onCancel, instit
           format={DATE_DISPLAY_FORMAT}
           placeholder="DD-MM-YYYY"
         />
-      </Form.Item>
+      </Form.Item> */}
 
-      <Form.Item
+      {/* <Form.Item
         name="address"
         label="Address"
         className="md:col-span-2"
@@ -207,7 +207,7 @@ function StudentForm({ form, initialValues, viewMode, onSubmit, onCancel, instit
         getValueFromEvent={getValueFromInput(inputSanitizers.trim)}
       >
         <Input.TextArea disabled={viewMode} rows={4} placeholder="Enter address" />
-      </Form.Item>
+      </Form.Item> */}
 
       <div className="md:col-span-2 mt-2 flex items-center justify-end gap-2">
         <Button onClick={onCancel}>{viewMode ? "Back" : "Cancel"}</Button>

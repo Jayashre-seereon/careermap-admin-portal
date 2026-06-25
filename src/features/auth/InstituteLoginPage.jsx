@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { message } from "antd";
-import { LockKeyhole, Mail, ArrowRight } from "lucide-react";
-import { login, staffLogin } from "../../api/authApi";
+import { ArrowRight, LockKeyhole, Mail } from "lucide-react";
+import { instituteLogin } from "../../api/authApi";
 import { useSessionStore } from "../../store/sessionStore";
-import logo from "../../assets/logo_white.png";
+
 const inputClassName =
   "h-12 w-full rounded-xl border border-[#eadfda] bg-[#fbf9f8] px-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#9a2119] focus:bg-white focus:ring-4 focus:ring-[#9a2119]/10";
 
@@ -18,27 +18,14 @@ const getTokenValue = (data, keys) => {
   return "";
 };
 
-export default function LoginPage() {
+export default function InstituteLoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [messageApi, contextHolder] = message.useMessage();
   const setSession = useSessionStore((state) => state.setSession);
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
+  const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
-  const [loginAs, setLoginAs] = useState("admin");
-  const redirectTo = location.state?.from?.pathname || "/dashboard";
-  const loginPath = location.pathname.startsWith("/admin") ? "/admin/login" : "/login";
-  const forgotPasswordPath = location.pathname.startsWith("/admin") ? "/admin/forgot-password" : "/forgot-password";
-
-  useEffect(() => {
-    if (location.state?.passwordResetSuccess) {
-      messageApi.success(location.state.passwordResetSuccess);
-      navigate(loginPath, { replace: true });
-    }
-  }, [location.state, loginPath, messageApi, navigate]);
+  const redirectTo = location.state?.from?.pathname || "/institute/dashboard";
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -50,36 +37,29 @@ export default function LoginPage() {
     try {
       setLoading(true);
 
-      if (loginAs === "admin") {
-        const response = await login(form.email, form.password);
-        const payload = response?.data || response || {};
-        const accessToken = getTokenValue(payload, ["accessToken", "access_token", "token", "jwt"]);
-        const refreshToken = getTokenValue(payload, ["refreshToken", "refresh_token"]);
-        const user = payload.user || payload.admin || payload.profile || null;
+      const response = await instituteLogin(form.email, form.password);
+      const payload = response?.data || response || {};
+      const accessToken = getTokenValue(payload, ["accessToken", "access_token", "token", "jwt"]);
+      const institute = payload.institute || payload.data || null;
 
-        if (!accessToken) {
-          throw new Error("Access token not found in login response.");
-        }
-
-        setSession({ accessToken, refreshToken, user, loginType: "admin" });
-      } else {
-        const response = await staffLogin(form.email, form.password);
-
-        if (!response?.token || !response?.staff) {
-          throw new Error("Invalid staff login response.");
-        }
-
-        setSession({
-          accessToken: response.token,
-          refreshToken: "",
-          user: { name: response.staff.name, email: response.staff.email },
-          loginType: "staff",
-          role: response.staff.role,
-          permissions: response.staff.role?.permissions || [],
-        });
+      if (!accessToken) {
+        throw new Error("Access token not found in login response.");
       }
 
-      messageApi.success("Login successful.");
+      setSession({
+        accessToken,
+        refreshToken: "",
+        user: institute
+          ? {
+              name: institute.name || "Institute",
+              email: institute.email || form.email,
+              instituteId: institute.id,
+            }
+          : { name: form.email, email: form.email },
+        loginType: "institute",
+      });
+
+      messageApi.success("Institute login successful.");
       navigate(redirectTo, { replace: true });
     } catch (error) {
       messageApi.error(error.response?.data?.message || error.message || "Login failed.");
@@ -89,24 +69,21 @@ export default function LoginPage() {
   };
 
   const handlePortalChange = (value) => {
-    setLoginAs(value);
-
-    if (value === "institute") {
-      navigate("/institute/login", { replace: true });
+    if (value !== "institute") {
+      navigate("/login", { replace: true });
     }
   };
 
   return (
     <div>
       {contextHolder}
-     <div className="mb-8 text-center">
-  <img
-    src={logo}
-    alt="Career Map"
-    className="mb-3 h-8 w-auto"
-  />
-  <h2 className="text-3xl font-bold text-[#9a2119] text-slate-900 sm:text-[2.2rem]">Login</h2>
-</div>
+
+      <div className="mb-8 text-center">
+        <h2 className="text-3xl font-bold text-slate-900 sm:text-[2.2rem]">Institute Login</h2>
+        <p className="mt-3 text-sm leading-6 text-slate-400">
+          Sign in to view your institute dashboard and student quota.
+        </p>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
@@ -127,15 +104,6 @@ export default function LoginPage() {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <label className="text-[13px] font-medium text-slate-500">Password</label>
-            {loginAs === "admin" ? (
-              <button
-                type="button"
-                onClick={() => navigate(forgotPasswordPath, { replace: false })}
-                className="text-[13px] font-semibold text-[#9a2119] hover:text-[#b5261d]"
-              >
-                Forgot password?
-              </button>
-            ) : null}
           </div>
           <div className="relative">
             <LockKeyhole size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#9a2119]" />
@@ -159,12 +127,12 @@ export default function LoginPage() {
           <ArrowRight size={16} />
         </button>
 
-        <div className="mb-5 flex flex-wrap items-center justify-center gap-6">
+        <div className="mb-2 flex flex-wrap items-center justify-center gap-6">
           <label className="flex items-center gap-2 text-sm font-medium text-slate-600">
             <input
               type="radio"
               name="loginAs"
-              checked={loginAs === "admin"}
+              checked={false}
               onChange={() => handlePortalChange("admin")}
               className="accent-[#9a2119]"
             />
@@ -174,7 +142,7 @@ export default function LoginPage() {
             <input
               type="radio"
               name="loginAs"
-              checked={loginAs === "staff"}
+              checked={false}
               onChange={() => handlePortalChange("staff")}
               className="accent-[#9a2119]"
             />
@@ -184,12 +152,19 @@ export default function LoginPage() {
             <input
               type="radio"
               name="loginAs"
-              checked={loginAs === "institute"}
-              onChange={() => handlePortalChange("institute")}
+              checked
+              readOnly
               className="accent-[#9a2119]"
             />
             Institute
           </label>
+        </div>
+
+        <div className="text-center text-xs text-slate-400">
+          Need admin access?{" "}
+          <Link to="/login" className="font-semibold text-[#9a2119] hover:text-[#b5261d]">
+            Back to admin login
+          </Link>
         </div>
       </form>
     </div>

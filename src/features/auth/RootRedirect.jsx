@@ -3,6 +3,11 @@ import { useSessionStore } from "../../store/sessionStore";
 
 export default function RootRedirect() {
   const isAuthenticated = useSessionStore((state) => state.isAuthenticated);
+  const loginType = useSessionStore((state) => state.loginType);
 
-  return <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <Navigate to={loginType === "institute" ? "/institute/dashboard" : "/dashboard"} replace />;
 }

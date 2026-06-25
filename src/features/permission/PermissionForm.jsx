@@ -7,6 +7,7 @@ const MODULE_OPTIONS = [
   "Modules",
   "Permissions",
   "Staff",
+  "Roles",
   "Mentors",
   "Path Type",
   "Career Path",

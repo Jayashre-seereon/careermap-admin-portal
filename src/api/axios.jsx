@@ -33,19 +33,20 @@ api.interceptors.response.use(
     const requestUrl = originalRequest?.url || "";
     const isAuthEndpoint =
       requestUrl.includes("/api/admin/auth/login") ||
-      requestUrl.includes("/api/admin/auth/refresh-token");
+      requestUrl.includes("/api/admin/auth/refresh-token") ||
+      requestUrl.includes("/api/staff/login") ||
+      requestUrl.includes("/api/institutcreate/login");
 
     if (error.response?.status === 401 && !originalRequest?._retry && !isAuthEndpoint) {
       originalRequest._retry = true;
-        const { refreshToken, loginType } = useSessionStore.getState();
-        if (loginType === "staff") {
-    return Promise.reject(error);
-  }
+      const { refreshToken, loginType } = useSessionStore.getState();
+
+      if (loginType !== "admin") {
+        useSessionStore.getState().clearSession();
+        return Promise.reject(error);
+      }
+
       try {
-        // const { refreshToken } = useSessionStore.getState();
-        if (!refreshToken) {
-      throw new Error("Refresh token not found");
-    }
         if (!refreshToken) {
           throw new Error("Refresh token not found");
         }

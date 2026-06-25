@@ -23,3 +23,11 @@ export const deleteCounseling = async (id) => {
   const res = await api.delete(`/api/counseling/${id}/`);
   return res.data;
 };
+
+// DOWNLOAD PDF
+export const downloadCounselingReport = async (id) => {
+  const res = await api.get(`/api/counseling/${id}/report`, {
+    responseType: "blob", // IMPORTANT for file download
+  });
+  return res.data;
+};
