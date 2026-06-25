@@ -33,6 +33,14 @@ export const logout = async (refreshToken) => {
   return res.data;
 };
 
+export const changeAdminPassword = async ({ oldPassword, newPassword }) => {
+  const res = await api.post("/api/admin/auth/change-password", {
+    oldPassword,
+    newPassword,
+  });
+
+  return res.data;
+};
 
 export const instituteLogin = async (email, password) => {
   const res = await authClient.post("/api/institutcreate/login", { email, password });

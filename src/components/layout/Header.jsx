@@ -49,6 +49,13 @@ export default function Header({ activePage, onMenuClick }) {
   const searchRef = useRef(null);
 
   const searchItems = useMemo(() => flattenNavItems(navSections), []);
+  const displayName = useMemo(() => {
+    const firstName = currentUser?.firstName?.trim();
+    const lastName = currentUser?.lastName?.trim();
+    const fullName = [firstName, lastName].filter(Boolean).join(" ");
+
+    return fullName || currentUser?.name || currentUser?.username || currentUser?.email || "Admin";
+  }, [currentUser]);
   const matchedItems = useMemo(() => {
     const query = search.trim().toLowerCase();
 
@@ -260,13 +267,13 @@ const handleLogout = async () => {
           >
             <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-md bg-[#9a2119] text-xs font-bold text-white">
               {currentUser?.avatar ? (
-                <img src={currentUser.avatar} alt={currentUser.name} className="h-full w-full object-cover" />
+                <img src={currentUser.avatar} alt={displayName} className="h-full w-full object-cover" />
               ) : (
-                currentUser?.name?.charAt(0)?.toUpperCase() || "A"
+                displayName.charAt(0)?.toUpperCase() || "A"
               )}
             </div>
             <span className="hidden max-w-[140px] truncate text-sm font-semibold text-[#9a2119] sm:block">
-              {currentUser?.name || "Admin"}
+              {displayName}
             </span>
             <ChevronDown size={14} className="text-[#9a2119]" />
           </button>
