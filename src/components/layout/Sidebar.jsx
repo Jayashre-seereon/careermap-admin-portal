@@ -18,6 +18,13 @@ export default function Sidebar({
   const currentUser = useSessionStore((state) => state.user);
   const hasPermission = useSessionStore((state) => state.hasPermission);
   const [openAccordions, setOpenAccordions] = useState({ "Email & Notification": true });
+  const displayName = [currentUser?.firstName, currentUser?.lastName]
+    .filter(Boolean)
+    .join(" ")
+    || currentUser?.name
+    || currentUser?.username
+    || currentUser?.email
+    || "Admin";
 
   const toggleAccordion = (name) => {
     setOpenAccordions((prev) => ({ ...prev, [name]: !prev[name] }));
@@ -180,10 +187,10 @@ const visibleSections = navSections
           <div className="border-t p-4">
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded bg-[#9a2119] text-white">
-                A
+                {displayName.charAt(0).toUpperCase()}
               </div>
               <div>
-                <p className="text-sm font-semibold">{currentUser?.name || "Admin"}</p>
+                <p className="text-sm font-semibold">{displayName}</p>
                 <p className="text-xs text-gray-400">{currentUser?.email || "admin@careermap.io"}</p>
               </div>
             </div>

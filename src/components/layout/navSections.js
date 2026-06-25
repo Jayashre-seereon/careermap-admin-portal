@@ -41,6 +41,12 @@ export const navSections = [
         path: "/modules",
         module: "Modules",
       },
+       {
+        icon: Key,
+        name: "Roles",
+        path: "/roles",
+        module: "Roles",
+      },
       {
         icon: Key,
         name: "Permissions",
@@ -53,6 +59,7 @@ export const navSections = [
         path: "/staff",
         module: "Staff",
       },
+     
     ],
   },
 

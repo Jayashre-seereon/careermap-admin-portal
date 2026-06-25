@@ -7,6 +7,7 @@ import {
   createCounseling,
   updateCounseling,
   deleteCounseling,
+  downloadCounselingReport
 } from "../../api/counseling";
 
 function Counseling() {
@@ -92,6 +93,26 @@ function Counseling() {
     setOpen(true);
   };
 
+  const handleDownload = async (record) => {
+  try {
+    const blob = await downloadCounselingReport(record.id);
+
+    const url = window.URL.createObjectURL(new Blob([blob]));
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.setAttribute(
+      "download",
+      `counseling_${record.firstName}_${record.id}.pdf`
+    );
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  } catch (err) {
+    console.error("Download failed", err);
+  }
+};
   const modalTitle =
     mode === "add"
       ? "Add Counseling"
@@ -119,6 +140,7 @@ function Counseling() {
         onDelete={handleDelete}
         onView={handleView}
         onEdit={handleEdit}
+        onDownload={handleDownload}   
       />
 
       <Modal

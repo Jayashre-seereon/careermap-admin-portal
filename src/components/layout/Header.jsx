@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Bell, ChevronDown, LogOut, Menu, Search, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { logoutUser } from "../../features/auth/authStorage";
+// import { logoutUser } from "../../features/auth/authStorage";
 import { useSessionStore } from "../../store/sessionStore";
 import { navSections } from "./navSections";
-import { getAdminNotification } from "../../api/notification";
-import { logoutApi } from "../../api/authApi";
+import { getNotifications } from "../../api/notification";
+import { logout } from "../../api/authApi";
 const stripHtml = (text = "") =>
   String(text || "")
     .replace(/<[^>]*>/g, " ")
@@ -49,6 +49,13 @@ export default function Header({ activePage, onMenuClick }) {
   const searchRef = useRef(null);
 
   const searchItems = useMemo(() => flattenNavItems(navSections), []);
+  const displayName = useMemo(() => {
+    const firstName = currentUser?.firstName?.trim();
+    const lastName = currentUser?.lastName?.trim();
+    const fullName = [firstName, lastName].filter(Boolean).join(" ");
+
+    return fullName || currentUser?.name || currentUser?.username || currentUser?.email || "Admin";
+  }, [currentUser]);
   const matchedItems = useMemo(() => {
     const query = search.trim().toLowerCase();
 
@@ -91,32 +98,24 @@ export default function Header({ activePage, onMenuClick }) {
     let isMounted = true;
 
     const loadNotifications = async () => {
-  try {
-    setNotificationLoading(true);
+      try {
+        setNotificationLoading(true);
+        const response = await getNotifications();
+        const list = Array.isArray(response?.data) ? response.data : [];
 
-    const response = await getAdminNotification();
-
-    console.log("API FULL:", response);
-console.log("DATA:", response?.data);
-
-   const list = Array.isArray(response?.data)
-  ? response.data
-  : [];
-
-    if (isMounted) {
-      setNotificationItems(list.slice(0, 5));
-    }
-  } catch (error) {
-    console.log("Error:", error);
-    if (isMounted) {
-      setNotificationItems([]);
-    }
-  } finally {
-    if (isMounted) {
-      setNotificationLoading(false);
-    }
-  }
-};
+        if (isMounted) {
+          setNotificationItems(list.slice(0, 5));
+        }
+      } catch {
+        if (isMounted) {
+          setNotificationItems([]);
+        }
+      } finally {
+        if (isMounted) {
+          setNotificationLoading(false);
+        }
+      }
+    };
 
     loadNotifications();
 
@@ -125,13 +124,17 @@ console.log("DATA:", response?.data);
     };
   }, [isNotificationOpen]);
 
- const handleLogout = async () => {
+const handleLogout = async () => {
   try {
-    await logoutApi(); // ✅ call backend logout
+    const { refreshToken } = useSessionStore.getState();
+
+    if (refreshToken) {
+      await logout(refreshToken);
+    }
   } catch (error) {
-    console.log("Logout API error:", error);
+    console.error("Logout API Error:", error);
   } finally {
-    logoutUser(); // clear local storage/session
+    useSessionStore.getState().clearSession();
     navigate("/login", { replace: true });
   }
 };
@@ -207,7 +210,15 @@ console.log("DATA:", response?.data);
             <div className="absolute right-0 top-[calc(100%+12px)] z-50 w-[min(24rem,calc(100vw-2rem))] rounded-2xl border border-gray-200 bg-white p-4 shadow-xl">
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-[#9a2119]">Notifications</h3>
-            
+                <button
+                  onClick={() => {
+                    setIsNotificationOpen(false);
+                    navigate("/notifications");
+                  }}
+                  className="text-xs font-medium text-[#9a2119] hover:underline"
+                >
+                  See All
+                </button>
               </div>
 
               {notificationLoading ? (
@@ -215,24 +226,25 @@ console.log("DATA:", response?.data);
                   Loading notifications...
                 </div>
               ) : (
-               <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
+                <div className="space-y-3">
                   {notificationItems.length > 0 ? (
                     notificationItems.map((item) => (
-                    <div
- key={item.examId || item.mentorId || item.title}
-  className="rounded-xl border border-[#f1d6d3] bg-[#fffafa] p-3"
->
-  <div className="flex items-start justify-between gap-3">
-    <div className="min-w-0">
-      <p className="text-sm font-semibold text-slate-800">
-        {item.title}
-      </p>
-      <p className="mt-1 text-xs text-slate-500">
-        {stripHtml(item.message) || "-"}
-      </p>
-    </div>
-  </div>
-</div>
+                      <div
+                        key={item.id}
+                        className="rounded-xl border border-[#f1d6d3] bg-[#fffafa] p-3"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-slate-800">{item.title}</p>
+                            <p className="mt-1 text-xs text-slate-500">
+                              {stripHtml(item.message) || "-"}
+                            </p>
+                          </div>
+                          <span className="whitespace-nowrap text-[11px] text-slate-400">
+                            {item.createdAt ? new Date(item.createdAt).toLocaleString() : ""}
+                          </span>
+                        </div>
+                      </div>
                     ))
                   ) : (
                     <div className="rounded-xl border border-[#f1d6d3] bg-[#fffafa] p-3 text-sm text-slate-500">
@@ -255,13 +267,13 @@ console.log("DATA:", response?.data);
           >
             <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-md bg-[#9a2119] text-xs font-bold text-white">
               {currentUser?.avatar ? (
-                <img src={currentUser.avatar} alt={currentUser.name} className="h-full w-full object-cover" />
+                <img src={currentUser.avatar} alt={displayName} className="h-full w-full object-cover" />
               ) : (
-                currentUser?.name?.charAt(0)?.toUpperCase() || "A"
+                displayName.charAt(0)?.toUpperCase() || "A"
               )}
             </div>
             <span className="hidden max-w-[140px] truncate text-sm font-semibold text-[#9a2119] sm:block">
-              {currentUser?.name || "Admin"}
+              {displayName}
             </span>
             <ChevronDown size={14} className="text-[#9a2119]" />
           </button>
