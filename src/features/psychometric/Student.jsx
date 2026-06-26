@@ -90,7 +90,7 @@ const buildStudentPayload = ({
   email,
   mobile: formatMobileForPayload(mobile),
   gender,
-  dataOfBirth: formatDateForPayload(dob),
+  dataOfBirth: dob ? formatDateForPayload(dob) : null,
   address,
 });
 
