@@ -252,7 +252,7 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
         <Input disabled={disabled} />
       </Form.Item>
 
-      {/* <Form.Item name="countruy" label="Country">
+      <Form.Item name="countruy" label="Country"  rules={[{ required: true, message: "Please select country" }]}>
         <Select
           disabled={disabled}
           onChange={(val) => {
@@ -269,7 +269,7 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
         </Select>
       </Form.Item>
 
-      <Form.Item name="state" label="State">
+      <Form.Item name="state" label="State"  rules={[{ required: true, message: "Please enter/select state" }]}>
         {countruy === "India" ? (
           <Select disabled={disabled} onChange={handleStateChange} showSearch>
             {states.map((state) => (
@@ -284,7 +284,7 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
       </Form.Item>
 
    
-      <Form.Item name="district" label="District">
+      {/* <Form.Item name="district" label="District">
         {countruy === "India" ? (
           <Select disabled={disabled} showSearch>
             {districts.map((d) => (
@@ -296,13 +296,13 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
         ) : (
           <Input disabled={disabled} />
         )}
-      </Form.Item>
+      </Form.Item> */}
 
-      <Form.Item name="city" label="City">
+      {/* <Form.Item name="city" label="City">
         <Input disabled={disabled} />
-      </Form.Item>
+      </Form.Item> */}
 
-      <Form.Item name="courses_offered" label="Courses Offered (B.Tech, MBA)">
+      {/* <Form.Item name="courses_offered" label="Courses Offered (B.Tech, MBA)">
         <Select
           mode="tags"
           disabled={disabled}
