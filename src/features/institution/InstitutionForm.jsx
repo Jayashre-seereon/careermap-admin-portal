@@ -230,9 +230,17 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
         </Upload>
       </Form.Item>
 
-      <Form.Item name="institute_type" label="Institution Type">
-        <Input disabled={disabled} />
-      </Form.Item>
+   <Form.Item
+  name="institute_type"
+  label="Institution Type"
+  rules={[{ required: true, message: "Please select institution type" }]}
+>
+  <Select disabled={disabled} placeholder="Select Type">
+    <Option value="Government">Government</Option>
+    <Option value="Private">Private</Option>
+    <Option value="State">State</Option>
+  </Select>
+</Form.Item>
 {/* 
       <Form.Item name="admission_process" label="Admission Process">
         <Input disabled={disabled} />

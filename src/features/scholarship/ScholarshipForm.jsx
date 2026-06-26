@@ -212,7 +212,7 @@ export default function ScholarshipForm({ onSubmit, initialValues, mode }) {
 
   <Form.Item
     name="price"
-    label="Price"
+    label="Amount"
     rules={[
       {
         pattern: /^\d+(\.\d{1,2})?$/,
