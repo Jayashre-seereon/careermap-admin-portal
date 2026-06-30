@@ -343,7 +343,7 @@ function renderEntranceExamFields(viewMode, options, onAutoFill) {
                   )}
                 </div>
 
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-5 gap-4">
                   {/* Row 1 */}
                   <Form.Item
                     {...restField}
@@ -375,11 +375,11 @@ function renderEntranceExamFields(viewMode, options, onAutoFill) {
 
                   {/* Row 2 */}
                   <Form.Item {...restField} name={[name, "issue"]} label="Issue Date">
-                    <DatePicker className="w-full" disabled={viewMode} format={DATE_DISPLAY_FORMAT} />
+                    <DatePicker className="w-full" disabled format={DATE_DISPLAY_FORMAT} />
                   </Form.Item>
 
                   <Form.Item {...restField} name={[name, "last"]} label="Last Date">
-                    <DatePicker className="w-full" disabled={viewMode} format={DATE_DISPLAY_FORMAT} />
+                    <DatePicker className="w-full" disabled format={DATE_DISPLAY_FORMAT} />
                   </Form.Item>
 
                   {/* <Form.Item {...restField} name={[name, "examDate"]} label="Exam Date">
@@ -405,7 +405,7 @@ function renderEntranceExamFields(viewMode, options, onAutoFill) {
                     label="URL"
                     rules={[validationRules.url("URL")]}
                   >
-                    <Input disabled={viewMode} />
+                    <Input disabled/>
                   </Form.Item>
 
                   {/* <Form.Item {...restField} name={[name, "topInstitutes"]} label="Top Institutes">
@@ -503,23 +503,23 @@ function renderInstitutionFields(viewMode, options, normalizeUpload, onAutoFill)
                     getValueFromEvent={normalizeUpload}
                     getValueProps={(value) => ({ fileList: Array.isArray(value) ? value : [] })}
                   >
-                    <Upload beforeUpload={() => false} disabled={viewMode} maxCount={1}>
-                      <Button icon={<UploadOutlined />} disabled={viewMode}>Upload Logo</Button>
+                    <Upload beforeUpload={() => false} disabled maxCount={1}>
+                      <Button icon={<UploadOutlined />} disabled>Upload Logo</Button>
                     </Upload>
                   </Form.Item>
 
                   <Form.Item {...restField} name={[name, "type"]} label="Institution Type">
-                    <Input disabled={viewMode} placeholder="Institution type" />
+                    <Input disabled placeholder="Institution type" />
                   </Form.Item>
 
-                  {/* <Form.Item {...restField} name={[name, "country"]} label="Country">
-                    <Input disabled={viewMode} />
+                  <Form.Item {...restField} name={[name, "country"]} label="Country">
+                    <Input disabled />
                   </Form.Item>
 
                   <Form.Item {...restField} name={[name, "state"]} label="State">
-                    <Input disabled={viewMode} />
+                    <Input disabled />
                   </Form.Item>
-
+{/* 
                   <Form.Item {...restField} name={[name, "city"]} label="City">
                     <Input disabled={viewMode} />
                   </Form.Item>
@@ -537,7 +537,7 @@ function renderInstitutionFields(viewMode, options, normalizeUpload, onAutoFill)
                   </Form.Item> */}
 
                   <Form.Item {...restField} name={[name, "url"]} label="URL" rules={[validationRules.url("URL")]}>
-                    <Input disabled={viewMode} />
+                    <Input disabled/>
                   </Form.Item>
 
                   <Form.Item
@@ -548,11 +548,11 @@ function renderInstitutionFields(viewMode, options, normalizeUpload, onAutoFill)
                     getValueProps={(value) => ({ checked: value === "Yes" })}
                     normalize={(checked) => (checked ? "Yes" : "No")}
                   >
-                    <StatusSwitch disabled={viewMode} checkedChildren="Yes" unCheckedChildren="No" />
+                    <StatusSwitch disabled checkedChildren="Yes" unCheckedChildren="No" />
                   </Form.Item>
 
                   <Form.Item {...restField} name={[name, "address"]} label="Address" className="col-span-4">
-                    <Input.TextArea rows={2} disabled={viewMode} />
+                    <Input.TextArea rows={2} disabled />
                   </Form.Item>
 
                   {/* <Form.Item {...restField} name={[name, "coursesOffered"]} label="Courses Offered" className="col-span-4">
