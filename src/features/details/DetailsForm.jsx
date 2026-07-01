@@ -91,6 +91,7 @@ function renderCommonFields(viewMode, options, onStreamChange, onCategoryChange,
   getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
   getValueProps={(value) => ({ fileList: Array.isArray(value) ? value : [] })}
   className="col-span-4"
+  required
 >
   <Upload beforeUpload={() => false} disabled={viewMode} maxCount={1}>
     <Button icon={<UploadOutlined />} disabled={viewMode}>Upload Media</Button>
