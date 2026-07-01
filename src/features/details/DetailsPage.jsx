@@ -86,9 +86,9 @@ const mapOption = (item = {}, labelKeys = []) => ({
 
 // ─── Default values per section ───────────────────────────────────────────────
 const buildDefaultValues = (section = "salary-range") => {
-  const common = { stream: undefined, category: undefined, secondCategory: undefined, subcategory: undefined ,description: "",};
+  const common = { stream: undefined, category: undefined, secondCategory: undefined, subcategory: undefined ,description: "",specialization: "", importantFactor: "", media: []};
 
-  if (section === "salary-range") return { ...common, salaryRanges: [{ currency: "INR", min: "", max: "" }] };
+  if (section === "salary-range") return { ...common, salaryRanges: [{ currency: "INR",profession: "", min: "", max: "" }] };
   if (section === "job-scope") return { ...common, names: [""] };
   if (section === "career-path") {
     return { ...common, careerPaths: [{ pathType: undefined, graduation: "", afterGraduation: "", afterPostGraduation: "", anyOther: "" }] };
@@ -111,6 +111,9 @@ const getCommonValues = (values = {}) => ({
   secondCategory: values.secondCategory,
   subcategory: values.subcategory,
   description: values.description,
+  specialization: values.specialization,
+  importantFactor: values.importantFactor,
+  media: values.media,
 });
 
 const getSectionFieldKeys = (section) => {
@@ -167,6 +170,7 @@ const normalizeSalaryRanges = (value) => {
       const maxParsed = splitSalaryValue(item?.maxSalary ?? item?.max ?? "", currencySource);
       return {
         currency: minParsed.currency || maxParsed.currency || normalizeSalaryCurrency(currencySource),
+        profession: item?.profession ?? "",
         min: minParsed.amount,
         max: maxParsed.amount,
       };
@@ -271,7 +275,7 @@ const deriveSections = (record = {}) => {
 const mapInstitution = (inst = {}) => ({
   name: inst.institutionId ?? inst.id ?? inst.name ?? undefined,
   institutionName: inst.institutionName || inst.institution?.name || inst.name || "",
-  logo: Array.isArray(inst.logo) ? inst.logo : [],
+  logo: inst.logo ?? [],
   type: inst.type ?? inst.institute_type ?? "",
   address: inst.address ?? "",
   admission: inst.admission ?? inst.admission_process ?? "",
@@ -304,6 +308,9 @@ const mapDetailsRecord = (record = {}) => {
     subcategory: record.subcategoryId != null ? record.subcategoryId ?? record.subcategory?.id ?? undefined : undefined,
     description: record.description ?? "",
     subcategoryName: record.subcategoryId != null ? record.subcategory?.title || record.subcategory?.name || "" : "",
+    specialization: record.specialization ?? "",
+    importantFactor: record.important_factor ?? record.importantFactor ?? "",
+    media: record.media ?? "",
     salaryRanges: normalizeSalaryRanges(record.salaryRanges),
     names: normalizeJobScope(record.jobScope ?? record.names),
     // Career Paths array
@@ -322,8 +329,8 @@ const mapDetailsRecord = (record = {}) => {
       ? examSources.map((ex) => ({
           exam: ex.exam ?? ex.examId ?? ex.id ?? undefined,
           examName: ex.examName || ex.examname || ex.name || "",
-          issue: ex.issue,
-          last: ex.last,
+           issue: ex.issue ?? ex.issuedate,
+           last: ex.last ?? ex.lastdate,
           url: ex.url ?? "",
           about: ex.about ?? "",
           eligibility: ex.eligibility ?? "",
@@ -479,48 +486,54 @@ export default function DetailsPage() {
 
   const isViewMode = mode === "view";
 
-  const buildSubmissionPayload = (values) => {
-    const commonValues = getCommonValues(values);
-    const payload = { streamId: commonValues.stream ?? null, categoryId: commonValues.category ?? null,description: commonValues.description ?? null };
-    if (commonValues.secondCategory) payload.secondcategoryId = commonValues.secondCategory;
-    if (commonValues.subcategory) payload.subcategoryId = commonValues.subcategory;
+ const buildSubmissionPayload = (values) => {
+  const commonValues = getCommonValues(values);
+  const formData = new FormData();
 
-    if (selectedSections.includes("salary-range")) {
-      payload.salaryRanges = (values.salaryRanges || [])
-        .map((item) => ({ currency: normalizeSalaryCurrency(item?.currency ?? item?.unit), minSalary: toFloatOrNull(item?.min), maxSalary: toFloatOrNull(item?.max) }))
-        .filter((item) => item.minSalary !== null || item.maxSalary !== null);
-    }
+  formData.append("streamId", commonValues.stream ?? "");
+  formData.append("categoryId", commonValues.category ?? "");
+  if (commonValues.secondCategory) formData.append("secondcategoryId", commonValues.secondCategory);
+  if (commonValues.subcategory) formData.append("subcategoryId", commonValues.subcategory);
+  formData.append("description", commonValues.description ?? "");
+  formData.append("specialization", commonValues.specialization ?? "");
+  formData.append("important_factor", commonValues.importantFactor ?? "");
 
-    if (selectedSections.includes("job-scope")) {
-      payload.jobScope = normalizeStringArray(values.names);
-    }
-
-    if (selectedSections.includes("career-path")) {
-  const ids = (values.careerPaths || [])
-    .map((cp) => cp?.pathType)
-    .filter(Boolean);
-
-  if (ids.length > 0) {
-    payload.careerpathIds = ids;
+  if (selectedSections.includes("salary-range")) {
+    const ranges = (values.salaryRanges || [])
+      .map((item) => ({
+        currency: normalizeSalaryCurrency(item?.currency ?? item?.unit),
+        profession: item?.profession ?? "",
+        minSalary: toFloatOrNull(item?.min),
+        maxSalary: toFloatOrNull(item?.max),
+      }))
+      .filter((item) => item.minSalary !== null || item.maxSalary !== null);
+    formData.append("salaryRanges", JSON.stringify(ranges));
   }
-}
 
-    if (selectedSections.includes("entrance-exam")) {
-      const ids = (values.entranceExams || []).map((ex) => ex?.exam).filter(Boolean);
-      if (ids.length > 0) {
-       payload.entranceexamIds = ids;
-      }
-    }
+  if (selectedSections.includes("job-scope")) {
+    formData.append("jobScope", JSON.stringify(normalizeStringArray(values.names)));
+  }
 
-    if (selectedSections.includes("institution")) {
-      const ids = (values.institutions || []).map((inst) => inst?.name).filter(Boolean);
-      if (ids.length > 0) {
-       payload.institutionIds = ids;
-      }
-    }
+  if (selectedSections.includes("career-path")) {
+    const ids = (values.careerPaths || []).map((cp) => cp?.pathType).filter(Boolean);
+    if (ids.length > 0) formData.append("careerpathIds", JSON.stringify(ids));
+  }
 
-    return payload;
-  };
+  if (selectedSections.includes("entrance-exam")) {
+    const ids = (values.entranceExams || []).map((ex) => ex?.exam).filter(Boolean);
+    if (ids.length > 0) formData.append("entranceexamIds", JSON.stringify(ids));
+  }
+
+  if (selectedSections.includes("institution")) {
+    const ids = (values.institutions || []).map((inst) => inst?.name).filter(Boolean);
+    if (ids.length > 0) formData.append("institutionIds", JSON.stringify(ids));
+  }
+
+  const mediaFile = values.media?.[0]?.originFileObj;
+  if (mediaFile) formData.append("media", mediaFile);
+
+  return formData;
+};
 
   const handleStreamChange = async (streamId) => {
     form.setFieldsValue({ category: undefined, secondCategory: undefined, subcategory: undefined });

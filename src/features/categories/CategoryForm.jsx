@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Form, Input, Select, Upload, Button } from "antd";
+import { Form, Input, Select, Upload, Button} from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import RichTextEditor from "../../components/ui/RichTextEditor";
 import StatusSwitch from "../../components/ui/StatusSwitch";
@@ -148,14 +148,14 @@ export default function CategoryForm({
           label="Description"
           className="md:col-span-2"
         >
-          <RichTextEditor
+          <Input.TextArea
             disabled={disabled}
             placeholder="Enter description"
-            height={160}
+           
           />
         </Form.Item>
 
-        <Form.Item
+        {/* <Form.Item
           name="specialisation"
           label="Specialisation"
           className="md:col-span-2"
@@ -177,7 +177,7 @@ export default function CategoryForm({
             placeholder="Enter important facts"
             height={160}
           />
-        </Form.Item>
+        </Form.Item> */}
 
         {/* <Form.Item
           name="isUpgrade"

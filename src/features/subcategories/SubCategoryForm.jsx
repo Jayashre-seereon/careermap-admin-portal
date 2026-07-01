@@ -176,7 +176,7 @@ export default function SubCategoryForm({
           <Input.TextArea rows={4} disabled={isView} />
         </Form.Item>
 
-        <Form.Item
+        {/* <Form.Item
           name="specialization"
           label="Specialization"
           className="md:col-span-2 lg:col-span-3"
@@ -198,7 +198,7 @@ export default function SubCategoryForm({
             placeholder="Enter important facts"
             height={160}
           />
-        </Form.Item>
+        </Form.Item> */}
       </div>
 
       {!isView && (

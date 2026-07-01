@@ -76,6 +76,26 @@ function renderCommonFields(viewMode, options, onStreamChange, onCategoryChange,
       <Form.Item name="description" label="Description" className="col-span-4">
         <Input.TextArea rows={4} disabled={viewMode} placeholder="Enter description here..." />
       </Form.Item>
+      <Form.Item name="specialization" label="Specialization" className="col-span-2">
+  <RichTextEditor disabled={viewMode} height={180} />
+</Form.Item>
+
+<Form.Item name="importantFactor" label="Important Factor" className="col-span-2">
+  <RichTextEditor disabled={viewMode} height={180} />
+</Form.Item>
+
+<Form.Item
+  name="media"
+  label="Media"
+  valuePropName="fileList"
+  getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
+  getValueProps={(value) => ({ fileList: Array.isArray(value) ? value : [] })}
+  className="col-span-4"
+>
+  <Upload beforeUpload={() => false} disabled={viewMode} maxCount={1}>
+    <Button icon={<UploadOutlined />} disabled={viewMode}>Upload Media</Button>
+  </Upload>
+</Form.Item>
     </>
   );
 }
@@ -89,22 +109,26 @@ function renderSalaryRangeFields(viewMode) {
       <Form.List name="salaryRanges">
         {(fields, { add, remove }) => (
           <div>
-            <div className="grid grid-cols-[120px_1fr_1fr_40px] gap-2 mb-1 text-xs font-medium text-slate-500 px-1">
-              <div>Currency</div>
-              <div>Min Salary</div>
-              <div>Max Salary</div>
-              <div />
-            </div>
+           <div className="grid grid-cols-[1fr_120px_1fr_1fr_40px] gap-2 mb-1 text-xs font-medium text-slate-500 px-1">
+  <div>Currency</div>
+  <div>Profession</div>
+  <div>Min Salary/Annum</div>
+  <div>Max Salary/Annum</div>
+  <div />
+</div>
 
             {fields.map(({ key, name, ...restField }) => (
-              <div key={key} className="grid grid-cols-[120px_1fr_1fr_40px] gap-2 mb-2">
+              <div key={key} className="grid grid-cols-[1fr_120px_1fr_1fr_40px] gap-2 mb-2">
+                
                 <Form.Item {...restField} name={[name, "currency"]} rules={[validationRules.required("Currency")]} className="mb-0">
                   <Select disabled={viewMode} placeholder="Currency">
                     <Option value="INR">INR</Option>
                     <Option value="USD">USD</Option>
                   </Select>
                 </Form.Item>
-
+<Form.Item {...restField} name={[name, "profession"]} rules={[validationRules.required("Profession")]} className="mb-0">
+  <Input disabled={viewMode} placeholder="Profession" />
+</Form.Item>
                 <Form.Item
                   {...restField}
                   name={[name, "min"]}
@@ -622,6 +646,7 @@ export default function DetailsForm({
     ? {
         ...initialValues,
         description: initialValues.description || "",
+        media: toUploadFileList(initialValues.media, "media"),
         // Career Paths array
         careerPaths: Array.isArray(initialValues.careerPaths) && initialValues.careerPaths.length > 0
           ? initialValues.careerPaths
@@ -841,8 +866,10 @@ export default function DetailsForm({
 
       {/* ── Salary Range + Job Scope side by side ── */}
       {(hasSalary || hasJobScope) && (
-        <div className={`grid gap-6 mb-4 ${hasSalary && hasJobScope ? "grid-cols-2" : "grid-cols-1"}`}>
-          {hasSalary && (
+       <div
+  className="grid gap-6 mb-4"
+  style={hasSalary && hasJobScope ? { gridTemplateColumns: "2fr 1fr" } : { gridTemplateColumns: "1fr" }}
+>     {hasSalary && (
             <div className="border border-slate-200 rounded-lg p-4">
               {renderSalaryRangeFields(viewMode)}
             </div>
