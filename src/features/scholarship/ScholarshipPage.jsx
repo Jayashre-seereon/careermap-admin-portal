@@ -57,7 +57,7 @@ const buildScholarshipPayload = ({
   eligibility,
   requirement,
   description,
-  sections, // ← 1. add this to the destructured params
+  sections,
 }) => {
   const payload = {
     categoryId: categoryId?.value || "",
@@ -72,19 +72,15 @@ const buildScholarshipPayload = ({
     eligibility: eligibility || "",
     requirement: requirement || "",
     description: description || "",
-    sections: Array.isArray(sections) ? sections : [], // ← 2. add this to payload
+    sections: Array.isArray(sections) ? sections : [],
   };
 
   const file = extractFile(image);
 
-  if (!file) {
-    return { payload, config: {} };
-  }
-
+  // ✅ Always build FormData now — not only when a file exists —
+  // so sections is ALWAYS sent as a JSON string, on both Add and Edit.
   const formData = new FormData();
 
-  // ← 3. THIS is the block you asked about — it replaces the old
-  //      Object.entries loop, right here, inside the `if (file)` branch
   Object.entries(payload).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
       if (key === "sections") {
@@ -95,7 +91,9 @@ const buildScholarshipPayload = ({
     }
   });
 
-  formData.append("image", file);
+  if (file) {
+    formData.append("image", file);
+  }
 
   return {
     payload: formData,
