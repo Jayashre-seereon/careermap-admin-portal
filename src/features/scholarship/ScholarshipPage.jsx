@@ -57,6 +57,7 @@ const buildScholarshipPayload = ({
   eligibility,
   requirement,
   description,
+  sections, // ← 1. add this to the destructured params
 }) => {
   const payload = {
     categoryId: categoryId?.value || "",
@@ -71,6 +72,7 @@ const buildScholarshipPayload = ({
     eligibility: eligibility || "",
     requirement: requirement || "",
     description: description || "",
+    sections: Array.isArray(sections) ? sections : [], // ← 2. add this to payload
   };
 
   const file = extractFile(image);
@@ -81,9 +83,15 @@ const buildScholarshipPayload = ({
 
   const formData = new FormData();
 
+  // ← 3. THIS is the block you asked about — it replaces the old
+  //      Object.entries loop, right here, inside the `if (file)` branch
   Object.entries(payload).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
-      formData.append(key, value);
+      if (key === "sections") {
+        formData.append(key, JSON.stringify(value));
+      } else {
+        formData.append(key, value);
+      }
     }
   });
 
@@ -94,7 +102,6 @@ const buildScholarshipPayload = ({
     config: { headers: { "Content-Type": "multipart/form-data" } },
   };
 };
-
 const mapScholarship = (item = {}) => ({
   id: item.id,
   categoryId: item.categoryId,
@@ -116,6 +123,10 @@ const mapScholarship = (item = {}) => ({
   eligibility: item.eligibility || "",
   requirement: item.requirement || "",
   description: item.description || "",
+  sections: Array.isArray(item.sections) ? item.sections.map(s => ({
+  title: s.title || "",
+  description: s.description || "",
+})) : [],
 });
 
 export default function ScholarshipPage() {
