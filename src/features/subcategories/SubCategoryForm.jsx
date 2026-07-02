@@ -104,7 +104,7 @@ export default function SubCategoryForm({
           </Select>
         </Form.Item>
 
-        <Form.Item
+        {/* <Form.Item
           name="institutionId"
           label="Institution"
           rules={[validationRules.required("Institution")]}
@@ -120,7 +120,7 @@ export default function SubCategoryForm({
               value: item.id,
             }))}
           />
-        </Form.Item>
+        </Form.Item> */}
 
         <Form.Item
           name="title"

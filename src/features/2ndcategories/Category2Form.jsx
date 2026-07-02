@@ -93,7 +93,7 @@ export default function Category2Form({
           <Input disabled={isView} />
         </Form.Item>
 
-        <Form.Item
+        {/* <Form.Item
           name="institution"
           label="Institute"
           rules={[validationRules.required("Institute")]}
@@ -109,7 +109,7 @@ export default function Category2Form({
               value: item.id,
             }))}
           />
-        </Form.Item>
+        </Form.Item> */}
 
         <Form.Item name="path" label="Path Ways">
           <Input disabled={isView} placeholder="Enter path ways" />

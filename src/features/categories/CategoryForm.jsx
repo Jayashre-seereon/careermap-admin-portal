@@ -84,7 +84,7 @@ export default function CategoryForm({
           </Select>
         </Form.Item>
 
-        <Form.Item
+        {/* <Form.Item
           name="institutions"
           label="Select Institutions"
           rules={[validationRules.required("Institutions")]}
@@ -100,7 +100,7 @@ export default function CategoryForm({
               value: item.id,
             }))}
           />
-        </Form.Item>
+        </Form.Item> */}
 
         <Form.Item name="title" label="Title">
           <Input disabled={disabled} />
