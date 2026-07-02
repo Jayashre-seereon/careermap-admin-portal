@@ -219,16 +219,6 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
         <Input disabled={disabled} />
       </Form.Item>
 
-      <Form.Item
-        name="logo"
-        label="Logo"
-        valuePropName="fileList"
-        getValueFromEvent={normalizeFile}
-      >
-        <Upload beforeUpload={() => false} maxCount={1} disabled={disabled}>
-          <Button icon={<UploadOutlined />}>Upload</Button>
-        </Upload>
-      </Form.Item>
 
    <Form.Item
   name="institute_type"
@@ -238,7 +228,7 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
   <Select disabled={disabled} placeholder="Select Type">
     <Option value="Government">Government</Option>
     <Option value="Private">Private</Option>
-    <Option value="State">State</Option>
+   
   </Select>
 </Form.Item>
 {/* 
@@ -323,6 +313,17 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
       <Form.Item name="is_top" label="Is Top" valuePropName="checked">
         <StatusSwitch disabled={disabled} />
       </Form.Item>
+            <Form.Item
+        name="logo"
+        label="Logo"
+        valuePropName="fileList"
+        getValueFromEvent={normalizeFile}
+      >
+        <Upload beforeUpload={() => false} maxCount={1} disabled={disabled}>
+          <Button icon={<UploadOutlined />}>Upload</Button>
+        </Upload>
+      </Form.Item>
+
 
       {/* FULL WIDTH */}
       <Form.Item
