@@ -93,7 +93,7 @@ export default function Category2Form({
           <Input disabled={isView} />
         </Form.Item>
 
-        <Form.Item
+        {/* <Form.Item
           name="institution"
           label="Institute"
           rules={[validationRules.required("Institute")]}
@@ -109,7 +109,7 @@ export default function Category2Form({
               value: item.id,
             }))}
           />
-        </Form.Item>
+        </Form.Item> */}
 
         <Form.Item name="path" label="Path Ways">
           <Input disabled={isView} placeholder="Enter path ways" />
@@ -156,7 +156,7 @@ export default function Category2Form({
           <Input.TextArea rows={4} disabled={isView} />
         </Form.Item>
 
-        <Form.Item
+        {/* <Form.Item
           name="specialisation"
           label="Specialisation"
           className="md:col-span-2 lg:col-span-3"
@@ -178,7 +178,7 @@ export default function Category2Form({
             placeholder="Enter important facts"
             height={160}
           />
-        </Form.Item>
+        </Form.Item> */}
       </div>
 
       {!isView && (

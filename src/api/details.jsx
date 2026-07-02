@@ -5,13 +5,17 @@ export const getDetails = async () => {
   return res.data;
 };
 
-export const createDetails = async (payload, config = {}) => {
-  const res = await api.post("/api/details/", payload, config);
+export const createDetails = async (payload) => {
+  const res = await api.post("/api/details/", payload, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
   return res.data;
 };
 
-export const updateDetails = async (id, payload, config = {}) => {
-  const res = await api.put(`/api/details/${id}`, payload, config);
+export const updateDetails = async (id, payload) => {
+  const res = await api.put(`/api/details/${id}`, payload, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
   return res.data;
 };
 
