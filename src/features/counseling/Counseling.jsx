@@ -93,17 +93,19 @@ function Counseling() {
     setOpen(true);
   };
 
-  const handleDownload = async (record) => {
+ const handleDownload = async (record) => {
   try {
     const blob = await downloadCounselingReport(record.id);
 
     const url = window.URL.createObjectURL(new Blob([blob]));
     const link = document.createElement("a");
 
+    const safeName = (record.studentName || "counselee").replace(/\s+/g, "_");
+
     link.href = url;
     link.setAttribute(
       "download",
-      `counseling_${record.firstName}_${record.id}.pdf`
+      `counseling_${safeName}_${record.id}.pdf`
     );
 
     document.body.appendChild(link);
