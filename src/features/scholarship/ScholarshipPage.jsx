@@ -57,6 +57,7 @@ const buildScholarshipPayload = ({
   eligibility,
   requirement,
   description,
+  sections,
 }) => {
   const payload = {
     categoryId: categoryId?.value || "",
@@ -71,30 +72,34 @@ const buildScholarshipPayload = ({
     eligibility: eligibility || "",
     requirement: requirement || "",
     description: description || "",
+    sections: Array.isArray(sections) ? sections : [],
   };
 
   const file = extractFile(image);
 
-  if (!file) {
-    return { payload, config: {} };
-  }
-
+  // ✅ Always build FormData now — not only when a file exists —
+  // so sections is ALWAYS sent as a JSON string, on both Add and Edit.
   const formData = new FormData();
 
   Object.entries(payload).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
-      formData.append(key, value);
+      if (key === "sections") {
+        formData.append(key, JSON.stringify(value));
+      } else {
+        formData.append(key, value);
+      }
     }
   });
 
-  formData.append("image", file);
+  if (file) {
+    formData.append("image", file);
+  }
 
   return {
     payload: formData,
     config: { headers: { "Content-Type": "multipart/form-data" } },
   };
 };
-
 const mapScholarship = (item = {}) => ({
   id: item.id,
   categoryId: item.categoryId,
@@ -116,6 +121,10 @@ const mapScholarship = (item = {}) => ({
   eligibility: item.eligibility || "",
   requirement: item.requirement || "",
   description: item.description || "",
+  sections: Array.isArray(item.sections) ? item.sections.map(s => ({
+  title: s.title || "",
+  description: s.description || "",
+})) : [],
 });
 
 export default function ScholarshipPage() {
