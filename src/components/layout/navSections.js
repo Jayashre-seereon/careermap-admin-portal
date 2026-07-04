@@ -23,6 +23,7 @@ import {
   Users,
   Video,
   Key,
+
 } from "lucide-react";
 
 export const navSections = [
@@ -42,7 +43,7 @@ export const navSections = [
         module: "Modules",
       },
        {
-        icon: Key,
+        icon: Users,
         name: "Roles",
         path: "/roles",
         module: "Roles",

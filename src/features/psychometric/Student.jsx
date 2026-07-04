@@ -367,15 +367,7 @@ export default function Student() {
       width: 150,
       render: (value) => (value ? `+91${value}` : "-"),
     },
-    { title: "Gender", dataIndex: "gender", width: 100, render: (v) => v || "-" },
-    {
-      title: "Date of Birth",
-      dataIndex: "dob",
-      width: 140,
-      render: (value) => formatDateDisplay(value),
-    },
-    { title: "Address", dataIndex: "address", width: 220, render: (v) => v || "-" },
-    {
+       {
       title: "Action",
       width: 150,
       fixed: "right",
