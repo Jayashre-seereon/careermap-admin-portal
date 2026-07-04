@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Table, Button, Input, Space, Popconfirm, Tag } from "antd";
+import { Table, Button, Input, Space, Popconfirm, Tag,Switch  } from "antd";
 import { EyeOutlined, EditOutlined, DeleteOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
 import { getSerialNumber } from "../../utils/slNo";
 const getPlainText = (value) => {
@@ -14,7 +14,7 @@ const getPlainText = (value) => {
     .trim();
 };
 
-export default function CategoryTable({ data, onAddClick, onView, onEdit, onDelete, loading }) {
+export default function CategoryTable({ data, onAddClick, onView, onEdit, onDelete, loading, onTogglePreview, }) {
   const [search, setSearch] = useState("");
 const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   const filtered = (data || []).filter((item) =>
@@ -45,7 +45,21 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
       render:(coverImage)=><img src={coverImage} alt="Cover" className="w-16 h-16 object-cover rounded" />
     },
    
-   
+  {
+  title: "Preview",
+  dataIndex: "isUpgrade",
+  width: 120,
+  render: (_, record) => (
+    <Switch
+      checked={record.isUpgrade === "Free"}
+      checkedChildren="ON"
+      unCheckedChildren="OFF"
+      onChange={(checked) =>
+        onTogglePreview(record, checked)
+      }
+    />
+  ),
+},
     {
       title: "Action",
       fixed: "right",
