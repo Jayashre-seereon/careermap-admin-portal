@@ -430,7 +430,7 @@ useEffect(() => {
         <Form.Item
           name="education"
           label="Education"
-          rules={[validationRules.required("Education")]}
+         
         >
           <Input disabled={disabled} placeholder="Enter education field" />
         </Form.Item>
