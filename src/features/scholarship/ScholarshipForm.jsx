@@ -96,29 +96,35 @@ export default function ScholarshipForm({ onSubmit, initialValues, mode }) {
     }
   };
 
-  useEffect(() => {
-    if (initialValues) {
-      form.setFieldsValue({
-        ...initialValues,
-        deadline: parseDateValue(initialValues.deadline),
-        image: toUploadFileList(initialValues.image, "scholarship-image"),
+useEffect(() => {
+  if (initialValues) {
+    form.setFieldsValue({
+      ...initialValues,
+      deadline: parseDateValue(initialValues.deadline),
+      image: toUploadFileList(initialValues.image, "scholarship-image"),
+      sections:
+        Array.isArray(initialValues.sections) && initialValues.sections.length > 0
+          ? initialValues.sections
+          : [{ title: "", description: "" }], // ← fallback to 1 row even in edit mode
 
-        // ✅ CATEGORY DROPDOWNS
-        categoryId: initialValues?.categoryId
-          ? { value: initialValues.categoryId, label: initialValues.categoryName }
-          : undefined,
-        secondcategoryId: initialValues?.secondcategoryId
-          ? { value: initialValues.secondcategoryId, label: initialValues.secondCategoryName }
-          : undefined,
-        subcategoryId: initialValues?.subcategoryId
-          ? { value: initialValues.subcategoryId, label: initialValues.subCategoryName }
-          : undefined,
-      });
-    } else {
-      form.resetFields();
-      form.setFieldsValue({ is_free: false });
-    }
-  }, [form, initialValues]);
+      categoryId: initialValues?.categoryId
+        ? { value: initialValues.categoryId, label: initialValues.categoryName }
+        : undefined,
+      secondcategoryId: initialValues?.secondcategoryId
+        ? { value: initialValues.secondcategoryId, label: initialValues.secondCategoryName }
+        : undefined,
+      subcategoryId: initialValues?.subcategoryId
+        ? { value: initialValues.subcategoryId, label: initialValues.subCategoryName }
+        : undefined,
+    });
+  } else {
+    form.resetFields();
+    form.setFieldsValue({
+      is_free: false,
+      sections: [{ title: "", description: "" }], // ← 1 empty row for "Add" mode
+    });
+  }
+}, [form, initialValues]);
 
   // Load category options, then preload dependent dropdown OPTIONS
   // (not just labels) so the user can immediately reopen and change them.
@@ -259,14 +265,60 @@ export default function ScholarshipForm({ onSubmit, initialValues, mode }) {
   >
     <Input.TextArea rows={3} disabled={isView} />
   </Form.Item>
+{/* SECTIONS (repeatable title + description) */}
+<div className="md:col-span-2 lg:col-span-4">
+  <label className="block mb-2 font-medium">Sections</label>
 
-  <Form.Item
+<Form.List name="sections">
+  {(fields, { add, remove }) => (
+    <div className="space-y-4">
+      {fields.map(({ key, name, ...restField }) => (
+        <div
+          key={key}
+          className="border border-gray-200 rounded-md p-3 relative space-y-3"
+        >
+          <Form.Item
+            {...restField}
+            name={[name, "title"]}
+            label="Title"
+            rules={[validationRules.required("Title")]}
+          >
+            <Input disabled={isView} placeholder="e.g. Eligibility" />
+          </Form.Item>
+
+          <Form.Item
+            {...restField}
+            name={[name, "description"]}
+            label="Description"
+          >
+            <RichTextEditor disabled={isView} />
+          </Form.Item>
+
+          {!isView && (
+            <Button danger type="link" onClick={() => remove(name)}>
+              Remove Section
+            </Button>
+          )}
+        </div>
+      ))}
+
+      {!isView && (
+        <Button type="dashed" onClick={() => add()} block>
+          + Add Section
+        </Button>
+      )}
+    </div>
+  )}
+</Form.List>
+</div>
+
+  {/* <Form.Item
     name="description"
     label="Description"
     className="md:col-span-2 lg:col-span-4"
   >
     <RichTextEditor disabled={isView} height={220} />
-  </Form.Item>
+  </Form.Item> */}
 
   {!isView && (
     <Button
