@@ -7,6 +7,7 @@ import {
   deleteMasterClass,
   getMasterClasses,
   updateMasterClass,
+    updateMasterClassFreeStatus,
 } from "../../api/masterclass";
 import { parseDateValue } from "../../utils/date";
 
@@ -169,8 +170,34 @@ const mapMasterClass = (item = {}) => ({
   category: item.category || item.category_type || item.type || "",
   categoryLabel: getCategoryLabel(item.category || item.category_type || item.type || ""),
   isActive: normalizeBoolean(item.isActive, item.is_active, item.active, item.status),
+  is_free: item.is_free,
 });
 
+
+const handleStatusChange = async (
+  record,
+  checked
+) => {
+  try {
+    await updateMasterClassFreeStatus(
+      record.id,
+      checked
+    );
+
+    messageApi.success(
+      "Master Class status updated."
+    );
+
+    await loadMasterClasses();
+  } catch (error) {
+    messageApi.error(
+      getApiErrorMessage(
+        error,
+        "Failed to update status."
+      )
+    );
+  }
+};
 export default function MasterClassPage() {
   const [messageApi, contextHolder] = message.useMessage();
   const [data, setData] = useState([]);
@@ -263,6 +290,7 @@ export default function MasterClassPage() {
           setMode("edit");
         }}
         onDelete={handleDelete}
+         onStatusChange={handleStatusChange}
       />
 
       <Modal
