@@ -7,6 +7,7 @@ import {
   deleteScholarship,
   getScholarships,
   updateScholarship,
+   updateScholarshipFreeStatus
 } from "../../api/scholarship";
 import { formatDateDisplay, formatDateForPayload } from "../../utils/date";
 
@@ -138,6 +139,30 @@ export default function ScholarshipPage() {
       setLoading(false);
     }
   };
+  const handleStatusChange = async (
+  record,
+  checked
+) => {
+  try {
+    await updateScholarshipFreeStatus(
+      record.id,
+      checked
+    );
+
+    messageApi.success(
+      "Scholarship status updated."
+    );
+
+    await loadScholarships();
+  } catch (error) {
+    messageApi.error(
+      getApiErrorMessage(
+        error,
+        "Failed to update status."
+      )
+    );
+  }
+};
 
   useEffect(() => {
     loadScholarships();
@@ -210,6 +235,7 @@ export default function ScholarshipPage() {
           setMode("edit");
         }}
         onDelete={handleDelete}
+        onStatusChange={handleStatusChange}
       />
 
       <Modal
