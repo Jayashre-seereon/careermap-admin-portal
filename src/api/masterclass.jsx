@@ -19,3 +19,15 @@ export const deleteMasterClass = async (id) => {
   const res = await api.delete(`/api/masterclass/${id}`);
   return res.data;
 };
+
+export const updateMasterClassFreeStatus = async (
+  id,
+  is_free
+) => {
+  const res = await api.patch(
+    `/api/masterclass/${id}/free-status`,
+    { is_free }
+  );
+
+  return res.data;
+};

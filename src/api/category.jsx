@@ -24,3 +24,16 @@ export const deleteCategory = async (id) => {
   const res = await api.delete(`/api/categories/${id}`);
   return res.data;
 };
+
+
+export const updateCategoryPreviewAccess = (
+  id,
+  category_access
+) => {
+  return api.patch(
+    `/api/categories/${id}/preview-access`,
+    {
+      category_access,
+    }
+  );
+};

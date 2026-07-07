@@ -10,6 +10,7 @@ import {
 } from "@ant-design/icons";
 import { formatDateDisplay } from "../../utils/date";
 import { getSerialNumber } from "../../utils/slNo";
+import StatusSwitch from "../../components/ui/StatusSwitch";
 export default function ScholarshipTable({
   data,
   loading,
@@ -19,6 +20,7 @@ export default function ScholarshipTable({
   onEdit,
   onDelete,
   onAdd,
+  onStatusChange,  
 }) {
   const handleReset = () => onSearch("");
 
@@ -103,6 +105,19 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
           "-"
         ),
     },
+    {
+  title: "Free Access",
+  dataIndex: "is_free",
+  width: 130,
+  render: (_, record) => (
+    <StatusSwitch
+      checked={record.is_free}
+      onChange={(checked) =>
+        onStatusChange(record, checked)
+      }
+    />
+  ),
+},
     {
       title: "Action",
       align: "right",

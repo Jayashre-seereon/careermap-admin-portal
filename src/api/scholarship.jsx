@@ -19,3 +19,17 @@ export const deleteScholarship = async (id) => {
   const res = await api.delete(`/api/scholarship/${id}`);
   return res.data;
 };
+
+export const updateScholarshipFreeStatus = async (
+  id,
+  is_free
+) => {
+  const res = await api.patch(
+    `/api/scholarship/${id}/free-status`,
+    {
+      is_free,
+    }
+  );
+
+  return res.data;
+};

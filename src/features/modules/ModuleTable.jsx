@@ -54,6 +54,16 @@ function ModuleTable({
       width: 140,
     },
     {
+  title: "Preview",
+  dataIndex: "freePreview",
+  width: 130,
+  render: (value) => (
+    <Tag color={value ? "blue" : "red"}>
+      {value ? "Enabled" : "Disabled"}
+    </Tag>
+  ),
+},
+    {
       title: "Action",
       fixed: "right",
       width: 150,
