@@ -22,10 +22,11 @@ const DEFAULT_MODULES = [
 ];
 
 // Update buildModulePayload to handle image
-const buildModulePayload = ({ title, isFree, image }) => {
+const buildModulePayload = ({ title, isFree, image, freePreview, }) => {
   const formData = new FormData();
   formData.append("title", title);
   formData.append("markas_free", isFree ?? false);
+  formData.append("freePreview", freePreview ?? true);
   if (image?.file) {
     formData.append("image", image.file);
   }
@@ -40,6 +41,7 @@ const mapModule = (item = {}) => ({
   id: item.id,
   title: item.title || "",
   isFree: item.isFree ?? item.markas_free ?? false,
+    freePreview: item.freePreview,
   image: item.image || null,
   createdAt: item.createdAt,
   updatedAt: item.updatedAt,
