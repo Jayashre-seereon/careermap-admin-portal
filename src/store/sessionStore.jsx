@@ -8,7 +8,7 @@ const ROLE_KEY = "auth_role";
 const PERMISSIONS_KEY = "auth_permissions";
 
 const getStoredJson = (key) => {
-  const value = sessionStorage.getItem(key);
+ const value = localStorage.getItem(key);
 
   if (!value) {
     return null;
@@ -22,10 +22,10 @@ const getStoredJson = (key) => {
 };
 
 const getStoredSession = () => ({
-  accessToken: sessionStorage.getItem(ACCESS_TOKEN_KEY) || "",
-  refreshToken: sessionStorage.getItem(REFRESH_TOKEN_KEY) || "",
+  accessToken: localStorage.getItem(ACCESS_TOKEN_KEY) || "",
+  refreshToken: localStorage.getItem(REFRESH_TOKEN_KEY) || "",
   user: getStoredJson(USER_KEY),
-  loginType: sessionStorage.getItem(LOGIN_TYPE_KEY) || "admin",
+  loginType: localStorage.getItem(LOGIN_TYPE_KEY) || "admin",
   role: getStoredJson(ROLE_KEY),
   permissions: getStoredJson(PERMISSIONS_KEY),
 });
@@ -39,49 +39,49 @@ const setStoredSession = ({
   permissions = null,
 }) => {
   if (accessToken) {
-    sessionStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+    localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
   } else {
-    sessionStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
   }
 
   if (refreshToken) {
-    sessionStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
   } else {
-    sessionStorage.removeItem(REFRESH_TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
   }
 
   if (user) {
-    sessionStorage.setItem(USER_KEY, JSON.stringify(user));
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
   } else {
-    sessionStorage.removeItem(USER_KEY);
+    localStorage.removeItem(USER_KEY);
   }
 
   if (loginType) {
-    sessionStorage.setItem(LOGIN_TYPE_KEY, loginType);
+    localStorage.setItem(LOGIN_TYPE_KEY, loginType);
   } else {
-    sessionStorage.removeItem(LOGIN_TYPE_KEY);
+    localStorage.removeItem(LOGIN_TYPE_KEY);
   }
 
   if (role) {
-    sessionStorage.setItem(ROLE_KEY, JSON.stringify(role));
+    localStorage.setItem(ROLE_KEY, JSON.stringify(role));
   } else {
-    sessionStorage.removeItem(ROLE_KEY);
+    localStorage.removeItem(ROLE_KEY);
   }
 
   if (permissions) {
-    sessionStorage.setItem(PERMISSIONS_KEY, JSON.stringify(permissions));
+    localStorage.setItem(PERMISSIONS_KEY, JSON.stringify(permissions));
   } else {
-    sessionStorage.removeItem(PERMISSIONS_KEY);
+    localStorage.removeItem(PERMISSIONS_KEY);
   }
 };
 
 const clearStoredSession = () => {
-  sessionStorage.removeItem(ACCESS_TOKEN_KEY);
-  sessionStorage.removeItem(REFRESH_TOKEN_KEY);
-  sessionStorage.removeItem(USER_KEY);
-  sessionStorage.removeItem(LOGIN_TYPE_KEY);
-  sessionStorage.removeItem(ROLE_KEY);
-  sessionStorage.removeItem(PERMISSIONS_KEY);
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+  localStorage.removeItem(LOGIN_TYPE_KEY);
+  localStorage.removeItem(ROLE_KEY);
+  localStorage.removeItem(PERMISSIONS_KEY);
 };
 
 const initialSession = getStoredSession();
