@@ -49,7 +49,13 @@ function ModuleForm({ onSubmit, initialValues, disabled, moduleOptions = [] }) {
         <Form.Item name="isFree" label="Unlocked" valuePropName="checked">
           <StatusSwitch disabled={disabled} />
         </Form.Item>
-
+            <Form.Item
+  name="freePreview"
+  label="Preview Enabled"
+  valuePropName="checked"
+>
+  <StatusSwitch disabled={disabled} />
+</Form.Item>
         {/* ── Image Upload Field ── */}
         <Form.Item
           name="image"

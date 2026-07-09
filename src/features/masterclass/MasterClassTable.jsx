@@ -8,6 +8,7 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 import { getSerialNumber } from "../../utils/slNo";
+import StatusSwitch from "../../components/ui/StatusSwitch";
 export default function MasterClassTable({
   data,
   loading,
@@ -17,6 +18,7 @@ export default function MasterClassTable({
   onEdit,
   onDelete,
   onAdd,
+  onStatusChange,
 }) {
   const ellipsis = (text) => (
     <Tooltip title={text || "-"}>
@@ -70,6 +72,20 @@ export default function MasterClassTable({
         <Tag color={value ? "green" : "default"}>{value ? "Active" : "Inactive"}</Tag>
       ),
     },
+ {
+  title: "Free Access",
+  dataIndex: "is_free",
+  width: 130,
+  render: (_, record) => (
+    <StatusSwitch
+      checked={record.is_free}
+      activeColor="#9a2119"
+      onChange={(checked) =>
+        onStatusChange(record, checked)
+      }
+    />
+  ),
+},
     {
       title: "Action",
       align: "right",

@@ -7,6 +7,7 @@ import {
   deleteScholarship,
   getScholarships,
   updateScholarship,
+   updateScholarshipFreeStatus
 } from "../../api/scholarship";
 import { formatDateDisplay, formatDateForPayload } from "../../utils/date";
 
@@ -147,6 +148,29 @@ export default function ScholarshipPage() {
       setLoading(false);
     }
   };
+ const handleStatusChange = async (record, checked) => {
+    // Optimistic update: flip only this record's is_free immediately,
+    // so the switch reflects the click right away and doesn't wait
+    // for a full reload (which can reorder rows and look like a mismatch).
+    setData((current) =>
+      current.map((item) =>
+        item.id === record.id ? { ...item, is_free: checked } : item
+      )
+    );
+
+    try {
+      await updateScholarshipFreeStatus(record.id, checked);
+      messageApi.success("Scholarship status updated.");
+    } catch (error) {
+      // Roll back on failure
+      setData((current) =>
+        current.map((item) =>
+          item.id === record.id ? { ...item, is_free: !checked } : item
+        )
+      );
+      messageApi.error(getApiErrorMessage(error, "Failed to update status."));
+    }
+  };
 
   useEffect(() => {
     loadScholarships();
@@ -219,6 +243,7 @@ export default function ScholarshipPage() {
           setMode("edit");
         }}
         onDelete={handleDelete}
+        onStatusChange={handleStatusChange}
       />
 
       <Modal

@@ -7,6 +7,7 @@ import {
   deleteCategory,
   getCategories,
   updateCategory,
+  updateCategoryPreviewAccess,
 } from "../../api/category";
 import { getStreams } from "../../api/stream";
 import { getInstitutes } from "../../api/institute";
@@ -138,7 +139,27 @@ const buildCategoryPayload = ({
     config: { headers: { "Content-Type": "multipart/form-data" } },
   };
 };
+const handleTogglePreview = async (
+  record,
+  checked
+) => {
+  try {
+    await updateCategoryPreviewAccess(
+      record.id,
+      checked
+    );
 
+    messageApi.success(
+      "Preview access updated successfully."
+    );
+
+    loadCategories();
+  } catch (error) {
+    messageApi.error(
+      "Failed to update preview access."
+    );
+  }
+};
 const mapCategory = (item = {}) => ({
   id: item.id,
   stream: item.streamId || item.stream?.id || item.stream || undefined,
@@ -282,6 +303,7 @@ export default function CategoryPage() {
           setMode("edit");
           setOpen(true);
         }}
+        onTogglePreview={handleTogglePreview}
       />
 
       <Modal
