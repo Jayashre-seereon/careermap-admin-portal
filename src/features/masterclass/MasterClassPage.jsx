@@ -174,30 +174,8 @@ const mapMasterClass = (item = {}) => ({
 });
 
 
-const handleStatusChange = async (
-  record,
-  checked
-) => {
-  try {
-    await updateMasterClassFreeStatus(
-      record.id,
-      checked
-    );
 
-    messageApi.success(
-      "Master Class status updated."
-    );
 
-    await loadMasterClasses();
-  } catch (error) {
-    messageApi.error(
-      getApiErrorMessage(
-        error,
-        "Failed to update status."
-      )
-    );
-  }
-};
 export default function MasterClassPage() {
   const [messageApi, contextHolder] = message.useMessage();
   const [data, setData] = useState([]);
@@ -207,7 +185,7 @@ export default function MasterClassPage() {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
 
-  const loadMasterClasses = async () => {
+ const loadMasterClasses = async () => {
     try {
       setLoading(true);
       const response = await getMasterClasses();
@@ -219,9 +197,31 @@ export default function MasterClassPage() {
     }
   };
 
+  const handleStatusChange = async (record, checked) => {
+    setData((current) =>
+      current.map((item) =>
+        item.id === record.id ? { ...item, is_free: checked } : item
+      )
+    );
+
+    try {
+      await updateMasterClassFreeStatus(record.id, checked);
+      messageApi.success("Master Class status updated.");
+    } catch (error) {
+      setData((current) =>
+        current.map((item) =>
+          item.id === record.id ? { ...item, is_free: !checked } : item
+        )
+      );
+      messageApi.error(getApiErrorMessage(error, "Failed to update status."));
+    }
+  };
+
   useEffect(() => {
     loadMasterClasses();
   }, []);
+
+
 
   const filteredData = data.filter((item) =>
     `${item.title} ${item.name} ${item.time} ${item.views} ${item.videoUrl} ${item.categoryLabel}`

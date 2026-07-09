@@ -190,9 +190,9 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
           </div>
         </div>
 
-        <Table
+       <Table
           columns={columns}
-          dataSource={Array.isArray(data) ? [...data].reverse() : []}
+          dataSource={Array.isArray(data) ? data : []}
           loading={loading}
           rowKey="id"
           pagination={pagination}
