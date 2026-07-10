@@ -88,7 +88,7 @@ function SalaryTable({ data, onAdd, onView, onEdit, onDelete, onSearch, search }
 
       <Table
         columns={columns}
-        dataSource={data}
+        dataSource={Array.isArray(data) ? [...data].reverse() : []}
         rowKey="id"
         pagination={{ pageSize: 5 }}
         scroll={{ x: "max-content" }}

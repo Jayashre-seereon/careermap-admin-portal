@@ -10,109 +10,282 @@ import {
   CreditCard,
   FileText,
   FolderTree,
-  GalleryVerticalIcon,
   GitBranch,
   GraduationCap,
   HelpCircle,
   IndianRupeeIcon,
   Layers,
   LayoutDashboard,
-  ListChecks,
   LogInIcon,
   MapPin,
   MessageSquare,
-  Settings2,
   Tag,
   Users,
+  Video,
+  Key,
+  Globe
+
 } from "lucide-react";
 
 export const navSections = [
   {
     label: "MAIN",
-    items: [{ icon: LayoutDashboard, name: "Dashboard", path: "/dashboard" }],
-  },
-  {
-    label: "USERS",
     items: [
-      { icon: GraduationCap, name: "Mentors", path: "/mentor" },
-      { icon: Users, name: "All Users", path: "/all_users" },
-    ],
-  },
-  {
-    label: "CAREER LIBRARY ",
-    items: [
-      { icon: BookOpen, name: "Modules", path: "/modules" },
-      { icon: Layers, name: "Stream", path: "/stream" },
-      { icon: Tag, name: "Categories", path: "/categories" },
-      { icon: Layers, name: "Second Categories", path: "/2ndcategories" },
-      { icon: FolderTree, name: "Subcategories", path: "/subcategories" },
-      { icon: FileText, name: "Details", path: "/details" },
-    ],
-  },
-  {
-    label: "CONTENT",
-    items: [
+      {
+        icon: LayoutDashboard,
+        name: "Dashboard",
+        path: "/dashboard",
+        module: "Dashboard",
+      },
+      {
+        icon: BookOpen,
+        name: "Modules",
+        path: "/modules",
+        module: "Modules",
+      },
+       {
+        icon: Users,
+        name: "Roles",
+        path: "/roles",
+        module: "Roles",
+      },
+      {
+        icon: Key,
+        name: "Permissions",
+        path: "/permissions",
+        module: "Permissions",
+      },
+      {
+        icon: Users,
+        name: "Staff",
+        path: "/staff",
+        module: "Staff",
+      },
      
-      { icon: GitBranch, name: "Path Type", path: "/pathtype" },
-      { icon: MapPin, name: "Career Path", path: "/careerpath" },
-      { icon: ClipboardList, name: "Entrance Exam", path: "/entranceexam" },
-      { icon: Building2, name: "Institution", path: "/institution" },
-      { icon: Award, name: "Scholarship", path: "/scholarship" },
     ],
   },
+
   {
-    label: "MANAGEMENT",
+    label: "BASIC INFORMATION",
     items: [
-      { icon: Bell, name: "Subscribers", path: "/all_users/subscribers" },
-      { icon: CalendarCheck, name: "Bookings", path: "/bookings" },
-      { icon: CreditCard, name: "Plans", path: "/plans" },
-      { icon: HelpCircle, name: "Quiz", path: "/quiz" },
+      {
+        icon: GraduationCap,
+        name: "Mentors",
+        path: "/mentor",
+        module: "Mentors",
+      },
+      {
+        icon: GitBranch,
+        name: "Path Type",
+        path: "/pathtype",
+        module: "Path Type",
+      },
+      {
+        icon: MapPin,
+        name: "Career Path",
+        path: "/careerpath",
+        module: "Career Path",
+      },
+      {
+        icon: ClipboardList,
+        name: "Entrance Exam",
+        path: "/entranceexam",
+        module: "Entrance Exam",
+      },
+      {
+        icon: Building2,
+        name: "Institution",
+        path: "/institution",
+        module: "Institution",
+      },
+      {
+        icon: Award,
+        name: "Scholarship",
+        path: "/scholarship",
+        module: "Scholarship",
+      },
+      {
+        icon: Video,
+        name: "Master Class",
+        path: "/masterclass",
+        module: "Master Class",
+      },
+      {
+        icon: CreditCard,
+        name: "Plans",
+        path: "/plans",
+        module: "PlansQuiz",
+      },
+      {
+        icon: HelpCircle,
+        name: "Quiz",
+        path: "/quiz",
+        module: "PlansQuiz",
+      },
+      {
+        icon: Globe,
+        name: "Study Abroad",
+        path: "/studyabroad",
+        module: "Study Abroad",
+      }
     ],
   },
+
   {
-    label: "REPORT",
+    label: "CAREER LIBRARY",
     items: [
-      { icon: IndianRupeeIcon, name: "Transactions", path: "/transactions" },
-      { icon: LogInIcon, name: "Login Activities", path: "/loginactivities" },
-      { icon: BellIcon, name: "Notifications", path: "/notifications" },
+      {
+        icon: Layers,
+        name: "Stream",
+        path: "/stream",
+        module: "Stream",
+      },
+      {
+        icon: Tag,
+        name: "Categories",
+        path: "/categories",
+        module: "Categories",
+      },
+      {
+        icon: Layers,
+        name: "Second Categories",
+        path: "/2ndcategories",
+        module: "Second Categories",
+      },
+      {
+        icon: FolderTree,
+        name: "Subcategories",
+        path: "/subcategories",
+        module: "Subcategories",
+      },
+      {
+        icon: FileText,
+        name: "Details",
+        path: "/details",
+        module: "Details",
+      },
     ],
   },
+
+  {
+    label: "USERS DETAILS",
+    items: [
+      {
+        icon: Users,
+        name: "All Users",
+        path: "/all_users",
+        module: "All Users",
+      },
+      {
+        icon: BellIcon,
+        name: "Notifications",
+        path: "/notifications",
+        module: "Notifications",
+      },
+      {
+        icon: Bell,
+        name: "Subscribers",
+        path: "/subscribers",
+        module: "Subscribers",
+      },
+      {
+        icon: CalendarCheck,
+        name: "Bookings",
+        path: "/bookings",
+        module: "Bookings",
+      },
+      {
+        icon: IndianRupeeIcon,
+        name: "Transactions",
+        path: "/transactions",
+        module: "Transactions",
+      },
+      {
+        icon: LogInIcon,
+        name: "Login Activities",
+        path: "/loginactivities",
+        module: "Login Activities",
+      },
+      {
+        icon: MessageSquare,
+        name: "Support Tickets",
+        path: "/support_tickets",
+        module: "Support Tickets",
+      },
+      {
+        icon: HelpCircle,
+        name: "Counseling",
+        path: "/counseling",
+        module: "Counseling",
+      },
+    ],
+  },
+
+  {
+    label: "INSTITUTES DETAILS",
+    items: [
+      {
+        icon: Building2,
+        name: "Institutes",
+        path: "/institutes",
+        module: "Institutes",
+      },
+     {
+        icon: Users,
+        name: "Students",
+        path: "/students",
+        module: "Students",
+      },
+    ],
+  },
+
   // {
-  //   label: "ORDERS",
-  //   items: [{ icon: ListChecks, name: "All Orders", path: "/all_orders" }],
-  // },
-  // {
-  //   label: "JOB MANAGEMENT",
+  //   label: "PSYCHOMETRIC",
   //   items: [
-  //     { icon: Briefcase, name: "Job", path: "/jobs" },
-  //     { icon: FileText, name: "Job Application", path: "/job-applications" },
+  //     {
+  //       icon: HelpCircle,
+  //       name: "Personality Test",
+  //       path: "/personality-test",
+  //       module: "Personality Test",
+  //     },
+  //     {
+  //       icon: Layers,
+  //       name: "Domains",
+  //       path: "/domains",
+  //       module: "Domains",
+  //     },
+  //     {
+  //       icon: Briefcase,
+  //       name: "Careers",
+  //       path: "/careers",
+  //       module: "Careers",
+  //     },
+  //     {
+  //       icon: MapPin,
+  //       name: "Career Paths",
+  //       path: "/career-paths",
+  //       module: "Career Paths",
+  //     },
+  //     {
+  //       icon: Tag,
+  //       name: "Career Categories",
+  //       path: "/career-categories",
+  //       module: "Career Categories",
+  //     },
+      
+  //     {
+  //       icon: HelpCircle,
+  //       name: "Questions",
+  //       path: "/questions",
+  //       module: "Questions",
+  //     },
+  //     {
+  //       icon: ClipboardList,
+  //       name: "Sections",
+  //       path: "/sections",
+  //       module: "Sections",
+  //     },
+      
   //   ],
-  // },
-  {
-    label: "SUPPORT",
-    items: [
-      { icon: MessageSquare, name: "Support Tickets", path: "/support_tickets" },
-      { icon: HelpCircle, name: "Personality Test", path: "/personality-test" },
-    ],
-  },
-  {
-    label: "PSYCHOMETRIC",
-    items: [
-      { icon: Layers, name: "Domains", path: "/domains" },
-      { icon: Briefcase, name: "Careers", path: "/careers" },
-      { icon: MapPin, name: "Career Paths", path: "/career-paths" },
-      { icon: Tag, name: "Career Categories", path: "/career-categories" },
-      { icon: Building2, name: "Institutes", path: "/institutes" },
-      { icon: HelpCircle, name: "Questions", path: "/questions" },
-      { icon: ClipboardList, name: "Sections", path: "/sections" },
-      { icon: Users, name: "Students", path: "/students" },
-    ],
-  },
-  
-  // {
-  //   label: "SETTINGS",
-  //   items: [
-  //     { icon: Settings2, name: "Global Settings", path: "/globalsettings" },
-  //     { icon: GalleryVerticalIcon, name: "Logo & Favicon", path: "/logo-favicon" },
   // },
 ];

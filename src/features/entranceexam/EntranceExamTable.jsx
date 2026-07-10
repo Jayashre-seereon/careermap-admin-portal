@@ -1,3 +1,5 @@
+import React from "react";
+import { useState } from "react";
 import { Table, Input, Button, Popconfirm } from "antd";
 import {
   EyeOutlined,
@@ -6,84 +8,156 @@ import {
   SearchOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
-import { useState } from "react";
-
+import { Tooltip } from "antd";
+import { formatDateDisplay } from "../../utils/date";
+import { getSerialNumber } from "../../utils/slNo";
 export default function EntranceExamTable({
   data,
+  loading,
+  search,
+  onSearch,
   onView,
   onEdit,
   onDelete,
   onAdd,
 }) {
-  const [search, setSearch] = useState("");
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
+  const handleReset = () => onSearch("");
 
-  const filteredData = data.filter((item) =>
-    item.exam.toLowerCase().includes(search.toLowerCase())
+  const formatDate = (value) => {
+    return formatDateDisplay(value);
+  };
+
+  const stripHtml = (text = "") => {
+    const normalizedText = Array.isArray(text)
+      ? text.join(", ")
+      : typeof text === "string"
+        ? text
+        : text == null
+          ? ""
+          : String(text);
+
+    return normalizedText
+      .replace(/<[^>]*>/g, " ")
+      .replace(/&nbsp;/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
+
+  const ellipsis = (text) => (
+    <Tooltip title={stripHtml(text) || "-"}>
+      <span className="block max-w-[220px] truncate">{stripHtml(text) || "-"}</span>
+    </Tooltip>
   );
-
-  const handleReset = () => setSearch("");
 
   const columns = [
     {
       title: <span className="text-[#9a2119] font-semibold">SL</span>,
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
       width: 70,
     },
+    // {
+    //   title: <span className="text-[#9a2119] font-semibold">Module</span>,
+    //   dataIndex: "moduleName",
+    //   width: 150,
+    //   ellipsis: true,
+    // },
     {
-      title: <span className="text-[#9a2119] font-semibold">Module</span>,
-      dataIndex: "module",
+      title: <span className="text-[#9a2119] font-semibold">Stream</span>,
+      dataIndex: "streamName",
+      width: 140,
+      ellipsis: true,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Category</span>,
-      dataIndex: "category",
+      dataIndex: "categoryName",
+      width: 160,
+      ellipsis: true,
+    },
+    {
+      title: <span className="text-[#9a2119] font-semibold">2nd Category</span>,
+      dataIndex: "secondCategoryName",
+      width: 180,
+      ellipsis: true,
+    },
+    {
+      title: <span className="text-[#9a2119] font-semibold">Subcategory</span>,
+      dataIndex: "subcategoryName",
+      width: 180,
+      ellipsis: true,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Exam Name</span>,
-      dataIndex: "exam",
+      dataIndex: "examname",
+      width: 180,
+      ellipsis: true,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Issue Date</span>,
-      dataIndex: "issueDate",
+      dataIndex: "issuedate",
+      width: 140,
+      render: (value) => formatDate(value),
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Last Date</span>,
-      dataIndex: "lastDate",
+      dataIndex: "lastdate",
+      width: 140,
+      render: (value) => formatDate(value),
     },
+    // {
+    //   title: <span className="text-[#9a2119] font-semibold">Eligibility</span>,
+    //   dataIndex: "eligibility",
+    //   width: 180,
+    //   render: ellipsis,
+    // },
+    // {
+    //   title: <span className="text-[#9a2119] font-semibold">Exam Mode</span>,
+    //   dataIndex: "examMode",
+    //   width: 140,
+    //   ellipsis: true,
+    // },
+    // {
+    //   title: <span className="text-[#9a2119] font-semibold">Duration</span>,
+    //   dataIndex: "duration",
+    //   width: 140,
+    //   ellipsis: true,
+    // },
+    // {
+    //   title: <span className="text-[#9a2119] font-semibold">Subject</span>,
+    //   dataIndex: "subject",
+    //   width: 160,
+    //   ellipsis: true,
+    // },
     {
       title: <span className="text-[#9a2119] font-semibold">URL</span>,
       dataIndex: "url",
-      render: (url) => (
-        <a href={url} target="_blank" className="text-blue-600">
-          Visit
-        </a>
-      ),
+      width: 140,
+      render: (url) =>
+        url ? (
+          <a href={url} target="_blank" rel="noreferrer" className="text-blue-600">
+            Visit
+          </a>
+        ) : (
+          "-"
+        ),
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Action</span>,
       key: "action",
       align: "right",
+      width: 150,
       render: (_, record) => (
         <div className="flex justify-end gap-2">
           <Button
             onClick={() => onView(record)}
-            className="w-8 h-8 flex items-center justify-center rounded-md 
-                       border border-[#9a2119] 
-                       text-[#9a2119]
-                       hover:border-[#e57373]
-                       hover:text-[#e57373]
-                      "
+            className="w-8 h-8 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
           >
             <EyeOutlined />
           </Button>
 
           <Button
             onClick={() => onEdit(record)}
- className="w-8 h-8 flex items-center justify-center rounded-md 
-                       border border-[#9a2119] 
-                       text-[#9a2119]
-                       hover:border-[#e57373]
-                       hover:text-[#e57373]
-                      "
+            className="w-8 h-8 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
           >
             <EditOutlined />
           </Button>
@@ -104,20 +178,13 @@ export default function EntranceExamTable({
 
   return (
     <div className="w-full">
-      
-      {/* 🔴 TOP MANAGEMENT HEADING (LIKE CAREER PATH MANAGEMENT) */}
       <h1 className="text-xl font-semibold text-[#9a2119] mb-4">
         Entrance Exam Management
       </h1>
 
-      {/* CARD */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
-
-        {/* INNER HEADER */}
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-          <h2 className="text-lg font-semibold text-[#9a2119]">
-            Entrance Exams
-          </h2>
+          <h2 className="text-lg font-semibold text-[#9a2119]">Entrance Exams</h2>
 
           <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
             <Input
@@ -125,12 +192,12 @@ export default function EntranceExamTable({
               value={search}
               prefix={<SearchOutlined className="text-[#9a2119]" />}
               className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => onSearch(e.target.value)}
             />
 
             <Button
               onClick={handleReset}
-               style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}
+              style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
             >
               <ReloadOutlined />
               Reset
@@ -138,20 +205,22 @@ export default function EntranceExamTable({
 
             <Button
               onClick={onAdd}
-               style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}
+              style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
             >
               + Add
             </Button>
           </div>
         </div>
 
-        {/* TABLE */}
         <Table
           columns={columns}
-          dataSource={filteredData}
-          pagination={{ pageSize: 5 }}
+          dataSource={data}
+          loading={loading}
+          rowKey="id"
+          pagination={pagination}
+          onChange={(pag) => setPagination(pag)}
           rowClassName="hover:bg-gray-50"
-          scroll={{ x: true }}
+          scroll={{ x: "max-content" }}
         />
       </div>
     </div>

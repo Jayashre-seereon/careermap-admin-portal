@@ -1,4 +1,5 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
+import PermissionRoute from "./PermissionRoute";
 import DashboardPage from "../pages/DashboardPage";
 import DashBoardlayout from "../components/layout/DashBoardlayout";
 import MentorPage from "../features/mentor/MentorPage";
@@ -8,7 +9,7 @@ import Active from "../features/allUser/tabs/Active";
 import Banned from "../features/allUser/tabs/Banned";
 import EmailUnverified from "../features/allUser/tabs/EmailUnverified";
 import MobileUnverified from "../features/allUser/tabs/MobileUnverified";
-import Subscribers from "../features/allUser/tabs/Subscribers";
+import Subscribers from "../features/Subscribers/Subscribers";
 import WithBalance from "../features/allUser/tabs/WithBalance";
 import NotificationToUser from "../features/allUser/tabs/NotificationToUser";
 import UserDetails from "../features/allUser/tabs/UserDetails";
@@ -24,14 +25,18 @@ import RequireAuth from "../features/auth/RequireAuth";
 import PublicOnlyRoute from "../features/auth/PublicOnlyRoute";
 import AuthLayout from "../features/auth/AuthLayout";
 import LoginPage from "../features/auth/LoginPage";
+import InstituteLoginPage from "../features/auth/InstituteLoginPage";
 import SignupPage from "../features/auth/SignupPage";
 import ForgotPasswordPage from "../features/auth/ForgotPasswordPage";
+import ResetPasswordPage from "../features/auth/ResetPasswordPage";
 import RootRedirect from "../features/auth/RootRedirect";
 import PathTypePage from "../features/pathtype/PathTypePage";
 import CareerPathPage from "../features/careerpath/CareerPathPage";
 import EntranceExamPage from "../features/entranceexam/EntranceExamPage";
 import InstitutionPage from "../features/institution/InstitutionPage";
 import ScholarshipPage from "../features/scholarship/ScholarshipPage";
+import MasterClassPage from "../features/masterclass/MasterClassPage";
+import StudyAbroadPage from "../features/studyabroad/StudyAbroadPage";
 import CareerPlanPage from "../features/careerplan/CareerPlanPage";
 import AllOrder from "../features/allOrders/AllOrder";
 import ApprovedOrder from "../features/allOrders/ApprovedOrder";
@@ -77,10 +82,45 @@ import Question from "../features/psychometric/Question";
 import Section from "../features/psychometric/Section";
 import Student from "../features/psychometric/Student";
 import PersonalityTest from "../features/personalityTest/PersonalityTest";
+import Counseling from "../features/counseling/Counseling";
+import Staff from "../features/staff/Staff";
+import RolePage from "../features/role/RolePage";
+import Permission from "../features/permission/Permission";
+import InstituteLayout from "../components/institute/InstituteLayout";
+import InstituteDashboardPage from "../pages/InstituteDashboardPage";
+
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <RootRedirect />,
+  },
+ 
+ 
+
+  {
+    path: "/forgot-password",
+    element: <ForgotPasswordPage />,
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPasswordPage />,
+  },
+  {
+    path: "/admin",
+    element: <PublicOnlyRoute />,
+    children: [
+      {
+        element: <AuthLayout />,
+        children: [
+          { index: true, element: <Navigate to="/admin/login" replace /> },
+          { path: "login", element: <LoginPage /> },
+          { path: "signup", element: <SignupPage /> },
+          { path: "forgot-password", element: <ForgotPasswordPage /> },
+          { path: "reset-password", element: <ResetPasswordPage /> },
+          { path: "reset-password/:token", element: <ResetPasswordPage /> },
+        ],
+      },
+    ],
   },
   {
     element: <PublicOnlyRoute />,
@@ -89,8 +129,26 @@ export const router = createBrowserRouter([
         element: <AuthLayout />,
         children: [
           { path: "/login", element: <LoginPage /> },
+          { path: "/institute/login", element: <InstituteLoginPage /> },
           { path: "/signup", element: <SignupPage /> },
           { path: "/forgot-password", element: <ForgotPasswordPage /> },
+          { path: "/reset-password", element: <ResetPasswordPage /> },
+          { path: "/reset-password/:token", element: <ResetPasswordPage /> },
+        ],
+      },
+    ],
+  },
+  {
+    element: (
+      <RequireAuth allowedLoginTypes={["institute"]} loginPath="/institute/login" />
+    ),
+    children: [
+      {
+        path: "/institute",
+        element: <InstituteLayout />,
+        children: [
+          { index: true, element: <Navigate to="/institute/dashboard" replace /> },
+          { path: "dashboard", element: <InstituteDashboardPage /> },
         ],
       },
     ],
@@ -103,32 +161,56 @@ export const router = createBrowserRouter([
         element: <DashBoardlayout />,
         children: [
           { index: true, element: <Navigate to="/dashboard" replace /> },
-          { path: "dashboard", element: <DashboardPage /> },
-          { path: "mentor", element: <MentorPage /> },
+
+          {
+            path: "dashboard",
+            element: (
+              <PermissionRoute module="Dashboard">
+                <DashboardPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "mentor",
+            element: (
+              <PermissionRoute module="Mentors">
+                <MentorPage />
+              </PermissionRoute>
+            ),
+          },
           {
             path: "all_users",
-            element: <AllUsers />,
+            element: (
+              <PermissionRoute module="All Users">
+                <AllUsers />
+              </PermissionRoute>
+            ),
             children: [
               { index: true, element: <AllUsersTab /> },
               { path: "active", element: <Active /> },
               { path: "banned", element: <Banned /> },
               { path: "email-unverified", element: <EmailUnverified /> },
               { path: "mobile-unverified", element: <MobileUnverified /> },
-              { path: "subscribers", element: <Subscribers /> },
               { path: "with-balance", element: <WithBalance /> },
               { path: "notification", element: <NotificationToUser /> },
             ],
           },
-          {path:"all_orders", element:<AllOrder/>,
-            children:[
+          {
+            path: "all_orders",
+            element: <AllOrder />,
+            children: [
               { index: true, element: <Navigate to="/all_orders/approved" replace /> },
               { path: "approved", element: <ApprovedOrder /> },
               { path: "pending", element: <PendingOrder /> },
-            ] 
+            ],
           },
           {
             path: "support_tickets",
-            element: <SupportTickets />,
+            element: (
+              <PermissionRoute module="Support Tickets">
+                <SupportTickets />
+              </PermissionRoute>
+            ),
             children: [
               { index: true, element: <Navigate to="/support_tickets/all" replace /> },
               { path: "all", element: <AllTickets /> },
@@ -137,31 +219,167 @@ export const router = createBrowserRouter([
               { path: "answered", element: <AnsweredTickets /> },
             ],
           },
-          { path: "support_tickets/:ticketId", element: <TicketDetails /> },
-          { path: "modules", element: <ModulePage /> },
-          { path: "stream", element: <StreamPage /> },
-          { path: "categories", element: <CategoryPage /> },
-          { path: "2ndcategories", element: <Category2Page /> },
-          { path: "subcategories", element: <SubCategoryPage /> },
-          { path: "details", element: <DetailsPage /> },
+          {
+            path: "support_tickets/:ticketId",
+            element: (
+              <PermissionRoute module="Support Tickets">
+                <TicketDetails />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "modules",
+            element: (
+              <PermissionRoute module="Modules">
+                <ModulePage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "stream",
+            element: (
+              <PermissionRoute module="Stream">
+                <StreamPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "categories",
+            element: (
+              <PermissionRoute module="Categories">
+                <CategoryPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "2ndcategories",
+            element: (
+              <PermissionRoute module="Second Categories">
+                <Category2Page />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "subcategories",
+            element: (
+              <PermissionRoute module="Subcategories">
+                <SubCategoryPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "details",
+            element: (
+              <PermissionRoute module="Details">
+                <DetailsPage />
+              </PermissionRoute>
+            ),
+          },
           { path: "salary", element: <SalaryPage /> },
           { path: "jobscope", element: <JobScopePage /> },
-          { path: "pathtype", element: <PathTypePage /> },
-          { path: "careerpath", element: <CareerPathPage /> },
-          { path: "entranceexam", element: <EntranceExamPage /> },
-          { path: "institution", element: <InstitutionPage /> },
-          { path: "scholarship", element: <ScholarshipPage /> },
+          {
+            path: "pathtype",
+            element: (
+              <PermissionRoute module="Path Type">
+                <PathTypePage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "careerpath",
+            element: (
+              <PermissionRoute module="Career Path">
+                <CareerPathPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "entranceexam",
+            element: (
+              <PermissionRoute module="Entrance Exam">
+                <EntranceExamPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "institution",
+            element: (
+              <PermissionRoute module="Institution">
+                <InstitutionPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "scholarship",
+            element: (
+              <PermissionRoute module="Scholarship">
+                <ScholarshipPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "masterclass",
+            element: (
+              <PermissionRoute module="Master Class">
+                <MasterClassPage />
+              </PermissionRoute>
+            ),
+          },
+          { path: "studyabroad", element: <StudyAbroadPage /> },
           { path: "careerplan", element: <CareerPlanPage /> },
-          { path: "bookings", element: <BookingTable /> },
-          { path: "plans", element: <PlansPage /> },
+          {
+            path: "bookings",
+            element: (
+              <PermissionRoute module="Bookings">
+                <BookingTable />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "subscribers",
+            element: (
+              <PermissionRoute module="Subscribers">
+                <Subscribers />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "plans",
+            element: (
+              <PermissionRoute module="PlansQuiz">
+                <PlansPage />
+              </PermissionRoute>
+            ),
+          },
           { path: "subscriptions", element: <SubscriptionsPage /> },
           { path: "services", element: <ServicesPage /> },
           { path: "allcountries", element: <CountriesPage /> },
           { path: "states", element: <StatesPage /> },
           { path: "districts", element: <DistrictsPage /> },
-          { path: "transactions", element: <TransactionsPage /> },
-          { path: "loginactivities", element: <LoginActivitiesPage /> },
-          { path: "notifications", element: <NotificationsPage /> },
+          {
+            path: "transactions",
+            element: (
+              <PermissionRoute module="Transactions">
+                <TransactionsPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "loginactivities",
+            element: (
+              <PermissionRoute module="Login Activities">
+                <LoginActivitiesPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "notifications",
+            element: (
+              <PermissionRoute module="Notifications">
+                <NotificationsPage />
+              </PermissionRoute>
+            ),
+          },
           { path: "logo-favicon", element: <LogoFavicon /> },
           { path: "email-notification/alltemplates", element: <AllTemplatesPage /> },
           { path: "email-notification/globaltemplates", element: <GlobalTemplatePage /> },
@@ -172,23 +390,132 @@ export const router = createBrowserRouter([
           { path: "jobs/:jobId/edit", element: <JobFormPage mode="edit" /> },
           { path: "jobs/:jobId/view", element: <JobFormPage mode="view" /> },
           { path: "job-applications", element: <JobApplicationsPage /> },
-          { path: "quiz", element: <QuizPage /> },
-          { path: "quiz/:quizId/questions", element: <QuizQuestionsPage /> },
+          {
+            path: "quiz",
+            element: (
+              <PermissionRoute module="PlansQuiz">
+                <QuizPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "quiz/:quizId/questions",
+            element: (
+              <PermissionRoute module="PlansQuiz">
+                <QuizQuestionsPage />
+              </PermissionRoute>
+            ),
+          },
           { path: "globalsettings", element: <GlobalSettingsPage /> },
           { path: "profile", element: <ProfilePage /> },
           { path: "language", element: <LanguagePage /> },
           { path: "language/:languageId/keywords", element: <LanguageKeywordsPage /> },
           { path: "seo", element: <SeoPage /> },
           { path: "social-credential", element: <SocialCredentialPage /> },
-          { path: "domains", element: <Domain /> },
-          { path: "careers", element: <Career /> },
-          { path: "career-paths", element: <CareerPath /> },
-          { path: "career-categories", element: <CareerCategory /> },
-          { path: "institutes", element: <Institute /> },
-          { path: "questions", element: <Question /> },
-          { path: "sections", element: <Section /> },
-          { path: "students", element: <Student /> },
-          { path: "personality-test", element: <PersonalityTest /> }
+          {
+            path: "domains",
+            element: (
+              <PermissionRoute module="Domains">
+                <Domain />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "careers",
+            element: (
+              <PermissionRoute module="Careers">
+                <Career />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "career-paths",
+            element: (
+              <PermissionRoute module="Career Paths">
+                <CareerPath />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "career-categories",
+            element: (
+              <PermissionRoute module="Career Categories">
+                <CareerCategory />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "institutes",
+            element: (
+              <PermissionRoute module="Institutes">
+                <Institute />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "questions",
+            element: (
+              <PermissionRoute module="Questions">
+                <Question />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "sections",
+            element: (
+              <PermissionRoute module="Sections">
+                <Section />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "students",
+            element: (
+              <PermissionRoute module="Students">
+                <Student />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "personality-test",
+            element: (
+              <PermissionRoute module="Personality Test">
+                <PersonalityTest />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "counseling",
+            element: (
+              <PermissionRoute module="Counseling">
+                <Counseling />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "staff",
+            element: (
+              <PermissionRoute module="Staff">
+                <Staff />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "roles",
+            element: (
+              <PermissionRoute module="Roles">
+                <RolePage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "permissions",
+            element: (
+              <PermissionRoute module="Permissions">
+                <Permission />
+              </PermissionRoute>
+            ),
+          },
         ],
       },
     ],

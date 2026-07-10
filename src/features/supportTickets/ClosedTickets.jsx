@@ -1,8 +1,17 @@
 import SupportTicketsTable from "./SupportTicketsTable";
-import { ticketsData } from "./ticketsData";
+import useHelpAndSupportTickets from "./useHelpAndSupportTickets";
+import { filterTicketsByStatus } from "./supportTicketsUtils";
 
 export default function ClosedTickets() {
-  const closedTickets = ticketsData.filter((ticket) => ticket.status === "Closed");
+  const { tickets, loading, updateTicketStatus } = useHelpAndSupportTickets();
+  const closedTickets = filterTicketsByStatus(tickets, "closed");
 
-  return <SupportTicketsTable title="Closed Tickets" data={closedTickets} />;
+  return (
+    <SupportTicketsTable
+      title="Closed Tickets"
+      data={closedTickets}
+      loading={loading}
+      onUpdateStatus={updateTicketStatus}
+    />
+  );
 }

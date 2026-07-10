@@ -1,5 +1,5 @@
-import React from "react";
-import { Table, Button, Avatar, Space, Popconfirm, Input } from "antd";
+import {React,useState}from "react";
+import { Table, Button, Space, Popconfirm, Input, Tag } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -8,62 +8,81 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 
-function ModuleTable({ data, onAddClick, onView, onEdit, onDelete, search, onSearch }) {
+import { getSerialNumber } from "../../utils/slNo";
+function ModuleTable({
+  data,
+  onAddClick,
+  onView,
+  onEdit,
+  onDelete,
+  search,
+  onSearch,
+  loading,
+}) {
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   const columns = [
     {
-      title: "SL No.",
-      render: (_, __, index) => index + 1,
+      title: "No.",
       width: 80,
+      render: (_, __, index) => getSerialNumber(index, pagination),
+    },
+    { title: "Title", dataIndex: "title", width: 240, ellipsis: true },
+    // Add this column between "Title" and "Access":
+{
+  title: "Image",
+  dataIndex: "image",
+  width: 80,
+  render: (image) =>
+    image ? (
+      <img
+        src={image}
+        alt="module"
+        style={{ width: 40, height: 40, borderRadius: 6, objectFit: "cover" }}
+      />
+    ) : (
+      <span className="text-gray-400 text-xs">—</span>
+    ),
+},
+    {
+      title: "Access",
+      dataIndex: "isFree",
+      render: (isFree) => (
+        <Tag color={isFree ? "green" : "red"}>
+          {isFree ? "Unlocked" : "Locked"}
+        </Tag>
+      ),
+      width: 140,
     },
     {
-      title: "Image",
-      dataIndex: "image",
-      render: (img) => (
-        <Avatar
-          src={img}
-          size={45}
-          shape="square"
-          className="border border-[#9a2119]"
-        />
-      ),
-      width: 90,
-    },
-    { title: "Title", dataIndex: "title", width: 220, ellipsis: true },
-    { title: "Btn Text", dataIndex: "btnText", width: 180, ellipsis: true },
-    {
-      title: "URL",
-      dataIndex: "url",
-      render: (url) => (
-        <a
-          href={url}
-          target="_blank"
-          rel="noreferrer"
-          className="text-[#9a2119]"
-        >
-          Visit
-        </a>
-      ),
-      width: 120,
-    },
+  title: "Preview",
+  dataIndex: "freePreview",
+  width: 130,
+  render: (value) => (
+    <Tag color={value ? "blue" : "red"}>
+      {value ? "Enabled" : "Disabled"}
+    </Tag>
+  ),
+},
     {
       title: "Action",
       fixed: "right",
       width: 150,
-      render: (_, record, index) => (
+      render: (_, record) => (
         <Space>
-          <Button  className="w-8 h-8 flex items-center justify-center rounded-md 
-                       border border-[#9a2119] 
-                       text-[#9a2119]
-                       hover:border-[#e57373]
-                       hover:text-[#e57373]
-                      " icon={<EyeOutlined />} onClick={() => onView(record)} />
-          <Button className="w-8 h-8 flex items-center justify-center rounded-md 
-                       border border-[#9a2119] 
-                       text-[#9a2119]
-                       hover:border-[#e57373]
-                       hover:text-[#e57373]
-                      " icon={<EditOutlined />} onClick={() => onEdit(record, index)} />
-          <Popconfirm title="Are you sure you want to delete this module?" onConfirm={() => onDelete(index)}>
+          <Button
+            className="w-8 h-8 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
+            icon={<EyeOutlined />}
+            onClick={() => onView(record)}
+          />
+          <Button
+            className="w-8 h-8 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
+            icon={<EditOutlined />}
+            onClick={() => onEdit(record)}
+          />
+          <Popconfirm
+            title="Are you sure you want to delete this module?"
+            onConfirm={() => onDelete(record.id)}
+          >
             <Button danger icon={<DeleteOutlined />} />
           </Popconfirm>
         </Space>
@@ -73,7 +92,6 @@ function ModuleTable({ data, onAddClick, onView, onEdit, onDelete, search, onSea
 
   return (
     <div className="w-full bg-white p-5 rounded-2xl shadow-md border">
-
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h2 className="text-lg font-semibold text-[#9a2119]">Module</h2>
         <div className="flex flex-wrap items-center gap-3">
@@ -97,14 +115,17 @@ function ModuleTable({ data, onAddClick, onView, onEdit, onDelete, search, onSea
           >
             + Add Module
           </Button>
+        
         </div>
       </div>
 
       <Table
         columns={columns}
-        dataSource={data}
-        rowKey={(r, i) => i}
-        pagination={{ pageSize: 5 }}
+        dataSource={Array.isArray(data) ? [...data].reverse() : []}
+        rowKey={(record) => record.id}
+        loading={loading}
+        pagination={pagination}
+        onChange={(pag) => setPagination(pag)}
         scroll={{ x: "max-content" }}
       />
     </div>

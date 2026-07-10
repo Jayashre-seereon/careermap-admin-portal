@@ -139,7 +139,7 @@ function DomainTable({
 
       <Table
         columns={columns}
-        dataSource={data}
+        dataSource={Array.isArray(data) ? [...data].reverse() : []}
         rowKey="id"
         pagination={{ pageSize: 5 }}
         scroll={{ x: "max-content" }}
@@ -149,3 +149,4 @@ function DomainTable({
 }
 
 export default DomainTable;
+

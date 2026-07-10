@@ -3,55 +3,38 @@ import {
   EyeOutlined,
   SearchOutlined,
   ReloadOutlined,
+  StopOutlined,
 } from "@ant-design/icons";
+import{Tag,Popconfirm,message} from "antd";
 import { useState } from "react";
 import { useOutletContext } from "react-router-dom";
+import { banUser } from "../../../api/allusers";
 
-const data = [
-  {
-    key: "1",
-    id: "USR001",
-    user: "Rahul Sharma",
-    email: "rahul@gmail.com",
-    joined: "2024-01-12",
-    balance: "$120",
-    mobile: "+91 9876543210",
-    address: "12 MG Road",
-    city: "Bhubaneswar",
-    state: "Odisha",
-    zip: "751001",
-    country: "India",
-    emailVerified: true,
-    mobileVerified: true,
-    twoFA: false,
-  },
-  {
-    key: "2",
-    id: "USR002",
-    user: "Priya Das",
-    email: "priya@gmail.com",
-    joined: "2024-02-05",
-    balance: "$80",
-    mobile: "+91 8765432109",
-    address: "45 Saheed Nagar",
-    city: "Bhubaneswar",
-    state: "Odisha",
-    zip: "751007",
-    country: "India",
-    emailVerified: true,
-    mobileVerified: false,
-    twoFA: true,
-  },
-];
 
 export default function Active() {
   const [search, setSearch] = useState("");
-  const { setSelectedUser } = useOutletContext();
-
-  const filteredData = data.filter((item) =>
-    item.user.toLowerCase().includes(search.toLowerCase())
+ 
+ const { users, setSelectedUser, fetchUsers } = useOutletContext();
+const filteredData = users
+  .filter((u) => u.status === "active") // ✅ small change
+  .filter((u) =>
+    u.user.toLowerCase().includes(search.toLowerCase())
   );
+const handleBan = async (id) => {
+  if (!id) {
+    console.log("ID missing ❌");
+    return;
+  }
 
+  try {
+    await banUser(id);
+    message.success("User banned");
+
+    await fetchUsers(); // ✅ REFRESH FROM BACKEND
+  } catch (err) {
+    message.error("Ban failed");
+  }
+};
   const handleReset = () => setSearch("");
 
   const columns = [
@@ -66,14 +49,39 @@ export default function Active() {
       
     },
     {
-      title: <span className="text-[#9a2119] font-semibold">Joined At</span>,
-      dataIndex: "joined",
+      title: <span className="text-[#9a2119] font-semibold">Mobile</span>,
+      dataIndex: "mobile",
      
     },
     {
-      title: <span className="text-[#9a2119] font-semibold">Balance</span>,
-      dataIndex: "balance",
+      title: <span className="text-[#9a2119] font-semibold">Status</span>,
+      dataIndex: "status",
+      render: (status) => {
+        const isActive = status?.toLowerCase() === "active";  
+        return (
+          <Tag color={isActive ? "green" : "red"} className="font-medium">
+            {status?.charAt(0).toUpperCase() + status?.slice(1)}
+          </Tag>
+        );
+      },
       
+    },
+    {
+      title: <span className="text-[#9a2119] font-semibold">Ban User</span>,
+   render: (_, record) => (
+  <div className="flex gap-2">
+  
+
+   <Popconfirm
+  title="Are you sure to ban this user?"
+  onConfirm={() => handleBan(record.id)}
+>
+ <Button danger icon={<StopOutlined />}>
+</Button>
+</Popconfirm>
+
+  </div>
+) 
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Action</span>,
@@ -126,7 +134,7 @@ export default function Active() {
       {/* TABLE */}
       <Table
         columns={columns}
-        dataSource={filteredData}
+        dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
         pagination={{ pageSize: 5 }}
         rowClassName="hover:bg-gray-50"
         scroll={{ x: "max-content" }}

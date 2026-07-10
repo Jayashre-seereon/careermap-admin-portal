@@ -1,10 +1,22 @@
 import React, { useState } from "react";
-import { Table, Button, Input, Space, Popconfirm, Tag } from "antd";
+import { Table, Button, Input, Space, Popconfirm, Tag,Switch  } from "antd";
 import { EyeOutlined, EditOutlined, DeleteOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
+import { getSerialNumber } from "../../utils/slNo";
+const getPlainText = (value) => {
+  if (!value) {
+    return "";
+  }
 
-export default function CategoryTable({ data, onAddClick, onView, onEdit, onDelete }) {
+  return value
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
+export default function CategoryTable({ data, onAddClick, onView, onEdit, onDelete, loading, onTogglePreview, }) {
   const [search, setSearch] = useState("");
-
+const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   const filtered = (data || []).filter((item) =>
   (item.title || "").toLowerCase().includes((search || "").toLowerCase())
 );
@@ -12,32 +24,42 @@ export default function CategoryTable({ data, onAddClick, onView, onEdit, onDele
   const columns = [
     {
       title: "SL",
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
       width: 70,
     },
     {
       title: "Title",
       dataIndex: "title",
-      width: 220,
+      width: 120,
       ellipsis: true,
     },
     {
-      title: "Description",
-      dataIndex: "description",
-      width: 360,
-      ellipsis: true,
-      render: (text) => (text ? text.slice(0, 80) + "..." : ""),
-    },
+  title: "Stream",
+  width: 150,
+  render: (_, record) => record.streamObj?.name || "-"
+},
     {
-      title: "Is Upgrade",
-      dataIndex: "isUpgrade",
-      render: (val) => (
-        <Tag color={val === "Free" ? "green" : "red"}>
-          {val}
-        </Tag>
-      ),
-      width: 130,
+      title:"Cover Image",
+      dataIndex:"coverImage",
+      width:150,
+      render:(coverImage)=><img src={coverImage} alt="Cover" className="w-16 h-16 object-cover rounded" />
     },
+   
+  {
+  title: "Preview",
+  dataIndex: "isUpgrade",
+  width: 120,
+  render: (_, record) => (
+    <Switch
+      checked={record.isUpgrade === "Free"}
+      checkedChildren="ON"
+      unCheckedChildren="OFF"
+      onChange={(checked) =>
+        onTogglePreview(record, checked)
+      }
+    />
+  ),
+},
     {
       title: "Action",
       fixed: "right",
@@ -55,8 +77,8 @@ export default function CategoryTable({ data, onAddClick, onView, onEdit, onDele
                        text-[#9a2119]
                        hover:border-[#e57373]
                        hover:text-[#e57373]
-                      " icon={<EditOutlined />} onClick={() => onEdit(record, index)} />
-          <Popconfirm title="Are you sure you want to delete this category?" onConfirm={() => onDelete(index)}>
+                      " icon={<EditOutlined />} onClick={() => onEdit(record)} />
+          <Popconfirm title="Are you sure you want to delete this category?" onConfirm={() => onDelete(record)}>
             <Button danger icon={<DeleteOutlined />} />
           </Popconfirm>
         </Space>
@@ -96,9 +118,11 @@ export default function CategoryTable({ data, onAddClick, onView, onEdit, onDele
 
       <Table
         columns={columns}
-        dataSource={filtered}
-        rowKey={(r, i) => i}
-        pagination={{ pageSize: 5 }}
+        dataSource={Array.isArray(filtered) ? [...filtered].reverse() : []}
+        rowKey={(record) => record.id}
+        loading={loading}
+        pagination={pagination}
+        onChange={(pag) => setPagination(pag)}
         scroll={{ x: "max-content" }}
       />
     </div>

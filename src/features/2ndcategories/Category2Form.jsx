@@ -5,26 +5,37 @@ import RichTextEditor from "../../components/ui/RichTextEditor";
 import { validationRules } from "../../utils/formValidation";
 
 const { Option } = Select;
-const institutionOptions = [
-  "AIIMS DELHI",
-  "AIIMS BHOPAL",
-  "AIIMS BHUBANESWAR",
-  "SCB Medical College",
-  "CMC, Vellore",
-  "KMC, Manipal",
-  "Amrita Vishwam Vidyapeetham",
-  "JIPMER, Puducherry",
-].map((item) => ({ label: item, value: item }));
 
-const normalizeInstitutions = (value) => {
-  if (Array.isArray(value)) return value;
-  if (typeof value === "string") {
-    return value.split(",").map((item) => item.trim()).filter(Boolean);
+const normalizeFile = (event) => {
+  if (Array.isArray(event)) {
+    return event;
   }
-  return [];
+
+  return event?.fileList || [];
 };
 
-export default function Category2Form({ onSubmit, initialValues, mode }) {
+const toUploadFileList = (value, fallbackName) => {
+  if (!value || typeof value !== "string") {
+    return [];
+  }
+
+  return [
+    {
+      uid: value,
+      name: fallbackName,
+      status: "done",
+      url: value,
+    },
+  ];
+};
+
+export default function Category2Form({
+  onSubmit,
+  initialValues,
+  mode,
+  categoryOptions = [],
+  institutionOptions = [],
+}) {
   const [form] = Form.useForm();
   const isView = mode === "view";
 
@@ -32,82 +43,124 @@ export default function Category2Form({ onSubmit, initialValues, mode }) {
     if (initialValues) {
       form.setFieldsValue({
         ...initialValues,
-        institutions: normalizeInstitutions(initialValues.institutions),
+        category: initialValues.category,
+        institution: initialValues.institution,
+        image: toUploadFileList(initialValues.image, "secondary-category-image"),
+        coverImage: toUploadFileList(
+          initialValues.coverImage,
+          "secondary-category-cover-image"
+        ),
       });
     } else {
       form.resetFields();
     }
   }, [form, initialValues]);
 
-  const handleFinish = (values) => {
-    onSubmit({
-      ...values,
-      institutions: Array.isArray(values.institutions)
-        ? values.institutions.join(", ")
-        : values.institutions,
-    });
-  };
-
   return (
-    <Form form={form} layout="vertical" onFinish={handleFinish} validateTrigger={["onChange", "onBlur"]}>
+    <Form
+      form={form}
+      layout="vertical"
+      onFinish={onSubmit}
+      validateTrigger={["onChange", "onBlur"]}
+    >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <h3 className="md:col-span-2 lg:col-span-3 mb-1 text-lg font-semibold text-[#9a2119]">
           2nd Category Details
         </h3>
 
-        <Form.Item name="category" label="Category" rules={[{ required: true }]}>
-          <Select disabled={isView}>
-            <Option value="Medical">Medical</Option>
-            <Option value="Architecture & Planning">Architecture</Option>
-            <Option value="Business Management">Business</Option>
+        <Form.Item
+          name="category"
+          label="Category"
+          rules={[validationRules.required("Category")]}
+        >
+          <Select disabled={isView} placeholder="Select category">
+            {categoryOptions.map((item) => (
+              <Option key={item.id} value={item.id}>
+                {item.title || item.name}
+              </Option>
+            ))}
           </Select>
         </Form.Item>
 
         <Form.Item
           name="name"
           label="Name"
-          rules={[validationRules.required("2nd Category"), validationRules.charactersOnly("2nd Category")]}
+          rules={[
+            validationRules.required("2nd Category"),
+            validationRules.charactersOnly("2nd Category"),
+          ]}
         >
           <Input disabled={isView} />
         </Form.Item>
 
-        <Form.Item
-          name="institutions"
-          label="Select Institute"
+        {/* <Form.Item
+          name="institution"
+          label="Institute"
           rules={[validationRules.required("Institute")]}
         >
           <Select
-            mode="multiple"
             showSearch
             allowClear
             disabled={isView}
             placeholder="Search and select institute"
             optionFilterProp="label"
-            options={institutionOptions}
+            options={institutionOptions.map((item) => ({
+              label: item.name,
+              value: item.id,
+            }))}
           />
-        </Form.Item>
+        </Form.Item> */}
 
-        <Form.Item name="howToBecome" label="Path Ways">
-          <Input disabled={isView} placeholder="Enter Path Ways" />
+        <Form.Item name="path" label="Path Ways">
+          <Input disabled={isView} placeholder="Enter path ways" />
         </Form.Item>
-
-        <Form.Item name="coverImage" label="Cover Image">
-          <Upload beforeUpload={() => false} disabled={isView}>
+        <Form.Item
+          name="coverImage"
+          label="Cover Image"
+          valuePropName="fileList"
+          getValueFromEvent={normalizeFile}
+        >
+          <Upload
+            beforeUpload={() => false}
+            disabled={isView}
+            maxCount={1}
+            listType="picture"
+          >
             <Button icon={<UploadOutlined />}>Upload</Button>
           </Upload>
         </Form.Item>
 
-        <Form.Item name="image" label="Image">
-          <Upload beforeUpload={() => false} disabled={isView}>
+        {/* 
+
+        <Form.Item
+          name="image"
+          label="Image"
+          valuePropName="fileList"
+          getValueFromEvent={normalizeFile}
+        >
+          <Upload
+            beforeUpload={() => false}
+            disabled={isView}
+            maxCount={1}
+            listType="picture"
+          >
             <Button icon={<UploadOutlined />}>Upload</Button>
           </Upload>
-        </Form.Item>
+        </Form.Item> */}
 
-        <Form.Item name="description" label="Description" className="md:col-span-2 lg:col-span-3">
+        <Form.Item
+          name="description"
+          label="Description"
+          className="md:col-span-2 lg:col-span-3"
+        >
           <Input.TextArea rows={4} disabled={isView} />
         </Form.Item>
 
-        <Form.Item name="specialisation" label="Specialisation" className="md:col-span-2 lg:col-span-3">
+        {/* <Form.Item
+          name="specialisation"
+          label="Specialisation"
+          className="md:col-span-2 lg:col-span-3"
+        >
           <RichTextEditor
             disabled={isView}
             placeholder="Enter specialisation"
@@ -115,14 +168,17 @@ export default function Category2Form({ onSubmit, initialValues, mode }) {
           />
         </Form.Item>
 
-        <Form.Item name="importantFacts" label="Important Facts" className="md:col-span-2 lg:col-span-3">
+        <Form.Item
+          name="importantFacts"
+          label="Important Facts"
+          className="md:col-span-2 lg:col-span-3"
+        >
           <RichTextEditor
             disabled={isView}
             placeholder="Enter important facts"
             height={160}
           />
-        </Form.Item>
-
+        </Form.Item> */}
       </div>
 
       {!isView && (
@@ -131,7 +187,7 @@ export default function Category2Form({ onSubmit, initialValues, mode }) {
           block
           style={{ background: "#9a2119", borderColor: "#9a2119", color: "#fff" }}
         >
-          Create
+          {mode === "edit" ? "Update" : "Create"}
         </Button>
       )}
     </Form>

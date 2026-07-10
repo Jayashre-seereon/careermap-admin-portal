@@ -1,16 +1,22 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Form, Input, Modal, Popconfirm, Select, Table, message, Button } from "antd";
 import {
   ArrowLeftOutlined,
   DeleteOutlined,
   EditOutlined,
-  PlusOutlined,
   ReloadOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
-import { createQuestionId, getQuizzes, saveQuizzes } from "./quizStore";
 import { validationRules } from "../../utils/formValidation";
+import {
+  createQuizQuestion,
+  deleteQuizQuestion,
+  getQuizById,
+  getQuizQuestions,
+  updateQuizQuestion,
+} from "../../api/quiz";
+import { useLocation } from "react-router-dom";
 
 const initialQuestionValues = {
   question: "",
@@ -21,34 +27,110 @@ const initialQuestionValues = {
   correctOption: 0,
 };
 
+const normalizeList = (response) => {
+  const list = response?.data;
+
+  if (Array.isArray(list)) {
+    return list;
+  }
+
+  if (list && typeof list === "object") {
+    return [list];
+  }
+
+  return [];
+};
+
+const mapQuiz = (item = {}) => ({
+  ...item,
+  id: item.id,
+  title: item.title || "",
+});
+
+const mapQuestion = (item = {}) => {
+  const options = Array.isArray(item.options) ? item.options : [];
+  const correctOption = options.findIndex((option) => option?.isCorrect);
+
+  return {
+    ...item,
+    id: item.id,
+    question: item.question || "",
+    quizId: item.quizId,
+    options,
+    optionTexts: [
+      options[0]?.text || "",
+      options[1]?.text || "",
+      options[2]?.text || "",
+      options[3]?.text || "",
+    ],
+    correctOption: correctOption >= 0 ? correctOption : 0,
+  };
+};
+
+const getApiErrorMessage = (error, fallbackMessage) =>
+  error.response?.data?.message || error.message || fallbackMessage;
+
+const sanitizeText = (value) => `${value || ""}`.trim();
+
 export default function QuizQuestionsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { quizId } = useParams();
+  const [messageApi, contextHolder] = message.useMessage();
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
-  const [quizzes, setQuizzes] = useState(() => getQuizzes());
+  const [quiz, setQuiz] = useState(() =>
+    location.state?.quiz ? mapQuiz(location.state.quiz) : null
+  );
+  const [questions, setQuestions] = useState([]);
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const quiz = useMemo(
-    () => quizzes.find((item) => item.id === quizId),
-    [quizId, quizzes]
-  );
+  const loadQuiz = async () => {
+    try {
+      const response = await getQuizById(quizId);
+      const nextQuiz = response?.data || response;
+      setQuiz(nextQuiz ? mapQuiz(nextQuiz) : null);
+    } catch (error) {
+      setQuiz(null);
+      messageApi.error(getApiErrorMessage(error, "Failed to load quiz."));
+    }
+  };
+
+  const loadQuestions = async () => {
+    try {
+      setLoading(true);
+      const response = await getQuizQuestions(quizId);
+      const questionList = Array.isArray(response?.data?.questions)
+        ? response.data.questions
+        : Array.isArray(response?.questions)
+          ? response.questions
+          : [];
+      const nextQuestions = questionList.map(mapQuestion);
+      setQuestions(nextQuestions);
+    } catch (error) {
+      messageApi.error(getApiErrorMessage(error, "Failed to load questions."));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadQuiz();
+    loadQuestions();
+  }, [quizId]);
+
   const filteredQuestions = useMemo(
     () =>
-      (quiz?.questions || []).filter((question) =>
-        `${question.question} ${(question.options || []).join(" ")} Option ${question.correctOption + 1}`
+      questions.filter((question) =>
+        `${question.question} ${question.optionTexts.join(" ")} Option ${question.correctOption + 1}`
           .toLowerCase()
           .includes(search.toLowerCase())
       ),
-    [quiz, search]
+    [questions, search]
   );
-
-  const persistQuizzes = (nextQuizzes) => {
-    setQuizzes(nextQuizzes);
-    saveQuizzes(nextQuizzes);
-  };
 
   const resetForm = () => {
     form.resetFields();
@@ -65,39 +147,59 @@ export default function QuizQuestionsPage() {
     editForm.resetFields();
   };
 
-  const handleSubmit = async () => {
-    const values = await form.validateFields();
+  const buildQuestionPayload = (values) => {
+    const resolvedQuizId = Number(quiz?.id ?? quizId);
+    const correctOption = Number(values.correctOption);
 
-    if (!quiz) {
-      return;
-    }
-
-    const nextQuestion = {
-      id: createQuestionId(),
-      question: values.question,
-      options: [values.option1, values.option2, values.option3, values.option4],
-      correctOption: values.correctOption,
+    return {
+      quizId: resolvedQuizId,
+      question: sanitizeText(values.question),
+      options: [
+        sanitizeText(values.option1),
+        sanitizeText(values.option2),
+        sanitizeText(values.option3),
+        sanitizeText(values.option4),
+      ],
+      correctOption,
     };
+  };
 
-    const nextQuizzes = quizzes.map((item) =>
-      item.id === quizId
-        ? { ...item, questions: [...item.questions, nextQuestion] }
-        : item
-    );
+  const handleSubmit = async () => {
+    try {
+      const values = await form.validateFields();
 
-    persistQuizzes(nextQuizzes);
-    message.success("Question added successfully.");
-    closeAddModal();
+      if (!quiz) {
+        return;
+      }
+
+      const payload = buildQuestionPayload(values);
+
+      if (!Number.isInteger(payload.quizId)) {
+        messageApi.error("Invalid quiz id.");
+        return;
+      }
+
+      await createQuizQuestion(payload);
+      messageApi.success("Question added successfully.");
+      closeAddModal();
+      await loadQuestions();
+    } catch (error) {
+      if (error?.errorFields) {
+        return;
+      }
+
+      messageApi.error(getApiErrorMessage(error, "Failed to add question."));
+    }
   };
 
   const handleEdit = (question) => {
     setEditingQuestion(question);
     editForm.setFieldsValue({
       question: question.question,
-      option1: question.options[0],
-      option2: question.options[1],
-      option3: question.options[2],
-      option4: question.options[3],
+      option1: question.optionTexts[0],
+      option2: question.optionTexts[1],
+      option3: question.optionTexts[2],
+      option4: question.optionTexts[3],
       correctOption: question.correctOption,
     });
   };
@@ -107,47 +209,42 @@ export default function QuizQuestionsPage() {
       return;
     }
 
-    const values = await editForm.validateFields();
-    const nextQuestion = {
-      id: editingQuestion.id,
-      question: values.question,
-      options: [values.option1, values.option2, values.option3, values.option4],
-      correctOption: values.correctOption,
-    };
+    try {
+      const values = await editForm.validateFields();
+      const payload = buildQuestionPayload(values);
 
-    const nextQuizzes = quizzes.map((item) =>
-      item.id === quizId
-        ? {
-            ...item,
-            questions: item.questions.map((question) =>
-              question.id === editingQuestion.id ? nextQuestion : question
-            ),
-          }
-        : item
-    );
+      if (!Number.isInteger(payload.quizId)) {
+        messageApi.error("Invalid quiz id.");
+        return;
+      }
 
-    persistQuizzes(nextQuizzes);
-    message.success("Question updated successfully.");
-    closeEditModal();
+      await updateQuizQuestion(editingQuestion.id, payload);
+      messageApi.success("Question updated successfully.");
+      closeEditModal();
+      await loadQuestions();
+    } catch (error) {
+      if (error?.errorFields) {
+        return;
+      }
+
+      messageApi.error(getApiErrorMessage(error, "Failed to update question."));
+    }
   };
 
-  const handleDelete = (questionId) => {
-    const nextQuizzes = quizzes.map((item) =>
-      item.id === quizId
-        ? {
-            ...item,
-            questions: item.questions.filter((question) => question.id !== questionId),
-          }
-        : item
-    );
-
-    persistQuizzes(nextQuizzes);
-    message.success("Question deleted successfully.");
+  const handleDelete = async (questionId) => {
+    try {
+      await deleteQuizQuestion(questionId);
+      messageApi.success("Question deleted successfully.");
+      await loadQuestions();
+    } catch (error) {
+      messageApi.error(getApiErrorMessage(error, "Failed to delete question."));
+    }
   };
 
   if (!quiz) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        {contextHolder}
         <h2 className="text-2xl font-bold text-[#9a2119]">Quiz not found</h2>
         <p className="mt-2 text-sm text-slate-500">
           The selected quiz could not be found.
@@ -173,7 +270,7 @@ export default function QuizQuestionsPage() {
       title: <span className="text-[#9a2119] font-semibold">Option 1</span>,
       render: (_, record) => (
         <span className={record.correctOption === 0 ? "font-semibold text-[#9a2119]" : "text-slate-600"}>
-          {record.options[0]}
+          {record.optionTexts[0]}
         </span>
       ),
     },
@@ -181,7 +278,7 @@ export default function QuizQuestionsPage() {
       title: <span className="text-[#9a2119] font-semibold">Option 2</span>,
       render: (_, record) => (
         <span className={record.correctOption === 1 ? "font-semibold text-[#9a2119]" : "text-slate-600"}>
-          {record.options[1]}
+          {record.optionTexts[1]}
         </span>
       ),
     },
@@ -189,7 +286,7 @@ export default function QuizQuestionsPage() {
       title: <span className="text-[#9a2119] font-semibold">Option 3</span>,
       render: (_, record) => (
         <span className={record.correctOption === 2 ? "font-semibold text-[#9a2119]" : "text-slate-600"}>
-          {record.options[2]}
+          {record.optionTexts[2]}
         </span>
       ),
     },
@@ -197,7 +294,7 @@ export default function QuizQuestionsPage() {
       title: <span className="text-[#9a2119] font-semibold">Option 4</span>,
       render: (_, record) => (
         <span className={record.correctOption === 3 ? "font-semibold text-[#9a2119]" : "text-slate-600"}>
-          {record.options[3]}
+          {record.optionTexts[3]}
         </span>
       ),
     },
@@ -215,7 +312,7 @@ export default function QuizQuestionsPage() {
             type="button"
             onClick={() => handleEdit(record)}
             className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
-        title="Edit question"
+            title="Edit question"
           >
             <EditOutlined />
           </Button>
@@ -226,10 +323,11 @@ export default function QuizQuestionsPage() {
             cancelText="Cancel"
             onConfirm={() => handleDelete(record.id)}
           >
-            <Button danger
+            <Button
+              danger
               type="button"
               className="w-8 h-8 border border-red-500 text-red-500 hover:bg-red-50"
-      title="Delete question"
+              title="Delete question"
             >
               <DeleteOutlined />
             </Button>
@@ -241,6 +339,7 @@ export default function QuizQuestionsPage() {
 
   return (
     <section className="space-y-5">
+      {contextHolder}
       <div className="flex items-center gap-3">
         <div>
           <h2 className="text-xl font-bold text-[#9a2119]">
@@ -281,7 +380,8 @@ export default function QuizQuestionsPage() {
         <Table
           rowKey="id"
           columns={columns}
-          dataSource={filteredQuestions}
+          dataSource={Array.isArray(filteredQuestions) ? [...filteredQuestions].reverse() : []}
+          loading={loading}
           pagination={{ pageSize: 6 }}
           scroll={{ x: 1300 }}
           rowClassName="hover:bg-[#fff8f7]"
@@ -299,14 +399,13 @@ export default function QuizQuestionsPage() {
             onClick={closeAddModal}
             className=" border border-[#9a2119]  px-5 py-2 text-sm font-semibold text-[#9a2119] "
           >
-
             Cancel
           </Button>,
           <Button
             key="add"
             onClick={handleSubmit}
-            style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}    >
-
+            style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
+          >
             + Add Question
           </Button>,
         ]}
@@ -383,13 +482,15 @@ export default function QuizQuestionsPage() {
           <Button
             key="cancel"
             onClick={closeEditModal}
-            className=" border border-[#9a2119]  px-5 py-2 text-sm font-semibold text-[#9a2119] ">
-                Cancel
+            className=" border border-[#9a2119]  px-5 py-2 text-sm font-semibold text-[#9a2119] "
+          >
+            Cancel
           </Button>,
           <Button
             key="update"
             onClick={handleUpdate}
-            style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}    >
+            style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
+          >
             Update
           </Button>,
         ]}
@@ -453,3 +554,4 @@ export default function QuizQuestionsPage() {
     </section>
   );
 }
+
