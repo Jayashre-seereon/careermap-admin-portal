@@ -23,6 +23,7 @@ import {
   Users,
   Video,
   Key,
+  Globe
 
 } from "lucide-react";
 
@@ -121,6 +122,12 @@ export const navSections = [
         path: "/quiz",
         module: "PlansQuiz",
       },
+      {
+        icon: Globe,
+        name: "Study Abroad",
+        path: "/studyabroad",
+        module: "Study Abroad",
+      }
     ],
   },
 
@@ -205,12 +212,6 @@ export const navSections = [
         path: "/support_tickets",
         module: "Support Tickets",
       },
-    ],
-  },
-
-  {
-    label: "COUNSELING",
-    items: [
       {
         icon: HelpCircle,
         name: "Counseling",
@@ -221,57 +222,15 @@ export const navSections = [
   },
 
   {
-    label: "PSYCHOMETRIC",
+    label: "INSTITUTES DETAILS",
     items: [
-      {
-        icon: HelpCircle,
-        name: "Personality Test",
-        path: "/personality-test",
-        module: "Personality Test",
-      },
-      {
-        icon: Layers,
-        name: "Domains",
-        path: "/domains",
-        module: "Domains",
-      },
-      {
-        icon: Briefcase,
-        name: "Careers",
-        path: "/careers",
-        module: "Careers",
-      },
-      {
-        icon: MapPin,
-        name: "Career Paths",
-        path: "/career-paths",
-        module: "Career Paths",
-      },
-      {
-        icon: Tag,
-        name: "Career Categories",
-        path: "/career-categories",
-        module: "Career Categories",
-      },
       {
         icon: Building2,
         name: "Institutes",
         path: "/institutes",
         module: "Institutes",
       },
-      {
-        icon: HelpCircle,
-        name: "Questions",
-        path: "/questions",
-        module: "Questions",
-      },
-      {
-        icon: ClipboardList,
-        name: "Sections",
-        path: "/sections",
-        module: "Sections",
-      },
-      {
+     {
         icon: Users,
         name: "Students",
         path: "/students",
@@ -279,4 +238,54 @@ export const navSections = [
       },
     ],
   },
+
+  // {
+  //   label: "PSYCHOMETRIC",
+  //   items: [
+  //     {
+  //       icon: HelpCircle,
+  //       name: "Personality Test",
+  //       path: "/personality-test",
+  //       module: "Personality Test",
+  //     },
+  //     {
+  //       icon: Layers,
+  //       name: "Domains",
+  //       path: "/domains",
+  //       module: "Domains",
+  //     },
+  //     {
+  //       icon: Briefcase,
+  //       name: "Careers",
+  //       path: "/careers",
+  //       module: "Careers",
+  //     },
+  //     {
+  //       icon: MapPin,
+  //       name: "Career Paths",
+  //       path: "/career-paths",
+  //       module: "Career Paths",
+  //     },
+  //     {
+  //       icon: Tag,
+  //       name: "Career Categories",
+  //       path: "/career-categories",
+  //       module: "Career Categories",
+  //     },
+      
+  //     {
+  //       icon: HelpCircle,
+  //       name: "Questions",
+  //       path: "/questions",
+  //       module: "Questions",
+  //     },
+  //     {
+  //       icon: ClipboardList,
+  //       name: "Sections",
+  //       path: "/sections",
+  //       module: "Sections",
+  //     },
+      
+  //   ],
+  // },
 ];
