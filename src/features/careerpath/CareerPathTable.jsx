@@ -26,12 +26,12 @@ export default function CareerPathTable({
       render: (_, __, index) => getSerialNumber(index, pagination),
       width: 70,
     },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Module</span>,
-      dataIndex: "moduleName",
-      width: 160,
-      ellipsis: true,
-    },
+    // {
+    //   title: <span className="text-[#9a2119] font-semibold">Module</span>,
+    //   dataIndex: "moduleName",
+    //   width: 160,
+    //   ellipsis: true,
+    // },
     {
       title: <span className="text-[#9a2119] font-semibold">Name</span>,
       dataIndex: "pathName",
