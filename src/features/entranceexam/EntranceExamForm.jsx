@@ -147,7 +147,7 @@ export default function EntranceExamForm({
       <Form.Item
         name="secondcategoryId"
         label="2nd Category"
-        rules={[validationRules.required("2nd category")]}
+      
       >
         <Select
           disabled={isView}
@@ -165,7 +165,7 @@ export default function EntranceExamForm({
       <Form.Item
         name="subcategoryId"
         label="Select Subcategory"
-        rules={[validationRules.required("Subcategory")]}
+       
       >
         <Select disabled={isView} placeholder="Select Subcategory">
           {subcategoryOptions.map((item) => (
