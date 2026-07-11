@@ -69,7 +69,7 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
       render: ellipsis,
     },
     {
-      title: "Price",
+      title: "Amount",
       dataIndex: "price",
       width: 120,
       render: (text) => text || "-",
