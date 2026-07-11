@@ -110,7 +110,7 @@ export default function CareerPathForm({
         <Input disabled={isView} placeholder="Enter path name" />
       </Form.Item>
 
-      <Form.Item
+      {/* <Form.Item
         name="moduleId"
         label="Select Module"
         rules={[validationRules.required("Module")]}
@@ -122,7 +122,7 @@ export default function CareerPathForm({
             </Option>
           ))}
         </Select>
-      </Form.Item>
+      </Form.Item> */}
 
      
 
