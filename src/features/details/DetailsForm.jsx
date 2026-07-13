@@ -438,7 +438,7 @@ function renderEntranceExamFields(viewMode, options, onAutoFill) {
                     {...restField}
                     name={[name, "url"]}
                     label="URL"
-                    rules={[validationRules.url("URL")]}
+                   
                   >
                     <Input disabled/>
                   </Form.Item>
