@@ -303,13 +303,18 @@ function renderCareerPathFields(viewMode, options, onAutoFill, filteredPathOptio
                     rules={[validationRules.required("Path name")]}
                     className="col-span-2"
                   >
-                    <Select
-                      disabled={viewMode}
-                      placeholder="Select path"
-                      onChange={(v) => onAutoFill?.("career-path", v, name)}
-                    >
-                      {renderOptions(filteredPathOptions)}
-                    </Select>
+                   <Select
+  disabled={viewMode}
+  placeholder="Select path"
+  showSearch
+  optionFilterProp="children"
+  filterOption={(input, option) =>
+    (option?.children ?? "").toLowerCase().includes(input.toLowerCase())
+  }
+  onChange={(v) => onAutoFill?.("career-path", v, name)}
+>
+  {renderOptions(filteredPathOptions)}
+</Select>
                   </Form.Item>
 
                   <Form.Item {...restField} name={[name, "graduation"]} label="Graduation">
@@ -377,13 +382,18 @@ function renderEntranceExamFields(viewMode, options, onAutoFill) {
                     rules={[validationRules.required("Exam name")]}
                     className="col-span-2"
                   >
-                    <Select
-                      disabled={viewMode}
-                      placeholder="Select exam"
-                      onChange={(v) => onAutoFill?.("entrance-exam", v, name)}
-                    >
-                      {renderOptions(options.examOptions)}
-                    </Select>
+                  <Select
+  disabled={viewMode}
+  placeholder="Select exam"
+  showSearch
+  optionFilterProp="children"
+  filterOption={(input, option) =>
+    (option?.children ?? "").toLowerCase().includes(input.toLowerCase())
+  }
+  onChange={(v) => onAutoFill?.("entrance-exam", v, name)}
+>
+  {renderOptions(options.examOptions)}
+</Select>
                   </Form.Item>
 
                   {/* <Form.Item {...restField} name={[name, "examMode"]} label="Exam Mode">
@@ -515,7 +525,15 @@ function renderInstitutionFields(viewMode, options, normalizeUpload, onAutoFill)
                     rules={[validationRules.required("Institution name")]}
                     className="col-span-2"
                   >
-                    <Select disabled={viewMode} placeholder="Select institution" onChange={(v) => onAutoFill?.("institution", v, name)}>
+                    <Select
+                     disabled={viewMode} 
+                    placeholder="Select institution" 
+                     showSearch
+ optionFilterProp="label"
+  filterOption={(input, option) =>
+    (option?.children ?? "").toLowerCase().includes(input.toLowerCase())
+  }
+                    onChange={(v) => onAutoFill?.("institution", v, name)}>
                       {renderOptions(options.institutionOptions)}
                     </Select>
                   </Form.Item>
