@@ -435,13 +435,13 @@ function renderEntranceExamFields(viewMode, options, onAutoFill) {
                   </Form.Item> */}
 
                   <Form.Item
-                    {...restField}
-                    name={[name, "url"]}
-                    label="URL"
-                    rules={[validationRules.url("URL")]}
-                  >
-                    <Input disabled/>
-                  </Form.Item>
+  {...restField}
+  name={[name, "url"]}
+  label="URL"
+  rules={[]}
+>
+  <Input disabled />
+</Form.Item>
 
                   {/* <Form.Item {...restField} name={[name, "topInstitutes"]} label="Top Institutes">
                     <Select mode="tags" disabled={viewMode} placeholder="Add top institutes" tokenSeparators={[","]} open={false} />
