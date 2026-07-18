@@ -250,13 +250,13 @@ useEffect(() => {
   </Form.Item> */}
 
   {/* FULL WIDTH FIELDS */}
-  <Form.Item
+  {/* <Form.Item
     name="eligibility"
     label="Eligibility"
     className="md:col-span-2 lg:col-span-4"
   >
     <Input.TextArea rows={3} disabled={isView} />
-  </Form.Item>
+  </Form.Item> */}
 
   <Form.Item
     name="requirement"
