@@ -80,12 +80,12 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
       width: 140,
       render: (text) => formatDate(text),
     },
-    {
-      title: "Eligibility",
-      dataIndex: "eligibility",
-      width: 220,
-      render: ellipsis,
-    },
+    // {
+    //   title: "Eligibility",
+    //   dataIndex: "eligibility",
+    //   width: 220,
+    //   render: ellipsis,
+    // },
     {
       title: "Description",
       dataIndex: "description",

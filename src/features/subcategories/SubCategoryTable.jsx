@@ -51,12 +51,7 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
           <span className="text-gray-400">No image</span>
         ),
     },
-    {
-      title: "Institution",
-      dataIndex: "institutionName",
-      width: 220,
-      ellipsis: true,
-    },
+   
    
     
     {

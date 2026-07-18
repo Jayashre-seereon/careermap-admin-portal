@@ -55,12 +55,7 @@ export default function Category2Table({
         ),
       width: 100,
     },
-    {
-      title: "Institute",
-      dataIndex: "institutionName",
-      ellipsis: true,
-      width: 280,
-    },
+
     {
       title: "Path ways",
       dataIndex: "path",
