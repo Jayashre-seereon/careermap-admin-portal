@@ -258,13 +258,13 @@ useEffect(() => {
     <Input.TextArea rows={3} disabled={isView} />
   </Form.Item> */}
 
-  <Form.Item
+  {/* <Form.Item
     name="requirement"
     label="Requirement"
     className="md:col-span-2 lg:col-span-4"
   >
     <Input.TextArea rows={3} disabled={isView} />
-  </Form.Item>
+  </Form.Item> */}
 {/* SECTIONS (repeatable title + description) */}
 <div className="md:col-span-2 lg:col-span-4">
   <label className="block mb-2 font-medium">Sections</label>
