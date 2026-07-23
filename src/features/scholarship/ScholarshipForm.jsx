@@ -202,9 +202,11 @@ useEffect(() => {
 
   <Form.Item name="type" label="Type" rules={[validationRules.required("Type")]}>
     <Select disabled={isView}>
-      <Option value="Government">Government</Option>
+      <Option value="Central">Central</Option>
+        <Option value="State">State</Option>
+        <Option value="PSU">PSU</Option>
       <Option value="Private">Private</Option>
-      <Option value="State">State</Option>
+    
     </Select>
   </Form.Item>
 
