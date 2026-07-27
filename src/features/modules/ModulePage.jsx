@@ -10,7 +10,7 @@ import {
 } from "../../api/module";
 
 const DEFAULT_MODULES = [
-  { title: "Career Library", isFree: false },
+  { title: "Career Archive", isFree: false },
   { title: "Assessment", isFree: true },
   { title: "Master Class", isFree: false },
   { title: "Entrance Exam", isFree: true },
