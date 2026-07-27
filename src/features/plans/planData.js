@@ -16,11 +16,11 @@ export const initialPlans = [
   {
     key: "plan-premium",
     name: "Premium Career Plan",
-    features: "Career Library, Assessment, Book Mentor, Master Class, Entrance Exam, Scholarship, Quiz",
+    features: "Career Library, Assessment, Book Your Mentor, Master Class, Entrance Exam, Scholarship, Quiz",
     module: [
       "Career Library",
       "Assessment",
-      "Book Mentor",
+      "Book Your Mentor",
       "Master Class",
       "Entrance Exam",
       "Scholarship",
