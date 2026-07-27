@@ -12,7 +12,7 @@ import {
 const DEFAULT_MODULES = [
   { title: "Career Archive", isFree: false },
   { title: "Assessment", isFree: true },
-  { title: "Master Class", isFree: false },
+  { title: "Career & Personality Videos", isFree: false },
   { title: "Entrance Exam", isFree: true },
   { title: "Institutes", isFree: true },
   { title: "Book Your Mentor", isFree: false },
