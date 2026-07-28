@@ -11,7 +11,7 @@ import {
 
 const DEFAULT_MODULES = [
   { title: "Career Archive", isFree: false },
-  { title: "Assessment", isFree: true },
+  { title: "Career Psychometric Assessment", isFree: true },
   { title: "Career & Personality Videos", isFree: false },
   { title: "Entrance Exam", isFree: true },
   { title: "Institutes", isFree: true },
