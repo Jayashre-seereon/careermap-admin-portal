@@ -9,17 +9,17 @@ export const initialPlans = [
   {
     key: "plan-gold",
     name: "Gold",
-    features: "Career Library, Assessment, Master Class, Quiz",
-    module: ["Career Library", "Assessment", "Master Class", "Quiz"],
+    features: "Career Library, Career Psychometric Assessment, Master Class, Quiz",
+    module: ["Career Library", "Career Psychometric Assessment", "Master Class", "Quiz"],
     price: "999",
   },
   {
     key: "plan-premium",
     name: "Premium Career Plan",
-    features: "Career Library, Assessment, Book Your Mentor, Master Class, Entrance Exam, Scholarship, Quiz",
+    features: "Career Library, Career Psychometric Assessment, Book Your Mentor, Master Class, Entrance Exam, Scholarship, Quiz",
     module: [
       "Career Library",
-      "Assessment",
+      "Career Psychometric Assessment",
       "Book Your Mentor",
       "Master Class",
       "Entrance Exam",
