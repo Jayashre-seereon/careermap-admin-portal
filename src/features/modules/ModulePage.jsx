@@ -10,12 +10,12 @@ import {
 } from "../../api/module";
 
 const DEFAULT_MODULES = [
-  { title: "Career Library", isFree: false },
-  { title: "Assessment", isFree: true },
-  { title: "Master Class", isFree: false },
+  { title: "Career Archive", isFree: false },
+  { title: "Career Psychometric Assessment", isFree: true },
+  { title: "Career & Personality Videos", isFree: false },
   { title: "Entrance Exam", isFree: true },
   { title: "Institutes", isFree: true },
-  { title: "Book Mentor", isFree: false },
+  { title: "Book Your Mentor", isFree: false },
   { title: "Scholarship", isFree: false },
   { title: "Quiz", isFree: true },
   { title: "Study Abroad", isFree: false },
