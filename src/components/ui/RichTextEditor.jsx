@@ -1,10 +1,18 @@
 import { useEffect, useRef } from "react";
 import { useQuill } from "react-quilljs";
 import Quill from "quill";
+import QuillTableBetter from "quill-table-better";
 
 import "quill/dist/quill.snow.css";
+import "quill-table-better/dist/quill-table-better.css";
 
 let iconsConfigured = false;
+let tableModuleRegistered = false;
+
+if (!tableModuleRegistered) {
+  Quill.register({ "modules/table-better": QuillTableBetter }, true);
+  tableModuleRegistered = true;
+}
 
 if (!iconsConfigured) {
   const icons = Quill.import("ui/icons");
@@ -27,6 +35,12 @@ if (!iconsConfigured) {
 }
 
 const modules = {
+  table: false, // disable Quill's default table module in favor of table-better
+  "table-better": {
+    language: "en_US",
+    menus: ["column", "row", "merge", "table", "cell", "wrap", "copy", "delete"],
+    toolbarTable: true,
+  },
   toolbar: {
     container: [
       ["undo", "redo"],
@@ -36,6 +50,7 @@ const modules = {
       [{ indent: "-1" }, { indent: "+1" }],
       [{ align: [] }],
       ["link", "image"],
+      ["table-better"],
       ["clean"],
     ],
     handlers: {
@@ -46,6 +61,9 @@ const modules = {
         this.quill.history.redo();
       },
     },
+  },
+  keyboard: {
+    bindings: QuillTableBetter.keyboardBindings,
   },
   history: {
     delay: 1000,
@@ -100,6 +118,11 @@ export default function RichTextEditor({
   height = 180,
 }) {
   const isPatchingValue = useRef(false);
+  // Tracks the last HTML this editor itself emitted via onChange.
+  // Used to avoid re-parsing our own output back through dangerouslyPasteHTML,
+  // which can destroy custom blots like tables.
+  const lastEmittedValue = useRef(null);
+
   const { quill, quillRef } = useQuill({
     theme: "snow",
     placeholder,
@@ -112,12 +135,21 @@ export default function RichTextEditor({
     }
 
     const nextValue = normalizeEditorValue(value);
-    const currentValue = quill.root.innerHTML === "<p><br></p>" ? "" : quill.root.innerHTML;
 
-    if (currentValue !== nextValue) {
-      isPatchingValue.current = true;
-      quill.clipboard.dangerouslyPasteHTML(nextValue || "<p><br></p>", "silent");
-      isPatchingValue.current = false;
+    // If this value is exactly what we just emitted ourselves (e.g. after
+    // inserting a table), skip re-patching entirely — dangerouslyPasteHTML
+    // re-parses HTML through clipboard matchers and can flatten/break
+    // custom blots (like tables) that were just inserted.
+    const isOwnEmission = lastEmittedValue.current !== null && nextValue === lastEmittedValue.current;
+
+    if (!isOwnEmission) {
+      const currentValue = quill.root.innerHTML === "<p><br></p>" ? "" : quill.root.innerHTML;
+
+      if (currentValue !== nextValue) {
+        isPatchingValue.current = true;
+        quill.clipboard.dangerouslyPasteHTML(nextValue || "<p><br></p>", "silent");
+        isPatchingValue.current = false;
+      }
     }
 
     quill.enable(!disabled);
@@ -139,6 +171,7 @@ export default function RichTextEditor({
       }
 
       const html = quill.root.innerHTML === "<p><br></p>" ? "" : quill.root.innerHTML;
+      lastEmittedValue.current = html;
       onChange(html);
     };
 
