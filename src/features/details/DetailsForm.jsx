@@ -73,31 +73,93 @@ function renderCommonFields(viewMode, options, onStreamChange, onCategoryChange,
           {renderOptions(options.subcategoryOptions)}
         </Select>
       </Form.Item>
-      <Form.Item name="description" label="Description" className="col-span-4">
-        <Input.TextArea rows={4} disabled={viewMode} placeholder="Enter description here..." />
-      </Form.Item>
-      <Form.Item name="specialization" label="Specialization" className="col-span-2">
-  <RichTextEditor disabled={viewMode} height={180} />
-</Form.Item>
-
-<Form.Item name="importantFactor" label="Important Factor" className="col-span-2">
-  <RichTextEditor disabled={viewMode} height={180} />
-</Form.Item>
-
-<Form.Item
-  name="media"
-  label="Media"
-  valuePropName="fileList"
-  getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
-  getValueProps={(value) => ({ fileList: Array.isArray(value) ? value : [] })}
-  className="col-span-4"
-  required
->
-  <Upload beforeUpload={() => false} disabled={viewMode} maxCount={1}>
-    <Button icon={<UploadOutlined />} disabled={viewMode}>Upload Media</Button>
-  </Upload>
-</Form.Item>
+     
     </>
+  );
+}
+function renderMediaField(viewMode) {
+  return (
+    <div className="col-span-4">
+      <Form.Item
+        name="media"
+        label="Media"
+        valuePropName="fileList"
+        getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
+        getValueProps={(value) => ({ fileList: Array.isArray(value) ? value : [] })}
+        required
+      >
+        <Upload beforeUpload={() => false} disabled={viewMode} maxCount={1}>
+          <Button icon={<UploadOutlined />} disabled={viewMode}>Upload Media</Button>
+        </Upload>
+      </Form.Item>
+    </div>
+  );
+}
+
+function renderSpecializationFields(viewMode) {
+  return (
+    <>
+      <Form.Item name="specialization" label="Specialization" className="col-span-2">
+        <RichTextEditor disabled={viewMode} height={180} />
+      </Form.Item>
+
+      <Form.Item name="importantFactor" label="Important Factor" className="col-span-2">
+        <RichTextEditor disabled={viewMode} height={180} />
+      </Form.Item>
+    </>
+  );
+}
+function renderDescriptionsFields(viewMode) {
+  return (
+    <div className="col-span-4">
+      <div className="mb-2 text-base font-semibold text-[#9a2119]">Descriptions</div>
+      <Form.List name="descriptions">
+        {(fields, { add, remove }) => (
+          <div className="space-y-4">
+            {fields.map(({ key, name, ...restField }) => (
+              <div key={key} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="text-sm font-medium text-slate-600">Description #{name + 1}</span>
+                  {!viewMode && fields.length > 1 && (
+                    <Button danger type="text" size="small" icon={<MinusCircleOutlined />} onClick={() => remove(name)}>
+                      Remove
+                    </Button>
+                  )}
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Form.Item
+                    {...restField}
+                    name={[name, "title"]}
+                    label="Title"
+                    rules={[validationRules.required("Title")]}
+                    className="mb-0"
+                  >
+                    <Input disabled={viewMode} placeholder="Enter title" />
+                  </Form.Item>
+
+                  <Form.Item
+                    {...restField}
+                    name={[name, "description"]}
+                    label="Description"
+                    rules={[validationRules.required("Description")]}
+                    className="mb-0 md:col-span-2"
+                  >
+                      <RichTextEditor disabled={viewMode} height={180} />
+       </Form.Item>
+                </div>
+              </div>
+            ))}
+
+            {!viewMode && (
+              <Button type="dashed" onClick={() => add({ title: "", description: "" })} icon={<PlusOutlined />}>
+                Add Description
+              </Button>
+            )}
+          </div>
+        )}
+      </Form.List>
+    </div>
   );
 }
 
@@ -664,7 +726,14 @@ export default function DetailsForm({
   const normalizedInitialValues = initialValues
     ? {
         ...initialValues,
-        description: initialValues.description || "",
+        descriptions: Array.isArray(initialValues.descriptions) && initialValues.descriptions.length > 0
+          ? initialValues.descriptions.map((item) => ({
+              title: item.title || "",
+              description: item.description || "",
+            }))
+          : initialValues.description
+          ? [{ title: "", description: initialValues.description }]
+          : [{ title: "", description: "" }],
         media: toUploadFileList(initialValues.media, "media"),
         // Career Paths array
         careerPaths: Array.isArray(initialValues.careerPaths) && initialValues.careerPaths.length > 0
@@ -864,9 +933,20 @@ export default function DetailsForm({
       initialValues={normalizedInitialValues}
     >
       {/* ── Common: 4 per row ── */}
-      <div className="grid grid-cols-4 gap-4 mb-4">
-        {renderCommonFields(viewMode, options, onStreamChange, handleCategoryChange, handleSecondCategoryChange)}
-      </div>
+     <div className="grid grid-cols-4 gap-4 mb-4">
+  {renderCommonFields(viewMode, options, onStreamChange, handleCategoryChange, handleSecondCategoryChange)}
+  {renderMediaField(viewMode)}
+</div>
+
+<div className="mb-4 border border-slate-200 rounded-lg p-4">
+  <div className="grid grid-cols-4 gap-4">
+    {renderDescriptionsFields(viewMode)}
+  </div>
+</div>
+
+<div className="grid grid-cols-4 gap-4 mb-4">
+  {renderSpecializationFields(viewMode)}
+</div>
 
       {/* ── Section Checkboxes ── */}
       <div className="mb-4">

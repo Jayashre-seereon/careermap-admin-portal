@@ -95,7 +95,7 @@ export default function PlansForm({
         />
       </Form.Item>
 
-      <Form.Item
+      {/* <Form.Item
         name="features"
         label="Features"
         className="md:col-span-2"
@@ -105,7 +105,7 @@ export default function PlansForm({
           placeholder="Enter plan features"
           height={180}
         />
-      </Form.Item>
+      </Form.Item> */}
 
       <Form.Item
         name="description"

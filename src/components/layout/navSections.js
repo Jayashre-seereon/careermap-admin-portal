@@ -111,6 +111,12 @@ export const navSections = [
         module: "Master Class",
       },
       {
+        icon: FileText,
+        name: "Newsletter",
+        path: "/newsletter",
+        module: "Newsletter",
+      },
+      {
         icon: CreditCard,
         name: "Plans",
         path: "/plans",

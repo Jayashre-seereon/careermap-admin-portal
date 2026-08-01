@@ -86,7 +86,16 @@ const mapOption = (item = {}, labelKeys = []) => ({
 
 // ─── Default values per section ───────────────────────────────────────────────
 const buildDefaultValues = (section = "salary-range") => {
-  const common = { stream: undefined, category: undefined, secondCategory: undefined, subcategory: undefined ,description: "",specialization: "", importantFactor: "", media: []};
+  const common = {
+    stream: undefined,
+    category: undefined,
+    secondCategory: undefined,
+    subcategory: undefined,
+    descriptions: [{ title: "", description: "" }],
+    specialization: "",
+    importantFactor: "",
+    media: [],
+  };
 
   if (section === "salary-range") return { ...common, salaryRanges: [{ currency: "INR",profession: "", min: "", max: "" }] };
   if (section === "job-scope") return { ...common, names: [""] };
@@ -110,7 +119,9 @@ const getCommonValues = (values = {}) => ({
   category: values.category,
   secondCategory: values.secondCategory,
   subcategory: values.subcategory,
-  description: values.description,
+  descriptions: Array.isArray(values.descriptions) && values.descriptions.length > 0
+    ? values.descriptions
+    : [{ title: "", description: "" }],
   specialization: values.specialization,
   importantFactor: values.importantFactor,
   media: values.media,
@@ -306,7 +317,14 @@ const mapDetailsRecord = (record = {}) => {
     secondCategory: record.secondcategoryId ?? record.secondCategoryId ?? record.secondcategory?.id ?? record.secondCategory?.id ?? undefined,
     secondCategoryName: record.secondcategory?.name || record.secondcategory?.title || record.secondCategory?.name || record.secondCategory?.title || "",
     subcategory: record.subcategoryId != null ? record.subcategoryId ?? record.subcategory?.id ?? undefined : undefined,
-    description: record.description ?? "",
+    descriptions: Array.isArray(record.descriptions) && record.descriptions.length > 0
+      ? record.descriptions.map((item) => ({
+          title: item.title || "",
+          description: item.description || "",
+        }))
+      : record.description
+      ? [{ title: "", description: record.description }]
+      : [{ title: "", description: "" }],
     subcategoryName: record.subcategoryId != null ? record.subcategory?.title || record.subcategory?.name || "" : "",
     specialization: record.specialization ?? "",
     importantFactor: record.important_factor ?? record.importantFactor ?? "",
@@ -392,8 +410,7 @@ export default function DetailsPage() {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("add");
   const [selectedRecord, setSelectedRecord] = useState(null);
-  const [selectedSections, setSelectedSections] = useState(["salary-range"]);
-  const [draftsBySection, setDraftsBySection] = useState(() => buildDrafts());
+const [selectedSections, setSelectedSections] = useState([]);  const [draftsBySection, setDraftsBySection] = useState(() => buildDrafts());
   const [loading, setLoading] = useState(false);
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [secondaryCategoryOptions, setSecondaryCategoryOptions] = useState([]);
@@ -494,7 +511,9 @@ export default function DetailsPage() {
   formData.append("categoryId", commonValues.category ?? "");
   if (commonValues.secondCategory) formData.append("secondcategoryId", commonValues.secondCategory);
   if (commonValues.subcategory) formData.append("subcategoryId", commonValues.subcategory);
-  formData.append("description", commonValues.description ?? "");
+  const descriptionsPayload = JSON.stringify(commonValues.descriptions || []);
+  formData.append("descriptions", descriptionsPayload);
+  formData.append("descriptionSections", descriptionsPayload);
   formData.append("specialization", commonValues.specialization ?? "");
   formData.append("important_factor", commonValues.importantFactor ?? "");
 
@@ -564,13 +583,12 @@ const fetchDetailsRecord = async (id) => {
 
   return mapped;
 };
-  function handleOpenAdd() {
+ function handleOpenAdd() {
     setMode("add");
     setSelectedRecord(null);
-    setSelectedSections(["salary-range"]);
+    setSelectedSections([]);
     setDraftsBySection(buildDrafts());
     form.resetFields();
-    form.setFieldsValue(buildDefaultValues("salary-range"));
     setOpen(true);
   }
 
@@ -642,7 +660,7 @@ async function handleOpenView(record) {
     setOpen(false);
     setMode("add");
     setSelectedRecord(null);
-    setSelectedSections(["salary-range"]);
+    setSelectedSections([]);
     setDraftsBySection(buildDrafts());
     form.resetFields();
   }
@@ -654,7 +672,7 @@ async function handleOpenView(record) {
   }
 
   function handleSectionChange(checkedValues) {
-    const nextSections = checkedValues.length > 0 ? checkedValues : ["salary-range"];
+   const nextSections = checkedValues;
     const currentValues = form.getFieldsValue(true);
     const commonValues = getCommonValues(currentValues);
     const nextDrafts = {

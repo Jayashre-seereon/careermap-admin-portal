@@ -269,6 +269,14 @@ export default function EntranceExamForm({
       >
         <Input disabled={isView} />
       </Form.Item>
+ <Form.Item
+        name="about"
+        label="Description"
+        className="md:col-span-2 lg:col-span-4"
+      >
+        <Input.TextArea rows={3} disabled={isView} />
+      </Form.Item>
+
 
       {/* FULL WIDTH FIELDS */}
       {/* <Form.Item
@@ -279,13 +287,7 @@ export default function EntranceExamForm({
         <Input.TextArea rows={3} disabled={isView} />
       </Form.Item>
 
-      <Form.Item
-        name="about"
-        label="About"
-        className="md:col-span-2 lg:col-span-4"
-      >
-        <Input.TextArea rows={3} disabled={isView} />
-      </Form.Item>
+     
 
       <Form.Item
         name="examPattern"
