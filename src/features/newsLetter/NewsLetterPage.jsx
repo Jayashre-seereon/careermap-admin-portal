@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Modal, message } from "antd";
-import NewsletterTable from "./NewsletterTable";
-import NewsletterForm from "./NewsletterForm";
+import NewsletterTable from "./NewsLetterTable";
+import NewsletterForm from "./NewsLetterForm";
 import {
   createNewsletter,
   deleteNewsletter,
