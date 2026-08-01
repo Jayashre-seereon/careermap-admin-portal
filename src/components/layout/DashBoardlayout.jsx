@@ -61,7 +61,8 @@ const pageNameMap = {
   "/institutes": "Institutes",
   "/questions": "Questions",
   "/sections": "Sections",
-  "/students": "Students"
+  "/students": "Students",
+  "/newsletter": "Newsletter",
 };
 
 function getActivePage(pathname) {
