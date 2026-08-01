@@ -19,6 +19,7 @@ const DEFAULT_MODULES = [
   { title: "Scholarship", isFree: false },
   { title: "Quiz", isFree: true },
   { title: "Study Abroad", isFree: false },
+  { title: "Career News Letter", isFree: false }
 ];
 
 // Update buildModulePayload to handle image
@@ -159,7 +160,7 @@ export default function ModulePage() {
       );
 
       if (!missingModules.length) {
-        messageApi.info("All 9 default modules already exist.");
+        messageApi.info("All 10 default modules already exist.");
         return;
       }
 

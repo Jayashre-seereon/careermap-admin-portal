@@ -88,7 +88,7 @@ import RolePage from "../features/role/RolePage";
 import Permission from "../features/permission/Permission";
 import InstituteLayout from "../components/institute/InstituteLayout";
 import InstituteDashboardPage from "../pages/InstituteDashboardPage";
-
+import NewsLetterPage from "../features/newsLetter/NewsLetterPage";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -275,8 +275,8 @@ export const router = createBrowserRouter([
               </PermissionRoute>
             ),
           },
-          { path: "salary", element: <SalaryPage /> },
-          { path: "jobscope", element: <JobScopePage /> },
+          { path: "salary", element: (<PermissionRoute module="Salary"><SalaryPage /></PermissionRoute>) },
+          { path: "jobscope", element:(<PermissionRoute module="Job Scope"><JobScopePage /></PermissionRoute>) },
           {
             path: "pathtype",
             element: (
@@ -513,6 +513,14 @@ export const router = createBrowserRouter([
             element: (
               <PermissionRoute module="Permissions">
                 <Permission />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "newsletter",
+            element: (
+              <PermissionRoute module="Newsletter">
+                <NewsLetterPage />
               </PermissionRoute>
             ),
           },
