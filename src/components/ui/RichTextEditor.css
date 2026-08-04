@@ -1,0 +1,49 @@
+.ck-content h1 {
+  font-size: 2em !important;
+  font-weight: bold !important;
+  margin: 0.67em 0 !important;
+}
+.ck-content h2 {
+  font-size: 1.5em !important;
+  font-weight: bold !important;
+  margin: 0.75em 0 !important;
+}
+.ck-content h3 {
+  font-size: 1.17em !important;
+  font-weight: bold !important;
+  margin: 0.83em 0 !important;
+}
+
+.ck-content ul {
+  list-style: disc !important;
+  padding-left: 2em !important;
+  margin: 1em 0 !important;
+}
+.ck-content ol {
+  list-style: decimal !important;
+  padding-left: 2em !important;
+  margin: 1em 0 !important;
+}
+.ck-content li {
+  display: list-item !important;
+}
+
+.ck-content blockquote {
+  border-left: 4px solid #ccc !important;
+  padding-left: 1em !important;
+  margin-left: 0 !important;
+  font-style: italic !important;
+}
+
+.ck-content table {
+  border-collapse: collapse !important;
+}
+.ck-content table td,
+.ck-content table th {
+  border: 1px solid #bfbfbf !important;
+  padding: 0.4em !important;
+}
+
+.ck-editor__editable_inline {
+  min-height: 180px;
+}
