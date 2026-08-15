@@ -87,7 +87,7 @@ export default function Category2Form({
           label="Name"
           rules={[
             validationRules.required("2nd Category"),
-            validationRules.charactersOnly("2nd Category"),
+           
           ]}
         >
           <Input disabled={isView} />
