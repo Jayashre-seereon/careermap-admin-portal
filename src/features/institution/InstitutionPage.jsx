@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Modal, message } from "antd";
 import InstitutionTable from "./InstitutionTable";
 import InstitutionForm from "./InstitutionForm";
+import InstitutionExcelImportModal from "./Institutionexcelimportmodal";
 import {
   createInstitute,
   deleteInstitute,
@@ -180,6 +181,7 @@ export default function InstitutionPage() {
   const [mode, setMode] = useState("add");
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   const loadInstitutes = async () => {
     try {
@@ -258,6 +260,7 @@ export default function InstitutionPage() {
           setSelected(null);
           setOpen(true);
         }}
+        onImportClick={() => setImportOpen(true)}
         onDelete={handleDelete}
         onView={(record) => {
           setSelected(record);
@@ -295,6 +298,18 @@ export default function InstitutionPage() {
           disabled={mode === "view"}
         />
       </Modal>
+
+      <InstitutionExcelImportModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImported={() => {
+          // The import runs in the background on the server, so the newly
+          // imported rows may not be in the DB the instant this fires.
+          // Refresh now, and again after a short delay to catch the rest.
+          loadInstitutes();
+          setTimeout(loadInstitutes, 4000);
+        }}
+      />
     </div>
   );
 }
