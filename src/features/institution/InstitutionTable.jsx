@@ -7,6 +7,7 @@ import {
   DeleteOutlined,
   SearchOutlined,
   ReloadOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
 import { formatDateDisplay } from "../../utils/date";
 import { getSerialNumber } from "../../utils/slNo";
@@ -16,6 +17,7 @@ export default function InstitutionTable({
   onEdit,
   onDelete,
   onAddClick,
+  onImportClick,
   search,
   onSearch,
   loading,
@@ -197,6 +199,13 @@ export default function InstitutionTable({
           >
             <ReloadOutlined />
             Reset
+          </Button>
+          <Button
+            onClick={onImportClick}
+            icon={<UploadOutlined />}
+            style={{ borderColor: "#9a2119", color: "#9a2119" }}
+          >
+            Upload from Excel
           </Button>
           <Button
             onClick={onAddClick}
