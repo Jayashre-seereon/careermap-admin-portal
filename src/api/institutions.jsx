@@ -19,3 +19,14 @@ export const deleteInstitute = async (id) => {
   const res = await api.delete(`/api/institutcreate/${id}`);
   return res.data;
 };
+
+export const importInstitutionsExcel = async (file, config = {}) => {
+  const formData = new FormData();
+  formData.append("file", file);
+ 
+  const res = await api.post("/api/institutions/import", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+    ...config,
+  });
+  return res.data;
+};
