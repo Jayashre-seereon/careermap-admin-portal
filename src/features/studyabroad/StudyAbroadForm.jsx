@@ -98,7 +98,13 @@ export default function StudyAbroadForm({ onSubmit, initialValues, mode }) {
       >
        <RichTextEditor disabled={isView} height={220} />
       </Form.Item>
-
+         <Form.Item
+        name="visaAndWorkRights"
+        label="Visa & Work Rights"
+        className="md:col-span-2"
+      >
+        <RichTextEditor disabled={isView} height={220} />
+      </Form.Item>
       {/* <Form.Item
         name="overview"
         label="Overview"
@@ -107,13 +113,7 @@ export default function StudyAbroadForm({ onSubmit, initialValues, mode }) {
         <Input.TextArea rows={4} disabled={isView} />
       </Form.Item> */}
 
-      {/* <Form.Item
-        name="visaAndWorkRights"
-        label="Visa & Work Rights"
-        className="md:col-span-2"
-      >
-        <RichTextEditor disabled={isView} height={220} />
-      </Form.Item>
+      {/* 
 
       <Form.Item
         name="topUniversity"
