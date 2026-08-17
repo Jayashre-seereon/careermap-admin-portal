@@ -53,42 +53,16 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
       width: 180,
       render: ellipsis,
     },
-    {
-      title: "Country",
-      dataIndex: "countryName",
-      width: 180,
-      render: ellipsis,
-    },
+    
     {
       title: "Description",
       dataIndex: "description",
       width: 220,
       render: ellipsis,
     },
-    {
-      title: "Overview",
-      dataIndex: "overview",
-      width: 220,
-      render: ellipsis,
-    },
-    {
-      title: "Living Cost",
-      dataIndex: "livingCost",
-      width: 140,
-      render: (value) => value || "-",
-    },
-    {
-      title: "Tuition Cost",
-      dataIndex: "tuitionCost",
-      width: 140,
-      render: (value) => value || "-",
-    },
-    {
-      title: "Popular Courses",
-      dataIndex: "popularCourses",
-      width: 200,
-      render: ellipsis,
-    },
+   
+   
+   
     {
       title: "Action",
       align: "right",

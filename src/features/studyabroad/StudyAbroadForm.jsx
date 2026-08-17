@@ -57,15 +57,15 @@ export default function StudyAbroadForm({ onSubmit, initialValues, mode }) {
         <Input disabled={isView} placeholder="Enter title" />
       </Form.Item>
 
-      <Form.Item
+      {/* <Form.Item
         name="countryName"
         label="Country"
         rules={[validationRules.required("Country")]}
       >
         <Input disabled={isView} placeholder="Enter country" />
-      </Form.Item>
+      </Form.Item> */}
 
-      <Form.Item name="popularCourses" label="Popular Courses">
+      {/* <Form.Item name="popularCourses" label="Popular Courses">
         <Select
           mode="tags"
           disabled={isView}
@@ -73,47 +73,47 @@ export default function StudyAbroadForm({ onSubmit, initialValues, mode }) {
           tokenSeparators={[","]}
           open={false}
         />
-      </Form.Item>
+      </Form.Item> */}
 
-      <Form.Item
+      {/* <Form.Item
         name="livingCost"
         label="Living Cost"
         rules={[validationRules.required("Living Cost")]}
       >
         <Input disabled={isView} placeholder="Enter living cost" />
-      </Form.Item>
+      </Form.Item> */}
 
-      <Form.Item
+      {/* <Form.Item
         name="tuitionCost"
         label="Tuition Cost"
         rules={[validationRules.required("Tuition Cost")]}
       >
         <Input disabled={isView} placeholder="Enter tuition cost" />
-      </Form.Item>
+      </Form.Item> */}
 
       <Form.Item
         name="description"
         label="Description"
         className="md:col-span-2"
       >
-        <Input.TextArea rows={4} disabled={isView} />
+       <RichTextEditor disabled={isView} height={220} />
       </Form.Item>
-
-      <Form.Item
-        name="overview"
-        label="Overview"
-        className="md:col-span-2"
-      >
-        <Input.TextArea rows={4} disabled={isView} />
-      </Form.Item>
-
-      <Form.Item
+         {/* <Form.Item
         name="visaAndWorkRights"
         label="Visa & Work Rights"
         className="md:col-span-2"
       >
         <RichTextEditor disabled={isView} height={220} />
-      </Form.Item>
+      </Form.Item> */}
+      {/* <Form.Item
+        name="overview"
+        label="Overview"
+        className="md:col-span-2"
+      >
+        <Input.TextArea rows={4} disabled={isView} />
+      </Form.Item> */}
+
+      {/* 
 
       <Form.Item
         name="topUniversity"
@@ -155,7 +155,7 @@ export default function StudyAbroadForm({ onSubmit, initialValues, mode }) {
           tokenSeparators={[","]}
           open={false}
         />
-      </Form.Item>
+      </Form.Item> */}
 
       {!isView && (
         <Button
