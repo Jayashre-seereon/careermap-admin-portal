@@ -60,12 +60,7 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
       width: 220,
       render: ellipsis,
     },
-    {
-      title: "Overview",
-      dataIndex: "visaAndWorkRights",
-      width: 220,
-      render: ellipsis,
-    },
+   
    
    
     {

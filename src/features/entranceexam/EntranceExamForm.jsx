@@ -274,7 +274,7 @@ export default function EntranceExamForm({
         label="Description"
         className="md:col-span-2 lg:col-span-4"
       >
-        <Input.TextArea rows={3} disabled={isView} />
+        <RichTextEditor rows={3} disabled={isView} />
       </Form.Item>
 
 
