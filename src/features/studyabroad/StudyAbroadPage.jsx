@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Modal, message } from "antd";
 import StudyAbroadForm from "./StudyAbroadForm";
 import StudyAbroadTable from "./StudyAbroadTable";
+import StudyAbroadConsultPage from "./StudyAbroadConsultPage";
 import {
   createStudyAbroadItem,
   deleteStudyAbroadItem,
@@ -136,6 +137,7 @@ export default function StudyAbroadPage() {
   const [current, setCurrent] = useState(null);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const [consultOpen, setConsultOpen] = useState(false);
 
   const loadItems = async () => {
     try {
@@ -209,6 +211,7 @@ export default function StudyAbroadPage() {
           setOpen(true);
           setMode("add");
         }}
+        onConsult={() => setConsultOpen(true)}
         onView={(record) => {
           setCurrent(record);
           setOpen(true);
@@ -238,12 +241,24 @@ export default function StudyAbroadPage() {
               ? "Edit Study Abroad"
               : "Add Study Abroad"
         }
-      >
+        >
         <StudyAbroadForm
           onSubmit={handleSubmit}
           initialValues={current}
           mode={mode}
         />
+      </Modal>
+
+      <Modal
+        open={consultOpen}
+        onCancel={() => setConsultOpen(false)}
+        footer={null}
+        width={1200}
+        destroyOnClose
+        title="Study Abroad Consultation Management"
+     
+      >
+        <StudyAbroadConsultPage />
       </Modal>
     </>
   );

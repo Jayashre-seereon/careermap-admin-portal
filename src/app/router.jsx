@@ -37,7 +37,6 @@ import InstitutionPage from "../features/institution/InstitutionPage";
 import ScholarshipPage from "../features/scholarship/ScholarshipPage";
 import MasterClassPage from "../features/masterclass/MasterClassPage";
 import StudyAbroadPage from "../features/studyabroad/StudyAbroadPage";
-import StudyAbroadConsultPage from "../features/studyabroad/StudyAbroadConsultPage";
 import CareerPlanPage from "../features/careerplan/CareerPlanPage";
 import AllOrder from "../features/allOrders/AllOrder";
 import ApprovedOrder from "../features/allOrders/ApprovedOrder";
@@ -327,7 +326,6 @@ export const router = createBrowserRouter([
             ),
           },
           { path: "studyabroad", element: <StudyAbroadPage /> },
-          { path: "studyabroad/consult", element: <StudyAbroadConsultPage /> },
           { path: "careerplan", element: <CareerPlanPage /> },
           {
             path: "bookings",

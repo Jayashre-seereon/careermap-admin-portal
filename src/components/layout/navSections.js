@@ -134,12 +134,6 @@ export const navSections = [
         path: "/studyabroad",
         module: "Study Abroad",
       },
-      {
-        icon: Globe,
-        name: "Study Abroad Consult",
-        path: "/studyabroad/consult",
-        module: "Study Abroad",
-      }
     ],
   },
 

@@ -104,16 +104,7 @@ export default function StudyAbroadConsultTable({
       width: 200,
       render: ellipsis,
     },
-    {
-      title: "Status",
-      dataIndex: "status",
-      width: 120,
-      render: (status) => (
-        <Tag color={getStatusColor(status)}>
-          {String(status || "pending").toUpperCase()}
-        </Tag>
-      ),
-    },
+    
     {
       title: "Date",
       dataIndex: "createdAt",
@@ -139,9 +130,7 @@ export default function StudyAbroadConsultTable({
 
   return (
     <div className="w-full">
-      <h1 className="text-xl font-semibold text-[#9a2119] mb-6">
-        Study Abroad Consultation Management
-      </h1>
+    
 
       <div className="bg-white rounded-2xl shadow-sm border p-5">
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
