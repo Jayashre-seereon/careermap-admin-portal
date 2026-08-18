@@ -1,5 +1,5 @@
 import { Button, Form, Input, message } from "antd";
-import RichTextEditor from "../../../components/editor/RichTextEditor";
+import RichTextEditor from "../../../components/ui/RichTextEditor";
 import {
   getGlobalTemplateConfig,
   saveGlobalTemplateConfig,
