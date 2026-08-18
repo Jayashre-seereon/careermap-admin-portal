@@ -19,3 +19,14 @@ export const deleteStudyAbroadItem = async (id) => {
   const res = await api.delete(`/api/studyabroad/${id}`);
   return res.data;
 };
+
+export const getStudyAbroadConsults = async () => {
+  const res = await api.get("/api/studyabroad/consult/all");
+  return res.data;
+};
+
+export const getStudyAbroadConsultById = async (id) => {
+  const res = await api.get(`/api/studyabroad/consult/${id}`);
+  return res.data;
+};
+
