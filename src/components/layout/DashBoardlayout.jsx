@@ -30,6 +30,7 @@ const pageNameMap = {
   "/scholarship": "Scholarship",
   "/masterclass": "Master Class",
   "/studyabroad": "Study Abroad",
+  "/studyabroad/consult": "Study Abroad Consultations",
   "/careerplan": "Career Plan",
   "/bookings": "Bookings",
   "/plans": "Plans",
