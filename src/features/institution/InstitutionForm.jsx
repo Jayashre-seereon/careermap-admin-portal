@@ -170,6 +170,8 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
           disabled={disabled}
           placeholder="Select Category"
           onChange={(val) => handleCategoryChange(val?.value)}
+          rules={[{ required: true, message: "Please add category" }]}
+
         >
           {categories.map((cat) => (
             <Option key={cat.id} value={cat.id}>
@@ -186,6 +188,7 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
           disabled={disabled}
           placeholder="Select Secondary Category"
           onChange={(val) => handleSecondCategoryChange(val?.value)}
+          
         >
           {secondaryCategories.map((sec) => (
             <Option key={sec.id} value={sec.id}>
