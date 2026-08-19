@@ -71,6 +71,7 @@ export default function NewsletterForm({ onSubmit, initialValues, disabled }) {
           valuePropName="fileList"
           getValueFromEvent={normalizeFile}
           className="md:col-span-2"
+          rules={[{ required: true, message: "Title is required" }]}
         >
           <Upload
             beforeUpload={() => false}
