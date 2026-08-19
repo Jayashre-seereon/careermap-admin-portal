@@ -11,8 +11,8 @@
   },
   "dependencies": {
     "@ant-design/icons": "^6.2.2",
-    "@ckeditor/ckeditor5-build-classic": "github:ckeditor/ckeditor5-build-classic",
     "@ckeditor/ckeditor5-react": "^11.2.0",
+    "ckeditor5": "^48.4.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/material": "^9.0.0",

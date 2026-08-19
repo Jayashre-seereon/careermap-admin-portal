@@ -1,6 +1,6 @@
 import { Button, Form, Input } from "antd";
 import { useEffect } from "react";
-import RichTextEditor from "../../../components/editor/RichTextEditor";
+import RichTextEditor from "../../../components/ui/RichTextEditor";
 import StatusSwitch from "../../../components/ui/StatusSwitch";
 
 export default function AllTemplatesEditor({ initialValues, onSubmit }) {

@@ -133,7 +133,7 @@ export const navSections = [
         name: "Study Abroad",
         path: "/studyabroad",
         module: "Study Abroad",
-      }
+      },
     ],
   },
 

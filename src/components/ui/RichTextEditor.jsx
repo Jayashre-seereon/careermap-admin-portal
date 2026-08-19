@@ -1,7 +1,27 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-import "./RichTextEditor.css"; 
+import {
+  ClassicEditor,
+  Essentials,
+  Paragraph,
+  Heading,
+  Bold,
+  Italic,
+  Underline,
+  List,
+  Indent,
+  IndentBlock,
+  Alignment,
+  Link,
+  Table,
+  TableToolbar,
+  RemoveFormat,
+  BlockQuote,
+} from "ckeditor5";
+
+import "ckeditor5/ckeditor5.css";
+import "./RichTextEditor.css";
+
 const normalizeEditorValue = (value) => {
   if (Array.isArray(value)) {
     return `<ul>${value.map((item) => `<li>${item}</li>`).join("")}</ul>`;
@@ -41,7 +61,25 @@ export default function RichTextEditor({
         data={data}
         disabled={disabled}
         config={{
+          licenseKey: "GPL",
           placeholder,
+          plugins: [
+            Essentials,
+            Paragraph,
+            Heading,
+            Bold,
+            Italic,
+            Underline,
+            List,
+            Indent,
+            IndentBlock,
+            Alignment,
+            Link,
+            Table,
+            TableToolbar,
+            RemoveFormat,
+            BlockQuote,
+          ],
           toolbar: [
             "undo",
             "redo",
@@ -61,7 +99,6 @@ export default function RichTextEditor({
             "alignment",
             "|",
             "link",
-            "imageUpload",
             "insertTable",
             "|",
             "removeFormat",
