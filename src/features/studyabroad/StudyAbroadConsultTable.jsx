@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { Table, Input, Tag, Button, Space, Tooltip } from "antd";
+import { Table, Input, Tag, Button, Space, Tooltip, message } from "antd";
 import {
   EyeOutlined,
   SearchOutlined,
   ReloadOutlined,
+  FileExcelOutlined,
 } from "@ant-design/icons";
 import { getSerialNumber } from "../../utils/slNo";
 
@@ -24,6 +25,83 @@ export default function StudyAbroadConsultTable({
   onView,
 }) {
   const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
+
+  const handleExportExcel = () => {
+    if (!data || data.length === 0) {
+      message.warning("No data available to export.");
+      return;
+    }
+
+    const headers = [
+      "SL",
+      "User Name",
+      "Email",
+      "Mobile",
+      "Preferred Country",
+      "Course Interest",
+      "Budget Range",
+      "Preferred Intake",
+      "Message",
+      "Status",
+      "Date",
+    ];
+
+    const csvRows = [];
+    csvRows.push(headers.join(","));
+
+    data.forEach((item, index) => {
+      const sl = index + 1;
+      const userName = item.user
+        ? [item.user.firstName, item.user.lastName].filter(Boolean).join(" ")
+        : item.userId
+        ? `ID: ${item.userId}`
+        : "-";
+      const email = item.user?.email || "-";
+      const mobile = item.user?.mobile || "-";
+      const country = item.preferredCountry || "-";
+      const course = item.courseInterest || "-";
+      const budget = item.budgetRange || "-";
+      const intake = item.preferredIntake || "-";
+      
+      const messageText = item.message
+        ? item.message.replace(/"/g, '""').replace(/\r?\n|\r/g, " ")
+        : "-";
+      const status = item.status || "pending";
+      const date = item.createdAt
+        ? new Date(item.createdAt).toLocaleDateString()
+        : "-";
+
+      const row = [
+        sl,
+        `"${userName.replace(/"/g, '""')}"`,
+        `"${email.replace(/"/g, '""')}"`,
+        `"${mobile.replace(/"/g, '""')}"`,
+        `"${country.replace(/"/g, '""')}"`,
+        `"${course.replace(/"/g, '""')}"`,
+        `"${budget.replace(/"/g, '""')}"`,
+        `"${intake.replace(/"/g, '""')}"`,
+        `"${messageText}"`,
+        `"${status.replace(/"/g, '""')}"`,
+        `"${date.replace(/"/g, '""')}"`,
+      ];
+      csvRows.push(row.join(","));
+    });
+
+    const csvContent = "\ufeff" + csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `Study_Abroad_Consultations_${new Date().toISOString().slice(0, 10)}.csv`
+    );
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    message.success("Excel export completed successfully!");
+  };
 
   const ellipsis = (text) => (
     <Tooltip title={stripHtml(text) || "-"}>
@@ -149,6 +227,13 @@ export default function StudyAbroadConsultTable({
               style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
             >
               <ReloadOutlined /> Reset
+            </Button>
+            <Button
+              onClick={handleExportExcel}
+              style={{ background: "#217346", borderColor: "#217346", color: "white" }}
+              icon={<FileExcelOutlined />}
+            >
+              Export Excel
             </Button>
           </div>
         </div>
