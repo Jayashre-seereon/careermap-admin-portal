@@ -487,14 +487,14 @@ useEffect(() => {
           <Input disabled={disabled} placeholder="Enter mentor fees" />
         </Form.Item>
 
-        <Form.Item
+        {/* <Form.Item
           name="rank"
           label="AIR / STATE RANK
 "
           rules={[validationRules.decimal("AIR/State Rank")]}
         >
           <Input disabled={disabled} placeholder="Enter AIR/State Rank" />
-        </Form.Item>
+        </Form.Item> */}
         <Form.Item
           name="year"
           label="Year"
@@ -518,7 +518,7 @@ useEffect(() => {
 
         <Form.Item
           name="resume"
-          label="Resume"
+          label="Expert Profile"
           valuePropName="fileList"
           getValueFromEvent={normalizeFile}
         >
