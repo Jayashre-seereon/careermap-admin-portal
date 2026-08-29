@@ -203,6 +203,32 @@ const getCareerPathSources = (record = {}) => {
   if (Array.isArray(record.careerPaths))
     return record.careerPaths;
 
+  if (Array.isArray(record.careerpathIds) && record.careerpathIds.length > 0) {
+    return record.careerpathIds.map((id) => ({
+      id,
+      pathType: id,
+      pathTypeId: id,
+      graduation: "",
+      afterGraduation: "",
+      afterPostGraduation: "",
+      anyOther: "",
+      pathTypeName: "",
+    }));
+  }
+
+  if (Array.isArray(record.careerPathIds) && record.careerPathIds.length > 0) {
+    return record.careerPathIds.map((id) => ({
+      id,
+      pathType: id,
+      pathTypeId: id,
+      graduation: "",
+      afterGraduation: "",
+      afterPostGraduation: "",
+      anyOther: "",
+      pathTypeName: "",
+    }));
+  }
+
   const legacy =
     record.careerpath ||
     record.careerPath ||
@@ -334,7 +360,7 @@ const mapDetailsRecord = (record = {}) => {
     // Career Paths array
     careerPaths: careerPathSources.length > 0
       ? careerPathSources.map((cp) => ({
-          pathType: cp.pathType ?? cp.pathTypeId ?? cp.id ?? cp.pathId ?? undefined,
+          pathType: cp.pathType ?? cp.pathTypeId ?? cp.id ?? cp.pathId ?? cp.careerpathId ?? cp.careerPathId ?? undefined,
           pathTypeName: cp.pathTypeName || cp.pathName || cp.title || "",
           graduation: cp.graduation ?? "",
           afterGraduation: cp.afterGraduation ?? cp.aftergraduation ?? "",
