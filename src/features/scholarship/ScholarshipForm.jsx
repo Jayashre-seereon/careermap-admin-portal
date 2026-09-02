@@ -252,13 +252,7 @@ useEffect(() => {
   </Form.Item> */}
 
   {/* FULL WIDTH FIELDS */}
-  {/* <Form.Item
-    name="eligibility"
-    label="Eligibility"
-    className="md:col-span-2 lg:col-span-4"
-  >
-    <Input.TextArea rows={3} disabled={isView} />
-  </Form.Item> */}
+  
 
   {/* <Form.Item
     name="requirement"
@@ -268,6 +262,25 @@ useEffect(() => {
     <Input.TextArea rows={3} disabled={isView} />
   </Form.Item> */}
 {/* SECTIONS (repeatable title + description) */}
+
+<Form.Item
+  name="eligibility"
+  label="Range"
+  className="md:col-span-2 lg:col-span-4"
+>
+  <Select
+    placeholder="Select eligibility range"
+    disabled={isView}
+    options={[
+      { value: "Class 1 to 5", label: "Class 1 to 5" },
+      { value: "Class 6 to 8", label: "Class 6 to 8" },
+      { value: "Class 9 to 10", label: "Class 9 to 10" },
+      { value: "Class 11 to 12", label: "Class 11 to 12" },
+      { value: "UG", label: "UG" },
+      { value: "PG", label: "PG" },
+    ]}
+  />
+</Form.Item>
 <div className="md:col-span-2 lg:col-span-4">
   <label className="block mb-2 font-medium">Sections</label>
 
