@@ -211,13 +211,7 @@ export default function EntranceExamForm({
         />
       </Form.Item>
 
-      <Form.Item name="examMode" label="Exam Mode">
-        <Select disabled={isView} placeholder="Select exam mode">
-          <Option value="online">Online</Option>
-          <Option value="offline">Offline</Option>
-          <Option value="hybrid">Hybrid</Option>
-        </Select>
-      </Form.Item>
+    
 
       <Form.Item
         name="duration"
@@ -261,7 +255,12 @@ export default function EntranceExamForm({
           open={false}
         />
       </Form.Item> */}
-
+  <Form.Item name="examMode" label="Type">
+        <Select disabled={isView} placeholder="Select exam mode">
+          <Option value="Government">Government</Option>
+          <Option value="Private">Private</Option>
+        </Select>
+      </Form.Item>
       <Form.Item
         name="url"
         label="URL"
