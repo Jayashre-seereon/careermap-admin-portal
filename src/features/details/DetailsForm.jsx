@@ -641,7 +641,7 @@ function renderInstitutionFields(viewMode, options, normalizeUpload, onAutoFill)
                     <DatePicker className="w-full" disabled={viewMode} format={DATE_DISPLAY_FORMAT} />
                   </Form.Item> */}
 
-                  <Form.Item {...restField} name={[name, "url"]} label="URL" rules={[validationRules.url("URL")]}>
+                  <Form.Item {...restField} name={[name, "url"]} label="URL" >
                     <Input disabled/>
                   </Form.Item>
 
