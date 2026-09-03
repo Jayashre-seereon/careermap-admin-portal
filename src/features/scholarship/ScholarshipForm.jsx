@@ -206,6 +206,7 @@ useEffect(() => {
         <Option value="State">State</Option>
         <Option value="PSU">PSU</Option>
       <Option value="Private">Private</Option>
+      <Option value="Other">Government</Option>
     
     </Select>
   </Form.Item>
