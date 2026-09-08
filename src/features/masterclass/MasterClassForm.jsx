@@ -140,17 +140,18 @@ export default function MasterClassForm({ onSubmit, initialValues, mode }) {
         />
       </Form.Item>
 
-      {/* <Form.Item
+      <Form.Item
         name="image"
         label="Image"
         valuePropName="fileList"
         getValueFromEvent={normalizeFile}
         className="md:col-span-2"
+        rules={[validationRules.required("Image")]}
       >
-        <Upload beforeUpload={() => false} maxCount={1} disabled={isView} listType="picture">
+        <Upload beforeUpload={() => false} maxCount={1} disabled={isView} listType="picture" >
           <Button icon={<UploadOutlined />}>Upload Image</Button>
         </Upload>
-      </Form.Item> */}
+      </Form.Item>
 
       {!isView && (
         <Button

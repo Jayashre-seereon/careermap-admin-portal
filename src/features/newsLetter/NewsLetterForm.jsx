@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Form, Input, Upload, Button } from "antd";
+import { Form, Input, Upload, Button ,Select} from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 
 const normalizeFile = (event) => {
@@ -56,7 +56,20 @@ export default function NewsletterForm({ onSubmit, initialValues, disabled }) {
         >
           <Input disabled={disabled} />
         </Form.Item>
-
+<Form.Item
+  name="type"
+  label="Type"
+  rules={[{ required: true, message: "Type is required" }]}
+>
+  <Select
+    disabled={disabled}
+    placeholder="Select newsletter type"
+    options={[
+      { label: "Weekly", value: "WEEKLY" },
+      { label: "Quarterly", value: "QUARTERLY" },
+    ]}
+  />
+</Form.Item>
         <Form.Item
           name="url"
           label="URL"
