@@ -19,7 +19,7 @@ const DEFAULT_MODULES = [
   { title: "Scholarship", isFree: false },
   { title: "Quiz", isFree: true },
   { title: "Study Abroad", isFree: false },
-  { title: "Career News Letter", isFree: false }
+  { title: "Career Insights", isFree: false }
 ];
 
 // Update buildModulePayload to handle image
