@@ -52,6 +52,11 @@ export default function NewsletterTable({ data, onAddClick, onView, onEdit, onDe
       ellipsis: true,
     },
     {
+      title: "Type",
+      dataIndex: "type",
+      width: 120,
+    },
+    {
       title: "File",
       dataIndex: "image",
       width: 160,

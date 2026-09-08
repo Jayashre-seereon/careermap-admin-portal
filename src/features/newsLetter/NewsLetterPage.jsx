@@ -39,6 +39,7 @@ const extractFile = (value) => {
 const mapNewsletter = (item = {}) => ({
   id: item.id,
   title: item.title || "",
+  type: item.type || "",
   image: item.image || null,
   description: item.description || "",
   url: item.url || "",
@@ -46,8 +47,8 @@ const mapNewsletter = (item = {}) => ({
   updatedAt: item.updatedAt,
 });
 
-const buildNewsletterPayload = ({ title, description, url, image }) => {
-  const payload = { title, description, url };
+const buildNewsletterPayload = ({ title,type, description, url, image }) => {
+  const payload = { title, type, description, url };
   const imageValue = extractFile(image);
 
   if (!imageValue) {
