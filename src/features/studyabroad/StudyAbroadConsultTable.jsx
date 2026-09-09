@@ -8,7 +8,13 @@ import {
 import { getSerialNumber } from "../../utils/slNo";
 
 const stripHtml = (text = "") => {
-  const normalizedText = typeof text === "string" ? text : text == null ? "" : String(text);
+  const normalizedText = Array.isArray(text)
+    ? text.join(", ")
+    : typeof text === "string"
+      ? text
+      : text == null
+        ? ""
+        : String(text);
   return normalizedText
     .replace(/<[^>]*>/g, " ")
     .replace(/&nbsp;/g, " ")
@@ -58,16 +64,17 @@ export default function StudyAbroadConsultTable({
       fixed: "left",
     },
     {
-      title: "User",
-      key: "user",
+      title: "Applicant",
+      key: "applicant",
       width: 180,
       render: (_, record) => {
-        if (record.user) {
-          const name = [record.user.firstName, record.user.lastName].filter(Boolean).join(" ");
+        const name = record.fullName || [record.user?.firstName, record.user?.lastName].filter(Boolean).join(" ");
+        const email = record.email || record.user?.email;
+        if (name || email) {
           return (
             <div>
               <div className="font-semibold text-gray-800">{name || "Unnamed"}</div>
-              <div className="text-xs text-gray-500">{record.user.email || ""}</div>
+              <div className="text-xs text-gray-500">{email || ""}</div>
             </div>
           );
         }
@@ -75,28 +82,40 @@ export default function StudyAbroadConsultTable({
       },
     },
     {
-      title: "Preferred Country",
-      dataIndex: "preferredCountry",
+      title: "Mobile Number",
+      dataIndex: "mobileNumber",
       width: 150,
       render: ellipsis,
     },
     {
-      title: "Course Interest",
-      dataIndex: "courseInterest",
+      title: "Study Destination",
+      dataIndex: "preferredCountries",
       width: 160,
       render: ellipsis,
     },
     {
-      title: "Budget Range",
-      dataIndex: "budgetRange",
+      title: "Programme",
+      dataIndex: "preferredCourseProgramme",
       width: 140,
       render: ellipsis,
     },
     {
-      title: "Preferred Intake",
+      title: "Study Level / Intake",
       dataIndex: "preferredIntake",
-      width: 150,
+      width: 170,
+      render: (intake, record) => ellipsis([record.intendedStudyLevel, intake].filter(Boolean).join(" / ")),
+    },
+    {
+      title: "Budget",
+      dataIndex: "totalEducationBudget",
+      width: 140,
       render: ellipsis,
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      width: 110,
+      render: (status) => <Tag color={getStatusColor(status)}>{String(status || "pending").toUpperCase()}</Tag>,
     },
     {
       title: "Message",
