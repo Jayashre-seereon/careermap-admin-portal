@@ -245,53 +245,53 @@ export const navSections = [
     ],
   },
 
-  // {
-  //   label: "PSYCHOMETRIC",
-  //   items: [
-  //     {
-  //       icon: HelpCircle,
-  //       name: "Personality Test",
-  //       path: "/personality-test",
-  //       module: "Personality Test",
-  //     },
-  //     {
-  //       icon: Layers,
-  //       name: "Domains",
-  //       path: "/domains",
-  //       module: "Domains",
-  //     },
-  //     {
-  //       icon: Briefcase,
-  //       name: "Careers",
-  //       path: "/careers",
-  //       module: "Careers",
-  //     },
-  //     {
-  //       icon: MapPin,
-  //       name: "Career Paths",
-  //       path: "/career-paths",
-  //       module: "Career Paths",
-  //     },
-  //     {
-  //       icon: Tag,
-  //       name: "Career Categories",
-  //       path: "/career-categories",
-  //       module: "Career Categories",
-  //     },
+  {
+    label: "PSYCHOMETRIC",
+    items: [
+      {
+        icon: HelpCircle,
+        name: "Personality Test",
+        path: "/personality-test",
+        module: "Personality Test",
+      },
+      {
+        icon: Layers,
+        name: "Domains",
+        path: "/domains",
+        module: "Domains",
+      },
+      {
+        icon: Briefcase,
+        name: "Assessment",
+        path: "/assessment",
+        module: "Assessment",
+      },
+      {
+        icon: MapPin,
+        name: "Career Paths",
+        path: "/career-paths",
+        module: "Career Paths",
+      },
+      {
+        icon: Tag,
+        name: "Career Categories",
+        path: "/career-categories",
+        module: "Career Categories",
+      },
       
-  //     {
-  //       icon: HelpCircle,
-  //       name: "Questions",
-  //       path: "/questions",
-  //       module: "Questions",
-  //     },
-  //     {
-  //       icon: ClipboardList,
-  //       name: "Sections",
-  //       path: "/sections",
-  //       module: "Sections",
-  //     },
+      {
+        icon: HelpCircle,
+        name: "Questions",
+        path: "/questions",
+        module: "Questions",
+      },
+      {
+        icon: ClipboardList,
+        name: "Sections",
+        path: "/sections",
+        module: "Sections",
+      },
       
-  //   ],
-  // },
+    ],
+  },
 ];

@@ -1,104 +1,183 @@
-import React, { useState } from "react";
-import { Modal } from "antd";
+import React, { useEffect, useState } from "react";
+import { Modal, message } from "antd";
+import { useNavigate, useParams } from "react-router-dom";
+
 import SectionForm from "./SectionForm";
 import SectionTable from "./SectionTable";
 
+import {
+  getAssessmentSections,
+  createAssessmentSection,
+  updateAssessmentSection,
+  deleteAssessmentSection,
+} from "../../api/sectionsApi";
+import { getAssessments } from "../../api/assessment";
+
 const domainOptions = [
-  { label: "RIASEC", value: "RIASEC" },
-  { label: "Aptitude", value: "Aptitude" },
-  { label: "Ocean", value: "Ocean" },
-  { label: "Goal Orientation", value: "Goal Orientation" },
-  { label: "Vark", value: "Vark" },
-  { label: "Work Values", value: "Work Values" },
+  {
+    label: "Interest (RIASEC)",
+    value: "riasec",
+  },
+  {
+    label: "Personality (OCEAN)",
+    value: "ocean",
+  },
+  {
+    label: "Learning Style (VARK)",
+    value: "vark",
+  },
+  {
+    label: "Values (Schwartz)",
+    value: "schwartz",
+  },
+  {
+    label: "Goal Orientation",
+    value: "goal_orientation",
+  },
+  {
+    label: "Aptitude",
+    value: "aptitude",
+  },
 ];
 
-const initialSections = [
-  {
-    id: 1,
-    name: "Spatial",
-    code: "Spatial",
-    domain: "Aptitude",
-    keyTraits: "Visual thinker, imaginative, perceptive about shapes, forms, and dimensions. Strong ability to visualize objects, patterns, and spatial relationships in 2D and 3D",
-    enjoys: "Drawing, design, architecture, puzzles, visual planning, 3D modeling, and interpreting maps or blueprints.",
-    idealEnvironments: "Design, architecture, engineering, animation, urban planning, surgery, or any field that requires visualization and manipulation of spatial information.",
-    low: "Needs more exposure",
-    mid: "Moderate preference",
-    high: "Strong fit",
-    description: "You have a powerful visual imagination and can “se...",
-    image: null,
-  },
-  {
-    id: 2,
-    name: "Verbal",
-    code: "Verbal",
-    domain: "Aptitude",
-    keyTraits: "Articulate, expressive, logical in communication, skilled in reading comprehension and language use. Strong ability to understand, analyze, and convey ideas through words — both spoken and written.",
-    enjoys: "Debating, writing essays or articles, reading literature, storytelling, public speaking, and analyzing text.",
-    idealEnvironments: "Communication-rich spaces — education, media, law, psychology, marketing, or public relations — where ideas and clarity of expression matter.",
-    low: "Foundational support",
-    mid: "Developing strength",
-    high: "Advanced strength",
-    description: "You are persuasive and articulate, with a talent f...",
-    image: null,
-  },
-  {
-    id: 3,
-    name: "Self-Transcendence",
-    code: "Self-Transcendence",
-    domain: "WORK VALUES",
-    keyTraits: "Curious, imaginative, flexible",
-    enjoys: "Ideas, creativity, exploration",
-    idealEnvironments: "Creative and research-oriented spaces",
-    low: "May prioritize self-interest over collective well-being.",
-    mid: "Balances personal goals with concern for others.",
-    high: "Driven by altruism, social justice, and empathy. Strong concern for others.",
-    description: "Focuses on helping and caring for those in close c...",
-    image: null,
-  },
-];
+const getSectionList = (data) => {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.sections)) return data.sections;
+  if (Array.isArray(data?.data)) return data.data;
+  if (Array.isArray(data?.rows)) return data.rows;
+  return [];
+};
 
 function Section() {
-  const [sections, setSections] = useState(initialSections);
+  const { assessmentId } = useParams();
+  const navigate = useNavigate();
+
+  const [sections, setSections] = useState([]);
+  const [assessments, setAssessments] = useState([]);
   const [search, setSearch] = useState("");
+
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("add");
+
   const [selected, setSelected] = useState(null);
   const [editId, setEditId] = useState(null);
 
-  const filteredSections = sections.filter((section) => {
-    const keyword = search.toLowerCase();
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const loadAssessments = async () => {
+      try {
+        const response = await getAssessments();
+        setAssessments(response?.success ? response.data || [] : []);
+      } catch (error) {
+        console.error("Failed to load assessments:", error);
+        message.error(error?.response?.data?.message || "Failed to load assessments");
+      }
+    };
+
+    loadAssessments();
+  }, []);
+
+  // GET SECTIONS
+  const fetchSections = async () => {
+    try {
+      setLoading(true);
+
+      const response = await getAssessmentSections();
+
+      if (response?.success) {
+        setSections(getSectionList(response.data));
+      } else {
+        setSections([]);
+      }
+    } catch (error) {
+      console.error("Get sections error:", error);
+
+      message.error(
+        error?.response?.data?.message || "Failed to load sections"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSections();
+  }, [assessmentId]);
+
+  // SEARCH
+  const filteredSections = getSectionList(sections).filter((section) => {
+    const keyword = search.trim().toLowerCase();
+
+    if (!keyword) return true;
 
     return (
-      section.name?.toLowerCase().includes(keyword) ||
+      section.title?.toLowerCase().includes(keyword) ||
       section.code?.toLowerCase().includes(keyword) ||
-      section.domain?.toLowerCase().includes(keyword)
+      section.description?.toLowerCase().includes(keyword)
     );
   });
 
-  const handleAdd = (values) => {
-    setSections((prev) => [
-      ...prev,
-      {
-        ...values,
-        id: Date.now(),
-        low: values.low || "-",
-        mid: values.mid || "-",
-        high: values.high || "-",
-      },
-    ]);
-    setOpen(false);
+  // OPEN ADD
+  const handleAddClick = () => {
+    setMode("add");
+    setSelected(null);
+    setEditId(null);
+    setOpen(true);
   };
 
-  const handleDelete = (record) => {
-    setSections((prev) => prev.filter((item) => item.id !== record.id));
+  // ADD
+  const handleAdd = async (values) => {
+    try {
+      const payload = {
+        code: values.code,
+        title: values.title,
+        description: values.description || "",
+        order: Number(values.order),
+      };
+
+      const selectedAssessmentId = values.assessmentId || assessmentId;
+
+      if (!selectedAssessmentId) {
+        message.error("Please select an assessment");
+        return;
+      }
+
+      const response = await createAssessmentSection(
+        selectedAssessmentId,
+        payload
+      );
+
+      if (response?.success) {
+        message.success("Section created successfully");
+
+        setOpen(false);
+        setSelected(null);
+
+        // Keep the table as the exact result of the GET API, not local data.
+        await fetchSections();
+        navigate("/sections");
+      } else {
+        message.error(response?.message || "Failed to create section");
+      }
+    } catch (error) {
+      console.error("Create section error:", error);
+
+      message.error(
+        error?.response?.data?.message || "Failed to create section"
+      );
+    }
   };
 
+  // VIEW
   const handleView = (record) => {
     setSelected(record);
+    setEditId(null);
     setMode("view");
     setOpen(true);
   };
 
+  // EDIT
   const handleEdit = (record) => {
     setSelected(record);
     setEditId(record.id);
@@ -106,22 +185,79 @@ function Section() {
     setOpen(true);
   };
 
-  const handleUpdate = (values) => {
-    setSections((prev) =>
-      prev.map((item) =>
-        item.id === editId
-          ? {
-              ...item,
-              ...values,
-              id: editId,
-              low: values.low || item.low || "-",
-              mid: values.mid || item.mid || "-",
-              high: values.high || item.high || "-",
-            }
-          : item
-      )
-    );
+  // UPDATE
+  const handleUpdate = async (values) => {
+    if (!editId) return;
+
+    try {
+      const payload = {
+        code: values.code,
+        title: values.title,
+        description: values.description || "",
+        order: Number(values.order),
+      };
+
+      const selectedAssessmentId = values.assessmentId || assessmentId;
+
+      if (!selectedAssessmentId) {
+        message.error("Please select an assessment");
+        return;
+      }
+
+      const response = await updateAssessmentSection(
+        editId,
+        payload
+      );
+
+      if (response?.success) {
+        message.success("Section updated successfully");
+
+        setOpen(false);
+        setSelected(null);
+        setEditId(null);
+
+        await fetchSections();
+        navigate("/sections");
+      } else {
+        message.error(response?.message || "Failed to update section");
+      }
+    } catch (error) {
+      console.error("Update section error:", error);
+
+      message.error(
+        error?.response?.data?.message || "Failed to update section"
+      );
+    }
+  };
+
+  // DELETE
+  const handleDelete = async (record) => {
+    try {
+      const response = await deleteAssessmentSection(
+        record.id
+      );
+
+      if (response?.success) {
+        message.success("Section deleted successfully");
+
+        await fetchSections();
+      } else {
+        message.error(response?.message || "Failed to delete section");
+      }
+    } catch (error) {
+      console.error("Delete section error:", error);
+
+      message.error(
+        error?.response?.data?.message || "Failed to delete section"
+      );
+    }
+  };
+
+  // CLOSE MODAL
+  const handleClose = () => {
     setOpen(false);
+    setSelected(null);
+    setEditId(null);
   };
 
   return (
@@ -134,34 +270,39 @@ function Section() {
         data={filteredSections}
         search={search}
         onSearch={setSearch}
-        onAddClick={() => {
-          setMode("add");
-          setSelected(null);
-          setEditId(null);
-          setOpen(true);
-        }}
+        onAddClick={handleAddClick}
         onDelete={handleDelete}
         onView={handleView}
         onEdit={handleEdit}
+        loading={loading}
       />
 
       <Modal
         open={open}
-        onCancel={() => setOpen(false)}
+        onCancel={handleClose}
         footer={null}
         width={900}
+        destroyOnClose
         title={
           mode === "add"
             ? "Add Section"
             : mode === "edit"
-            ? "Edit Section"
-            : "View Section"
+              ? "Edit Section"
+              : "View Section"
         }
       >
         <SectionForm
           domainOptions={domainOptions}
           onSubmit={mode === "edit" ? handleUpdate : handleAdd}
-          initialValues={selected}
+          initialValues={selected ? {
+            ...selected,
+            assessmentId: selected.assessmentId || assessmentId,
+          } : null}
+          assessmentOptions={assessments.map((assessment) => ({
+            label: assessment.title,
+            value: String(assessment.id),
+          }))}
+          assessmentId={assessmentId}
           disabled={mode === "view"}
         />
       </Modal>

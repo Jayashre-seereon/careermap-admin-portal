@@ -74,7 +74,7 @@ import SeoPage from "../features/seo/SeoPage";
 import SocialCredentialPage from "../features/socialcredential/SocialCredentialPage";
 import ProfilePage from "../features/profile/ProfilePage";
 import Domain from "../features/psychometric/Domain";
-import Career from "../features/psychometric/Career";
+import Assessment from "../features/psychometric/Assessment";
 import CareerPath from "../features/psychometric/CareerPath";
 import CareerCategory from "../features/psychometric/CareerCategory";
 import Institute from "../features/psychometric/Institute";
@@ -421,10 +421,10 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: "careers",
+            path: "assessment",
             element: (
-              <PermissionRoute module="Careers">
-                <Career />
+              <PermissionRoute module="Assessment">
+                <Assessment />
               </PermissionRoute>
             ),
           },
@@ -462,6 +462,14 @@ export const router = createBrowserRouter([
           },
           {
             path: "sections",
+            element: (
+              <PermissionRoute module="Sections">
+                <Section />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "sections/:assessmentId",
             element: (
               <PermissionRoute module="Sections">
                 <Section />
