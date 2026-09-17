@@ -17,7 +17,10 @@ export default function Sidebar({
   const navigate = useNavigate();
   const currentUser = useSessionStore((state) => state.user);
   const hasPermission = useSessionStore((state) => state.hasPermission);
-  const [openAccordions, setOpenAccordions] = useState({ "Email & Notification": true });
+  const [openAccordions, setOpenAccordions] = useState({
+    "Email & Notification": true,
+    "Psychometric Assessments": true,
+  });
   const displayName = [currentUser?.firstName, currentUser?.lastName]
     .filter(Boolean)
     .join(" ")

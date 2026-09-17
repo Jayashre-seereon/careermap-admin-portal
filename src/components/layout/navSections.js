@@ -249,10 +249,31 @@ export const navSections = [
     label: "PSYCHOMETRIC",
     items: [
       {
-        icon: HelpCircle,
-        name: "Personality Test",
-        path: "/personality-test",
-        module: "Personality Test",
+        icon: Briefcase,
+        name: "Psychometric Assessments",
+        module: "Assessment",
+        children: [
+          {
+            name: "Assessments",
+            path: "/admin/psychometric-assessments",
+          },
+          {
+            name: "Sections",
+            path: "/admin/psychometric-sections",
+          },
+          {
+            name: "Questions",
+            path: "/admin/psychometric-questions",
+          },
+          {
+            name: "Career Clusters",
+            path: "/admin/psychometric-career-clusters",
+          },
+          {
+            name: "Student Attempts",
+            path: "/admin/psychometric-attempts",
+          },
+        ],
       },
       {
         icon: Layers,
@@ -261,37 +282,11 @@ export const navSections = [
         module: "Domains",
       },
       {
-        icon: Briefcase,
-        name: "Assessment",
-        path: "/assessment",
-        module: "Assessment",
-      },
-      {
         icon: MapPin,
         name: "Career Paths",
         path: "/career-paths",
         module: "Career Paths",
       },
-      {
-        icon: Tag,
-        name: "Career Categories",
-        path: "/career-categories",
-        module: "Career Categories",
-      },
-      
-      {
-        icon: HelpCircle,
-        name: "Questions",
-        path: "/questions",
-        module: "Questions",
-      },
-      {
-        icon: ClipboardList,
-        name: "Sections",
-        path: "/sections",
-        module: "Sections",
-      },
-      
     ],
   },
 ];
