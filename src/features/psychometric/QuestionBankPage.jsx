@@ -41,8 +41,6 @@ import {
   deleteQuestion,
   getAllQuestions,
   getAssessments,
-  getQuestionsByAssessment,
-  getQuestionsBySection,
   getSections,
   updateQuestion,
   getApiErrorMessage,
@@ -149,23 +147,50 @@ export default function QuestionBankPage() {
     }
   };
 
-  // Load Questions
-  const loadQuestions = async (currentSections = sections) => {
+  // Load Questions from /admin/questions API
+  const loadQuestions = async (currentSections = sections, filterOverrides = {}) => {
     try {
       setLoading(true);
-      let res;
-      if (selectedSectionId && selectedSectionId !== "all") {
-        res = await getQuestionsBySection(selectedSectionId);
-      } else if (selectedAssessmentId && selectedAssessmentId !== "all") {
-        res = await getQuestionsByAssessment(selectedAssessmentId);
-      } else {
-        res = await getAllQuestions();
+
+      const targetAssessmentId =
+        filterOverrides.assessmentId !== undefined
+          ? filterOverrides.assessmentId
+          : selectedAssessmentId;
+      const targetSectionId =
+        filterOverrides.sectionId !== undefined
+          ? filterOverrides.sectionId
+          : selectedSectionId;
+      const targetType =
+        filterOverrides.type !== undefined ? filterOverrides.type : selectedType;
+      const targetFacet =
+        filterOverrides.facet !== undefined ? filterOverrides.facet : selectedFacet;
+      const targetSearch =
+        filterOverrides.search !== undefined ? filterOverrides.search : search;
+
+      const params = {};
+      if (targetAssessmentId && targetAssessmentId !== "all") {
+        params.assessmentId = targetAssessmentId;
+      }
+      if (targetSectionId && targetSectionId !== "all") {
+        params.sectionId = targetSectionId;
+      }
+      if (targetType && targetType !== "all") {
+        params.type = targetType;
+      }
+      if (targetFacet && targetFacet !== "all") {
+        params.facet = targetFacet;
+      }
+      if (targetSearch && targetSearch.trim()) {
+        params.search = targetSearch.trim();
       }
 
-      // Also fetch fresh sections to ensure embedded questions are up to date
+      const res = await getAllQuestions(params);
+
+      // Also fetch fresh sections to ensure embedded questions/metadata are up to date
       const secRes = await getSections();
       const freshSections = normalizeSectionsResponse(secRes);
-      const effectiveSections = freshSections.length > 0 ? freshSections : currentSections;
+      const effectiveSections =
+        freshSections.length > 0 ? freshSections : currentSections;
       setSections(effectiveSections);
 
       const normalizedQ = normalizeQuestionsResponse(res, effectiveSections);
@@ -173,9 +198,14 @@ export default function QuestionBankPage() {
       if (normalizedQ.length > 0) {
         setQuestions(normalizedQ);
       } else {
-        // Extract embedded questions from sections
-        const extracted = normalizeQuestionsResponse(null, effectiveSections);
-        setQuestions(extracted.length > 0 ? extracted : INITIAL_QUESTIONS);
+        // If server returns empty for specific filters, show empty; otherwise fallback to seeded
+        if (Object.keys(params).length > 0) {
+          setQuestions([]);
+        } else {
+          // Extract embedded questions from sections
+          const extracted = normalizeQuestionsResponse(null, effectiveSections);
+          setQuestions(extracted.length > 0 ? extracted : INITIAL_QUESTIONS);
+        }
       }
     } catch (err) {
       console.warn("Using fallback questions:", err);
@@ -198,8 +228,14 @@ export default function QuestionBankPage() {
   }, [assessmentId, activeSectionId]);
 
   useEffect(() => {
-    loadQuestions();
-  }, [selectedAssessmentId, selectedSectionId]);
+    loadQuestions(sections, {
+      assessmentId: selectedAssessmentId,
+      sectionId: selectedSectionId,
+      type: selectedType,
+      facet: selectedFacet,
+      search: search,
+    });
+  }, [selectedAssessmentId, selectedSectionId, selectedType, selectedFacet]);
 
   // Available sections for filtering based on selected assessment
   const availableSections = useMemo(() => {
@@ -511,6 +547,16 @@ export default function QuestionBankPage() {
   };
 
   const columns = [
+    {
+      title: <span className="text-[#9a2119] font-semibold">#</span>,
+      key: "slNo",
+      width: 60,
+      render: (_, __, index) => (
+        <span className="font-mono text-xs text-gray-500 font-semibold">
+          {getSerialNumber(index, pagination)}
+        </span>
+      ),
+    },
     {
       title: <span className="text-[#9a2119] font-semibold">Item Code</span>,
       dataIndex: "itemId",

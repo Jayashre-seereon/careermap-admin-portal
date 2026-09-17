@@ -101,10 +101,10 @@ export const deleteSection = async (sectionId) => {
 export const getAllQuestions = async (params = {}) => {
   const query = new URLSearchParams();
   if (params.search) query.append("search", params.search);
-  if (params.sectionId) query.append("sectionId", params.sectionId);
-  if (params.assessmentId) query.append("assessmentId", params.assessmentId);
-  if (params.type) query.append("type", params.type);
-  if (params.facet) query.append("facet", params.facet);
+  if (params.sectionId && params.sectionId !== "all") query.append("sectionId", params.sectionId);
+  if (params.assessmentId && params.assessmentId !== "all") query.append("assessmentId", params.assessmentId);
+  if (params.type && params.type !== "all") query.append("type", params.type);
+  if (params.facet && params.facet !== "all") query.append("facet", params.facet);
   if (params.page) query.append("page", params.page);
   if (params.limit) query.append("limit", params.limit);
 
@@ -114,21 +114,46 @@ export const getAllQuestions = async (params = {}) => {
 };
 
 export const getQuestionsBySection = async (sectionId) => {
-  const res = await api.get(`${BASE_PREFIX}/admin/sections/${sectionId}/questions`);
-  return res.data;
+  try {
+    const res = await api.get(`${BASE_PREFIX}/admin/sections/${sectionId}/questions`);
+    return res.data;
+  } catch (err) {
+    if (err?.response?.status === 404) {
+      return getAllQuestions({ sectionId });
+    }
+    throw err;
+  }
 };
 
 export const getQuestionsByAssessment = async (assessmentId) => {
-  const res = await api.get(`${BASE_PREFIX}/admin/assessments/${assessmentId}/questions`);
-  return res.data;
+  try {
+    const res = await api.get(`${BASE_PREFIX}/admin/assessments/${assessmentId}/questions`);
+    return res.data;
+  } catch (err) {
+    if (err?.response?.status === 404) {
+      return getAllQuestions({ assessmentId });
+    }
+    throw err;
+  }
 };
 
 export const createQuestion = async (sectionId, payload) => {
-  const res = await api.post(
-    `${BASE_PREFIX}/admin/sections/${sectionId}/questions`,
-    payload
-  );
-  return res.data;
+  try {
+    const res = await api.post(
+      `${BASE_PREFIX}/admin/sections/${sectionId}/questions`,
+      payload
+    );
+    return res.data;
+  } catch (err) {
+    if (err?.response?.status === 404) {
+      const res = await api.post(`${BASE_PREFIX}/admin/questions`, {
+        ...payload,
+        sectionId,
+      });
+      return res.data;
+    }
+    throw err;
+  }
 };
 
 export const updateQuestion = async (questionId, payload) => {
@@ -147,6 +172,16 @@ export const deleteQuestion = async (questionId) => {
 
 export const getCareerClusters = async () => {
   const res = await api.get(`${BASE_PREFIX}/admin/career-clusters`);
+  return res.data;
+};
+
+export const getCareerClusterById = async (clusterId) => {
+  const res = await api.get(`${BASE_PREFIX}/admin/career-clusters/${clusterId}`);
+  return res.data;
+};
+
+export const seedDefaultCareerClusters = async () => {
+  const res = await api.post(`${BASE_PREFIX}/admin/career-clusters/seed-defaults`);
   return res.data;
 };
 

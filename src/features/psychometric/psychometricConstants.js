@@ -86,6 +86,84 @@ export const FACET_MAP = ALL_FACETS.reduce((acc, facet) => {
   return acc;
 }, {});
 
+// ==========================================
+// 21 FACET DEFINITION FOR CAREER CLUSTERS
+// ==========================================
+export const CAREER_CLUSTER_FACET_GROUPS = [
+  {
+    group: "Holland Interests (RIASEC)",
+    color: "#2563eb",
+    bg: "#eff6ff",
+    border: "#bfdbfe",
+    sectionCode: "interest",
+    facets: [
+      { key: "R", code: "R", name: "Realistic", label: "Realistic (Doer)", description: "Hands-on tools, machinery, physical creation, and outdoor work" },
+      { key: "I", code: "I", name: "Investigative", label: "Investigative (Thinker)", description: "Scientific research, data analysis, deep inquiry, and logic" },
+      { key: "A", code: "A", name: "Artistic", label: "Artistic (Creator)", description: "Creative expression, design, writing, visual arts, and performance" },
+      { key: "S", code: "S", name: "Social", label: "Social (Helper)", description: "Teaching, counseling, community service, caregiving, and mentoring" },
+      { key: "E", code: "E", name: "Enterprising", label: "Enterprising (Leader)", description: "Persuasion, entrepreneurship, strategic leadership, and sales" },
+      { key: "C", code: "C", name: "Conventional", label: "Conventional (Organizer)", description: "Record keeping, compliance, numerical precision, and orderly systems" },
+    ],
+  },
+  {
+    group: "Big Five Personality",
+    color: "#7c3aed",
+    bg: "#f5f3ff",
+    border: "#ddd6fe",
+    sectionCode: "personality",
+    facets: [
+      { key: "O", code: "O", name: "Openness", label: "Openness", description: "Curiosity, openness to new paradigms, creative imagination" },
+      { key: "Cn", code: "Cn", name: "Conscientiousness", label: "Conscientiousness", description: "Methodical discipline, reliability, goal persistence, and detail focus" },
+      { key: "Ex", code: "Ex", name: "Extraversion", label: "Extraversion", description: "Sociability, assertiveness, outgoing energy, and team enthusiasm" },
+      { key: "Ag", code: "Ag", name: "Agreeableness", label: "Agreeableness", description: "Cooperation, empathy, constructive harmony, and team trust" },
+      { key: "ES", code: "ES", name: "Emotional Stability", label: "Emotional Stability", description: "Composure under pressure, resilience against stress, and calm focus" },
+    ],
+  },
+  {
+    group: "Work Values (Schwartz)",
+    color: "#059669",
+    bg: "#ecfdf5",
+    border: "#a7f3d0",
+    sectionCode: "values",
+    facets: [
+      { key: "OC", code: "OC", name: "Openness to Change", label: "Openness to Change", description: "Autonomy, variety, challenging innovation, and creative freedom" },
+      { key: "SE", code: "SE", name: "Self-Enhancement", label: "Self-Enhancement", description: "Achievement, prestige, career progression, and recognition" },
+      { key: "CO", code: "CO", name: "Conservation", label: "Conservation", description: "Organizational stability, clear standards, predictability, and security" },
+      { key: "ST", code: "ST", name: "Self-Transcendence", label: "Self-Transcendence", description: "Social impact, ethical integrity, community benefit, and altruism" },
+    ],
+  },
+  {
+    group: "Aptitudes & Abilities",
+    color: "#dc2626",
+    bg: "#fef2f2",
+    border: "#fecaca",
+    sectionCode: "aptitude",
+    facets: [
+      { key: "Mech", code: "Mech", name: "Mechanical Reasoning", label: "Mechanical Reasoning", description: "Physical machinery, gear dynamics, levers, and kinematic principles" },
+      { key: "Log", code: "Log", name: "Logical Reasoning", label: "Logical Reasoning", description: "Deductive logic, pattern recognition, and systematic problem solving" },
+      { key: "Verb", code: "Verb", name: "Verbal Reasoning", label: "Verbal Reasoning", description: "Text analysis, deductive rhetoric, and structured arguments" },
+      { key: "Spat", code: "Spat", name: "Spatial Ability", label: "Spatial Ability", description: "3D geometry, visual rotation, mental modeling, and blueprint layout" },
+      { key: "Num", code: "Num", name: "Numerical Ability", label: "Numerical Ability", description: "Mathematical formulation, quantitative metrics, and data analysis" },
+      { key: "Voc", code: "Voc", name: "Vocabulary & Language", label: "Vocabulary & Language", description: "Language clarity, terminology precision, grammar, and syntax" },
+    ],
+  },
+];
+
+export const CAREER_CLUSTER_FACETS_LIST = CAREER_CLUSTER_FACET_GROUPS.flatMap((g) =>
+  g.facets.map((f) => ({
+    ...f,
+    groupName: g.group,
+    groupColor: g.color,
+    groupBg: g.bg,
+    groupBorder: g.border,
+  }))
+);
+
+export const CAREER_CLUSTER_FACET_MAP = CAREER_CLUSTER_FACETS_LIST.reduce((acc, f) => {
+  acc[f.code] = f;
+  return acc;
+}, {});
+
 // Specific Facets by Section Code
 export const SECTION_FACETS_MAP = {
   interest: FACET_GROUPS.find((g) => g.sectionCode === "interest")?.facets || [],
@@ -267,6 +345,11 @@ export const normalizeQuestionsResponse = (res, sectionsList = []) => {
   else if (Array.isArray(res?.data)) list = res.data;
   else if (Array.isArray(res?.data?.questions)) list = res.data.questions;
   else if (Array.isArray(res?.questions)) list = res.questions;
+  else if (Array.isArray(res?.data?.rows)) list = res.data.rows;
+  else if (Array.isArray(res?.rows)) list = res.rows;
+  else if (Array.isArray(res?.data?.items)) list = res.data.items;
+  else if (Array.isArray(res?.items)) list = res.items;
+  else if (Array.isArray(res?.data?.data)) list = res.data.data;
 
   // If questions are not returned directly as a flat list, extract embedded questions from sections
   if (list.length === 0 && Array.isArray(sectionsList) && sectionsList.length > 0) {
@@ -275,7 +358,7 @@ export const normalizeQuestionsResponse = (res, sectionsList = []) => {
         sec.questions.forEach((q) => {
           list.push({
             ...q,
-            sectionId: q.sectionId || sec.id,
+            sectionId: q.sectionId || q.section_id || sec.id,
             sectionCode: sec.code,
             sectionTitle: sec.title,
             assessmentId: sec.assessmentId || sec.assessment?.id,
@@ -286,7 +369,46 @@ export const normalizeQuestionsResponse = (res, sectionsList = []) => {
     });
   }
 
-  return list;
+  // Normalize each item to ensure consistent property names across backend versions
+  return list.map((q, idx) => {
+    const secId = q.sectionId ?? q.section_id ?? q.section?.id;
+    const sec = Array.isArray(sectionsList)
+      ? sectionsList.find((s) => String(s.id) === String(secId))
+      : null;
+
+    return {
+      ...q,
+      id: q.id ?? q._id ?? `q-${idx + 1}`,
+      sectionId: secId ?? sec?.id,
+      sectionCode: q.sectionCode || q.section?.code || sec?.code,
+      sectionTitle: q.sectionTitle || q.section?.title || sec?.title,
+      assessmentId:
+        q.assessmentId ??
+        q.assessment_id ??
+        q.section?.assessmentId ??
+        q.section?.assessment?.id ??
+        sec?.assessmentId,
+      assessmentTitle:
+        q.assessmentTitle || q.section?.assessment?.title || sec?.assessmentTitle,
+      itemId: q.itemId || q.item_id || q.itemCode || q.code || `ITM_${q.id ?? idx + 1}`,
+      text: q.text || q.question || q.prompt || q.questionText || q.question_text || "",
+      type: q.type || (sec?.code === "aptitude" ? "mcq" : "likert5"),
+      facet: q.facet || "R",
+      reverse: Boolean(q.reverse ?? q.isReverse ?? q.is_reverse ?? false),
+      order: Number(q.order ?? q.sortOrder ?? q.sort_order ?? idx + 1),
+      image: q.image || q.imageUrl || q.image_url || null,
+      note: q.note || q.explanation || q.rubric || null,
+      options: Array.isArray(q.options)
+        ? q.options.map((opt, optIdx) => ({
+            id: opt.id ?? opt._id ?? optIdx,
+            optionText: opt.optionText || opt.option_text || opt.text || "",
+            optionIndex: opt.optionIndex ?? opt.option_index ?? optIdx,
+            isCorrect: Boolean(opt.isCorrect ?? opt.is_correct),
+            image: opt.image || opt.imageUrl || opt.image_url || null,
+          }))
+        : [],
+    };
+  });
 };
 
 // Seed Assessment
@@ -462,126 +584,240 @@ export const INITIAL_QUESTIONS = [
   },
 ];
 
-// Fallback seed career clusters with domain weights
+// Fallback seed career clusters with 21 domain weights (0 to 3 scale)
 export const INITIAL_CAREER_CLUSTERS = [
   {
     id: "cluster-1",
-    name: "Engineering, Robotics & Advanced Tech",
-    code: "ENG_TECH",
-    hollandCode: "RIC",
-    description: "Focuses on designing, building, and maintaining hardware systems, embedded robotics, civil infrastructure, and algorithmic technology.",
+    name: "Agriculture, Food & Natural Resources",
+    code: "AGR",
+    hollandCode: "RIA",
+    description: "Agricultural science, animal husbandry, environmental stewardship, forestry, and sustainable agribusiness management.",
     weights: [
-      { facet: "R", weight: 5 },
-      { facet: "I", weight: 5 },
-      { facet: "C", weight: 4 },
-      { facet: "A", weight: 2 },
-      { facet: "S", weight: 2 },
-      { facet: "E", weight: 3 },
-      { facet: "Mech", weight: 5 },
-      { facet: "Num", weight: 5 },
-      { facet: "Log", weight: 5 },
-      { facet: "Spat", weight: 4 },
-      { facet: "Verb", weight: 3 },
-      { facet: "Voc", weight: 2 },
-      { facet: "O", weight: 4 },
-      { facet: "Cn", weight: 5 },
-      { facet: "Ex", weight: 2 },
-      { facet: "Ag", weight: 3 },
-      { facet: "ES", weight: 4 },
-      { facet: "OC", weight: 4 },
-      { facet: "SE", weight: 3 },
-      { facet: "CO", weight: 4 },
-      { facet: "ST", weight: 2 },
+      { facet: "R", weight: 3 }, { facet: "I", weight: 2 }, { facet: "A", weight: 1 }, { facet: "S", weight: 1 }, { facet: "E", weight: 2 }, { facet: "C", weight: 2 },
+      { facet: "O", weight: 2 }, { facet: "Cn", weight: 3 }, { facet: "Ex", weight: 1 }, { facet: "Ag", weight: 2 }, { facet: "ES", weight: 3 },
+      { facet: "OC", weight: 2 }, { facet: "SE", weight: 1 }, { facet: "CO", weight: 3 }, { facet: "ST", weight: 3 },
+      { facet: "Mech", weight: 3 }, { facet: "Log", weight: 2 }, { facet: "Verb", weight: 1 }, { facet: "Spat", weight: 2 }, { facet: "Num", weight: 2 }, { facet: "Voc", weight: 1 },
     ],
   },
   {
     id: "cluster-2",
-    name: "Healthcare, Medicine & Biomedical Sciences",
-    code: "HEALTH_SCI",
-    hollandCode: "ISR",
-    description: "Clinical care, medical diagnostics, biomedical research, pharmacology, surgery, and public health systems.",
+    name: "Architecture & Construction",
+    code: "ARC_CON",
+    hollandCode: "RIC",
+    description: "Designing, planning, managing, building, and maintaining structural frameworks, civil works, and architectural spaces.",
     weights: [
-      { facet: "I", weight: 5 },
-      { facet: "S", weight: 5 },
-      { facet: "R", weight: 4 },
-      { facet: "C", weight: 4 },
-      { facet: "E", weight: 3 },
-      { facet: "A", weight: 2 },
-      { facet: "Log", weight: 5 },
-      { facet: "Num", weight: 4 },
-      { facet: "Verb", weight: 4 },
-      { facet: "Mech", weight: 3 },
-      { facet: "Spat", weight: 3 },
-      { facet: "Voc", weight: 4 },
-      { facet: "Cn", weight: 5 },
-      { facet: "ES", weight: 5 },
-      { facet: "Ag", weight: 5 },
-      { facet: "O", weight: 4 },
-      { facet: "Ex", weight: 3 },
-      { facet: "ST", weight: 5 },
-      { facet: "CO", weight: 4 },
-      { facet: "SE", weight: 3 },
-      { facet: "OC", weight: 3 },
+      { facet: "R", weight: 3 }, { facet: "I", weight: 2 }, { facet: "A", weight: 2 }, { facet: "S", weight: 1 }, { facet: "E", weight: 1 }, { facet: "C", weight: 3 },
+      { facet: "O", weight: 2 }, { facet: "Cn", weight: 3 }, { facet: "Ex", weight: 1 }, { facet: "Ag", weight: 2 }, { facet: "ES", weight: 2 },
+      { facet: "OC", weight: 2 }, { facet: "SE", weight: 2 }, { facet: "CO", weight: 2 }, { facet: "ST", weight: 1 },
+      { facet: "Mech", weight: 3 }, { facet: "Log", weight: 3 }, { facet: "Verb", weight: 1 }, { facet: "Spat", weight: 3 }, { facet: "Num", weight: 3 }, { facet: "Voc", weight: 1 },
     ],
   },
   {
     id: "cluster-3",
-    name: "Digital Arts, UI/UX & Creative Media",
+    name: "Arts, Audio/Video & Communications",
     code: "ARTS_COMM",
     hollandCode: "AES",
-    description: "Visual design, user experience architecture, multimedia production, animation, advertising, and storytelling.",
+    description: "Visual design, multimedia production, performing arts, audio/video engineering, animation, and creative storytelling.",
     weights: [
-      { facet: "A", weight: 5 },
-      { facet: "E", weight: 4 },
-      { facet: "S", weight: 3 },
-      { facet: "I", weight: 3 },
-      { facet: "R", weight: 2 },
-      { facet: "C", weight: 2 },
-      { facet: "Spat", weight: 5 },
-      { facet: "Verb", weight: 4 },
-      { facet: "Log", weight: 3 },
-      { facet: "Voc", weight: 4 },
-      { facet: "Num", weight: 2 },
-      { facet: "Mech", weight: 1 },
-      { facet: "O", weight: 5 },
-      { facet: "Ex", weight: 4 },
-      { facet: "Cn", weight: 3 },
-      { facet: "Ag", weight: 4 },
-      { facet: "ES", weight: 3 },
-      { facet: "OC", weight: 5 },
-      { facet: "SE", weight: 4 },
-      { facet: "ST", weight: 3 },
-      { facet: "CO", weight: 2 },
+      { facet: "R", weight: 1 }, { facet: "I", weight: 2 }, { facet: "A", weight: 3 }, { facet: "S", weight: 2 }, { facet: "E", weight: 2 }, { facet: "C", weight: 1 },
+      { facet: "O", weight: 3 }, { facet: "Cn", weight: 2 }, { facet: "Ex", weight: 2 }, { facet: "Ag", weight: 2 }, { facet: "ES", weight: 2 },
+      { facet: "OC", weight: 3 }, { facet: "SE", weight: 2 }, { facet: "CO", weight: 1 }, { facet: "ST", weight: 2 },
+      { facet: "Mech", weight: 1 }, { facet: "Log", weight: 2 }, { facet: "Verb", weight: 3 }, { facet: "Spat", weight: 3 }, { facet: "Num", weight: 1 }, { facet: "Voc", weight: 3 },
     ],
   },
   {
     id: "cluster-4",
-    name: "Business Strategy, Finance & Entrepreneurship",
-    code: "BUS_FIN",
+    name: "Business Management & Administration",
+    code: "BUS_MGMT",
     hollandCode: "ECS",
-    description: "Corporate management, venture creation, investment banking, market analytics, and strategic operations.",
+    description: "Corporate leadership, strategic operations, personnel management, project leadership, and organizational administration.",
     weights: [
-      { facet: "E", weight: 5 },
-      { facet: "C", weight: 5 },
-      { facet: "S", weight: 4 },
-      { facet: "I", weight: 4 },
-      { facet: "A", weight: 2 },
-      { facet: "R", weight: 1 },
-      { facet: "Num", weight: 5 },
-      { facet: "Log", weight: 5 },
-      { facet: "Verb", weight: 4 },
-      { facet: "Voc", weight: 4 },
-      { facet: "Spat", weight: 2 },
-      { facet: "Mech", weight: 1 },
-      { facet: "Ex", weight: 5 },
-      { facet: "Cn", weight: 5 },
-      { facet: "ES", weight: 4 },
-      { facet: "O", weight: 4 },
-      { facet: "Ag", weight: 3 },
-      { facet: "SE", weight: 5 },
-      { facet: "OC", weight: 4 },
-      { facet: "CO", weight: 3 },
-      { facet: "ST", weight: 2 },
+      { facet: "R", weight: 1 }, { facet: "I", weight: 2 }, { facet: "A", weight: 1 }, { facet: "S", weight: 2 }, { facet: "E", weight: 3 }, { facet: "C", weight: 3 },
+      { facet: "O", weight: 2 }, { facet: "Cn", weight: 3 }, { facet: "Ex", weight: 3 }, { facet: "Ag", weight: 2 }, { facet: "ES", weight: 3 },
+      { facet: "OC", weight: 2 }, { facet: "SE", weight: 3 }, { facet: "CO", weight: 2 }, { facet: "ST", weight: 1 },
+      { facet: "Mech", weight: 1 }, { facet: "Log", weight: 3 }, { facet: "Verb", weight: 3 }, { facet: "Spat", weight: 1 }, { facet: "Num", weight: 3 }, { facet: "Voc", weight: 3 },
+    ],
+  },
+  {
+    id: "cluster-5",
+    name: "Education & Training",
+    code: "EDU_TRN",
+    hollandCode: "SAE",
+    description: "Instruction, academic curriculum design, educational leadership, instructional technology, and vocational training.",
+    weights: [
+      { facet: "R", weight: 1 }, { facet: "I", weight: 2 }, { facet: "A", weight: 2 }, { facet: "S", weight: 3 }, { facet: "E", weight: 2 }, { facet: "C", weight: 2 },
+      { facet: "O", weight: 3 }, { facet: "Cn", weight: 3 }, { facet: "Ex", weight: 3 }, { facet: "Ag", weight: 3 }, { facet: "ES", weight: 3 },
+      { facet: "OC", weight: 2 }, { facet: "SE", weight: 1 }, { facet: "CO", weight: 2 }, { facet: "ST", weight: 3 },
+      { facet: "Mech", weight: 1 }, { facet: "Log", weight: 2 }, { facet: "Verb", weight: 3 }, { facet: "Spat", weight: 1 }, { facet: "Num", weight: 2 }, { facet: "Voc", weight: 3 },
+    ],
+  },
+  {
+    id: "cluster-6",
+    name: "Finance, Investment & Banking",
+    code: "FIN_BNK",
+    hollandCode: "CEI",
+    description: "Financial modeling, commercial banking, investment securities, wealth advisory, auditing, and corporate accounting.",
+    weights: [
+      { facet: "R", weight: 1 }, { facet: "I", weight: 3 }, { facet: "A", weight: 1 }, { facet: "S", weight: 1 }, { facet: "E", weight: 2 }, { facet: "C", weight: 3 },
+      { facet: "O", weight: 2 }, { facet: "Cn", weight: 3 }, { facet: "Ex", weight: 2 }, { facet: "Ag", weight: 2 }, { facet: "ES", weight: 3 },
+      { facet: "OC", weight: 2 }, { facet: "SE", weight: 3 }, { facet: "CO", weight: 3 }, { facet: "ST", weight: 1 },
+      { facet: "Mech", weight: 1 }, { facet: "Log", weight: 3 }, { facet: "Verb", weight: 2 }, { facet: "Spat", weight: 1 }, { facet: "Num", weight: 3 }, { facet: "Voc", weight: 2 },
+    ],
+  },
+  {
+    id: "cluster-7",
+    name: "Government & Public Administration",
+    code: "GOV_PUB",
+    hollandCode: "CES",
+    description: "Public policy analysis, civil governance, urban planning, diplomatic affairs, revenue management, and public administration.",
+    weights: [
+      { facet: "R", weight: 1 }, { facet: "I", weight: 2 }, { facet: "A", weight: 1 }, { facet: "S", weight: 2 }, { facet: "E", weight: 2 }, { facet: "C", weight: 3 },
+      { facet: "O", weight: 2 }, { facet: "Cn", weight: 3 }, { facet: "Ex", weight: 2 }, { facet: "Ag", weight: 3 }, { facet: "ES", weight: 3 },
+      { facet: "OC", weight: 1 }, { facet: "SE", weight: 2 }, { facet: "CO", weight: 3 }, { facet: "ST", weight: 3 },
+      { facet: "Mech", weight: 1 }, { facet: "Log", weight: 3 }, { facet: "Verb", weight: 3 }, { facet: "Spat", weight: 1 }, { facet: "Num", weight: 2 }, { facet: "Voc", weight: 3 },
+    ],
+  },
+  {
+    id: "cluster-8",
+    name: "Health Science & Clinical Care",
+    code: "HLT_SCI",
+    hollandCode: "ISR",
+    description: "Medical practice, clinical diagnostics, therapeutics, nursing, pharmacology, surgical assistance, and biotechnology.",
+    weights: [
+      { facet: "R", weight: 2 }, { facet: "I", weight: 3 }, { facet: "A", weight: 1 }, { facet: "S", weight: 3 }, { facet: "E", weight: 1 }, { facet: "C", weight: 2 },
+      { facet: "O", weight: 2 }, { facet: "Cn", weight: 3 }, { facet: "Ex", weight: 2 }, { facet: "Ag", weight: 3 }, { facet: "ES", weight: 3 },
+      { facet: "OC", weight: 2 }, { facet: "SE", weight: 2 }, { facet: "CO", weight: 2 }, { facet: "ST", weight: 3 },
+      { facet: "Mech", weight: 2 }, { facet: "Log", weight: 3 }, { facet: "Verb", weight: 2 }, { facet: "Spat", weight: 2 }, { facet: "Num", weight: 2 }, { facet: "Voc", weight: 3 },
+    ],
+  },
+  {
+    id: "cluster-9",
+    name: "Hospitality & Tourism",
+    code: "HSP_TRM",
+    hollandCode: "ESR",
+    description: "Hotel and resort operations, culinary arts, travel experience design, guest relations, and international tourism.",
+    weights: [
+      { facet: "R", weight: 2 }, { facet: "I", weight: 1 }, { facet: "A", weight: 2 }, { facet: "S", weight: 3 }, { facet: "E", weight: 3 }, { facet: "C", weight: 2 },
+      { facet: "O", weight: 2 }, { facet: "Cn", weight: 2 }, { facet: "Ex", weight: 3 }, { facet: "Ag", weight: 3 }, { facet: "ES", weight: 2 },
+      { facet: "OC", weight: 3 }, { facet: "SE", weight: 2 }, { facet: "CO", weight: 1 }, { facet: "ST", weight: 2 },
+      { facet: "Mech", weight: 1 }, { facet: "Log", weight: 1 }, { facet: "Verb", weight: 2 }, { facet: "Spat", weight: 1 }, { facet: "Num", weight: 2 }, { facet: "Voc", weight: 2 },
+    ],
+  },
+  {
+    id: "cluster-10",
+    name: "Human Services & Counseling",
+    code: "HUM_SRV",
+    hollandCode: "SEC",
+    description: "Clinical psychotherapy, family social work, rehabilitation, child development, and community welfare counseling.",
+    weights: [
+      { facet: "R", weight: 1 }, { facet: "I", weight: 2 }, { facet: "A", weight: 2 }, { facet: "S", weight: 3 }, { facet: "E", weight: 2 }, { facet: "C", weight: 2 },
+      { facet: "O", weight: 3 }, { facet: "Cn", weight: 3 }, { facet: "Ex", weight: 2 }, { facet: "Ag", weight: 3 }, { facet: "ES", weight: 3 },
+      { facet: "OC", weight: 2 }, { facet: "SE", weight: 1 }, { facet: "CO", weight: 2 }, { facet: "ST", weight: 3 },
+      { facet: "Mech", weight: 1 }, { facet: "Log", weight: 2 }, { facet: "Verb", weight: 3 }, { facet: "Spat", weight: 1 }, { facet: "Num", weight: 1 }, { facet: "Voc", weight: 3 },
+    ],
+  },
+  {
+    id: "cluster-11",
+    name: "Information Technology & Computing",
+    code: "IT_COMP",
+    hollandCode: "ICR",
+    description: "Software engineering, cloud infrastructure, AI/ML models, cybersecurity systems, and distributed database networks.",
+    weights: [
+      { facet: "R", weight: 2 }, { facet: "I", weight: 3 }, { facet: "A", weight: 1 }, { facet: "S", weight: 1 }, { facet: "E", weight: 2 }, { facet: "C", weight: 3 },
+      { facet: "O", weight: 3 }, { facet: "Cn", weight: 3 }, { facet: "Ex", weight: 1 }, { facet: "Ag", weight: 2 }, { facet: "ES", weight: 2 },
+      { facet: "OC", weight: 3 }, { facet: "SE", weight: 2 }, { facet: "CO", weight: 2 }, { facet: "ST", weight: 1 },
+      { facet: "Mech", weight: 2 }, { facet: "Log", weight: 3 }, { facet: "Verb", weight: 2 }, { facet: "Spat", weight: 2 }, { facet: "Num", weight: 3 }, { facet: "Voc", weight: 2 },
+    ],
+  },
+  {
+    id: "cluster-12",
+    name: "Law, Public Safety & Security",
+    code: "LAW_SEC",
+    hollandCode: "ESC",
+    description: "Judicial litigation, law enforcement, corporate compliance, forensic investigation, and emergency emergency services.",
+    weights: [
+      { facet: "R", weight: 2 }, { facet: "I", weight: 2 }, { facet: "A", weight: 1 }, { facet: "S", weight: 2 }, { facet: "E", weight: 3 }, { facet: "C", weight: 3 },
+      { facet: "O", weight: 2 }, { facet: "Cn", weight: 3 }, { facet: "Ex", weight: 2 }, { facet: "Ag", weight: 2 }, { facet: "ES", weight: 3 },
+      { facet: "OC", weight: 1 }, { facet: "SE", weight: 3 }, { facet: "CO", weight: 3 }, { facet: "ST", weight: 2 },
+      { facet: "Mech", weight: 2 }, { facet: "Log", weight: 3 }, { facet: "Verb", weight: 3 }, { facet: "Spat", weight: 1 }, { facet: "Num", weight: 2 }, { facet: "Voc", weight: 3 },
+    ],
+  },
+  {
+    id: "cluster-13",
+    name: "Manufacturing & Industrial Production",
+    code: "MFG_PRD",
+    hollandCode: "RCI",
+    description: "Precision manufacturing, automated assembly, industrial quality assurance, robotics maintenance, and CNC tooling.",
+    weights: [
+      { facet: "R", weight: 3 }, { facet: "I", weight: 2 }, { facet: "A", weight: 1 }, { facet: "S", weight: 1 }, { facet: "E", weight: 1 }, { facet: "C", weight: 3 },
+      { facet: "O", weight: 1 }, { facet: "Cn", weight: 3 }, { facet: "Ex", weight: 1 }, { facet: "Ag", weight: 2 }, { facet: "ES", weight: 2 },
+      { facet: "OC", weight: 1 }, { facet: "SE", weight: 1 }, { facet: "CO", weight: 3 }, { facet: "ST", weight: 1 },
+      { facet: "Mech", weight: 3 }, { facet: "Log", weight: 3 }, { facet: "Verb", weight: 1 }, { facet: "Spat", weight: 3 }, { facet: "Num", weight: 2 }, { facet: "Voc", weight: 1 },
+    ],
+  },
+  {
+    id: "cluster-14",
+    name: "Marketing, Sales & Brand Strategy",
+    code: "MKT_SLS",
+    hollandCode: "EAS",
+    description: "Consumer behavior analytics, performance marketing, direct B2B sales, brand strategy, and media advertising.",
+    weights: [
+      { facet: "R", weight: 1 }, { facet: "I", weight: 2 }, { facet: "A", weight: 3 }, { facet: "S", weight: 2 }, { facet: "E", weight: 3 }, { facet: "C", weight: 2 },
+      { facet: "O", weight: 3 }, { facet: "Cn", weight: 2 }, { facet: "Ex", weight: 3 }, { facet: "Ag", weight: 2 }, { facet: "ES", weight: 2 },
+      { facet: "OC", weight: 3 }, { facet: "SE", weight: 3 }, { facet: "CO", weight: 1 }, { facet: "ST", weight: 1 },
+      { facet: "Mech", weight: 1 }, { facet: "Log", weight: 2 }, { facet: "Verb", weight: 3 }, { facet: "Spat", weight: 2 }, { facet: "Num", weight: 2 }, { facet: "Voc", weight: 3 },
+    ],
+  },
+  {
+    id: "cluster-15",
+    name: "Science, Technology, Engineering & Math",
+    code: "STEM_ENG",
+    hollandCode: "IRC",
+    description: "Scientific hypothesis testing, mechanical & electrical engineering, advanced algorithmic research, and applied physics.",
+    weights: [
+      { facet: "R", weight: 3 }, { facet: "I", weight: 3 }, { facet: "A", weight: 1 }, { facet: "S", weight: 1 }, { facet: "E", weight: 2 }, { facet: "C", weight: 3 },
+      { facet: "O", weight: 3 }, { facet: "Cn", weight: 3 }, { facet: "Ex", weight: 1 }, { facet: "Ag", weight: 2 }, { facet: "ES", weight: 3 },
+      { facet: "OC", weight: 3 }, { facet: "SE", weight: 2 }, { facet: "CO", weight: 2 }, { facet: "ST", weight: 2 },
+      { facet: "Mech", weight: 3 }, { facet: "Log", weight: 3 }, { facet: "Verb", weight: 2 }, { facet: "Spat", weight: 3 }, { facet: "Num", weight: 3 }, { facet: "Voc", weight: 2 },
+    ],
+  },
+  {
+    id: "cluster-16",
+    name: "Transportation, Distribution & Logistics",
+    code: "TRN_LOG",
+    hollandCode: "RCE",
+    description: "Global supply chain optimization, freight navigation, commercial transport dispatch, warehousing, and inventory fulfillment.",
+    weights: [
+      { facet: "R", weight: 3 }, { facet: "I", weight: 2 }, { facet: "A", weight: 1 }, { facet: "S", weight: 1 }, { facet: "E", weight: 2 }, { facet: "C", weight: 3 },
+      { facet: "O", weight: 1 }, { facet: "Cn", weight: 3 }, { facet: "Ex", weight: 2 }, { facet: "Ag", weight: 2 }, { facet: "ES", weight: 2 },
+      { facet: "OC", weight: 1 }, { facet: "SE", weight: 2 }, { facet: "CO", weight: 3 }, { facet: "ST", weight: 1 },
+      { facet: "Mech", weight: 3 }, { facet: "Log", weight: 2 }, { facet: "Verb", weight: 1 }, { facet: "Spat", weight: 3 }, { facet: "Num", weight: 2 }, { facet: "Voc", weight: 1 },
+    ],
+  },
+  {
+    id: "cluster-17",
+    name: "Environmental Sciences & Renewable Energy",
+    code: "ENV_ENG",
+    hollandCode: "IRS",
+    description: "Solar/wind power systems, environmental ecology, climate impact mitigation, ecological conservation, and clean tech innovation.",
+    weights: [
+      { facet: "R", weight: 3 }, { facet: "I", weight: 3 }, { facet: "A", weight: 1 }, { facet: "S", weight: 2 }, { facet: "E", weight: 1 }, { facet: "C", weight: 2 },
+      { facet: "O", weight: 3 }, { facet: "Cn", weight: 3 }, { facet: "Ex", weight: 1 }, { facet: "Ag", weight: 2 }, { facet: "ES", weight: 2 },
+      { facet: "OC", weight: 3 }, { facet: "SE", weight: 1 }, { facet: "CO", weight: 2 }, { facet: "ST", weight: 3 },
+      { facet: "Mech", weight: 3 }, { facet: "Log", weight: 3 }, { facet: "Verb", weight: 2 }, { facet: "Spat", weight: 2 }, { facet: "Num", weight: 2 }, { facet: "Voc", weight: 2 },
+    ],
+  },
+  {
+    id: "cluster-18",
+    name: "Media, Journalism & Digital Content",
+    code: "MED_JRN",
+    hollandCode: "ASE",
+    description: "Investigative reporting, digital news publishing, podcast production, broadcast communications, and media ethics.",
+    weights: [
+      { facet: "R", weight: 1 }, { facet: "I", weight: 3 }, { facet: "A", weight: 3 }, { facet: "S", weight: 2 }, { facet: "E", weight: 2 }, { facet: "C", weight: 1 },
+      { facet: "O", weight: 3 }, { facet: "Cn", weight: 2 }, { facet: "Ex", weight: 3 }, { facet: "Ag", weight: 2 }, { facet: "ES", weight: 2 },
+      { facet: "OC", weight: 3 }, { facet: "SE", weight: 2 }, { facet: "CO", weight: 1 }, { facet: "ST", weight: 3 },
+      { facet: "Mech", weight: 1 }, { facet: "Log", weight: 2 }, { facet: "Verb", weight: 3 }, { facet: "Spat", weight: 2 }, { facet: "Num", weight: 1 }, { facet: "Voc", weight: 3 },
     ],
   },
 ];
