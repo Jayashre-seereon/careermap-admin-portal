@@ -31,12 +31,14 @@ import {
   SearchOutlined,
   SlidersOutlined,
   SwapOutlined,
+  ThunderboltFilled,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import {
   createAssessment,
   deleteAssessment,
   getAssessments,
+  seedDefaultQuestions,
   updateAssessment,
   updateAssessmentStatus,
   getApiErrorMessage,
@@ -69,6 +71,7 @@ export default function AssessmentPage() {
   const [currentRecord, setCurrentRecord] = useState(null);
   const [autoSlug, setAutoSlug] = useState(true);
   const [statusUpdatingId, setStatusUpdatingId] = useState(null);
+  const [seedingQuestions, setSeedingQuestions] = useState(false);
 
   // Load Assessments
   const loadAssessments = async () => {
@@ -90,6 +93,23 @@ export default function AssessmentPage() {
       setAssessments(INITIAL_ASSESSMENTS);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Seed Default 163 Questions Handler
+  const handleSeedQuestions = async () => {
+    try {
+      setSeedingQuestions(true);
+      await seedDefaultQuestions();
+      messageApi.success("163 default questions across 6 sections seeded successfully!");
+      await loadAssessments();
+    } catch (err) {
+      console.warn("Seed default questions error:", err);
+      messageApi.error(
+        getApiErrorMessage(err, "Failed to seed default questions.")
+      );
+    } finally {
+      setSeedingQuestions(false);
     }
   };
 
@@ -467,7 +487,27 @@ export default function AssessmentPage() {
             Configure multi-domain psychometric instruments, RIASEC profiles, and scoring rubrics.
           </p>
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Seed Default 163 Questions */}
+          <Popconfirm
+            title="Load Default 163 Questions?"
+            description="This will seed/sync the standard 163 questions across all 6 sections (Interest, Personality, Learning Styles, Values, Goal Orientation, and Aptitude). Proceed?"
+            okText="Yes, Load 163 Questions"
+            cancelText="Cancel"
+            okButtonProps={{
+              style: { backgroundColor: "#9a2119", borderColor: "#9a2119" },
+            }}
+            onConfirm={handleSeedQuestions}
+          >
+            <Button
+              icon={<ThunderboltFilled className="text-amber-500" />}
+              loading={seedingQuestions}
+              className="border-amber-300 bg-amber-50/50 text-amber-950 hover:bg-amber-100 font-semibold shadow-sm"
+            >
+              ⚡ Load Default 163 Questions
+            </Button>
+          </Popconfirm>
+
           <Button
             onClick={() => loadAssessments()}
             icon={<ReloadOutlined />}

@@ -34,6 +34,7 @@ import {
   QuestionCircleOutlined,
   ReloadOutlined,
   SearchOutlined,
+  ThunderboltFilled,
 } from "@ant-design/icons";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
@@ -42,6 +43,7 @@ import {
   getAllQuestions,
   getAssessments,
   getSections,
+  seedDefaultQuestions,
   updateQuestion,
   getApiErrorMessage,
 } from "../../api/psychometricAssessmentApi";
@@ -81,6 +83,7 @@ export default function QuestionBankPage() {
   const [sections, setSections] = useState([]);
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [seeding, setSeeding] = useState(false);
 
   // Filters
   const [selectedAssessmentId, setSelectedAssessmentId] = useState(
@@ -213,6 +216,28 @@ export default function QuestionBankPage() {
       setQuestions(extracted.length > 0 ? extracted : INITIAL_QUESTIONS);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Seed Default 163 Questions Handler
+  const handleSeedDefaults = async () => {
+    try {
+      setSeeding(true);
+      const payload =
+        selectedAssessmentId && selectedAssessmentId !== "all"
+          ? { assessmentId: selectedAssessmentId }
+          : {};
+      await seedDefaultQuestions(payload);
+      messageApi.success("163 default questions across 6 sections seeded successfully!");
+      const meta = await loadMetadata();
+      await loadQuestions(meta.sections);
+    } catch (err) {
+      console.warn("Seed default questions error:", err);
+      messageApi.error(
+        getApiErrorMessage(err, "Failed to seed default questions.")
+      );
+    } finally {
+      setSeeding(false);
     }
   };
 
@@ -782,7 +807,27 @@ export default function QuestionBankPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Seed Default 163 Questions */}
+          <Popconfirm
+            title="Load Default 163 Questions?"
+            description="This will seed/sync the standard 163 questions across all 6 sections (Interest, Personality, Learning Styles, Values, Goal Orientation, and Aptitude). Proceed?"
+            okText="Yes, Load 163 Questions"
+            cancelText="Cancel"
+            okButtonProps={{
+              style: { backgroundColor: "#9a2119", borderColor: "#9a2119" },
+            }}
+            onConfirm={handleSeedDefaults}
+          >
+            <Button
+              icon={<ThunderboltFilled className="text-amber-500" />}
+              loading={seeding}
+              className="border-amber-300 bg-amber-50/50 text-amber-950 hover:bg-amber-100 font-semibold shadow-sm"
+            >
+              ⚡ Load Default 163 Questions
+            </Button>
+          </Popconfirm>
+
           <Button
             onClick={() => loadQuestions()}
             icon={<ReloadOutlined />}

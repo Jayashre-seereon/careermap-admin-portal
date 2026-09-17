@@ -137,6 +137,15 @@ export const getQuestionsByAssessment = async (assessmentId) => {
   }
 };
 
+export const seedDefaultQuestions = async (payload = {}) => {
+  const body =
+    typeof payload === "number" || typeof payload === "string"
+      ? { assessmentId: payload }
+      : payload;
+  const res = await api.post(`${BASE_PREFIX}/admin/questions/seed-defaults`, body);
+  return res.data;
+};
+
 export const createQuestion = async (sectionId, payload) => {
   try {
     const res = await api.post(
