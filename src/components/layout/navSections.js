@@ -23,7 +23,10 @@ import {
   Users,
   Video,
   Key,
-  Globe
+  Globe,
+  LayoutList,
+  Network,
+
 
 } from "lucide-react";
 
@@ -245,48 +248,51 @@ export const navSections = [
     ],
   },
 
-  {
-    label: "PSYCHOMETRIC",
-    items: [
-      {
-        icon: Briefcase,
-        name: "Psychometric Assessments",
-        module: "Assessment",
-        children: [
-          {
-            name: "Assessments",
-            path: "/admin/psychometric-assessments",
-          },
-          {
-            name: "Sections",
-            path: "/admin/psychometric-sections",
-          },
-          {
-            name: "Questions",
-            path: "/admin/psychometric-questions",
-          },
-          {
-            name: "Career Clusters",
-            path: "/admin/psychometric-career-clusters",
-          },
-          {
-            name: "Student Attempts",
-            path: "/admin/psychometric-attempts",
-          },
-        ],
-      },
-      {
-        icon: Layers,
-        name: "Domains",
-        path: "/domains",
-        module: "Domains",
-      },
-      {
-        icon: MapPin,
-        name: "Career Paths",
-        path: "/career-paths",
-        module: "Career Paths",
-      },
-    ],
-  },
+ {
+  label: "PSYCHOMETRIC",
+  items: [
+    {
+      icon: ClipboardList,
+      name: "Assessments",
+      path: "/admin/psychometric-assessments",
+      module: "Assessment",
+    },
+    {
+      icon: LayoutList,
+      name: "Sections",
+      path: "/admin/psychometric-sections",
+      module: "Sections",
+    },
+    {
+      icon: HelpCircle,
+      name: "Questions",
+      path: "/admin/psychometric-questions",
+      module: "Questions",
+    },
+    {
+      icon: Network,
+      name: "Career Clusters",
+      path: "/admin/psychometric-career-clusters",
+      module: "Career Clusters",
+    },
+    {
+      icon: Users,
+      name: "Student Attempts",
+      path: "/admin/psychometric-attempts",
+      module: "Student Attempts",
+    },
+    // {
+    //   icon: Layers,
+    //   name: "Domains",
+    //   path: "/domains",
+    //   module: "Domains",
+    // },
+    // {
+    //   icon: MapPin,
+    //   name: "Career Paths",
+    //   path: "/career-paths",
+    //   module: "Career Paths",
+    // },
+  ],
+},
 ];

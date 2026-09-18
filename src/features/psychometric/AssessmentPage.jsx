@@ -308,26 +308,27 @@ export default function AssessmentPage() {
       title: <span className="text-[#9a2119] font-semibold">Assessment Title</span>,
       dataIndex: "title",
       key: "title",
-      render: (text, record) => (
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-gray-900 hover:text-[#9a2119] cursor-pointer"
-                  onClick={() => handleOpenView(record)}>
-              {text}
-            </span>
-            <Tag color="geekblue" className="text-xs font-mono font-semibold">
-              v{record.version || "1.0"}
-            </Tag>
-          </div>
-          <div className="text-xs text-gray-400 font-mono">/{record.slug}</div>
-          {record.description && (
-            <p className="text-xs text-gray-500 line-clamp-1 max-w-md">
-              {record.description}
-            </p>
-          )}
+      render: (title, record) => (
+        <div className="flex flex-col">
+          <span className="font-semibold text-gray-800">{title}</span>  
         </div>
       ),
     },
+    {
+      title: <span className="text-[#9a2119] font-semibold">Slug</span>,
+      dataIndex: "slug",
+      key: "slug",    
+
+    } ,
+   {
+  title: <span className="text-[#9a2119] font-semibold">Description</span>,
+  dataIndex: "description",
+  key: "description",
+  render: (text) =>
+    text && text.length > 50
+      ? `${text.substring(0, 50)}...`
+      : text,
+},
     {
       title: <span className="text-[#9a2119] font-semibold">Status</span>,
       dataIndex: "status",
@@ -370,61 +371,20 @@ export default function AssessmentPage() {
         );
       },
     },
+   
+   
     {
-      title: <span className="text-[#9a2119] font-semibold">Sections</span>,
-      key: "sections",
-      width: 110,
-      render: (_, record) => (
-        <Button
-          size="small"
-          onClick={() => navigate(`/admin/psychometric-assessments/${record.id}/sections`)}
-          className="flex items-center gap-1 text-xs font-medium border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
-        >
-          <FolderOpenOutlined />
-          <span>{record.sectionCount ?? 0} Sections</span>
-        </Button>
-      ),
-    },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Questions</span>,
-      key: "questions",
-      width: 120,
-      render: (_, record) => (
-        <Button
-          size="small"
-          onClick={() => navigate(`/admin/psychometric-assessments/${record.id}/questions`)}
-          className="flex items-center gap-1 text-xs font-medium border-rose-200 bg-rose-50 text-[#9a2119] hover:bg-rose-100"
-        >
-          <QuestionCircleOutlined />
-          <span>{record.questionCount ?? 0} Items</span>
-        </Button>
-      ),
-    },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Attempts</span>,
-      dataIndex: "attemptCount",
-      key: "attemptCount",
+      title: <span className="text-[#9a2119] font-semibold">Version</span>,
+      dataIndex: "version",
+      key: "version",
       width: 95,
-      render: (count, record) => (
-        <span
-          onClick={() => navigate(`/admin/psychometric-attempts?assessmentId=${record.id}`)}
-          className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-[#9a2119] hover:text-white cursor-pointer transition"
-        >
-          {count || 0}
-        </span>
+      render: ( record) => (
+         <Tag color="geekblue" className="text-xs font-mono font-semibold">
+              v{record.version || "1.0"}
+            </Tag>
       ),
     },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Created</span>,
-      dataIndex: "createdAt",
-      key: "createdAt",
-      width: 110,
-      render: (date) => (
-        <span className="text-xs text-gray-500">
-          {date ? new Date(date).toLocaleDateString() : "-"}
-        </span>
-      ),
-    },
+   
     {
       title: <span className="text-[#9a2119] font-semibold">Actions</span>,
       key: "actions",
@@ -438,7 +398,7 @@ export default function AssessmentPage() {
               size="small"
               icon={<EyeOutlined />}
               onClick={() => handleOpenView(record)}
-              className="text-gray-600 hover:text-[#9a2119] hover:bg-rose-50"
+              className="text-[#9a2119] hover:bg-rose-50"
             />
           </Tooltip>
           <Tooltip title="Edit Assessment">
@@ -481,118 +441,91 @@ export default function AssessmentPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#9a2119] tracking-tight">
-            Psychometric Assessments Management
+            Assessments Management
           </h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Configure multi-domain psychometric instruments, RIASEC profiles, and scoring rubrics.
-          </p>
+         
         </div>
-        <div className="flex items-center gap-2.5 flex-wrap">
-          {/* Seed Default 163 Questions */}
-          <Popconfirm
-            title="Load Default 163 Questions?"
-            description="This will seed/sync the standard 163 questions across all 6 sections (Interest, Personality, Learning Styles, Values, Goal Orientation, and Aptitude). Proceed?"
-            okText="Yes, Load 163 Questions"
-            cancelText="Cancel"
-            okButtonProps={{
-              style: { backgroundColor: "#9a2119", borderColor: "#9a2119" },
-            }}
-            onConfirm={handleSeedQuestions}
-          >
-            <Button
-              icon={<ThunderboltFilled className="text-amber-500" />}
-              loading={seedingQuestions}
-              className="border-amber-300 bg-amber-50/50 text-amber-950 hover:bg-amber-100 font-semibold shadow-sm"
-            >
-              ⚡ Load Default 163 Questions
-            </Button>
-          </Popconfirm>
-
-          <Button
-            onClick={() => loadAssessments()}
-            icon={<ReloadOutlined />}
-            className="border-gray-300 text-gray-700 hover:border-[#9a2119] hover:text-[#9a2119]"
-          >
-            Refresh
-          </Button>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleOpenAdd}
-            style={{ backgroundColor: "#9a2119", borderColor: "#9a2119" }}
-            className="shadow-sm font-semibold"
-          >
-            Create Assessment
-          </Button>
-        </div>
+      
       </div>
 
-      {/* Metric KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Tests</div>
-          <div className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</div>
-        </div>
-        <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-4 shadow-sm">
-          <div className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Published</div>
-          <div className="text-2xl font-bold text-emerald-800 mt-1">{stats.published}</div>
-        </div>
-        <div className="rounded-xl border border-amber-100 bg-amber-50/50 p-4 shadow-sm">
-          <div className="text-xs font-semibold text-amber-700 uppercase tracking-wider">Drafts</div>
-          <div className="text-2xl font-bold text-amber-800 mt-1">{stats.draft}</div>
-        </div>
-        <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-4 shadow-sm">
-          <div className="text-xs font-semibold text-blue-700 uppercase tracking-wider">Total Items</div>
-          <div className="text-2xl font-bold text-blue-800 mt-1">{stats.totalQuestions}</div>
-        </div>
-        <div className="rounded-xl border border-rose-100 bg-rose-50/50 p-4 shadow-sm col-span-2 sm:col-span-1">
-          <div className="text-xs font-semibold text-[#9a2119] uppercase tracking-wider">Test Attempts</div>
-          <div className="text-2xl font-bold text-[#9a2119] mt-1">{stats.totalAttempts}</div>
-        </div>
-      </div>
+     
 
       {/* Main Table Card */}
       <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm space-y-4">
-        {/* Filters and Search Bar */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-gray-100 pb-4">
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-hide">
-            {[
-              { key: "all", label: "All Tests" },
-              { key: "published", label: "Published" },
-              { key: "draft", label: "Drafts" },
-              { key: "archived", label: "Archived" },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setStatusFilter(tab.key)}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
-                  statusFilter === tab.key
-                    ? "bg-[#9a2119] text-white shadow-sm"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+      
+       {/* Header / Search / Actions */}
+<div className="flex flex-col md:flex-row md:items-center justify-between ">
 
-          <div className="flex items-center gap-2.5">
-            <Input
-              placeholder="Search assessment name, slug..."
-              prefix={<SearchOutlined className="text-[#9a2119]" />}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              allowClear
-              className="h-9 w-full sm:w-72 rounded-lg border-gray-300 hover:border-[#9a2119] focus:border-[#9a2119]"
-            />
-            {search && (
-              <Button onClick={() => setSearch("")} size="middle" className="text-xs">
-                Clear
-              </Button>
-            )}
-          </div>
-        </div>
+  {/* Title */}
+  <h2 className="text-xl font-semibold text-[#9a2119]">
+    Assessments
+  </h2>
+
+  {/* Search + Buttons */}
+  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+
+    {/* Search */}
+    <Input
+      placeholder="Search assessment name, slug..."
+      prefix={
+        <SearchOutlined className="text-[#9a2119]" />
+      }
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+      allowClear
+      className="
+        h-8
+        w-full
+        sm:w-64
+        rounded-md
+        border-[#9a2119]
+        hover:border-[#9a2119]
+        focus:border-[#9a2119]
+      "
+    />
+
+    {/* Reset */}
+    <Button
+      onClick={() => {
+        setSearch("");
+        loadAssessments();
+      }}
+      icon={<ReloadOutlined />}
+      className="
+        h-8
+        px-6
+        rounded-md
+        border-[#9a2119]
+        bg-[#9a2119]
+        text-white
+        hover:!bg-[#9a2119]
+        hover:!text-white
+      "
+    >
+      Reset
+    </Button>
+
+    {/* Add Assessment */}
+    <Button
+      type="primary"
+      icon={<PlusOutlined />}
+      onClick={handleOpenAdd}
+      className="
+        h-8
+        px-6
+        rounded-md
+        font-semibold
+        shadow-sm
+        bg-[#9a2119]
+        hover:!bg-[#9a2119]
+        border-[#9a2119]
+      "
+    >
+      Add Assessment
+    </Button>
+
+  </div>
+</div>
 
         {/* Table */}
         <Table
@@ -659,7 +592,7 @@ export default function AssessmentPage() {
               placeholder="e.g. Comprehensive Career Compass 2026"
               onChange={handleTitleChange}
               size="large"
-              className="rounded-lg"
+              className="rounded-md"
             />
           </Form.Item>
 
@@ -686,7 +619,7 @@ export default function AssessmentPage() {
               <Input
                 placeholder="e.g. career-compass-2026"
                 addonBefore="/"
-                className="rounded-lg"
+                className="rounded-md"
               />
             </Form.Item>
 
@@ -695,7 +628,7 @@ export default function AssessmentPage() {
               label={<span className="font-semibold text-gray-700">Version</span>}
               rules={[validationRules.required("Version")]}
             >
-              <Input placeholder="1.0" className="rounded-lg" />
+              <Input placeholder="1.0" className="rounded-md" />
             </Form.Item>
           </div>
 
@@ -704,7 +637,7 @@ export default function AssessmentPage() {
             label={<span className="font-semibold text-gray-700">Publication Status</span>}
             rules={[validationRules.required("Status")]}
           >
-            <Select size="large" className="rounded-lg">
+            <Select size="large" className="rounded-md">
               <Option value="draft">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-amber-500" />
