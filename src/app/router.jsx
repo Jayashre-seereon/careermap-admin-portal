@@ -549,7 +549,7 @@ export const router = createBrowserRouter([
             path: "students",
             element: (
               <PermissionRoute module="Students">
-                <StudentAttemptsPage />
+                <Student />
               </PermissionRoute>
             ),
           },
