@@ -508,35 +508,7 @@ export default function CareerClusterPage() {
           <span className="text-xs text-gray-400 italic">Not Specified</span>
         ),
     },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Configured Weights</span>,
-      key: "weightsConfig",
-      width: 190,
-      render: (_, record) => {
-        const weightsMap = extractWeightsMap(record);
-        const configuredCount = Object.values(weightsMap).filter((w) => w > 0).length;
-        const totalFacets = CAREER_CLUSTER_FACETS_LIST.length;
-
-        return (
-          <Button
-            size="small"
-            icon={<SlidersOutlined />}
-            onClick={() => handleOpenWeights(record)}
-            className={`flex items-center gap-1.5 text-xs font-semibold rounded-lg transition ${
-              configuredCount > 0
-                ? "border-emerald-300 bg-emerald-50/70 text-emerald-800 hover:bg-emerald-100"
-                : "border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100"
-            }`}
-          >
-            <span>
-              {configuredCount > 0
-                ? `${configuredCount} / ${totalFacets} Weights Active`
-                : "Calibrate Weights"}
-            </span>
-          </Button>
-        );
-      },
-    },
+   
     {
       title: <span className="text-[#9a2119] font-semibold">Actions</span>,
       key: "actions",
@@ -550,7 +522,7 @@ export default function CareerClusterPage() {
               size="small"
               icon={<EyeOutlined />}
               onClick={() => handleOpenWeights(record)}
-              className="text-gray-600 hover:text-[#9a2119] hover:bg-rose-50"
+              className="text-[#9a2119] hover:bg-rose-50"
             />
           </Tooltip>
           <Tooltip title="Edit Cluster">
@@ -595,9 +567,7 @@ export default function CareerClusterPage() {
           <h1 className="text-2xl font-bold text-[#9a2119] tracking-tight">
             Career Clusters Management
           </h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Manage career cluster benchmarks, Holland mapping, and scoring weights.
-          </p>
+         
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
@@ -621,43 +591,50 @@ export default function CareerClusterPage() {
             </Button>
           </Popconfirm>
 
-          <Button
-            onClick={() => loadClusters()}
-            icon={<ReloadOutlined />}
-            className="border-gray-300 text-gray-700 hover:border-[#9a2119] hover:text-[#9a2119]"
-          >
-            Refresh
-          </Button>
-
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleOpenAdd}
-            style={{ backgroundColor: "#9a2119", borderColor: "#9a2119" }}
-            className="shadow-sm font-semibold"
-          >
-            + Add Career Cluster
-          </Button>
+        
         </div>
       </div>
 
       {/* Main Table Card */}
       <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
-          <div className="text-xs text-gray-500">
-            Total Career Clusters:{" "}
-            <strong className="text-gray-900">{filteredClusters.length}</strong>
-          </div>
+  {/* Left: Count */}
+   <h2 className="text-xl font-semibold text-[#9a2119]">
+    Career Clusters
+  </h2>
 
-          <Input
-            placeholder="Search cluster name, code (e.g. AGR, ITC), RIASEC..."
-            prefix={<SearchOutlined className="text-[#9a2119]" />}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            allowClear
-            className="h-9 w-full sm:w-80 rounded-lg border-gray-300 hover:border-[#9a2119]"
-          />
-        </div>
+
+  {/* Right: Search + Refresh + Add, grouped */}
+  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+    <Input
+      placeholder="Search cluster name, code (e.g. AGR, ITC), RIASEC..."
+      prefix={<SearchOutlined className="text-[#9a2119]" />}
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+      allowClear
+      className="h-8 w-full sm:w-80 rounded-lg border-[#9a2119] hover:border-[#7a1a14]"
+    />
+
+    <Button
+      onClick={() => loadClusters()}
+      icon={<ReloadOutlined />}
+      style={{ backgroundColor: "#9a2119", borderColor: "#9a2119", color: "#fff" }}
+      className="h-8 font-semibold shadow-sm"
+    >
+      Refresh
+    </Button>
+
+    <Button
+      type="primary"
+      icon={<PlusOutlined />}
+      onClick={handleOpenAdd}
+      style={{ backgroundColor: "#9a2119", borderColor: "#9a2119" }}
+      className="h-8 shadow-sm font-semibold"
+    >
+      Add Career Cluster
+    </Button>
+  </div>
+</div>
 
         <Table
           rowKey="id"

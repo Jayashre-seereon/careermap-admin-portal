@@ -362,20 +362,22 @@ export default function SectionPage() {
       dataIndex: "questionCount",
       key: "questionCount",
       width: 140,
-      render: (count, record) => (
-        <Button
-          size="small"
-          onClick={() =>
-            navigate(
-              `/admin/psychometric-assessments/${record.assessmentId || assessmentId || "assess-1"}/questions?sectionId=${record.id}`
-            )
-          }
-          className="flex items-center gap-1.5 text-xs font-semibold border-rose-200 bg-rose-50 text-[#9a2119] hover:bg-rose-100"
-        >
-          <QuestionCircleOutlined />
-          <span>{count || 0} Questions</span>
-        </Button>
-      ),
+     render: (count, record) => (
+  <Button
+    size="small"
+    onClick={() =>
+      navigate(
+        `/admin/psychometric-assessments/${
+          record.assessmentId || assessmentId || "assess-1"
+        }/questions?sectionId=${record.id}`
+      )
+    }
+    className="flex items-center gap-2 !px-3 !py-3 text-xs font-semibold border-rose-200 bg-rose-50 text-[#9a2119] hover:bg-rose-100 rounded-lg"
+  >
+    <QuestionCircleOutlined />
+    <span>{count || 0} Questions</span>
+  </Button>
+),
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Actions</span>,
@@ -390,7 +392,7 @@ export default function SectionPage() {
               size="small"
               icon={<EyeOutlined />}
               onClick={() => handleOpenView(record)}
-              className="text-gray-600 hover:text-[#9a2119] hover:bg-rose-50"
+              className="text-[#9a2119] hover:bg-rose-50"
             />
           </Tooltip>
           <Tooltip title="Edit Section">
@@ -446,20 +448,47 @@ export default function SectionPage() {
             )}
           </div>
           <h1 className="text-2xl font-bold text-[#9a2119] tracking-tight mt-1">
-            {currentAssessment ? `${currentAssessment.title} - Sections` : "Assessment Section Management"}
+            {currentAssessment ? `${currentAssessment.title} - Sections` : "Section Management"}
           </h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Organize domain sections, question ordering, and psychometric evaluation batteries.
-          </p>
+         
         </div>
 
-        <div className="flex items-center gap-2.5">
+       
+      </div>
+
+      {/* Main Table Card */}
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm space-y-4">
+        {/* Scope Selector and Search */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between  ">
+         
+
+          <div className="flex items-center gap-2.5">
+             <h2 className="text-xl font-semibold text-[#9a2119]">
+    Sections 
+  </h2>
+          </div>
+           <div className="flex items-center gap-2.5">
+             <Input
+              placeholder="Search section title, code..."
+              prefix={<SearchOutlined className="text-[#9a2119]" />}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              allowClear
+              
+              className="h-8 w-full sm:w-64 rounded-lg  border-[#9a2119]
+        hover:border-[#9a2119]
+        focus:border-[#9a2119] "
+            />
           <Button
             onClick={() => loadSections()}
             icon={<ReloadOutlined />}
-            className="border-gray-300 text-gray-700 hover:border-[#9a2119] hover:text-[#9a2119]"
+            className=" border-[#9a2119]
+        bg-[#9a2119]
+        text-white
+        hover:!bg-[#9a2119]
+        hover:!text-white"
           >
-            Refresh
+            Reset
           </Button>
           <Button
             type="primary"
@@ -471,47 +500,6 @@ export default function SectionPage() {
             Add Section
           </Button>
         </div>
-      </div>
-
-      {/* Main Table Card */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm space-y-4">
-        {/* Scope Selector and Search */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-gray-100 pb-4">
-          <div className="flex items-center gap-2 w-full md:w-auto">
-            <span className="text-xs font-semibold text-gray-500 whitespace-nowrap">
-              Filter by Assessment:
-            </span>
-            <Select
-              value={selectedAssessmentId}
-              onChange={(val) => {
-                setSelectedAssessmentId(val);
-                if (val !== "all") {
-                  navigate(`/admin/psychometric-assessments/${val}/sections`, { replace: true });
-                } else {
-                  navigate("/admin/psychometric-sections", { replace: true });
-                }
-              }}
-              className="w-full sm:w-80 rounded-lg"
-            >
-              <Option value="all">🌐 All Assessments (Global View)</Option>
-              {assessments.map((a) => (
-                <Option key={a.id} value={a.id}>
-                  {a.title}
-                </Option>
-              ))}
-            </Select>
-          </div>
-
-          <div className="flex items-center gap-2.5">
-            <Input
-              placeholder="Search section title, code..."
-              prefix={<SearchOutlined className="text-[#9a2119]" />}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              allowClear
-              className="h-9 w-full sm:w-64 rounded-lg border-gray-300 hover:border-[#9a2119]"
-            />
-          </div>
         </div>
 
         {/* Sections Table */}

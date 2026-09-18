@@ -738,7 +738,7 @@ export default function QuestionBankPage() {
               size="small"
               icon={<EyeOutlined />}
               onClick={() => handleOpenView(record)}
-              className="text-gray-600 hover:text-[#9a2119] hover:bg-rose-50"
+              className="text-[#9a2119] hover:bg-rose-50"
             />
           </Tooltip>
           <Tooltip title="Edit Question">
@@ -800,11 +800,9 @@ export default function QuestionBankPage() {
             )}
           </div>
           <h1 className="text-2xl font-bold text-[#9a2119] tracking-tight mt-1">
-            Psychometric Question Bank & Options Builder
+            Psychometric Question Bank & Options 
           </h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Configure dynamic Likert-5 rating prompts and timed aptitude MCQs linked directly to backend sections.
-          </p>
+         
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
@@ -828,28 +826,51 @@ export default function QuestionBankPage() {
             </Button>
           </Popconfirm>
 
-          <Button
-            onClick={() => loadQuestions()}
-            icon={<ReloadOutlined />}
-            className="border-gray-300 text-gray-700 hover:border-[#9a2119] hover:text-[#9a2119]"
-          >
-            Refresh
-          </Button>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleOpenAdd}
-            style={{ backgroundColor: "#9a2119", borderColor: "#9a2119" }}
-            className="shadow-sm font-semibold"
-          >
-            Add Question
-          </Button>
+         
         </div>
       </div>
 
       {/* Main Table Card */}
       <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm space-y-4">
         {/* Multi-Filters Bar */}
+         {/* Search & Counter Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between ">
+  {/* Left: Title */}
+  <h2 className="text-xl font-bold text-[#9a2119] m-0">
+    Questions
+  </h2>
+
+  {/* Right: Search + Reset + Add */}
+  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+    <Input
+      placeholder="Search section title, code..."
+      prefix={<SearchOutlined className="text-[#9a2119]" />}
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+      allowClear
+      className="h-8 w-full sm:w-72 rounded-lg border-[#9a2119] hover:border-[#7a1a14]"
+    />
+
+    <Button
+      onClick={() => loadQuestions()}
+      icon={<ReloadOutlined />}
+      style={{ backgroundColor: "#9a2119", borderColor: "#9a2119", color: "#fff" }}
+      className="h-8 font-semibold shadow-sm"
+    >
+      Reset
+    </Button>
+
+    <Button
+      type="primary"
+      icon={<PlusOutlined />}
+      onClick={handleOpenAdd}
+      style={{ backgroundColor: "#9a2119", borderColor: "#9a2119", color: "#fff" }}
+      className="h-8 shadow-sm font-semibold"
+    >
+      Add Question
+    </Button>
+  </div>
+</div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 border-b border-gray-100 pb-4">
           <div>
             <label className="text-xs font-semibold text-gray-500 mb-1 block">
@@ -920,20 +941,7 @@ export default function QuestionBankPage() {
           </div>
         </div>
 
-        {/* Search & Counter Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="text-xs text-gray-500">
-            Showing <strong className="text-gray-900">{filteredQuestions.length}</strong> items in bank
-          </div>
-          <Input
-            placeholder="Search prompt, item code (e.g. INT01, APT01)..."
-            prefix={<SearchOutlined className="text-[#9a2119]" />}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            allowClear
-            className="h-9 w-full sm:w-80 rounded-lg border-gray-300 hover:border-[#9a2119]"
-          />
-        </div>
+       
 
         {/* Table */}
         <Table
