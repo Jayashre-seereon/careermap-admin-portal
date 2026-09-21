@@ -28,12 +28,14 @@ import {
   ClockCircleOutlined,
   CloseCircleFilled,
   EyeOutlined,
+  FilePdfOutlined,
+  PrinterOutlined,
   ReloadOutlined,
   SearchOutlined,
   TrophyOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   ResponsiveContainer,
   RadarChart,
@@ -63,6 +65,7 @@ import { getSerialNumber } from "../../utils/slNo";
 const { Option } = Select;
 
 export default function StudentAttemptsPage() {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const queryAssessmentId = searchParams.get("assessmentId");
 
@@ -317,19 +320,31 @@ export default function StudentAttemptsPage() {
       ),
     },
     {
-      title: <span className="text-[#9a2119] font-semibold">Audit</span>,
+      title: <span className="text-[#9a2119] font-semibold">Actions</span>,
       key: "actions",
       fixed: "right",
-      width: 130,
+      width: 220,
       render: (_, record) => (
-        <Button
-          size="small"
-          icon={<AuditOutlined />}
-          onClick={() => handleOpenAudit(record)}
-          className="flex items-center gap-1 text-xs font-semibold border-rose-200 bg-rose-50 text-[#9a2119] hover:bg-rose-100"
-        >
-          View Audit
-        </Button>
+        <Space size="small">
+          <Button
+            size="small"
+            type="primary"
+            icon={<FilePdfOutlined />}
+            onClick={() => navigate(`/admin/psychometric-attempts/${record.id}/report`)}
+            style={{ backgroundColor: "#9a2119", borderColor: "#9a2119" }}
+            className="flex items-center gap-1 text-xs font-semibold text-white hover:bg-[#72120F]"
+          >
+            Report (31-Page)
+          </Button>
+          <Button
+            size="small"
+            icon={<AuditOutlined />}
+            onClick={() => handleOpenAudit(record)}
+            className="flex items-center gap-1 text-xs font-semibold border-rose-200 bg-rose-50 text-[#9a2119] hover:bg-rose-100"
+          >
+            Audit
+          </Button>
+        </Space>
       ),
     },
   ];
@@ -432,16 +447,24 @@ export default function StudentAttemptsPage() {
               </div>
             </div>
 
-            <Button
-              type="primary"
-              icon={<CalculatorOutlined />}
-              loading={recalculating}
-              onClick={handleRecalculate}
-              style={{ backgroundColor: "#9a2119", borderColor: "#9a2119" }}
-              className="font-semibold"
-            >
-              Recalculate Scores
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                type="primary"
+                icon={<FilePdfOutlined />}
+                onClick={() => navigate(`/admin/psychometric-attempts/${selectedAttempt?.id}/report`)}
+                className="font-semibold bg-[#8C1814] border-[#8C1814] hover:bg-[#72120F]"
+              >
+                View 31-Page Report
+              </Button>
+              <Button
+                icon={<CalculatorOutlined />}
+                loading={recalculating}
+                onClick={handleRecalculate}
+                className="font-semibold border-rose-300 text-[#9a2119] hover:bg-rose-50"
+              >
+                Recalculate Scores
+              </Button>
+            </div>
           </div>
         }
         width={860}
