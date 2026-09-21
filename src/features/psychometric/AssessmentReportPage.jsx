@@ -180,11 +180,19 @@ export default function AssessmentReportPage() {
   const rawData = reportData || {};
   const report = rawData.report || {};
   const student = report.student || rawData.student || rawData.user || {};
-  const studentName = student.name || rawData.studentName || rawData.userName || currentUser?.name || "Aryaman Singh";
-  const studentFirstName = studentName.split(" ")[0] || "Aryaman";
-  const studentClass = student.class || rawData.className || rawData.class || rawData.selectedClass || currentUser?.selectedClass || "10th";
-  const studentSchool = student.school || rawData.school || rawData.schoolName || currentUser?.school || "DAV, Pokhariput, BBSR";
-  const studentEmail = student.email || rawData.studentEmail || rawData.email || currentUser?.email || "aryaman1012@gmail.com";
+  const candidateFullName =
+    student.name ||
+    [student.firstName, student.lastName].filter(Boolean).join(" ").trim() ||
+    student.username ||
+    rawData.studentName ||
+    rawData.userName ||
+    currentUser?.name ||
+    "Aryaman Singh";
+  const studentName = candidateFullName;
+  const studentFirstName = studentName.split(" ")[0] || "Candidate";
+  const studentClass = student.class || rawData.className || rawData.class || rawData.selectedClass || currentUser?.selectedClass || "12th";
+  const studentSchool = student.school || student.institute?.name || rawData.school || rawData.schoolName || currentUser?.school || "Seereon Academy";
+  const studentEmail = student.email || rawData.studentEmail || rawData.email || currentUser?.email || "student@example.com";
   const studentPhone = student.phone || rawData.studentPhone || rawData.phone || rawData.mobile || currentUser?.mobile || "+91-88958 12485";
   const completedDate = student.completedAt || rawData.completedAt || rawData.createdAt || "2025-11-26T10:00:00.000Z";
 

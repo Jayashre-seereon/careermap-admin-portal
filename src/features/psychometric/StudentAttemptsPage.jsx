@@ -64,6 +64,49 @@ import { getSerialNumber } from "../../utils/slNo";
 
 const { Option } = Select;
 
+// Helpers to extract candidate details from API response
+export const getCandidateName = (record) => {
+  if (!record) return "Candidate";
+  if (record.studentName && record.studentName !== "Candidate") return record.studentName;
+  if (record.user) {
+    const { firstName, lastName, username, name } = record.user;
+    const parts = [firstName, lastName].filter(Boolean);
+    if (parts.length > 0) {
+      return parts
+        .map((p) => String(p).trim())
+        .filter(Boolean)
+        .map((p) => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase())
+        .join(" ");
+    }
+    if (name) return name;
+    if (username) return username;
+  }
+  if (record.name) return record.name;
+  return "Candidate";
+};
+
+export const getCandidateEmail = (record) => {
+  if (!record) return "student@example.com";
+  return record.studentEmail || record.user?.email || record.email || "student@example.com";
+};
+
+export const normalizeAttemptItem = (item) => {
+  if (!item) return item;
+  const studentName = getCandidateName(item);
+  const studentEmail = getCandidateEmail(item);
+  return {
+    ...item,
+    studentName,
+    studentEmail,
+    instituteName: item.user?.institute?.name || item.instituteName || "",
+    assessmentTitle: item.assessment?.title || item.assessmentTitle || "Career Compass Standard Assessment",
+    hollandCode: item.result?.hollandCode || item.hollandCode || "",
+    topClusterName: item.result?.topCareerCluster || item.topClusterName || "",
+    fitScore: item.result?.topCareerMatch ?? item.fitScore ?? 0,
+    status: item.status || (item.completedAt ? "completed" : "in_progress"),
+  };
+};
+
 export default function StudentAttemptsPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -97,14 +140,19 @@ export default function StudentAttemptsPage() {
       else if (Array.isArray(res?.data)) list = res.data;
       else if (Array.isArray(res?.attempts)) list = res.attempts;
 
-      if (list.length > 0) {
-        setAttempts(list);
+      const normalizedList = list.map(normalizeAttemptItem);
+
+      if (normalizedList.length > 0) {
+        setAttempts(normalizedList);
+        if (res?.pagination?.total) {
+          setPagination((prev) => ({ ...prev, total: res.pagination.total }));
+        }
       } else {
-        setAttempts(INITIAL_STUDENT_ATTEMPTS);
+        setAttempts(INITIAL_STUDENT_ATTEMPTS.map(normalizeAttemptItem));
       }
     } catch (err) {
       console.warn("Using fallback attempts:", err);
-      setAttempts(INITIAL_STUDENT_ATTEMPTS);
+      setAttempts(INITIAL_STUDENT_ATTEMPTS.map(normalizeAttemptItem));
     } finally {
       setLoading(false);
     }
@@ -118,9 +166,16 @@ export default function StudentAttemptsPage() {
   const filteredAttempts = useMemo(() => {
     const query = search.trim().toLowerCase();
     return attempts.filter((att) => {
+      const name = att.studentName || getCandidateName(att);
+      const email = att.studentEmail || getCandidateEmail(att);
+      const title = att.assessmentTitle || att.assessment?.title || "";
+      const code = att.hollandCode || att.result?.hollandCode || "";
+      const cluster = att.topClusterName || att.result?.topCareerCluster || "";
+      const institute = att.instituteName || att.user?.institute?.name || "";
+
       const matchSearch =
         !query ||
-        [att.studentName, att.studentEmail, att.assessmentTitle, att.hollandCode, att.topClusterName]
+        [name, email, title, code, cluster, institute]
           .filter(Boolean)
           .join(" ")
           .toLowerCase()
@@ -135,13 +190,13 @@ export default function StudentAttemptsPage() {
 
   // Open Attempt Details Drawer
   const handleOpenAudit = async (record) => {
-    setSelectedAttempt(record);
+    setSelectedAttempt(normalizeAttemptItem(record));
     setDrawerOpen(true);
     try {
       setDrawerLoading(true);
       const details = await getAttemptDetails(record.id);
       if (details?.data) {
-        setSelectedAttempt(details.data);
+        setSelectedAttempt(normalizeAttemptItem(details.data));
       }
     } catch (err) {
       console.warn("Using local attempt object for audit drawer:", err);
@@ -219,50 +274,78 @@ export default function StudentAttemptsPage() {
     {
       title: <span className="text-[#9a2119] font-semibold">Student Candidate</span>,
       key: "student",
-      render: (_, record) => (
-        <div className="flex items-center gap-3">
-          <Avatar
-            style={{ backgroundColor: "#9a2119" }}
-            icon={<UserOutlined />}
-            size={36}
-          >
-            {record.studentName?.charAt(0)?.toUpperCase()}
-          </Avatar>
-          <div>
-            <div
-              onClick={() => handleOpenAudit(record)}
-              className="font-bold text-gray-900 hover:text-[#9a2119] cursor-pointer"
+      render: (_, record) => {
+        const name = record.studentName || getCandidateName(record);
+        const email = record.studentEmail || getCandidateEmail(record);
+        const initial = name?.charAt(0)?.toUpperCase() || "C";
+        const isCompleted = record.status === "completed";
+
+        return (
+          <div className="flex items-center gap-3">
+            <Avatar
+              style={{ backgroundColor: "#9a2119" }}
+              size={38}
+              className="font-bold flex-shrink-0"
             >
-              {record.studentName || "Candidate"}
-            </div>
-            <div className="text-xs text-gray-400 font-mono">
-              {record.studentEmail || "student@example.com"}
+              {initial}
+            </Avatar>
+            <div>
+              <div className="flex items-center gap-2">
+                <span
+                  onClick={() => handleOpenAudit(record)}
+                  className="font-bold text-gray-900 hover:text-[#9a2119] cursor-pointer text-sm"
+                >
+                  {name}
+                </span>
+             
+              </div>
+              <div className="text-xs text-gray-400 font-mono">
+                {email}
+              </div>
+              {record.instituteName && (
+                <div className="text-[11px] text-gray-500 mt-0.5 font-sans">
+                  {record.instituteName}
+                </div>
+              )}
             </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
    
-    
     {
       title: <span className="text-[#9a2119] font-semibold">Actions</span>,
       key: "actions",
       fixed: "right",
       width: 220,
       render: (_, record) => (
-        <Space size="small">
+        <div className="flex items-center gap-2">
           <Button
-            size="small"
             type="primary"
-            icon={<FilePdfOutlined />}
+            size="small"
+            icon={<FilePdfOutlined style={{ color: "#ffffff", fontSize: "14px" }} />}
             onClick={() => navigate(`/admin/psychometric-attempts/${record.id}/report`)}
-            style={{ backgroundColor: "#9a2119", borderColor: "#9a2119" }}
-            className="flex items-center gap-1 text-xs font-semibold text-white hover:bg-[#72120F]"
+            style={{
+              backgroundColor: "#9a2119",
+              borderColor: "#9a2119",
+              color: "#ffffff",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "6px",
+              height: "32px",
+              padding: "0 14px",
+              borderRadius: "6px",
+              fontWeight: 600,
+              fontSize: "12px",
+            }}
+            className="!bg-[#9a2119] hover:!bg-[#72120F] !text-white !border-[#9a2119] cursor-pointer shadow-sm"
           >
-            Report (31-Page)
+            <span style={{ color: "#ffffff", fontWeight: 600 }}>Report (31-Page)</span>
           </Button>
-       
-        </Space>
+
+        
+        </div>
       ),
     },
   ];
