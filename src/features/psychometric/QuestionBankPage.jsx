@@ -1020,22 +1020,6 @@ export default function QuestionBankPage() {
               </Select>
             </Form.Item>
 
-            <Form.Item
-              name="itemId"
-              label={
-                <Tooltip title="Standard Item ID code like INT01, PER01, LRN01, VAL01, APT01">
-                  <span className="font-semibold text-gray-700 cursor-help">
-                    Item Code (?)
-                  </span>
-                </Tooltip>
-              }
-            >
-              <Input
-                size="large"
-                placeholder="e.g. INT01, APT01"
-                className="rounded-lg font-mono"
-              />
-            </Form.Item>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1073,18 +1057,12 @@ export default function QuestionBankPage() {
               </Select>
             </Form.Item>
 
-            <Form.Item
-              name="order"
-              label={<span className="font-semibold text-gray-700">Numeric Order</span>}
-              rules={[validationRules.required("Order")]}
-            >
-              <InputNumber min={1} max={999} className="w-full rounded-lg" size="large" />
-            </Form.Item>
+           
           </div>
 
           <Form.Item
             name="text"
-            label={<span className="font-semibold text-gray-700">Question Prompt / Statement</span>}
+            label={<span className="font-semibold text-gray-700">Question</span>}
             rules={[validationRules.required("Question prompt")]}
           >
             <TextArea
@@ -1135,15 +1113,7 @@ export default function QuestionBankPage() {
             </div>
           )}
 
-          <Form.Item
-            name="note"
-            label={<span className="font-semibold text-gray-700">Rubric / Explanation Note</span>}
-          >
-            <Input
-              placeholder="Internal scoring rationale or help note..."
-              className="rounded-lg"
-            />
-          </Form.Item>
+        
 
           {/* Dynamic MCQ Option Builder (Only visible when MCQ is selected) */}
           {(watchedType === "mcq" || watchedType === "mcq4") && (

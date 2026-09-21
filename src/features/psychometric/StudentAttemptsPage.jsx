@@ -28,12 +28,14 @@ import {
   ClockCircleOutlined,
   CloseCircleFilled,
   EyeOutlined,
+  FilePdfOutlined,
+  PrinterOutlined,
   ReloadOutlined,
   SearchOutlined,
   TrophyOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   ResponsiveContainer,
   RadarChart,
@@ -62,7 +64,51 @@ import { getSerialNumber } from "../../utils/slNo";
 
 const { Option } = Select;
 
+// Helpers to extract candidate details from API response
+export const getCandidateName = (record) => {
+  if (!record) return "Candidate";
+  if (record.studentName && record.studentName !== "Candidate") return record.studentName;
+  if (record.user) {
+    const { firstName, lastName, username, name } = record.user;
+    const parts = [firstName, lastName].filter(Boolean);
+    if (parts.length > 0) {
+      return parts
+        .map((p) => String(p).trim())
+        .filter(Boolean)
+        .map((p) => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase())
+        .join(" ");
+    }
+    if (name) return name;
+    if (username) return username;
+  }
+  if (record.name) return record.name;
+  return "Candidate";
+};
+
+export const getCandidateEmail = (record) => {
+  if (!record) return "student@example.com";
+  return record.studentEmail || record.user?.email || record.email || "student@example.com";
+};
+
+export const normalizeAttemptItem = (item) => {
+  if (!item) return item;
+  const studentName = getCandidateName(item);
+  const studentEmail = getCandidateEmail(item);
+  return {
+    ...item,
+    studentName,
+    studentEmail,
+    instituteName: item.user?.institute?.name || item.instituteName || "",
+    assessmentTitle: item.assessment?.title || item.assessmentTitle || "Career Compass Standard Assessment",
+    hollandCode: item.result?.hollandCode || item.hollandCode || "",
+    topClusterName: item.result?.topCareerCluster || item.topClusterName || "",
+    fitScore: item.result?.topCareerMatch ?? item.fitScore ?? 0,
+    status: item.status || (item.completedAt ? "completed" : "in_progress"),
+  };
+};
+
 export default function StudentAttemptsPage() {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const queryAssessmentId = searchParams.get("assessmentId");
 
@@ -94,14 +140,19 @@ export default function StudentAttemptsPage() {
       else if (Array.isArray(res?.data)) list = res.data;
       else if (Array.isArray(res?.attempts)) list = res.attempts;
 
-      if (list.length > 0) {
-        setAttempts(list);
+      const normalizedList = list.map(normalizeAttemptItem);
+
+      if (normalizedList.length > 0) {
+        setAttempts(normalizedList);
+        if (res?.pagination?.total) {
+          setPagination((prev) => ({ ...prev, total: res.pagination.total }));
+        }
       } else {
-        setAttempts(INITIAL_STUDENT_ATTEMPTS);
+        setAttempts(INITIAL_STUDENT_ATTEMPTS.map(normalizeAttemptItem));
       }
     } catch (err) {
       console.warn("Using fallback attempts:", err);
-      setAttempts(INITIAL_STUDENT_ATTEMPTS);
+      setAttempts(INITIAL_STUDENT_ATTEMPTS.map(normalizeAttemptItem));
     } finally {
       setLoading(false);
     }
@@ -115,9 +166,16 @@ export default function StudentAttemptsPage() {
   const filteredAttempts = useMemo(() => {
     const query = search.trim().toLowerCase();
     return attempts.filter((att) => {
+      const name = att.studentName || getCandidateName(att);
+      const email = att.studentEmail || getCandidateEmail(att);
+      const title = att.assessmentTitle || att.assessment?.title || "";
+      const code = att.hollandCode || att.result?.hollandCode || "";
+      const cluster = att.topClusterName || att.result?.topCareerCluster || "";
+      const institute = att.instituteName || att.user?.institute?.name || "";
+
       const matchSearch =
         !query ||
-        [att.studentName, att.studentEmail, att.assessmentTitle, att.hollandCode, att.topClusterName]
+        [name, email, title, code, cluster, institute]
           .filter(Boolean)
           .join(" ")
           .toLowerCase()
@@ -132,13 +190,13 @@ export default function StudentAttemptsPage() {
 
   // Open Attempt Details Drawer
   const handleOpenAudit = async (record) => {
-    setSelectedAttempt(record);
+    setSelectedAttempt(normalizeAttemptItem(record));
     setDrawerOpen(true);
     try {
       setDrawerLoading(true);
       const details = await getAttemptDetails(record.id);
       if (details?.data) {
-        setSelectedAttempt(details.data);
+        setSelectedAttempt(normalizeAttemptItem(details.data));
       }
     } catch (err) {
       console.warn("Using local attempt object for audit drawer:", err);
@@ -216,120 +274,78 @@ export default function StudentAttemptsPage() {
     {
       title: <span className="text-[#9a2119] font-semibold">Student Candidate</span>,
       key: "student",
-      render: (_, record) => (
-        <div className="flex items-center gap-3">
-          <Avatar
-            style={{ backgroundColor: "#9a2119" }}
-            icon={<UserOutlined />}
-            size={36}
-          >
-            {record.studentName?.charAt(0)?.toUpperCase()}
-          </Avatar>
-          <div>
-            <div
-              onClick={() => handleOpenAudit(record)}
-              className="font-bold text-gray-900 hover:text-[#9a2119] cursor-pointer"
+      render: (_, record) => {
+        const name = record.studentName || getCandidateName(record);
+        const email = record.studentEmail || getCandidateEmail(record);
+        const initial = name?.charAt(0)?.toUpperCase() || "C";
+        const isCompleted = record.status === "completed";
+
+        return (
+          <div className="flex items-center gap-3">
+            <Avatar
+              style={{ backgroundColor: "#9a2119" }}
+              size={38}
+              className="font-bold flex-shrink-0"
             >
-              {record.studentName || "Candidate"}
+              {initial}
+            </Avatar>
+            <div>
+              <div className="flex items-center gap-2">
+                <span
+                  onClick={() => handleOpenAudit(record)}
+                  className="font-bold text-gray-900 hover:text-[#9a2119] cursor-pointer text-sm"
+                >
+                  {name}
+                </span>
+             
+              </div>
+              <div className="text-xs text-gray-400 font-mono">
+                {email}
+              </div>
+              {record.instituteName && (
+                <div className="text-[11px] text-gray-500 mt-0.5 font-sans">
+                  {record.instituteName}
+                </div>
+              )}
             </div>
-            <div className="text-xs text-gray-400 font-mono">
-              {record.studentEmail || "student@example.com"}
-            </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
+   
     {
-      title: <span className="text-[#9a2119] font-semibold">Assessment</span>,
-      dataIndex: "assessmentTitle",
-      key: "assessmentTitle",
-      render: (text) => (
-        <span className="font-medium text-gray-800 text-xs line-clamp-1 max-w-xs">
-          {text || "Comprehensive Assessment"}
-        </span>
-      ),
-    },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Holland Code</span>,
-      dataIndex: "hollandCode",
-      key: "hollandCode",
-      width: 120,
-      render: (code) => (
-        code ? (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-blue-50 text-blue-800 border border-blue-200">
-            🎯 {code}
-          </span>
-        ) : (
-          <span className="text-xs text-gray-400">-</span>
-        )
-      ),
-    },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Top Recommendation & Fit</span>,
-      key: "recommendation",
-      width: 220,
-      render: (_, record) => (
-        <div className="space-y-1">
-          <div className="text-xs font-bold text-gray-900 line-clamp-1">
-            {record.topClusterName || "Engineering & Tech"}
-          </div>
-          <div className="flex items-center gap-2">
-            <Progress
-              percent={record.fitScore || 0}
-              size="small"
-              strokeColor="#9a2119"
-              showInfo={false}
-              className="w-24 mb-0"
-            />
-            <span className="text-xs font-bold text-[#9a2119]">
-              {record.fitScore || 0}% Fit
-            </span>
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Status</span>,
-      dataIndex: "status",
-      key: "status",
-      width: 120,
-      render: (status) => (
-        status === "completed" ? (
-          <Tag color="success" className="font-semibold text-xs">
-            Completed
-          </Tag>
-        ) : (
-          <Tag color="warning" className="font-semibold text-xs">
-            In Progress
-          </Tag>
-        )
-      ),
-    },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Completed On</span>,
-      dataIndex: "completedAt",
-      key: "completedAt",
-      width: 130,
-      render: (date) => (
-        <span className="text-xs text-gray-500">
-          {date ? new Date(date).toLocaleDateString() : "-"}
-        </span>
-      ),
-    },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Audit</span>,
+      title: <span className="text-[#9a2119] font-semibold">Actions</span>,
       key: "actions",
       fixed: "right",
-      width: 130,
+      width: 220,
       render: (_, record) => (
-        <Button
-          size="small"
-          icon={<AuditOutlined />}
-          onClick={() => handleOpenAudit(record)}
-          className="flex items-center gap-1 text-xs font-semibold border-rose-200 bg-rose-50 text-[#9a2119] hover:bg-rose-100"
-        >
-          View Audit
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            type="primary"
+            size="small"
+            icon={<FilePdfOutlined style={{ color: "#ffffff", fontSize: "14px" }} />}
+            onClick={() => navigate(`/admin/psychometric-attempts/${record.id}/report`)}
+            style={{
+              backgroundColor: "#9a2119",
+              borderColor: "#9a2119",
+              color: "#ffffff",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "6px",
+              height: "32px",
+              padding: "0 14px",
+              borderRadius: "6px",
+              fontWeight: 600,
+              fontSize: "12px",
+            }}
+            className="!bg-[#9a2119] hover:!bg-[#72120F] !text-white !border-[#9a2119] cursor-pointer shadow-sm"
+          >
+            <span style={{ color: "#ffffff", fontWeight: 600 }}>Report (31-Page)</span>
+          </Button>
+
+        
+        </div>
       ),
     },
   ];
@@ -364,27 +380,7 @@ export default function StudentAttemptsPage() {
       <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm space-y-4">
         {/* Filters and Search Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
-          <div className="flex items-center gap-1.5">
-            {[
-              { key: "all", label: "All Attempts" },
-              { key: "completed", label: "Completed" },
-              { key: "in_progress", label: "In Progress" },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setStatusFilter(tab.key)}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
-                  statusFilter === tab.key
-                    ? "bg-[#9a2119] text-white shadow-sm"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
+        
           <Input
             placeholder="Search candidate name, email, RIASEC..."
             prefix={<SearchOutlined className="text-[#9a2119]" />}
@@ -432,16 +428,24 @@ export default function StudentAttemptsPage() {
               </div>
             </div>
 
-            <Button
-              type="primary"
-              icon={<CalculatorOutlined />}
-              loading={recalculating}
-              onClick={handleRecalculate}
-              style={{ backgroundColor: "#9a2119", borderColor: "#9a2119" }}
-              className="font-semibold"
-            >
-              Recalculate Scores
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                type="primary"
+                icon={<FilePdfOutlined />}
+                onClick={() => navigate(`/admin/psychometric-attempts/${selectedAttempt?.id}/report`)}
+                className="font-semibold bg-[#8C1814] border-[#8C1814] hover:bg-[#72120F]"
+              >
+                View 31-Page Report
+              </Button>
+              <Button
+                icon={<CalculatorOutlined />}
+                loading={recalculating}
+                onClick={handleRecalculate}
+                className="font-semibold border-rose-300 text-[#9a2119] hover:bg-rose-50"
+              >
+                Recalculate Scores
+              </Button>
+            </div>
           </div>
         }
         width={860}

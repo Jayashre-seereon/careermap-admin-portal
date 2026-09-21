@@ -310,79 +310,19 @@ export default function AssessmentPage() {
       key: "title",
       render: (title, record) => (
         <div className="flex flex-col">
-          <span className="font-semibold text-gray-800">{title}</span>  
+          <span className="font-semibold text-gray-800">{title}</span>
         </div>
       ),
     },
+  
     {
-      title: <span className="text-[#9a2119] font-semibold">Slug</span>,
-      dataIndex: "slug",
-      key: "slug",    
-
-    } ,
-   {
-  title: <span className="text-[#9a2119] font-semibold">Description</span>,
-  dataIndex: "description",
-  key: "description",
-  render: (text) =>
-    text && text.length > 50
-      ? `${text.substring(0, 50)}...`
-      : text,
-},
-    {
-      title: <span className="text-[#9a2119] font-semibold">Status</span>,
-      dataIndex: "status",
-      key: "status",
-      width: 140,
-      render: (status, record) => {
-        const cfg = getStatusBadgeConfig(status);
-        const menuItems = [
-          { key: "published", label: "Published", icon: <CheckCircleOutlined className="text-emerald-600" /> },
-          { key: "draft", label: "Draft", icon: <ClockCircleOutlined className="text-amber-600" /> },
-          { key: "archived", label: "Archived", icon: <InboxOutlined className="text-gray-500" /> },
-        ];
-
-        return (
-          <Dropdown
-            menu={{
-              items: menuItems.map((m) => ({
-                ...m,
-                onClick: () => handleQuickStatusChange(record, m.key),
-              })),
-            }}
-            trigger={["click"]}
-            disabled={statusUpdatingId === record.id}
-          >
-            <button
-              type="button"
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border transition hover:opacity-85 cursor-pointer"
-              style={{
-                backgroundColor: cfg.bg,
-                borderColor: cfg.border,
-                color: cfg.textCol,
-              }}
-              title="Click to toggle status"
-            >
-              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: cfg.textCol }} />
-              {cfg.text}
-              <DownOutlined className="text-[9px] ml-0.5 opacity-70" />
-            </button>
-          </Dropdown>
-        );
-      },
-    },
-   
-   
-    {
-      title: <span className="text-[#9a2119] font-semibold">Version</span>,
-      dataIndex: "version",
-      key: "version",
-      width: 95,
-      render: ( record) => (
-         <Tag color="geekblue" className="text-xs font-mono font-semibold">
-              v{record.version || "1.0"}
-            </Tag>
-      ),
+      title: <span className="text-[#9a2119] font-semibold">Description</span>,
+      dataIndex: "description",
+      key: "description",
+      render: (text) =>
+        text && text.length > 50
+          ? `${text.substring(0, 50)}...`
+          : text,
     },
    
     {
@@ -443,55 +383,38 @@ export default function AssessmentPage() {
           <h1 className="text-2xl font-bold text-[#9a2119] tracking-tight">
             Assessments Management
           </h1>
-         
+
         </div>
-      
+
       </div>
 
-     
+
 
       {/* Main Table Card */}
       <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm space-y-4">
-      
-       {/* Header / Search / Actions */}
-<div className="flex flex-col md:flex-row md:items-center justify-between ">
 
-  {/* Title */}
-  <h2 className="text-xl font-semibold text-[#9a2119]">
-    Assessments
-  </h2>
+        {/* Header / Search / Actions */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between ">
 
-  {/* Search + Buttons */}
-  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          {/* Title */}
+          <h2 className="text-xl font-semibold text-[#9a2119]">
+            Assessments
+          </h2>
 
-    {/* Search */}
-    <Input
-      placeholder="Search assessment name, slug..."
-      prefix={
-        <SearchOutlined className="text-[#9a2119]" />
-      }
-      value={search}
-      onChange={(e) => setSearch(e.target.value)}
-      allowClear
-      className="
-        h-8
-        w-full
-        sm:w-64
-        rounded-md
-        border-[#9a2119]
-        hover:border-[#9a2119]
-        focus:border-[#9a2119]
-      "
-    />
+          {/* Search + Buttons */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
 
-    {/* Reset */}
-    <Button
-      onClick={() => {
-        setSearch("");
-        loadAssessments();
-      }}
-      icon={<ReloadOutlined />}
-      className="
+            {/* Search */}
+          
+
+            {/* Reset */}
+            <Button
+              onClick={() => {
+                setSearch("");
+                loadAssessments();
+              }}
+              icon={<ReloadOutlined />}
+              className="
         h-8
         px-6
         rounded-md
@@ -501,16 +424,16 @@ export default function AssessmentPage() {
         hover:!bg-[#9a2119]
         hover:!text-white
       "
-    >
-      Reset
-    </Button>
+            >
+              Reset
+            </Button>
 
-    {/* Add Assessment */}
-    <Button
-      type="primary"
-      icon={<PlusOutlined />}
-      onClick={handleOpenAdd}
-      className="
+            {/* Add Assessment */}
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleOpenAdd}
+              className="
         h-8
         px-6
         rounded-md
@@ -520,12 +443,12 @@ export default function AssessmentPage() {
         hover:!bg-[#9a2119]
         border-[#9a2119]
       "
-    >
-      Add Assessment
-    </Button>
+            >
+              Add Assessment
+            </Button>
 
-  </div>
-</div>
+          </div>
+        </div>
 
         {/* Table */}
         <Table
@@ -551,8 +474,8 @@ export default function AssessmentPage() {
               {modalMode === "add"
                 ? "Create New Assessment"
                 : modalMode === "edit"
-                ? "Edit Assessment"
-                : "Assessment Details"}
+                  ? "Edit Assessment"
+                  : "Assessment Details"}
             </span>
           </div>
         }
@@ -597,67 +520,12 @@ export default function AssessmentPage() {
           </Form.Item>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <Form.Item
-              name="slug"
-              label={
-                <div className="flex items-center justify-between w-full">
-                  <span className="font-semibold text-gray-700">URL Slug</span>
-                  {modalMode === "add" && (
-                    <button
-                      type="button"
-                      onClick={() => setAutoSlug(!autoSlug)}
-                      className="text-[11px] text-[#9a2119] font-normal hover:underline ml-2"
-                    >
-                      {autoSlug ? "Manual Slug" : "Auto-slug"}
-                    </button>
-                  )}
-                </div>
-              }
-              rules={[validationRules.required("URL Slug")]}
-              className="sm:col-span-2"
-            >
-              <Input
-                placeholder="e.g. career-compass-2026"
-                addonBefore="/"
-                className="rounded-md"
-              />
-            </Form.Item>
+        
 
-            <Form.Item
-              name="version"
-              label={<span className="font-semibold text-gray-700">Version</span>}
-              rules={[validationRules.required("Version")]}
-            >
-              <Input placeholder="1.0" className="rounded-md" />
-            </Form.Item>
+        
           </div>
 
-          <Form.Item
-            name="status"
-            label={<span className="font-semibold text-gray-700">Publication Status</span>}
-            rules={[validationRules.required("Status")]}
-          >
-            <Select size="large" className="rounded-md">
-              <Option value="draft">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-amber-500" />
-                  <span>Draft (Not visible to test takers)</span>
-                </div>
-              </Option>
-              <Option value="published">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                  <span>Published (Active for test taking)</span>
-                </div>
-              </Option>
-              <Option value="archived">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-gray-400" />
-                  <span>Archived (Read-only historical access)</span>
-                </div>
-              </Option>
-            </Select>
-          </Form.Item>
+       
 
           <Form.Item
             name="description"

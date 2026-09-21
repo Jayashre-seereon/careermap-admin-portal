@@ -204,6 +204,39 @@ body::after {
   transform: translateZ(0);
 }
 
+.ant-table-cell .ant-btn.ant-btn-primary,
+.ant-table-cell .ant-btn-primary {
+  background: #9a2119 !important;
+  border-color: #9a2119 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+  min-width: auto !important;
+  height: 32px !important;
+  padding: 0 14px !important;
+  font-weight: 600 !important;
+}
+
+.ant-table-cell .ant-btn.ant-btn-primary:hover {
+  background: #72120F !important;
+  border-color: #72120F !important;
+  color: #ffffff !important;
+}
+
+.ant-table-cell .ant-btn.ant-btn-primary > span {
+  width: auto !important;
+  height: auto !important;
+  color: #ffffff !important;
+}
+
+.ant-table-cell .ant-btn.ant-btn-primary .anticon {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.ant-table-cell .ant-btn.ant-btn-primary .anticon svg {
+  fill: #ffffff !important;
+}
+
 .ant-table-cell button.border,
 .ant-table-cell button[class*=" border-"],
 .ant-table-cell button[class^="border-"] {

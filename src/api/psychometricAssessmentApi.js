@@ -241,7 +241,22 @@ export const getAttemptDetails = async (attemptId) => {
   return res.data;
 };
 
+export const getAttemptResult = async (attemptId) => {
+  try {
+    const res = await api.get(`${BASE_PREFIX}/admin/attempts/${attemptId}`);
+    return res.data;
+  } catch (err) {
+    try {
+      const fallback = await api.get(`${BASE_PREFIX}/attempts/${attemptId}/result`);
+      return fallback.data;
+    } catch {
+      throw err;
+    }
+  }
+};
+
 export const recalculateAttempt = async (attemptId) => {
   const res = await api.post(`${BASE_PREFIX}/admin/attempts/${attemptId}/recalculate`);
   return res.data;
 };
+
