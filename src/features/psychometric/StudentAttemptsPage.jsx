@@ -242,83 +242,8 @@ export default function StudentAttemptsPage() {
         </div>
       ),
     },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Assessment</span>,
-      dataIndex: "assessmentTitle",
-      key: "assessmentTitle",
-      render: (text) => (
-        <span className="font-medium text-gray-800 text-xs line-clamp-1 max-w-xs">
-          {text || "Comprehensive Assessment"}
-        </span>
-      ),
-    },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Holland Code</span>,
-      dataIndex: "hollandCode",
-      key: "hollandCode",
-      width: 120,
-      render: (code) => (
-        code ? (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-blue-50 text-blue-800 border border-blue-200">
-            🎯 {code}
-          </span>
-        ) : (
-          <span className="text-xs text-gray-400">-</span>
-        )
-      ),
-    },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Top Recommendation & Fit</span>,
-      key: "recommendation",
-      width: 220,
-      render: (_, record) => (
-        <div className="space-y-1">
-          <div className="text-xs font-bold text-gray-900 line-clamp-1">
-            {record.topClusterName || "Engineering & Tech"}
-          </div>
-          <div className="flex items-center gap-2">
-            <Progress
-              percent={record.fitScore || 0}
-              size="small"
-              strokeColor="#9a2119"
-              showInfo={false}
-              className="w-24 mb-0"
-            />
-            <span className="text-xs font-bold text-[#9a2119]">
-              {record.fitScore || 0}% Fit
-            </span>
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Status</span>,
-      dataIndex: "status",
-      key: "status",
-      width: 120,
-      render: (status) => (
-        status === "completed" ? (
-          <Tag color="success" className="font-semibold text-xs">
-            Completed
-          </Tag>
-        ) : (
-          <Tag color="warning" className="font-semibold text-xs">
-            In Progress
-          </Tag>
-        )
-      ),
-    },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Completed On</span>,
-      dataIndex: "completedAt",
-      key: "completedAt",
-      width: 130,
-      render: (date) => (
-        <span className="text-xs text-gray-500">
-          {date ? new Date(date).toLocaleDateString() : "-"}
-        </span>
-      ),
-    },
+   
+    
     {
       title: <span className="text-[#9a2119] font-semibold">Actions</span>,
       key: "actions",
@@ -336,14 +261,7 @@ export default function StudentAttemptsPage() {
           >
             Report (31-Page)
           </Button>
-          <Button
-            size="small"
-            icon={<AuditOutlined />}
-            onClick={() => handleOpenAudit(record)}
-            className="flex items-center gap-1 text-xs font-semibold border-rose-200 bg-rose-50 text-[#9a2119] hover:bg-rose-100"
-          >
-            Audit
-          </Button>
+       
         </Space>
       ),
     },
@@ -379,27 +297,7 @@ export default function StudentAttemptsPage() {
       <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm space-y-4">
         {/* Filters and Search Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
-          <div className="flex items-center gap-1.5">
-            {[
-              { key: "all", label: "All Attempts" },
-              { key: "completed", label: "Completed" },
-              { key: "in_progress", label: "In Progress" },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setStatusFilter(tab.key)}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
-                  statusFilter === tab.key
-                    ? "bg-[#9a2119] text-white shadow-sm"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
+        
           <Input
             placeholder="Search candidate name, email, RIASEC..."
             prefix={<SearchOutlined className="text-[#9a2119]" />}

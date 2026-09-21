@@ -439,9 +439,9 @@ export default function AssessmentReportPage() {
   const topCluster = top5Clusters[0];
 
   return (
-    <div className="report-app-container">
+    <div className="">
       {/* Floating Action Bar (Hidden on Print) */}
-      <div className="report-action-bar">
+      <div className="">
         <div className="report-action-bar-inner">
           <div className="flex items-center gap-3">
             <Button
@@ -492,13 +492,7 @@ export default function AssessmentReportPage() {
           </div>
 
           <div className="flex items-center gap-2.5">
-            <Button
-              icon={<DownloadOutlined />}
-              onClick={handleDownloadJSON}
-              className="rounded-full font-bold"
-            >
-              Export JSON
-            </Button>
+           
             <Button
               type="primary"
               icon={<PrinterOutlined />}
