@@ -74,13 +74,19 @@ import SeoPage from "../features/seo/SeoPage";
 import SocialCredentialPage from "../features/socialcredential/SocialCredentialPage";
 import ProfilePage from "../features/profile/ProfilePage";
 import Domain from "../features/psychometric/Domain";
-import Career from "../features/psychometric/Career";
+import Assessment from "../features/psychometric/Assessment";
 import CareerPath from "../features/psychometric/CareerPath";
 import CareerCategory from "../features/psychometric/CareerCategory";
 import Institute from "../features/psychometric/Institute";
 import Question from "../features/psychometric/Question";
 import Section from "../features/psychometric/Section";
 import Student from "../features/psychometric/Student";
+import AssessmentPage from "../features/psychometric/AssessmentPage";
+import SectionPage from "../features/psychometric/SectionPage";
+import QuestionBankPage from "../features/psychometric/QuestionBankPage";
+import CareerClusterPage from "../features/psychometric/CareerClusterPage";
+import StudentAttemptsPage from "../features/psychometric/StudentAttemptsPage";
+import AssessmentReportPage from "../features/psychometric/AssessmentReportPage";
 import PersonalityTest from "../features/personalityTest/PersonalityTest";
 import Counseling from "../features/counseling/Counseling";
 import Staff from "../features/staff/Staff";
@@ -421,10 +427,122 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: "careers",
+            path: "assessment",
             element: (
-              <PermissionRoute module="Careers">
-                <Career />
+              <PermissionRoute module="Assessment">
+                <AssessmentPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "admin/psychometric-assessments",
+            element: (
+              <PermissionRoute module="Assessment">
+                <AssessmentPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "admin/psychometric-assessments/:assessmentId/sections",
+            element: (
+              <PermissionRoute module="Assessment">
+                <SectionPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "admin/psychometric-sections",
+            element: (
+              <PermissionRoute module="Assessment">
+                <SectionPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "sections",
+            element: (
+              <PermissionRoute module="Assessment">
+                <SectionPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "sections/:assessmentId",
+            element: (
+              <PermissionRoute module="Assessment">
+                <SectionPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "admin/psychometric-assessments/:assessmentId/questions",
+            element: (
+              <PermissionRoute module="Assessment">
+                <QuestionBankPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "admin/psychometric-sections/:sectionId/questions",
+            element: (
+              <PermissionRoute module="Assessment">
+                <QuestionBankPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "admin/psychometric-questions",
+            element: (
+              <PermissionRoute module="Assessment">
+                <QuestionBankPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "questions",
+            element: (
+              <PermissionRoute module="Assessment">
+                <QuestionBankPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "admin/psychometric-career-clusters",
+            element: (
+              <PermissionRoute module="Assessment">
+                <CareerClusterPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "career-categories",
+            element: (
+              <PermissionRoute module="Assessment">
+                <CareerClusterPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "admin/psychometric-attempts",
+            element: (
+              <PermissionRoute module="Assessment">
+                <StudentAttemptsPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "admin/psychometric-attempts/:attemptId/report",
+            element: (
+              <PermissionRoute module="Assessment">
+                <AssessmentReportPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: "admin/psychometric-report/:attemptId",
+            element: (
+              <PermissionRoute module="Assessment">
+                <AssessmentReportPage />
               </PermissionRoute>
             ),
           },
@@ -437,34 +555,10 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: "career-categories",
-            element: (
-              <PermissionRoute module="Career Categories">
-                <CareerCategory />
-              </PermissionRoute>
-            ),
-          },
-          {
             path: "institutes",
             element: (
               <PermissionRoute module="Institutes">
                 <Institute />
-              </PermissionRoute>
-            ),
-          },
-          {
-            path: "questions",
-            element: (
-              <PermissionRoute module="Questions">
-                <Question />
-              </PermissionRoute>
-            ),
-          },
-          {
-            path: "sections",
-            element: (
-              <PermissionRoute module="Sections">
-                <Section />
               </PermissionRoute>
             ),
           },
@@ -480,7 +574,7 @@ export const router = createBrowserRouter([
             path: "personality-test",
             element: (
               <PermissionRoute module="Personality Test">
-                <PersonalityTest />
+                <StudentAttemptsPage />
               </PermissionRoute>
             ),
           },

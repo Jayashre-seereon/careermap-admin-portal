@@ -23,7 +23,10 @@ import {
   Users,
   Video,
   Key,
-  Globe
+  Globe,
+  LayoutList,
+  Network,
+
 
 } from "lucide-react";
 
@@ -245,53 +248,51 @@ export const navSections = [
     ],
   },
 
-  // {
-  //   label: "PSYCHOMETRIC",
-  //   items: [
-  //     {
-  //       icon: HelpCircle,
-  //       name: "Personality Test",
-  //       path: "/personality-test",
-  //       module: "Personality Test",
-  //     },
-  //     {
-  //       icon: Layers,
-  //       name: "Domains",
-  //       path: "/domains",
-  //       module: "Domains",
-  //     },
-  //     {
-  //       icon: Briefcase,
-  //       name: "Careers",
-  //       path: "/careers",
-  //       module: "Careers",
-  //     },
-  //     {
-  //       icon: MapPin,
-  //       name: "Career Paths",
-  //       path: "/career-paths",
-  //       module: "Career Paths",
-  //     },
-  //     {
-  //       icon: Tag,
-  //       name: "Career Categories",
-  //       path: "/career-categories",
-  //       module: "Career Categories",
-  //     },
-      
-  //     {
-  //       icon: HelpCircle,
-  //       name: "Questions",
-  //       path: "/questions",
-  //       module: "Questions",
-  //     },
-  //     {
-  //       icon: ClipboardList,
-  //       name: "Sections",
-  //       path: "/sections",
-  //       module: "Sections",
-  //     },
-      
-  //   ],
-  // },
+ {
+  label: "PSYCHOMETRIC",
+  items: [
+    {
+      icon: ClipboardList,
+      name: "Assessments",
+      path: "/admin/psychometric-assessments",
+      module: "Assessment",
+    },
+    {
+      icon: LayoutList,
+      name: "Sections",
+      path: "/admin/psychometric-sections",
+      module: "Sections",
+    },
+    {
+      icon: HelpCircle,
+      name: "Questions",
+      path: "/admin/psychometric-questions",
+      module: "Questions",
+    },
+    {
+      icon: Network,
+      name: "Career Clusters",
+      path: "/admin/psychometric-career-clusters",
+      module: "Career Clusters",
+    },
+    {
+      icon: Users,
+      name: "Student Attempts",
+      path: "/admin/psychometric-attempts",
+      module: "Student Attempts",
+    },
+    // {
+    //   icon: Layers,
+    //   name: "Domains",
+    //   path: "/domains",
+    //   module: "Domains",
+    // },
+    // {
+    //   icon: MapPin,
+    //   name: "Career Paths",
+    //   path: "/career-paths",
+    //   module: "Career Paths",
+    // },
+  ],
+},
 ];

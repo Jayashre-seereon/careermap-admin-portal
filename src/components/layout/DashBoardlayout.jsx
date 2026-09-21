@@ -63,6 +63,12 @@ const pageNameMap = {
   "/sections": "Sections",
   "/students": "Students",
   "/newsletter": "Newsletter",
+  "/assessment": "Assessments",
+  "/admin/psychometric-assessments": "Assessments",
+  "/admin/psychometric-sections": "Sections",
+  "/admin/psychometric-questions": "Questions",
+  "/admin/psychometric-career-clusters": "Career Clusters",
+  "/admin/psychometric-attempts": "Student Attempts",
 };
 
 function getActivePage(pathname) {
@@ -100,6 +106,28 @@ function getActivePage(pathname) {
 
   if (pathname.startsWith("/quiz")) {
     return "Quiz";
+  }
+
+  if (pathname.startsWith("/admin/psychometric-assessments")) {
+    if (pathname.includes("/sections")) return "Sections";
+    if (pathname.includes("/questions")) return "Questions";
+    return "Assessments";
+  }
+
+  if (pathname.startsWith("/admin/psychometric-sections")) {
+    return "Sections";
+  }
+
+  if (pathname.startsWith("/admin/psychometric-questions")) {
+    return "Questions";
+  }
+
+  if (pathname.startsWith("/admin/psychometric-career-clusters")) {
+    return "Career Clusters";
+  }
+
+  if (pathname.startsWith("/admin/psychometric-attempts")) {
+    return "Student Attempts";
   }
 
   return pageNameMap[pathname] || "Dashboard";
