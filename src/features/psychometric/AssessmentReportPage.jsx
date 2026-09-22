@@ -305,8 +305,24 @@ export default function AssessmentReportPage() {
   const aptScaleMax = maxAptScore > 50 ? 100 : 50;
   const aptYAxisPoints = aptScaleMax === 100 ? [100, 80, 60, 40, 20, 0] : [50, 40, 30, 20, 10, 0];
 
-  const topAptSorted = [...aptList].sort((a, b) => (b.val || 0) - (a.val || 0));
-  const topAptName = `${(topAptSorted[0]?.label || "VERBAL").toUpperCase()} APTITUDE`;
+  // Keep the summary cards in sync with the score returned for this attempt.
+  const scoreFor = (item) => Number(item?.percentage ?? pct(item?.score) ?? 0);
+  const rankedDomains = (items, fallbackItems, limit, labels = {}) => {
+    const source = Array.isArray(items) && items.length ? items : fallbackItems;
+    return source
+      .map((item) => ({ ...item, name: item?.name || labels[item?.facet] }))
+      .filter((item) => item.name)
+      .sort((a, b) => scoreFor(b) - scoreFor(a))
+      .slice(0, limit);
+  };
+  const topAptitudes = rankedDomains(domainApt, [
+    { name: "Verbal Aptitude", percentage: aptScoreMap.Verb },
+    { name: "Logical Aptitude", percentage: aptScoreMap.Log },
+    { name: "Vocabulary Aptitude", percentage: aptScoreMap.Voc },
+    { name: "Mechanical Aptitude", percentage: aptScoreMap.Mech },
+    { name: "Spatial Aptitude", percentage: aptScoreMap.Spat },
+    { name: "Numerical Aptitude", percentage: aptScoreMap.Num },
+  ], 3, { Num: "Numerical Aptitude", Log: "Logical Aptitude", Verb: "Verbal Aptitude", Voc: "Vocabulary Aptitude", Mech: "Mechanical Aptitude", Spat: "Spatial Aptitude" });
 
   // 5 Top Default fallback clusters matching the PDF
   const defaultTop5 = [
@@ -447,9 +463,9 @@ export default function AssessmentReportPage() {
   const topCluster = top5Clusters[0];
 
   return (
-    <div className="">
+    <div className="report-app-container">
       {/* Floating Action Bar (Hidden on Print) */}
-      <div className="">
+      <div className="report-action-bar">
         <div className="report-action-bar-inner">
           <div className="flex items-center gap-3">
             <Button
@@ -1424,11 +1440,11 @@ export default function AssessmentReportPage() {
               In this test, we assess six types of aptitudes:
             </div>
 
-            <div className="my-2 flex justify-center items-center">
+            <div className="my-2 flex justify-center items-center overflow-hidden">
               <img
                 src={ReportImg6}
                 alt="Aptitude Categories"
-                className="max-h-[140px] w-full max-w-[560px] mx-auto object-contain"
+                className="w-full object-contain scale-100 max-w-[540px] mx-auto"
               />
             </div>
 
@@ -1665,10 +1681,14 @@ export default function AssessmentReportPage() {
             <div className="top-interests-box mt-10">
               <div className="score-rep-banner red">
                 <div className="w-6 h-6 rounded-md bg-[#8C1814] flex-shrink-0"></div>
-                <span>Your Top Aptitude are</span>
+                <span>Your Top Aptitudes Are</span>
               </div>
-              <div className="max-w-xs mx-auto mt-4">
-                <div className="top-interest-pill red">{topAptName}</div>
+              <div className="top-interests-pills-grid max-w-md">
+                {topAptitudes.map((aptitude) => (
+                  <div key={aptitude.facet || aptitude.name} className="top-interest-pill red">
+                    {aptitude.name}
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -1692,12 +1712,29 @@ export default function AssessmentReportPage() {
               Each card shows what the field involves, why it suits you, how to get there, and list of careers
             </p>
 
-            <div className="my-1 flex justify-center items-center">
-              <img
-                src={ReportImg7}
-                alt="Top Clusters Map"
-                className="max-h-[260px] w-full max-w-[500px] mx-auto object-contain drop-shadow-sm"
-              />
+            <div className="cluster-map" aria-label="Your five top career clusters">
+              <div className="cluster-map-illustration">
+                <img src={ReportImg7} alt="Career counsellor" />
+              </div>
+              <svg className="cluster-map-connectors" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                {[9, 29.5, 50, 70.5, 91].map((endY) => (
+                  <line key={endY} x1="39" y1="50" x2="49" y2={endY} />
+                ))}
+                <circle cx="39" cy="50" r="1.35" />
+              </svg>
+              <div className="cluster-map-labels">
+                {top5Clusters.slice(0, 5).map((cluster, index) => (
+                  <div
+                    className={`cluster-map-label cluster-map-label-${index + 1}`}
+                    key={`${cluster.code}-${index}`}
+                    style={{ "--cluster-color": ["#70b86b", "#4d95d7", "#9a76ca", "#dc984f", "#47b9b9"][index] }}
+                  >
+                    <span className="cluster-map-rank">{index + 1}</span>
+                    <span className="cluster-map-name">{cluster.name}</span>
+                    <span className="cluster-map-match">{cluster.matchPercentage}%</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Top 1 Cluster Card */}
@@ -1887,11 +1924,11 @@ export default function AssessmentReportPage() {
               A general route from where you are now
             </div>
 
-            <div className="my-2 flex justify-center items-center">
+            <div className="my-2 flex justify-center items-center overflow-hidden">
               <img
                 src={ReportImg8}
                 alt="Study & Pathway Roadmap"
-                className="max-h-[180px] w-full max-w-xl mx-auto object-contain"
+                className="w-full object-contain scale-100 max-w-[540px] mx-auto"
               />
             </div>
 
