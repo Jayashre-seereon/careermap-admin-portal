@@ -585,7 +585,6 @@ export default function AssessmentReportPage() {
             <div className="space-y-1.5 text-[14.5px] text-[#2D3748] leading-normal">
               <div><span className="font-normal text-[#374151]">Name:</span> <span className="font-semibold text-[#111827] ml-1.5">{studentName}</span></div>
               <div><span className="font-normal text-[#374151]">Class:</span> <span className="font-semibold text-[#111827] ml-1.5">{studentClass}</span></div>
-              <div><span className="font-normal text-[#374151]">School Name:</span> <span className="font-semibold text-[#111827] ml-1.5">{studentSchool}</span></div>
               <div><span className="font-normal text-[#374151]">Date:</span> <span className="font-semibold text-[#111827] ml-1.5">{formattedDate}</span></div>
               <div><span className="font-normal text-[#374151]">Email Id:</span> <span className="font-semibold text-[#111827] ml-1.5">{studentEmail}</span></div>
               <div><span className="font-normal text-[#374151]">Phone No:</span> <span className="font-semibold text-[#111827] ml-1.5">{studentPhone}</span></div>
