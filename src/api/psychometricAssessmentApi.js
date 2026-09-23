@@ -165,6 +165,11 @@ export const createQuestion = async (sectionId, payload) => {
   }
 };
 
+export const bulkCreateQuestions = async (payload) => {
+  const res = await api.post(`${BASE_PREFIX}/admin/questions/bulk`, payload);
+  return res.data;
+};
+
 export const updateQuestion = async (questionId, payload) => {
   const res = await api.put(`${BASE_PREFIX}/admin/questions/${questionId}`, payload);
   return res.data;
@@ -174,6 +179,7 @@ export const deleteQuestion = async (questionId) => {
   const res = await api.delete(`${BASE_PREFIX}/admin/questions/${questionId}`);
   return res.data;
 };
+
 
 // ==========================================
 // 4. CAREER CLUSTERS & DOMAIN WEIGHTS
