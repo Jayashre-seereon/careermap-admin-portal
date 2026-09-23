@@ -611,15 +611,12 @@ export default function BulkQuestionModal({
         style={{ top: 20 }}
         title={
           <div className="flex items-center gap-2.5 text-lg font-bold text-[#8C1814]">
-            <ThunderboltOutlined className="text-amber-500 text-xl" />
-            <span>Bulk Add Questions & Answers</span>
-            <Tag color="red" className="font-mono text-xs ml-2">
-              Batch Creator
-            </Tag>
+               <span>Add Questions & Answers</span>
+          
           </div>
         }
         footer={
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="text-xs text-gray-500">
               {activeTab === "builder" ? (
                 <span>
@@ -643,13 +640,12 @@ export default function BulkQuestionModal({
               </Button>
               <Button
                 type="primary"
-                icon={<ThunderboltOutlined />}
                 loading={submitting}
                 onClick={handleBulkSubmit}
                 style={{ backgroundColor: "#8C1814", borderColor: "#8C1814" }}
                 className="font-semibold shadow-sm"
               >
-                Submit Questions Batch
+                Submit 
               </Button>
             </Space>
           </div>
@@ -718,35 +714,10 @@ export default function BulkQuestionModal({
                 </Select>
               </div>
 
-              {/* Starting Order */}
-              <div>
-                <label className="text-xs font-bold text-gray-700 block mb-1">
-                  4. Starting Order #
-                </label>
-                <InputNumber
-                  min={1}
-                  max={999}
-                  value={startingOrder}
-                  onChange={(val) => setStartingOrder(val || 1)}
-                  className="w-full"
-                />
-              </div>
+             
             </div>
 
-            {currentSection && (
-              <div className="flex items-center justify-between text-xs text-gray-500 pt-1.5 border-t border-gray-200">
-                <div>
-                  Section: <strong className="text-gray-800">{currentSection.title}</strong> (
-                  <span className="font-mono text-gray-600">{currentSection.code}</span>)
-                </div>
-                <div>
-                  Active Facet:{" "}
-                  <Tag color={FACET_MAP[selectedFacet]?.groupColor || "blue"} className="font-mono text-xs m-0">
-                    {selectedFacet} ({FACET_MAP[selectedFacet]?.name || selectedFacet})
-                  </Tag>
-                </div>
-              </div>
-            )}
+           
           </div>
 
           {/* Mode Switch Tabs */}
@@ -758,11 +729,11 @@ export default function BulkQuestionModal({
                 key: "builder",
                 label: (
                   <span className="font-bold flex items-center gap-1.5 text-sm">
-                    <UnorderedListOutlined />
+                   
                     <span>
                       {selectedType === "likert5"
-                        ? "Interactive Likert-5 Questions Builder"
-                        : "Interactive Multiple Choice Questions & Options Builder"}
+                        ? "Likert-5 Questions Builder"
+                        : "Multiple Choice Questions & Options Builder"}
                     </span>
                     <Tag color="blue" className="ml-1 text-[10px]">
                       {selectedType === "likert5"
@@ -812,22 +783,16 @@ export default function BulkQuestionModal({
                               icon={<PlusOutlined />}
                               onClick={() => handleAddMultipleLikertRows(5)}
                             >
-                              + Add 5 Rows
+                              Add 5 Rows
                             </Button>
-                            <Button
-                              size="small"
-                              icon={<PlusOutlined />}
-                              onClick={() => handleAddMultipleLikertRows(10)}
-                            >
-                              + Add 10 Rows
-                            </Button>
+                           
                             <Button
                               size="small"
                               icon={<FileTextOutlined />}
                               onClick={() => setPasteModalOpen(true)}
                               className="border-blue-300 text-blue-700 hover:bg-blue-50"
                             >
-                              📋 Paste Multi-line List
+                            Paste Multi-line List
                             </Button>
                           </div>
 
@@ -848,10 +813,9 @@ export default function BulkQuestionModal({
                           <table className="w-full text-left text-xs border-collapse">
                             <thead className="bg-gray-100/80 sticky top-0 z-10 border-b border-gray-200">
                               <tr>
-                                <th className="p-2.5 w-12 text-center font-bold text-gray-700">#</th>
-                                <th className="p-2.5 w-20 text-center font-bold text-gray-700">Order</th>
+                                <th className="p-2.5 w-12 text-center font-bold text-gray-700">sl</th>
                                 <th className="p-2.5 font-bold text-gray-700">
-                                  Question Statement (Likert-5 Prompt) <span className="text-red-500">*</span>
+                                   Question Statement (Likert-5 Prompt) <span className="text-red-500">*</span>
                                 </th>
                                 <th className="p-2.5 w-32 text-center font-bold text-gray-700">
                                   Reverse Score
@@ -865,17 +829,7 @@ export default function BulkQuestionModal({
                                   <td className="p-2.5 text-center font-mono font-bold text-gray-400">
                                     {idx + 1}
                                   </td>
-                                  <td className="p-2">
-                                    <InputNumber
-                                      size="small"
-                                      min={1}
-                                      value={item.order}
-                                      onChange={(val) =>
-                                        handleLikertFieldChange(item.id, "order", val || 1)
-                                      }
-                                      className="w-full text-center"
-                                    />
-                                  </td>
+                                
                                   <td className="p-2">
                                     <Input
                                       value={item.text}
@@ -929,14 +883,14 @@ export default function BulkQuestionModal({
                               style={{ backgroundColor: "#8C1814", borderColor: "#8C1814" }}
                               className="font-semibold"
                             >
-                              Add MCQ Question Card
+                              Add Question
                             </Button>
                             <Button
                               size="small"
                               icon={<PlusOutlined />}
                               onClick={() => handleAddMultipleMcqQuestions(3)}
                             >
-                              + Add 3 MCQ Cards
+                              Add 3 Questions
                             </Button>
                           </div>
 
@@ -964,22 +918,8 @@ export default function BulkQuestionModal({
                                 </div>
 
                                 <div className="flex items-center gap-2">
-                                  <span className="text-xs text-gray-500">Order:</span>
-                                  <InputNumber
-                                    size="small"
-                                    min={1}
-                                    value={q.order}
-                                    onChange={(val) =>
-                                      handleMcqFieldChange(q.id, "order", val || 1)
-                                    }
-                                    className="w-16"
-                                  />
-                                  <Button
-                                    size="small"
-                                    icon={<CopyOutlined />}
-                                    onClick={() => handleDuplicateMcq(q)}
-                                    title="Duplicate MCQ"
-                                  />
+                                 
+                                 
                                   <Button
                                     size="small"
                                     danger
@@ -994,7 +934,7 @@ export default function BulkQuestionModal({
                               {/* Question Prompt */}
                               <div>
                                 <label className="text-xs font-bold text-gray-700 block mb-1">
-                                  Question Prompt Statement <span className="text-red-500">*</span>
+                                  Question<span className="text-red-500">*</span>
                                 </label>
                                 <TextArea
                                   rows={2}
@@ -1208,66 +1148,7 @@ export default function BulkQuestionModal({
                   </div>
                 ),
               },
-              {
-                key: "json",
-                label: (
-                  <span className="font-bold flex items-center gap-1.5 text-sm">
-                    <CodeOutlined />
-                    <span>Raw JSON Importer</span>
-                  </span>
-                ),
-                children: (
-                  <div className="space-y-3 pt-1">
-                    <div className="flex items-center justify-between flex-wrap gap-2">
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="small"
-                          onClick={loadLikertTemplate}
-                          className="text-xs font-semibold"
-                        >
-                          Load Likert-5 Template
-                        </Button>
-                        <Button
-                          size="small"
-                          onClick={loadMcqTemplate}
-                          className="text-xs font-semibold"
-                        >
-                          Load MCQ with Images Template
-                        </Button>
-                      </div>
-
-                      <Button
-                        size="small"
-                        type="dashed"
-                        onClick={validateRawJson}
-                        className="text-xs"
-                      >
-                        Verify JSON
-                      </Button>
-                    </div>
-
-                    {jsonError && (
-                      <Alert
-                        type="error"
-                        showIcon
-                        message={jsonError}
-                        className="text-xs"
-                      />
-                    )}
-
-                    <TextArea
-                      rows={14}
-                      value={rawJsonText}
-                      onChange={(e) => {
-                        setRawJsonText(e.target.value);
-                        setJsonError("");
-                      }}
-                      placeholder={`{\n  "sectionId": 1,\n  "facet": "R",\n  "type": "likert5",\n  "questions": [\n    {\n      "text": "I enjoy repairing household electrical appliances",\n      "order": 1,\n      "reverse": false\n    }\n  ]\n}`}
-                      className="font-mono text-xs rounded-xl bg-slate-900 text-emerald-400 p-3"
-                    />
-                  </div>
-                ),
-              },
+            
             ]}
           />
         </div>

@@ -863,15 +863,14 @@ export default function QuestionBankPage() {
     </Button>
 
     <Button
-      icon={<ThunderboltFilled className="text-amber-400" />}
-      onClick={() => setIsBulkModalOpen(true)}
+       onClick={() => setIsBulkModalOpen(true)}
       style={{ backgroundColor: "#8C1814", borderColor: "#8C1814", color: "#fff" }}
       className="h-8 shadow-sm font-semibold flex items-center gap-1.5"
     >
-      Bulk Add Questions
+    Add Questions
     </Button>
 
-    <Button
+    {/* <Button
       type="primary"
       icon={<PlusOutlined />}
       onClick={handleOpenAdd}
@@ -879,7 +878,7 @@ export default function QuestionBankPage() {
       className="h-8 shadow-sm font-semibold"
     >
       Add Question
-    </Button>
+    </Button> */}
   </div>
 </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 border-b border-gray-100 pb-4">
