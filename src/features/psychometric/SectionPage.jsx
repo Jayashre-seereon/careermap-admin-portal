@@ -26,6 +26,7 @@ import {
   QuestionCircleOutlined,
   ReloadOutlined,
   SearchOutlined,
+  ThunderboltFilled,
 } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -363,21 +364,21 @@ export default function SectionPage() {
       key: "questionCount",
       width: 140,
      render: (count, record) => (
-  <Button
-    size="small"
-    onClick={() =>
-      navigate(
-        `/admin/psychometric-assessments/${
-          record.assessmentId || assessmentId || "assess-1"
-        }/questions?sectionId=${record.id}`
-      )
-    }
-    className="flex items-center gap-2 !px-3 !py-3 text-xs font-semibold border-rose-200 bg-rose-50 text-[#9a2119] hover:bg-rose-100 rounded-lg"
-  >
-    <QuestionCircleOutlined />
-    <span>{count || 0} Questions</span>
-  </Button>
-),
+        <Button
+          size="small"
+          onClick={() =>
+            navigate(
+              `/admin/psychometric-assessments/${
+                record.assessmentId || assessmentId || "assess-1"
+              }/questions?sectionId=${record.id}`
+            )
+          }
+          className="flex items-center gap-1.5 !px-2.5 !py-2.5 text-xs font-semibold border-rose-200 bg-rose-50 text-[#9a2119] hover:bg-rose-100 rounded-lg"
+        >
+          <QuestionCircleOutlined />
+          <span>{count || 0} Questions</span>
+        </Button>
+      ),
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Actions</span>,

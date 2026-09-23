@@ -65,6 +65,7 @@ import {
 } from "./psychometricConstants";
 import { validationRules } from "../../utils/formValidation";
 import { getSerialNumber } from "../../utils/slNo";
+import BulkQuestionModal from "./BulkQuestionModal";
 
 const { TextArea } = Input;
 const { Option, OptGroup } = Select;
@@ -99,6 +100,7 @@ export default function QuestionBankPage() {
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState("add"); // "add" | "edit" | "view"
   const [currentRecord, setCurrentRecord] = useState(null);
 
@@ -861,6 +863,15 @@ export default function QuestionBankPage() {
     </Button>
 
     <Button
+      icon={<ThunderboltFilled className="text-amber-400" />}
+      onClick={() => setIsBulkModalOpen(true)}
+      style={{ backgroundColor: "#8C1814", borderColor: "#8C1814", color: "#fff" }}
+      className="h-8 shadow-sm font-semibold flex items-center gap-1.5"
+    >
+      Bulk Add Questions
+    </Button>
+
+    <Button
       type="primary"
       icon={<PlusOutlined />}
       onClick={handleOpenAdd}
@@ -1196,6 +1207,20 @@ export default function QuestionBankPage() {
           )}
         </Form>
       </Modal>
+
+      {/* Bulk Add Questions Modal */}
+      <BulkQuestionModal
+        open={isBulkModalOpen}
+        onClose={() => setIsBulkModalOpen(false)}
+        onSuccess={() => {
+          loadMetadata().then(({ sections: s }) => {
+            loadQuestions(s);
+          });
+        }}
+        sections={sections}
+        assessments={assessments}
+        defaultSectionId={selectedSectionId}
+      />
     </div>
   );
 }
