@@ -307,14 +307,19 @@ export default function AssessmentReportPage() {
 
   // Keep the summary cards in sync with the score returned for this attempt.
   const scoreFor = (item) => Number(item?.percentage ?? pct(item?.score) ?? 0);
-  const rankedDomains = (items, fallbackItems, limit, labels = {}) => {
-    const source = Array.isArray(items) && items.length ? items : fallbackItems;
-    return source
-      .map((item) => ({ ...item, name: item?.name || labels[item?.facet] }))
-      .filter((item) => item.name)
-      .sort((a, b) => scoreFor(b) - scoreFor(a))
-      .slice(0, limit);
-  };
+ const MIN_SCORE = 45; // change this number to change the cut-off
+const rankedDomains = (items, fallbackItems, limit, labels = {}) => {
+  const source = Array.isArray(items) && items.length ? items : fallbackItems;
+  const sorted = source
+    .map((item) => ({ ...item, name: item?.name || labels[item?.facet] }))
+    .filter((item) => item.name)
+    .sort((a, b) => scoreFor(b) - scoreFor(a));
+
+  if (limit == null) {
+const passed = sorted.filter((item) => scoreFor(item) > MIN_SCORE);
+return passed;  }
+  return sorted.slice(0, limit);
+};
   const topAptitudes = rankedDomains(domainApt, [
     { name: "Verbal Aptitude", percentage: aptScoreMap.Verb },
     { name: "Logical Aptitude", percentage: aptScoreMap.Log },
@@ -322,7 +327,7 @@ export default function AssessmentReportPage() {
     { name: "Mechanical Aptitude", percentage: aptScoreMap.Mech },
     { name: "Spatial Aptitude", percentage: aptScoreMap.Spat },
     { name: "Numerical Aptitude", percentage: aptScoreMap.Num },
-  ], 3, { Num: "Numerical Aptitude", Log: "Logical Aptitude", Verb: "Verbal Aptitude", Voc: "Vocabulary Aptitude", Mech: "Mechanical Aptitude", Spat: "Spatial Aptitude" });
+  ], null, { Num: "Numerical Aptitude", Log: "Logical Aptitude", Verb: "Verbal Aptitude", Voc: "Vocabulary Aptitude", Mech: "Mechanical Aptitude", Spat: "Spatial Aptitude" });
 const topCareerInterests = rankedDomains(domainInterests, [
   { name: "Enterprising", percentage: interestScoreMap.E },
   { name: "Conventional", percentage: interestScoreMap.C },
@@ -330,36 +335,40 @@ const topCareerInterests = rankedDomains(domainInterests, [
   { name: "Realistic", percentage: interestScoreMap.R },
   { name: "Investigative", percentage: interestScoreMap.I },
   { name: "Artistic", percentage: interestScoreMap.A },
-], 4, { R: "Realistic", I: "Investigative", A: "Artistic", S: "Social", E: "Enterprising", C: "Conventional" });
+], null, { R: "Realistic", I: "Investigative", A: "Artistic", S: "Social", E: "Enterprising", C: "Conventional" });
 
 const topLearningStyles = rankedDomains(domainVark, [
   { name: "Visual", percentage: varkScoreMap.V },
   { name: "Reading/Writing", percentage: varkScoreMap.Rd },
   { name: "Auditory", percentage: varkScoreMap.A },
   { name: "Kinesthetic", percentage: varkScoreMap.K },
-], 3, { V: "Visual", A: "Auditory", Rd: "Reading/Writing", K: "Kinesthetic" });
+], null, { V: "Visual", A: "Auditory", Rd: "Reading/Writing", K: "Kinesthetic" });
 
 const topWorkValues = rankedDomains(domainValues, [
   { name: "Openness to Change", percentage: valScoreMap.OC },
   { name: "Self-Enhancement", percentage: valScoreMap.SE },
   { name: "Self-Transcendence", percentage: valScoreMap.ST },
   { name: "Conservation", percentage: valScoreMap.CO },
-], 2, { OC: "Openness to Change", SE: "Self-Enhancement", ST: "Self-Transcendence", CO: "Conservation" });
+], null, { OC: "Openness to Change", SE: "Self-Enhancement", ST: "Self-Transcendence", CO: "Conservation" });
 
 const topPersonalityTraits = rankedDomains(domainPerson, [
-  { name: "Emotional Stability", percentage: personScoreMap.ES },
-  { name: "Openness", percentage: personScoreMap.O },
-  { name: "Conscientiousness", percentage: personScoreMap.Cn },
-  { name: "Extraversion", percentage: personScoreMap.Ex },
-  { name: "Agreeableness", percentage: personScoreMap.Ag },
-], 5, { ES: "Emotional Stability", O: "Openness", Cn: "Conscientiousness", Ex: "Extraversion", Ag: "Agreeableness" });
+  { facet: "ES", name: "Emotional Stability", percentage: personScoreMap.ES },
+  { facet: "O", name: "Openness", percentage: personScoreMap.O },
+  { facet: "Cn", name: "Conscientiousness", percentage: personScoreMap.Cn },
+  { facet: "Ex", name: "Extraversion", percentage: personScoreMap.Ex },
+  { facet: "Ag", name: "Agreeableness", percentage: personScoreMap.Ag },
+], 1, { ES: "Emotional Stability", O: "Openness", Cn: "Conscientiousness", Ex: "Extraversion", Ag: "Agreeableness" });
 
 const topPersonalityTrait = topPersonalityTraits[0];
-const goalOrientationLabel = shortPct >= longPct ? "SHORT TERM" : "LONG TERM";
-const goalOrientationSummary = Math.abs(longPct - shortPct) <= 10
-  ? "Balanced Planner"
-  : (longPct > shortPct ? "Long-Term Visionary" : "Short-Term Achiever");
 
+const personalityNotes = {
+  ES: "Emotional Stability is the positive side of the Neuroticism scale — a higher score means you stay calmer under pressure.",
+  O: "Openness reflects curiosity and willingness to try new ideas — a higher score means you enjoy variety, creativity and fresh approaches.",
+  Cn: "Conscientiousness reflects discipline and reliability — a higher score means you plan ahead, stay organised and finish what you start.",
+  Ex: "Extraversion reflects your social energy — a higher score means you feel energised around people and are comfortable in groups.",
+  Ag: "Agreeableness reflects warmth and cooperation — a higher score means you are empathetic, trusting and good at teamwork.",
+};
+const goalOrientationSummary = shortPct >= longPct ? "Short-Term Achiever" : "Long-Term Visionary";
 const bandLabelFor = (arr, facet, fallback = "Moderate") => {
   const found = (arr || []).find((x) => x.facet === facet);
   return (found?.bandLabel || fallback).toUpperCase();
@@ -1035,9 +1044,9 @@ const bandLabelFor = (arr, facet, fallback = "Moderate") => {
               </div>
             </div>
 
-            <div className="mt-8 p-4 bg-[#CFE0CB] border border-[#BAD0B5] rounded-xl text-sm leading-relaxed text-[#1E232A]">
-              Emotional Stability is the positive side of the Neuroticism scale — a higher score means you stay calmer under pressure.
-            </div>
+           <div className="mt-8 p-4 bg-[#CFE0CB] border border-[#BAD0B5] rounded-xl text-sm leading-relaxed text-[#1E232A]">
+  {personalityNotes[topPersonalityTrait?.facet]}
+</div>
           </div>
 
           <PageFooter pageNum={10} />
@@ -2028,7 +2037,7 @@ const bandLabelFor = (arr, facet, fallback = "Moderate") => {
             </div>
 
           <p className="text-xs leading-relaxed text-slate-700 mb-4">
-  {studentName} shows an {hollandCode} interest pattern, which combined with {topPersonalityTrait?.name?.toLowerCase()} and a strong pull toward {topWorkValues[0]?.name?.toLowerCase()} points most clearly toward {topCluster.name} ({topCluster.matchPercentage}% match). Aptitude-wise, {studentName}'s strongest results are in {topAptitudes[0]?.name} and {topAptitudes[1]?.name}, which support that direction. As a {topLearningStyles[0]?.name?.toLowerCase()} learner with a {goalOrientationSummary.toLowerCase()} approach to the path ahead, the study tips and route in Section 3 are the most relevant starting point.
+  {studentName} shows an {hollandCode} interest pattern, which combined with {topPersonalityTrait?.name?.toLowerCase()} and a strong pull toward {topWorkValues[0]?.name?.toLowerCase()} points most clearly toward {topCluster.name} ({topCluster.matchPercentage}% match). Aptitude-wise, {studentName}'s strongest results are in {topAptitudes.slice(0, 2).map((a) => a.name).join(" and ")}, which support that direction. As a {topLearningStyles[0]?.name?.toLowerCase()} learner with a {goalOrientationSummary.toLowerCase()} approach to the path ahead, the study tips and route in Section 3 are the most relevant starting point.
 </p>
             <div className="p-3.5 bg-[#E6EFF6] border border-[#D2DFEB] rounded-xl text-xs space-y-1 mb-3">
               <strong className="block text-sm font-bold text-[#1E232A] mb-1.5 uppercase">WHAT TO DO NEXT</strong>
