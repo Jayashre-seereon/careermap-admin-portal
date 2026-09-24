@@ -323,7 +323,47 @@ export default function AssessmentReportPage() {
     { name: "Spatial Aptitude", percentage: aptScoreMap.Spat },
     { name: "Numerical Aptitude", percentage: aptScoreMap.Num },
   ], 3, { Num: "Numerical Aptitude", Log: "Logical Aptitude", Verb: "Verbal Aptitude", Voc: "Vocabulary Aptitude", Mech: "Mechanical Aptitude", Spat: "Spatial Aptitude" });
+const topCareerInterests = rankedDomains(domainInterests, [
+  { name: "Enterprising", percentage: interestScoreMap.E },
+  { name: "Conventional", percentage: interestScoreMap.C },
+  { name: "Social", percentage: interestScoreMap.S },
+  { name: "Realistic", percentage: interestScoreMap.R },
+  { name: "Investigative", percentage: interestScoreMap.I },
+  { name: "Artistic", percentage: interestScoreMap.A },
+], 4, { R: "Realistic", I: "Investigative", A: "Artistic", S: "Social", E: "Enterprising", C: "Conventional" });
 
+const topLearningStyles = rankedDomains(domainVark, [
+  { name: "Visual", percentage: varkScoreMap.V },
+  { name: "Reading/Writing", percentage: varkScoreMap.Rd },
+  { name: "Auditory", percentage: varkScoreMap.A },
+  { name: "Kinesthetic", percentage: varkScoreMap.K },
+], 3, { V: "Visual", A: "Auditory", Rd: "Reading/Writing", K: "Kinesthetic" });
+
+const topWorkValues = rankedDomains(domainValues, [
+  { name: "Openness to Change", percentage: valScoreMap.OC },
+  { name: "Self-Enhancement", percentage: valScoreMap.SE },
+  { name: "Self-Transcendence", percentage: valScoreMap.ST },
+  { name: "Conservation", percentage: valScoreMap.CO },
+], 2, { OC: "Openness to Change", SE: "Self-Enhancement", ST: "Self-Transcendence", CO: "Conservation" });
+
+const topPersonalityTraits = rankedDomains(domainPerson, [
+  { name: "Emotional Stability", percentage: personScoreMap.ES },
+  { name: "Openness", percentage: personScoreMap.O },
+  { name: "Conscientiousness", percentage: personScoreMap.Cn },
+  { name: "Extraversion", percentage: personScoreMap.Ex },
+  { name: "Agreeableness", percentage: personScoreMap.Ag },
+], 5, { ES: "Emotional Stability", O: "Openness", Cn: "Conscientiousness", Ex: "Extraversion", Ag: "Agreeableness" });
+
+const topPersonalityTrait = topPersonalityTraits[0];
+const goalOrientationLabel = shortPct >= longPct ? "SHORT TERM" : "LONG TERM";
+const goalOrientationSummary = Math.abs(longPct - shortPct) <= 10
+  ? "Balanced Planner"
+  : (longPct > shortPct ? "Long-Term Visionary" : "Short-Term Achiever");
+
+const bandLabelFor = (arr, facet, fallback = "Moderate") => {
+  const found = (arr || []).find((x) => x.facet === facet);
+  return (found?.bandLabel || fallback).toUpperCase();
+};
   // 5 Top Default fallback clusters matching the PDF
   const defaultTop5 = [
     {
@@ -868,12 +908,13 @@ export default function AssessmentReportPage() {
                 <div className="score-rep-banner-circle"></div>
                 <span>YOUR TOP CAREER INTERESTS ARE</span>
               </div>
-              <div className="top-interests-pills-grid">
-                <div className="top-interest-pill">ENTERPRISING</div>
-                <div className="top-interest-pill">CONVENTIONAL</div>
-                <div className="top-interest-pill">SOCIAL</div>
-                <div className="top-interest-pill">REALISTIC</div>
-              </div>
+   <div className="top-interests-pills-grid">
+  {topCareerInterests.map((interest) => (
+    <div key={interest.facet || interest.name} className="top-interest-pill">
+      {interest.name.toUpperCase()}
+    </div>
+  ))}
+</div>
             </div>
           </div>
 
@@ -914,30 +955,32 @@ export default function AssessmentReportPage() {
         <div className="pdf-page" id="page-9">
           <PageHeader studentFirstName={studentFirstName} />
 
-          <div className="pdf-page-body space-y-3">
-            {[
-              { num: "01", name: "EMOTIONAL STABILITY", band: "HIGH", text: "You stay calm and steady under pressure a major asset for high-stakes fields like defence, medicine, aviation and competitive exams." },
-              { num: "02", name: "OPENNESS", band: "MODERATE", text: "You balance curiosity with practicality open to new ideas, while valuing what already works." },
-              { num: "03", name: "CONSCIENTIOUSNESS", band: "MODERATE", text: "You're reasonably organised and dependable, finishing what matters even if some tasks slip." },
-              { num: "04", name: "EXTRAVERSION", band: "MODERATE", text: "You're an ambivert — comfortable both in groups and working alone, adapting to what the situation needs." },
-              { num: "05", name: "AGREEABLENESS", band: "MODERATE", text: "You cooperate well while still holding your own views — a healthy balance for teamwork and fair decisions." },
-            ].map((item) => (
-              <div key={item.num} className="trait-card-row">
-                <div className="trait-card-left">
-                  <div className="trait-card-badge">
-                    <span className="detail-card-num-circle">{item.num}</span>
-                    <span>{item.name}</span>
-                  </div>
-                  <div className={`trait-card-band ${item.band === "HIGH" ? "high" : "moderate"}`}>
-                    {item.band}
-                  </div>
-                </div>
-                <div className="trait-card-right-body">
-                  <div>{item.text}</div>
-                </div>
-              </div>
-            ))}
-          </div>
+         {[
+  { facet: "ES", num: "01", name: "EMOTIONAL STABILITY", highText: "You stay calm and steady under pressure — a major asset for high-stakes fields like defence, medicine, aviation and competitive exams.", devText: "Pressure situations tend to affect you more than most — building calming routines before high-stakes moments (exams, interviews) can help a lot." },
+  { facet: "O", num: "02", name: "OPENNESS", modText: "You balance curiosity with practicality — open to new ideas, while valuing what already works." },
+  { facet: "Cn", num: "03", name: "CONSCIENTIOUSNESS", modText: "You're reasonably organised and dependable, finishing what matters even if some tasks slip." },
+  { facet: "Ex", num: "04", name: "EXTRAVERSION", modText: "You're an ambivert — comfortable both in groups and working alone, adapting to what the situation needs.", devText: "You tend to recharge better alone or in small groups than in large social settings — that's a strength in focused, independent work." },
+  { facet: "Ag", num: "05", name: "AGREEABLENESS", modText: "You cooperate well while still holding your own views — a healthy balance for teamwork and fair decisions." },
+].map((item) => {
+  const bandLabel = bandLabelFor(domainPerson, item.facet);
+  const text = bandLabel === "HIGH" && item.highText ? item.highText
+    : bandLabel === "DEVELOPING" && item.devText ? item.devText
+    : item.modText || item.highText;
+  return (
+    <div key={item.num} className="trait-card-row">
+      <div className="trait-card-left">
+        <div className="trait-card-badge">
+          <span className="detail-card-num-circle">{item.num}</span>
+          <span>{item.name}</span>
+        </div>
+        <div className={`trait-card-band ${bandLabel === "HIGH" ? "high" : bandLabel === "DEVELOPING" ? "developing" : "moderate"}`}>
+          {bandLabel}
+        </div>
+      </div>
+      <div className="trait-card-right-body"><div>{text}</div></div>
+    </div>
+  );
+})}
 
           <PageFooter pageNum={9} />
         </div>
@@ -1180,13 +1223,13 @@ export default function AssessmentReportPage() {
                 <div className="score-rep-banner-circle"></div>
                 <span>Your Best Learning Styles are</span>
               </div>
-              <div className="flex justify-center gap-4 max-w-md mx-auto">
-                <div className="top-interest-pill lavender flex-1">VISUAL</div>
-                <div className="top-interest-pill lavender flex-1">READING</div>
-              </div>
-              <div className="max-w-[210px] mx-auto mt-3">
-                <div className="top-interest-pill lavender">AUDITORY</div>
-              </div>
+             <div className="top-interests-pills-grid max-w-md">
+  {topLearningStyles.map((style) => (
+    <div key={style.facet || style.name} className="top-interest-pill lavender">
+      {style.name.toUpperCase()}
+    </div>
+  ))}
+</div>
             </div>
           </div>
 
@@ -1209,16 +1252,15 @@ export default function AssessmentReportPage() {
               Understanding your work values helps you evaluate job opportunities beyond salary and title. When your work aligns with your values, you feel more motivated, satisfied, and committed. When it does not, even a well-paying or prestigious role can feel empty. Identifying your core values early helps you make career choices that bring long-term fulfilment."
             </p>
 
-            <div className="my-auto py-2 flex justify-center items-center">
-              <img
-                src={ReportImg5}
-                alt="Schwartz Values"
-                className="max-h-[300px] w-full max-w-[500px] mx-auto object-contain"
-              />
-            </div>
+           <div className="py-2 flex justify-center items-center">
+  <img
+    src={ReportImg5}
+    alt="Schwartz Values"
+    className="max-h-[350px] w-full max-w-[500px] mx-auto object-contain"
+  />
+</div>
 
-            <p className="page-lead-text text-xs text-[#4A5568] mt-2">
-              Each trait brings strengths, and different careers suit different combinations. For example, highly conscientious individuals may excel in structured roles, while those high in openness may thrive in creative or innovative environments. Understanding your personality helps you choose careers that fit your natural style, identify areas for growth, and work more effectively with others.
+<p className="page-lead-text text-xs text-[#4A5568] mt-6 ">     Each trait brings strengths, and different careers suit different combinations. For example, highly conscientious individuals may excel in structured roles, while those high in openness may thrive in creative or innovative environments. Understanding your personality helps you choose careers that fit your natural style, identify areas for growth, and work more effectively with others.
             </p>
           </div>
 
@@ -1231,31 +1273,31 @@ export default function AssessmentReportPage() {
         <div className="pdf-page" id="page-16">
           <PageHeader studentFirstName={studentFirstName} />
 
-          <div className="pdf-page-body space-y-3.5">
-            <TitlePill title="HERE ARE THE SUGGESTIONS AS PER VALUES" colorClass="dark-green" />
-
-            {[
-              { num: "01", name: "OPENNESS TO CHANGE", band: "HIGH", text: "Freedom, creativity and new experiences drive you — you'll thrive where you can decide how you work and what you explore." },
-              { num: "02", name: "SELF-ENHANCEMENT", band: "HIGH", text: "Achievement, success and recognition strongly drive you — you'll thrive with clear goals, competition, growth ladders and visible results." },
-              { num: "03", name: "SELF-TRANSCENDENCE", band: "MODERATE", text: "You care about fairness and helping others as part of a balanced set of motivations." },
-              { num: "04", name: "CONSERVATION", band: "MODERATE", text: "You value a reasonable amount of stability and order while staying flexible when things shift." },
-            ].map((item) => (
-              <div key={item.num} className="trait-card-row">
-                <div className="trait-card-left">
-                  <div className="trait-card-badge">
-                    <span className="detail-card-num-circle">{item.num}</span>
-                    <span>{item.name}</span>
-                  </div>
-                  <div className={`trait-card-band ${item.band === "HIGH" ? "high" : "moderate"}`}>
-                    {item.band}
-                  </div>
-                </div>
-                <div className="trait-card-right-body">
-                  <div>{item.text}</div>
-                </div>
-              </div>
-            ))}
-          </div>
+         {[
+  { facet: "OC", num: "01", name: "OPENNESS TO CHANGE", highText: "Freedom, creativity and new experiences drive you — you'll thrive where you can decide how you work and what you explore.", modText: "You appreciate some freedom and variety in how you work, while still valuing a degree of structure." },
+  { facet: "SE", num: "02", name: "SELF-ENHANCEMENT", highText: "Achievement, success and recognition strongly drive you — you'll thrive with clear goals, competition, growth ladders and visible results.", modText: "Achievement and recognition matter to you, alongside other motivations like stability or purpose." },
+  { facet: "ST", num: "03", name: "SELF-TRANSCENDENCE", modText: "You care about fairness and helping others as part of a balanced set of motivations." },
+  { facet: "CO", num: "04", name: "CONSERVATION", modText: "You value a reasonable amount of stability and order while staying flexible when things shift.", devText: "Stability and predictability aren't your main drivers — you're comfortable with change and less tied to fixed routines." },
+].map((item) => {
+  const bandLabel = bandLabelFor(domainValues, item.facet);
+  const text = bandLabel === "HIGH" && item.highText ? item.highText
+    : bandLabel === "DEVELOPING" && item.devText ? item.devText
+    : item.modText;
+  return (
+    <div key={item.num} className="trait-card-row">
+      <div className="trait-card-left">
+        <div className="trait-card-badge">
+          <span className="detail-card-num-circle">{item.num}</span>
+          <span>{item.name}</span>
+        </div>
+        <div className={`trait-card-band ${bandLabel === "HIGH" ? "high" : bandLabel === "DEVELOPING" ? "developing" : "moderate"}`}>
+          {bandLabel}
+        </div>
+      </div>
+      <div className="trait-card-right-body"><div>{text}</div></div>
+    </div>
+  );
+})}
 
           <PageFooter pageNum={16} />
         </div>
@@ -1309,10 +1351,13 @@ export default function AssessmentReportPage() {
                 <div className="score-rep-banner-circle"></div>
                 <span>Your Best Work Value Fit into</span>
               </div>
-              <div className="grid grid-cols-2 gap-4 max-w-lg mx-auto">
-                <div className="top-interest-pill green">OPENNESS TO CHANGE</div>
-                <div className="top-interest-pill green">SELF-ENHANCEMENT</div>
-              </div>
+            <div className="grid grid-cols-2 gap-4 max-w-lg mx-auto">
+  {topWorkValues.map((value) => (
+    <div key={value.facet || value.name} className="top-interest-pill green">
+      {value.name.toUpperCase()}
+    </div>
+  ))}
+</div>
             </div>
           </div>
 
@@ -1890,10 +1935,8 @@ export default function AssessmentReportPage() {
               </p>
             </div>
 
-            <div className="flex gap-6 text-sm font-semibold text-slate-800 mb-3 pb-2 border-b border-slate-200">
-              <div>Learning style: <strong className="text-[#1E232A]">Visual</strong></div>
-              <div>Goal orientation: <strong className="text-[#1E232A]">Balanced Planner</strong></div>
-            </div>
+           <div>Learning style: <strong className="text-[#1E232A]">{topLearningStyles[0]?.name}</strong></div>
+<div>Goal orientation: <strong className="text-[#1E232A]">{goalOrientationSummary}</strong></div>
 
             <div className="space-y-3 text-xs leading-relaxed text-slate-700">
               <div>
@@ -1966,28 +2009,27 @@ export default function AssessmentReportPage() {
                 <div className="text-[10px] font-bold uppercase text-slate-500">TOP CLUSTER <span className="text-[#8C1814] font-black">{topCluster.matchPercentage}%</span></div>
                 <div className="text-xs font-extrabold text-slate-900 leading-snug">{topCluster.name}</div>
               </div>
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                <div className="text-[10px] font-bold uppercase text-slate-500">TOP VALUE</div>
-                <div className="text-xs font-extrabold text-slate-900 leading-snug">Openness to Change</div>
-              </div>
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                <div className="text-[10px] font-bold uppercase text-slate-500">TOP TRAIT</div>
-                <div className="text-xs font-extrabold text-slate-900 leading-snug">Emotional Stability</div>
-              </div>
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                <div className="text-[10px] font-bold uppercase text-slate-500">LEARNING STYLE</div>
-                <div className="text-xs font-extrabold text-slate-900 leading-snug">Visual</div>
-              </div>
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                <div className="text-[10px] font-bold uppercase text-slate-500">GOAL ORIENTATION</div>
-                <div className="text-xs font-extrabold text-slate-900 leading-snug">Balanced Planner</div>
-              </div>
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+  <div className="text-[10px] font-bold uppercase text-slate-500">TOP VALUE</div>
+  <div className="text-xs font-extrabold text-slate-900 leading-snug">{topWorkValues[0]?.name}</div>
+</div>
+<div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+  <div className="text-[10px] font-bold uppercase text-slate-500">TOP TRAIT</div>
+  <div className="text-xs font-extrabold text-slate-900 leading-snug">{topPersonalityTrait?.name}</div>
+</div>
+<div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+  <div className="text-[10px] font-bold uppercase text-slate-500">LEARNING STYLE</div>
+  <div className="text-xs font-extrabold text-slate-900 leading-snug">{topLearningStyles[0]?.name}</div>
+</div>
+<div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+  <div className="text-[10px] font-bold uppercase text-slate-500">GOAL ORIENTATION</div>
+  <div className="text-xs font-extrabold text-slate-900 leading-snug">{goalOrientationSummary}</div>
+</div>
             </div>
 
-            <p className="text-xs leading-relaxed text-slate-700 mb-4">
-              {studentName} shows an {hollandCode} interest pattern, which combined with emotional stability and a strong pull toward openness to change points most clearly toward {topCluster.name} ({topCluster.matchPercentage}% match). Aptitude-wise, {studentName}’s strongest results are in Verbal Reasoning and Logical Reasoning, which support that direction. As a visual learner with a balanced planner approach to the path ahead, the study tips and route in Section 3 are the most relevant starting point.
-            </p>
-
+          <p className="text-xs leading-relaxed text-slate-700 mb-4">
+  {studentName} shows an {hollandCode} interest pattern, which combined with {topPersonalityTrait?.name?.toLowerCase()} and a strong pull toward {topWorkValues[0]?.name?.toLowerCase()} points most clearly toward {topCluster.name} ({topCluster.matchPercentage}% match). Aptitude-wise, {studentName}'s strongest results are in {topAptitudes[0]?.name} and {topAptitudes[1]?.name}, which support that direction. As a {topLearningStyles[0]?.name?.toLowerCase()} learner with a {goalOrientationSummary.toLowerCase()} approach to the path ahead, the study tips and route in Section 3 are the most relevant starting point.
+</p>
             <div className="p-3.5 bg-[#E6EFF6] border border-[#D2DFEB] rounded-xl text-xs space-y-1 mb-3">
               <strong className="block text-sm font-bold text-[#1E232A] mb-1.5 uppercase">WHAT TO DO NEXT</strong>
               <div>• Read through your top 5 clusters in Section 1 with a parent, teacher or counsellor.</div>
