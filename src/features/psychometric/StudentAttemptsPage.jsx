@@ -360,9 +360,7 @@ export default function StudentAttemptsPage() {
           <h1 className="text-2xl font-bold text-[#9a2119] tracking-tight">
             Candidate Test Attempts & Psychometric Audit
           </h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Audit candidate response keys, calculated Holland codes, trait distributions, and trigger scoring recalculations.
-          </p>
+         
         </div>
 
         <div className="flex items-center gap-2.5">
