@@ -812,6 +812,44 @@
     print-color-adjust: exact !important;
   }
 
+  /* The admin report is rendered inside a fixed-height dashboard shell. Let
+     that shell expand into the print flow so every report page is paginated. */
+  html,
+  body,
+  #root {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  .h-screen.overflow-hidden {
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  .h-screen.overflow-hidden > :first-child {
+    display: none !important;
+  }
+
+  .h-screen.overflow-hidden > div {
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    transition: none !important;
+  }
+
+  .h-screen.overflow-hidden main {
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
   .pdf-pages-wrapper {
     max-width: none !important;
     margin: 0 !important;
@@ -836,5 +874,11 @@
     break-inside: avoid !important;
     overflow: hidden !important;
     box-sizing: border-box !important;
+  }
+
+  /* Do not create an extra trailing sheet after the final report page. */
+  .pdf-pages-wrapper > .pdf-page:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
   }
 }
