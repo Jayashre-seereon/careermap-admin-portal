@@ -16,6 +16,7 @@ const STREAM_SUBJECTS = {
   Science: SUBJECTS_SCIENCE,
   Commerce: SUBJECTS_COMMERCE,
   Humanities: SUBJECTS_HUMANITIES,
+  
 };
 
 const CATEGORY_OPTIONS = [
@@ -28,7 +29,7 @@ const CATEGORY_OPTIONS = [
 
 function getSubjectsFor(classValue, streamValue) {
   if (classValue === "9th" || classValue === "10th") {
-    return SUBJECTS_9_10;
+    return streamValue ? SUBJECTS_9_10 : [];
   }
   if ((classValue === "11th" || classValue === "12th") && streamValue) {
     return STREAM_SUBJECTS[streamValue] || [];
@@ -41,7 +42,7 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
 
   const classValue = Form.useWatch("class", form);
   const streamValue = Form.useWatch("stream", form);
-  const isSeniorClass = classValue === "11th" || classValue === "12th";
+  const hasClass = Boolean(classValue);
   const subjects = getSubjectsFor(classValue, streamValue);
 
   React.useEffect(() => {
@@ -111,16 +112,17 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
           </Select>
         </Form.Item>
 
-        {isSeniorClass && (
+        {hasClass && (
           <Form.Item
             name="stream"
-            label="Stream (11th/12th)"
+            label={`Stream (${classValue})`}
             rules={[validationRules.required("Stream")]}
           >
             <Select placeholder="Select stream" disabled={disabled} onChange={handleStreamChange}>
               <Option value="Science">Science</Option>
               <Option value="Commerce">Commerce</Option>
               <Option value="Humanities">Humanities</Option>
+              <Option value="Not Decided">Not Decided</Option>
             </Select>
           </Form.Item>
         )}
@@ -188,9 +190,7 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
         <>
           <Divider />
           <h3 className="mb-2 text-lg font-semibold text-[#9a2119]">
-            {classValue === "9th" || classValue === "10th"
-              ? "Latest Score"
-              : `Latest Score (${streamValue || "select stream"})`}
+            {`Latest Score (${streamValue || "select stream"})`}
           </h3>
 
           {subjects.length > 0 ? (
@@ -205,6 +205,15 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
             <p className="text-sm text-gray-500">Select a stream to enter marks.</p>
           )}
         </>
+      )}
+
+      {disabled && initialValues?.marks && (
+        <div className="mb-4 grid grid-cols-1 gap-2 rounded-lg bg-slate-50 p-3 text-sm sm:grid-cols-2">
+          {initialValues.marks._createdAt && <div><span className="font-semibold">Created at:</span> {new Date(initialValues.marks._createdAt).toLocaleString()}</div>}
+          {initialValues.marks._createdById && <div><span className="font-semibold">Created by ID:</span> {initialValues.marks._createdById}</div>}
+          {initialValues.marks._creatorType && <div><span className="font-semibold">Creator type:</span> {initialValues.marks._creatorType}</div>}
+          {initialValues.marks._counselorName && <div><span className="font-semibold">Counselor:</span> {initialValues.marks._counselorName}</div>}
+        </div>
       )}
 
       <Divider />
