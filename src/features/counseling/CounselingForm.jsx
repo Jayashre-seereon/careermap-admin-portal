@@ -88,7 +88,7 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
     >
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <h3 className="mb-1 text-lg font-semibold text-[#9a2119] md:col-span-2">
-          Counselee Details
+          Counseling Details
         </h3>
 
         <Form.Item
@@ -115,7 +115,7 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
         {hasClass && (
           <Form.Item
             name="stream"
-            label={`Stream (${classValue})`}
+            label={`Desired Stream (${classValue})`}
             rules={[validationRules.required("Stream")]}
           >
             <Select placeholder="Select stream" disabled={disabled} onChange={handleStreamChange}>
