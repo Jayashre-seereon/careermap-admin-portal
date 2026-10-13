@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeftOutlined,
   DownloadOutlined,
@@ -15,6 +15,8 @@ import {
   pct,
   band,
 } from "./data/careerCompassData";
+import { SAMPLE_PROFILING_REPORT } from "./profilingReportData";
+import YourProfilingReport from "./YourProfilingReport";
 import Logo from "../../assets/logo_white.png";
 import ReportImg1 from "../../assets/report/report_1.png";
 import ReportImg2 from "../../assets/report/report_2.png";
@@ -89,6 +91,7 @@ function TitlePill({ title, colorClass = "" }) {
 export default function AssessmentReportPage() {
   const { attemptId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const currentUser = useSessionStore((state) => state.user);
 
   const [loading, setLoading] = useState(true);
@@ -97,20 +100,31 @@ export default function AssessmentReportPage() {
   useEffect(() => {
     loadReport();
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [attemptId]);
+  }, [attemptId, location.pathname, location.state]);
 
   async function loadReport() {
     setLoading(true);
     try {
       if (attemptId && attemptId !== "demo") {
         let res = null;
-        try {
-          res = await getAttemptDetails(attemptId);
-        } catch {
-          res = await getAttemptResult(attemptId);
+        const instituteReport = location.pathname.startsWith("/institute/");
+        if (instituteReport) {
+          // Institute attempt rows contain summary fields only. Always load the
+          // attempt detail so the profiling report uses the student's actual answers.
+          try {
+            res = await getAttemptDetails(attemptId);
+          } catch {
+            res = await getAttemptResult(attemptId);
+          }
+        } else {
+          try {
+            res = await getAttemptDetails(attemptId);
+          } catch {
+            res = await getAttemptResult(attemptId);
+          }
         }
 
-        const data = res?.data || res?.attempt || res;
+        const data = res?.data?.data || res?.data?.attempt || res?.data || res?.attempt || res;
         if (data && (data.report || data.domainScores || data.scores || data.topClusterName || data.studentName)) {
           setReportData(data);
         } else {
@@ -205,6 +219,7 @@ export default function AssessmentReportPage() {
   const hollandCode = rawData.hollandCode || report.hollandProfile?.code || "ECS";
   const scores = rawData.scores || rawData.domainScores || {};
   const domains = report.domains || rawData.domainScores || {};
+  const yourProfiling = report.yourProfiling || rawData.yourProfiling || SAMPLE_PROFILING_REPORT;
 
   // Goal Orientation
   const goalObj = domains.goalOrientation || domains.goal_orientation || {};
@@ -529,37 +544,38 @@ const bandLabelFor = (arr, facet, fallback = "Moderate") => {
               style={{ width: 250 }}
               onChange={scrollToPage}
               options={[
-                { value: "page-1", label: "Page 1: Cover Page" },
+                { value: "page-1", label: "Page 1: YOUR PROFILING" },
                 { value: "page-2", label: "Page 2: Declaration" },
-                { value: "page-3", label: "Page 3: Introduction" },
-                { value: "page-4", label: "Page 4: Interest Overview" },
-                { value: "page-5", label: "Page 5: Interest Details (01-03)" },
-                { value: "page-6", label: "Page 6: Interest Details (04-06)" },
-                { value: "page-7", label: "Page 7: Interest Scores" },
-                { value: "page-8", label: "Page 8: Personality Overview" },
-                { value: "page-9", label: "Page 9: Personality Suggestions" },
-                { value: "page-10", label: "Page 10: Personality Scores" },
-                { value: "page-11", label: "Page 11: Learning Styles" },
-                { value: "page-12", label: "Page 12: Learning Details (01-02)" },
-                { value: "page-13", label: "Page 13: Learning Details (03-04)" },
-                { value: "page-14", label: "Page 14: Learning Style Scores" },
-                { value: "page-15", label: "Page 15: Work Values" },
-                { value: "page-16", label: "Page 16: Work Values Suggestions" },
-                { value: "page-17", label: "Page 17: Work Values Scores" },
-                { value: "page-18", label: "Page 18: Goal Orientation (Short)" },
-                { value: "page-19", label: "Page 19: Goal Orientation (Long)" },
-                { value: "page-20", label: "Page 20: Aptitude Overview" },
-                { value: "page-21", label: "Page 21: Aptitude (Numerical)" },
-                { value: "page-22", label: "Page 22: Aptitude (Logical/Verbal)" },
-                { value: "page-23", label: "Page 23: Aptitude (Voc/Mech)" },
-                { value: "page-24", label: "Page 24: Aptitude (Spatial)" },
-                { value: "page-25", label: "Page 25: Aptitude Scores" },
-                { value: "page-26", label: "Page 26: Top Cluster #1" },
-                { value: "page-27", label: "Page 27: Clusters #2 & #3" },
-                { value: "page-28", label: "Page 28: Clusters #4 & #5" },
-                { value: "page-29", label: "Page 29: Study & Pathway Advice" },
-                { value: "page-30", label: "Page 30: Complete Career Map" },
-                { value: "page-31", label: "Page 31: About Career Map" },
+                { value: "page-3", label: "Page 3: YOUR PROFILING" },
+                { value: "page-4", label: "Page 4: Introduction" },
+                { value: "page-5", label: "Page 5: Interest Overview" },
+                { value: "page-6", label: "Page 6: Interest Details (01-03)" },
+                { value: "page-7", label: "Page 7: Interest Details (04-06)" },
+                { value: "page-8", label: "Page 8: Interest Scores" },
+                { value: "page-9", label: "Page 9: Personality Overview" },
+                { value: "page-10", label: "Page 10: Personality Suggestions" },
+                { value: "page-11", label: "Page 11: Personality Scores" },
+                { value: "page-12", label: "Page 12: Learning Styles" },
+                { value: "page-13", label: "Page 13: Learning Details (01-02)" },
+                { value: "page-14", label: "Page 14: Learning Details (03-04)" },
+                { value: "page-15", label: "Page 15: Learning Style Scores" },
+                { value: "page-16", label: "Page 16: Work Values" },
+                { value: "page-17", label: "Page 17: Work Values Suggestions" },
+                { value: "page-18", label: "Page 18: Work Values Scores" },
+                { value: "page-19", label: "Page 19: Goal Orientation (Short)" },
+                { value: "page-20", label: "Page 20: Goal Orientation (Long)" },
+                { value: "page-21", label: "Page 21: Aptitude Overview" },
+                { value: "page-22", label: "Page 22: Aptitude (Numerical)" },
+                { value: "page-23", label: "Page 23: Aptitude (Logical/Verbal)" },
+                { value: "page-24", label: "Page 24: Aptitude (Voc/Mech)" },
+                { value: "page-25", label: "Page 25: Aptitude (Spatial)" },
+                { value: "page-26", label: "Page 26: Aptitude Scores" },
+                { value: "page-27", label: "Page 27: Top Cluster #1" },
+                { value: "page-28", label: "Page 28: Clusters #2 & #3" },
+                { value: "page-29", label: "Page 29: Clusters #4 & #5" },
+                { value: "page-30", label: "Page 30: Study & Pathway Advice" },
+                { value: "page-31", label: "Page 31: Complete Career Map" },
+                { value: "page-32", label: "Page 32: About Career Map" },
               ]}
             />
           </div>
@@ -578,7 +594,7 @@ const bandLabelFor = (arr, facet, fallback = "Moderate") => {
         </div>
       </div>
 
-      {/* Main Document: Exactly 31 Pages */}
+      {/* Main Document: Exactly 32 Pages */}
       <div className="pdf-pages-wrapper">
         {/* ============================================================
             PAGE 1: COVER PAGE
@@ -613,7 +629,7 @@ const bandLabelFor = (arr, facet, fallback = "Moderate") => {
             </div>
 
             <div className="w-[calc(100%+96px)] -ml-12 mt-5 py-3.5 bg-[#F8ECE8] text-center text-[#2B2D33] text-lg font-normal leading-snug">
-              Discover Your True Strengths<br/>and Potential.
+              Discover Your True Strengths and Potential.
             </div>
           </div>
 
@@ -688,9 +704,21 @@ const bandLabelFor = (arr, facet, fallback = "Moderate") => {
         </div>
 
         {/* ============================================================
-            PAGE 3: INTRODUCTION (WHEEL / BULB DIAGRAM)
+            PAGE 3: YOUR PROFILING (PERSONAL PROFILING)
         ============================================================ */}
-        <div className="pdf-page" id="page-3">
+        <YourProfilingReport
+          profilingData={yourProfiling}
+          studentFirstName={studentFirstName}
+          PageHeader={PageHeader}
+          PageFooter={PageFooter}
+          TitlePill={TitlePill}
+          pageNum={3}
+        />
+
+        {/* ============================================================
+            PAGE 4: INTRODUCTION (WHEEL / BULB DIAGRAM)
+        ============================================================ */}
+        <div className="pdf-page" id="page-4">
           <PageHeader studentFirstName={studentFirstName} />
 
           <div className="pdf-page-body">
@@ -709,7 +737,7 @@ const bandLabelFor = (arr, facet, fallback = "Moderate") => {
             </div>
           </div>
 
-          <PageFooter pageNum={3} />
+          <PageFooter pageNum={4} />
         </div>
 
         {/* ============================================================

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Modal } from "antd";
 import StaffForm from "./StaffForm";
 import StaffTable from "./StaffTable";
-import { getStaffs, createStaff, updateStaff, deleteStaff } from "../../api/rolePermission";
+import { getStaffs, getStaffById, createStaff, updateStaff, deleteStaff } from "../../api/rolePermission";
 import { getRoles } from "../../api/rolePermission";
 
 function Staff() {
@@ -73,17 +73,27 @@ function Staff() {
     }
   };
 
-  const handleView = (record) => {
-    setSelected(record);
-    setMode("view");
+  const handleSelectStaff = async (record, nextMode) => {
+    if (!record?.id) return;
+    setEditId(record.id);
+    setMode(nextMode);
     setOpen(true);
+    try {
+      const response = await getStaffById(record.id);
+      const staff = response?.data?.staff || response?.data || response?.staff || response;
+      setSelected(staff && typeof staff === "object" ? staff : record);
+    } catch (err) {
+      console.error(err);
+      setSelected(record);
+    }
+  };
+
+  const handleView = (record) => {
+    handleSelectStaff(record, "view");
   };
 
   const handleEdit = (record) => {
-    setSelected({ ...record, password: "" });
-    setEditId(record.id);
-    setMode("edit");
-    setOpen(true);
+    handleSelectStaff(record, "edit");
   };
 
   const modalTitle =

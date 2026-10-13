@@ -12,6 +12,7 @@ let sessionBootstrapPromise = null;
 function AuthBootstrap({ children }) {
   const accessToken = useSessionStore((state) => state.accessToken);
   const refreshToken = useSessionStore((state) => state.refreshToken);
+  const loginType = useSessionStore((state) => state.loginType);
   const setAccessToken = useSessionStore((state) => state.setAccessToken);
   const clearSession = useSessionStore((state) => state.clearSession);
   const [ready, setReady] = useState(false);
@@ -21,7 +22,7 @@ function AuthBootstrap({ children }) {
 
     const bootstrapSession = async () => {
       try {
-        if (!accessToken && refreshToken) {
+        if (loginType === "admin" && !accessToken && refreshToken) {
           const response = await refreshAccessToken(refreshToken);
           const nextAccessToken =
             response?.accessToken ||
@@ -59,7 +60,7 @@ function AuthBootstrap({ children }) {
     return () => {
       mounted = false;
     };
-  }, [accessToken, clearSession, refreshToken, setAccessToken]);
+  }, [accessToken, clearSession, loginType, refreshToken, setAccessToken]);
 
   if (!ready) {
     return null;

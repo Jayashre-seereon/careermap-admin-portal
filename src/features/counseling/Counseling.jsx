@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Modal } from "antd";
+import { useSessionStore } from "../../store/sessionStore";
 import CounselingForm from "./CounselingForm";
 import CounselingTable from "./CounselingTable";
 import {
   getCounselings,
+  getCounseling,
   createCounseling,
   updateCounseling,
   deleteCounseling,
@@ -11,6 +13,7 @@ import {
 } from "../../api/counseling";
 
 function Counseling() {
+  const isStaff = useSessionStore((state) => state.loginType === "staff");
   const [sections, setSections] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
@@ -22,10 +25,12 @@ function Counseling() {
   const filteredSections = sections.filter((section) => {
     const keyword = search.toLowerCase();
     return (
+      section.studentName?.toLowerCase().includes(keyword) ||
       section.firstName?.toLowerCase().includes(keyword) ||
       section.lastName?.toLowerCase().includes(keyword) ||
       section.email?.toLowerCase().includes(keyword) ||
-      section.inquiryFor?.toLowerCase().includes(keyword)
+      section.inquiryFor?.toLowerCase().includes(keyword) ||
+      section.school?.toLowerCase().includes(keyword)
     );
   });
 
@@ -37,7 +42,8 @@ function Counseling() {
     try {
       setLoading(true);
       const res = await getCounselings();
-      setSections(Array.isArray(res) ? res : res.data || []);
+      const list = Array.isArray(res) ? res : res.data || res.reports || res.counselings || [];
+      setSections(list);
     } catch (err) {
       console.error(err);
     } finally {
@@ -60,6 +66,9 @@ function Counseling() {
 
   const handleUpdate = async (values) => {
     try {
+      if (isStaff) {
+        throw new Error("Staff can create and view their counseling reports, but cannot edit them.");
+      }
       await updateCounseling(editId, values);
       await fetchData();
       setOpen(false);
@@ -72,7 +81,7 @@ function Counseling() {
 
   const handleDelete = async (record) => {
     try {
-      if (!record?.id) return;
+      if (!record?.id || isStaff) return;
       await deleteCounseling(record.id);
       await fetchData();
     } catch (err) {
@@ -80,8 +89,18 @@ function Counseling() {
     }
   };
 
-  const handleView = (record) => {
-    setSelected(record);
+  const handleView = async (record) => {
+    if (isStaff) {
+      try {
+        const result = await getCounseling(record.id);
+        setSelected(result?.data || result?.counseling || result);
+      } catch (err) {
+        console.error("Could not load counseling detail", err);
+        setSelected(record);
+      }
+    } else {
+      setSelected(record);
+    }
     setMode("view");
     setOpen(true);
   };
@@ -133,6 +152,7 @@ function Counseling() {
         loading={loading}
         search={search}
         onSearch={setSearch}
+        staffView={isStaff}
         onAddClick={() => {
           setMode("add");
           setSelected(null);
@@ -141,7 +161,7 @@ function Counseling() {
         }}
         onDelete={handleDelete}
         onView={handleView}
-        onEdit={handleEdit}
+        onEdit={isStaff ? null : handleEdit}
         onDownload={handleDownload}   
       />
 

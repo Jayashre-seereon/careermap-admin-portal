@@ -41,7 +41,9 @@ const formatDate = (value) => {
 
 const formatMarks = (marks) => {
   if (!marks || typeof marks !== "object") return "-";
-  const entries = Object.entries(marks).filter(([, value]) => value !== null && value !== undefined && value !== "");
+  const entries = Object.entries(marks).filter(([subject, value]) =>
+    !subject.startsWith("_") && value !== null && value !== undefined && value !== ""
+  );
   if (entries.length === 0) return "-";
   const preview = entries.map(([subject, value]) => `${subject}: ${value}`).join(", ");
   return getPreviewText(preview, 40);
@@ -57,6 +59,7 @@ function CounselingTable({
   search,
   onSearch,
   onDownload,
+  staffView = false,
 }) {
   const columns = [
     { title: "#", render: (_, __, index) => index + 1, width: 60 },
@@ -100,9 +103,22 @@ function CounselingTable({
 },
     {
       title: "Counselor",
-      dataIndex: "counselorName",
+      key: "counselorName",
       width: 140,
       ellipsis: true,
+      render: (_, record) => record.counselorName || record.marks?._counselorName || "-",
+    },
+    {
+      title: "Created By",
+      key: "createdBy",
+      width: 130,
+      render: (_, record) => record.createdByName || record.createdBy || record.marks?._createdById || "-",
+    },
+    {
+      title: "Creator Type",
+      key: "creatorType",
+      width: 120,
+      render: (_, record) => record.creatorType || record.marks?._creatorType || "-",
     },
     {
       title: "Psychometric",
@@ -113,7 +129,7 @@ function CounselingTable({
     {
       title: "Actions",
       fixed: "right",
-      width: 200,
+      width: staffView ? 110 : 200,
       render: (_, record) => (
         <Space>
           <Button
@@ -122,11 +138,11 @@ function CounselingTable({
             onClick={() => onView(record)}
           />
 
-          <Button
+          {!staffView && <Button
             className="w-8 h-8 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
             icon={<EditOutlined />}
             onClick={() => onEdit(record)}
-          />
+          />}
 
           <Button
             className="w-8 h-8 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
@@ -134,12 +150,12 @@ function CounselingTable({
             onClick={() => onDownload(record)}
           />
 
-          <Popconfirm
+          {!staffView && <Popconfirm
             title="Are you sure you want to delete this counseling?"
             onConfirm={() => onDelete(record)}
           >
             <Button danger icon={<DeleteOutlined />} />
-          </Popconfirm>
+          </Popconfirm>}
         </Space>
       ),
     },

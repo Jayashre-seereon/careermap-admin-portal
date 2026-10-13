@@ -45,13 +45,18 @@ export const getStaffs = async () => {
   return res.data;
 };
 
+export const getStaffById = async (id) => {
+  const res = await api.get(`/api/staff/${id}`);
+  return res.data;
+};
+
 export const createStaff = async (payload, config = {}) => {
   const res = await api.post("/api/staff/", payload, config);
   return res.data;
 };
 
 export const updateStaff = async (id, payload, config = {}) => {
-  const res = await api.put(`/api/staff/${id}/`, payload, config);
+  const res = await api.put(`/api/staff/${id}`, payload, config);
   return res.data;
 };
 

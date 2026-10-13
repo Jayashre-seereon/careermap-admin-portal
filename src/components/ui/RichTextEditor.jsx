@@ -28,14 +28,17 @@ const normalizeEditorValue = (value) => {
   }
 
   if (typeof value === "string") {
+    const textarea = document.createElement("textarea");
+    textarea.innerHTML = value;
+    const decodedValue = textarea.value;
     try {
-      const parsed = JSON.parse(value);
+      const parsed = JSON.parse(decodedValue);
       if (Array.isArray(parsed)) {
         return `<ul>${parsed.map((item) => `<li>${item}</li>`).join("")}</ul>`;
       }
       return parsed;
     } catch {
-      return value;
+      return decodedValue;
     }
   }
 

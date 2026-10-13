@@ -94,6 +94,8 @@ import RolePage from "../features/role/RolePage";
 import Permission from "../features/permission/Permission";
 import InstituteLayout from "../components/institute/InstituteLayout";
 import InstituteDashboardPage from "../pages/InstituteDashboardPage";
+import InstituteStudentsPage from "../features/institute/InstituteStudentsPage";
+import InstituteAttemptsPage from "../features/institute/InstituteAttemptsPage";
 import NewsLetterPage from "../features/newsLetter/NewsLetterPage";
 export const router = createBrowserRouter([
   {
@@ -155,6 +157,9 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <Navigate to="/institute/dashboard" replace /> },
           { path: "dashboard", element: <InstituteDashboardPage /> },
+          { path: "students", element: <InstituteStudentsPage /> },
+          { path: "psychometric-attempts", element: <InstituteAttemptsPage /> },
+          { path: "psychometric-attempts/:attemptId/report", element: <AssessmentReportPage /> },
         ],
       },
     ],

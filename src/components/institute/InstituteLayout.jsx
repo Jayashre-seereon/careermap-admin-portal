@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, LayoutDashboard, LogOut, Menu } from "lucide-react";
+import { ChevronLeft, ChevronRight, LayoutDashboard, LogOut, Menu, Users, ClipboardCheck } from "lucide-react";
 import { useSessionStore } from "../../store/sessionStore";
 import logoFull from "../../assets/logo_white.png";
 import logoCompact from "../../assets/logo_white_small.png";
@@ -11,14 +11,12 @@ const navItems = [
     path: "/institute/dashboard",
     icon: LayoutDashboard,
   },
+  { name: "All Students", path: "/institute/students", icon: Users },
+  { name: "Psychometric Attempts", path: "/institute/psychometric-attempts", icon: ClipboardCheck },
 ];
 
 const getActivePage = (pathname) => {
-  if (pathname.startsWith("/institute/dashboard")) {
-    return "Dashboard";
-  }
-
-  return "Dashboard";
+  return navItems.find((item) => pathname.startsWith(item.path))?.name || "Dashboard";
 };
 
 export default function InstituteLayout() {

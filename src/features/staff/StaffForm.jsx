@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Form, Input, Select, Button, message } from "antd";
+import { Form, Input, Select, Button, Switch, message } from "antd";
 import { validationRules } from "../../utils/formValidation";
 
 function StaffForm({ roles = [], onSubmit, initialValues, disabled, mode }) {
@@ -7,7 +7,7 @@ function StaffForm({ roles = [], onSubmit, initialValues, disabled, mode }) {
 
   useEffect(() => {
     if (initialValues) {
-      form.setFieldsValue(initialValues);
+      form.setFieldsValue({ status: true, ...initialValues });
     } else {
       form.resetFields();
     }
@@ -79,6 +79,10 @@ function StaffForm({ roles = [], onSubmit, initialValues, disabled, mode }) {
             disabled={disabled}
             options={roles.map((role) => ({ label: role.name, value: role.id }))}
           />
+        </Form.Item>
+
+        <Form.Item name="status" label="Active" valuePropName="checked" initialValue={true}>
+          <Switch disabled={disabled} checkedChildren="Active" unCheckedChildren="Inactive" />
         </Form.Item>
       </div>
 
