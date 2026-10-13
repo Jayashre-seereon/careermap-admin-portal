@@ -57,6 +57,7 @@ function CounselingTable({
   search,
   onSearch,
   onDownload,
+  staffView = false,
 }) {
   const columns = [
     { title: "#", render: (_, __, index) => index + 1, width: 60 },
@@ -113,7 +114,7 @@ function CounselingTable({
     {
       title: "Actions",
       fixed: "right",
-      width: 200,
+      width: staffView ? 110 : 200,
       render: (_, record) => (
         <Space>
           <Button
@@ -122,11 +123,11 @@ function CounselingTable({
             onClick={() => onView(record)}
           />
 
-          <Button
+          {!staffView && <Button
             className="w-8 h-8 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
             icon={<EditOutlined />}
             onClick={() => onEdit(record)}
-          />
+          />}
 
           <Button
             className="w-8 h-8 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
@@ -134,12 +135,12 @@ function CounselingTable({
             onClick={() => onDownload(record)}
           />
 
-          <Popconfirm
+          {!staffView && <Popconfirm
             title="Are you sure you want to delete this counseling?"
             onConfirm={() => onDelete(record)}
           >
             <Button danger icon={<DeleteOutlined />} />
-          </Popconfirm>
+          </Popconfirm>}
         </Space>
       ),
     },
