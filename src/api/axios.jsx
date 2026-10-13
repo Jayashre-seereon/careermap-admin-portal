@@ -41,8 +41,10 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       const { refreshToken, loginType } = useSessionStore.getState();
 
+      // Institute and staff tokens do not use the admin refresh endpoint. A
+      // 401 from their APIs must not erase the active portal session; surface
+      // the API error so the page can show it and the user can retry/login.
       if (loginType !== "admin") {
-        useSessionStore.getState().clearSession();
         return Promise.reject(error);
       }
 

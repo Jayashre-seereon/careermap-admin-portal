@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeftOutlined,
   DownloadOutlined,
@@ -89,6 +89,7 @@ function TitlePill({ title, colorClass = "" }) {
 export default function AssessmentReportPage() {
   const { attemptId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const currentUser = useSessionStore((state) => state.user);
 
   const [loading, setLoading] = useState(true);
@@ -97,20 +98,25 @@ export default function AssessmentReportPage() {
   useEffect(() => {
     loadReport();
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [attemptId]);
+  }, [attemptId, location.pathname, location.state]);
 
   async function loadReport() {
     setLoading(true);
     try {
       if (attemptId && attemptId !== "demo") {
         let res = null;
-        try {
-          res = await getAttemptDetails(attemptId);
-        } catch {
-          res = await getAttemptResult(attemptId);
+        const instituteReport = location.pathname.startsWith("/institute/");
+        if (instituteReport) {
+          res = location.state?.attempt || null;
+        } else {
+          try {
+            res = await getAttemptDetails(attemptId);
+          } catch {
+            res = await getAttemptResult(attemptId);
+          }
         }
 
-        const data = res?.data || res?.attempt || res;
+        const data = res?.data?.data || res?.data?.attempt || res?.data || res?.attempt || res;
         if (data && (data.report || data.domainScores || data.scores || data.topClusterName || data.studentName)) {
           setReportData(data);
         } else {
@@ -613,7 +619,7 @@ const bandLabelFor = (arr, facet, fallback = "Moderate") => {
             </div>
 
             <div className="w-[calc(100%+96px)] -ml-12 mt-5 py-3.5 bg-[#F8ECE8] text-center text-[#2B2D33] text-lg font-normal leading-snug">
-              Discover Your True Strengths<br/>and Potential.
+              Discover Your True Strengths and Potential.
             </div>
           </div>
 

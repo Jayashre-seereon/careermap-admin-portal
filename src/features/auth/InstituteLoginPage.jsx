@@ -9,13 +9,25 @@ const inputClassName =
   "h-12 w-full rounded-xl border border-[#eadfda] bg-[#fbf9f8] px-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#9a2119] focus:bg-white focus:ring-4 focus:ring-[#9a2119]/10";
 
 const getTokenValue = (data, keys) => {
+  if (!data || typeof data !== "object") return "";
   for (const key of keys) {
-    if (data?.[key]) {
-      return data[key];
-    }
+    if (typeof data[key] === "string" && data[key]) return data[key];
   }
-
+  for (const key of ["data", "tokens", "auth", "session", "result"]) {
+    const token = getTokenValue(data[key], keys);
+    if (token) return token;
+  }
   return "";
+};
+
+const getInstituteValue = (data) => {
+  if (!data || typeof data !== "object") return null;
+  if (data.institute && typeof data.institute === "object") return data.institute;
+  for (const key of ["data", "user", "result"]) {
+    const institute = getInstituteValue(data[key]);
+    if (institute) return institute;
+  }
+  return null;
 };
 
 export default function InstituteLoginPage() {
@@ -38,9 +50,9 @@ export default function InstituteLoginPage() {
       setLoading(true);
 
       const response = await instituteLogin(form.email, form.password);
-      const payload = response?.data || response || {};
+      const payload = response || {};
       const accessToken = getTokenValue(payload, ["accessToken", "access_token", "token", "jwt"]);
-      const institute = payload.institute || payload.data || null;
+      const institute = getInstituteValue(payload);
 
       if (!accessToken) {
         throw new Error("Access token not found in login response.");

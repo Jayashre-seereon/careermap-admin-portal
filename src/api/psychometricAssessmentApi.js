@@ -242,6 +242,16 @@ export const getStudentAttempts = async (params = {}) => {
   return res.data;
 };
 
+export const getInstituteStudents = async () => {
+  const res = await api.get("/api/institutcreate/students");
+  return res.data;
+};
+
+export const getInstitutePsychometricAttempts = async () => {
+  const res = await api.get("/api/institutcreate/psychometric-assessments");
+  return res.data;
+};
+
 export const getAttemptDetails = async (attemptId) => {
   const res = await api.get(`${BASE_PREFIX}/admin/attempts/${attemptId}`);
   return res.data;
