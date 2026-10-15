@@ -7,10 +7,10 @@ import dayjs from "dayjs";
 const { Option } = Select;
 
 // Subjects shown per class/stream, matching the physical counseling sheet
-const SUBJECTS_9_10 = ["ENG", "MATHS", "SCIENCE", "SST", "SANSKRIT/HINDI/ODIYA"];
-const SUBJECTS_SCIENCE = ["ENG", "PHY", "CHE", "MATHS", "BIO", "IT"];
-const SUBJECTS_COMMERCE = ["ENG", "ACCOUNTING", "ECONOMICS", "BUSINESS STUDIES", "LEGAL STUDIES", "COMP/PH. ED"];
-const SUBJECTS_HUMANITIES = ["ENG", "HISTORY", "GEOGRAPHY", "POL. SCIENCE", "PSYCHOLOGY", "SOCIOLOGY"];
+const SUBJECTS_9_10 = ["Subject-1", "Subject-2", "Subject-3", "Subject-4", "Subject-5", "Subject-6"];
+const SUBJECTS_SCIENCE = ["Subject-1", "Subject-2", "Subject-3", "Subject-4", "Subject-5", "Subject-6"];
+const SUBJECTS_COMMERCE = ["Subject-1", "Subject-2", "Subject-3", "Subject-4", "Subject-5", "Subject-6"];
+const SUBJECTS_HUMANITIES = ["Subject-1", "Subject-2", "Subject-3", "Subject-4", "Subject-5", "Subject-6"];
 
 const STREAM_SUBJECTS = {
   Science: SUBJECTS_SCIENCE,
@@ -27,6 +27,28 @@ const CATEGORY_OPTIONS = [
   { value: "E", label: "Vague knowledge about career options" },
 ];
 
+const normalizeMarks = (marks, subjects = []) => {
+  const source = Array.isArray(marks)
+    ? marks.reduce((result, item) => {
+        if (item?.subject) result[item.subject] = item.score;
+        return result;
+      }, {})
+    : (marks && typeof marks === "object" ? marks : {});
+
+  // Some API responses include a normalized subjects array beside marks.
+  subjects.forEach((item) => {
+    if (item?.subject && source[item.subject] === undefined) {
+      source[item.subject] = item.score;
+    }
+  });
+  return source;
+};
+
+const normalizePercentage = (value) => {
+  if (value === null || value === undefined || value === "") return undefined;
+  const parsed = Number(String(value).replace(/%/g, "").trim());
+  return Number.isFinite(parsed) ? parsed : undefined;
+};
 function getSubjectsFor(classValue, streamValue) {
   if (classValue === "9th" || classValue === "10th") {
     return streamValue ? SUBJECTS_9_10 : [];
@@ -43,23 +65,33 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
   const classValue = Form.useWatch("class", form);
   const streamValue = Form.useWatch("stream", form);
   const hasClass = Boolean(classValue);
-  const subjects = getSubjectsFor(classValue, streamValue);
-
+  const storedMarks = normalizeMarks(initialValues?.marks, initialValues?.subjects);
+  const storedSubjectNames = Object.keys(storedMarks).filter((subject) => !subject.startsWith("_"));
+  const subjects = storedSubjectNames.length > 0
+    ? storedSubjectNames
+    : getSubjectsFor(classValue, streamValue);
   React.useEffect(() => {
-    if (initialValues) {
-      form.setFieldsValue({
-        ...initialValues,
-        counselingDate: initialValues.counselingDate ? dayjs(initialValues.counselingDate) : undefined,
-      });
-    } else {
+    if (!initialValues) {
       form.resetFields();
+      return;
     }
-  }, [initialValues, form]);
 
+    form.setFieldsValue({
+      ...initialValues,
+      totalPercentage: normalizePercentage(
+        initialValues.totalPercentage ?? initialValues.total_percentage ?? initialValues.percentage
+      ),
+      marks: normalizeMarks(initialValues.marks, initialValues.subjects),
+      counselingDate: initialValues.counselingDate
+        ? dayjs(initialValues.counselingDate)
+        : undefined,
+    });
+  }, [initialValues, form, classValue, streamValue]);
   const handleFinish = async (values) => {
     try {
       const payload = {
         ...values,
+        totalPercentage: values.totalPercentage ?? null,
         counselingDate: values.counselingDate ? values.counselingDate.toISOString() : null,
       };
       await onSubmit(payload);
@@ -192,12 +224,34 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
           <h3 className="mb-2 text-lg font-semibold text-[#9a2119]">
             {`Latest Score (${streamValue || "select stream"})`}
           </h3>
-
+<Form.Item
+  name="totalPercentage"
+  initialValue={normalizePercentage(initialValues?.totalPercentage ?? initialValues?.total_percentage ?? initialValues?.percentage)}
+  label="Total Percentage (%)"
+  rules={[
+    {
+      type: "number",
+      min: 0,
+      max: 100,
+      message: "Enter a percentage between 0 and 100",
+    },
+  ]}
+>
+  <InputNumber
+    className="w-full"
+    min={0}
+    max={100}
+    step={0.01}
+    precision={2}
+    placeholder="Enter total percentage"
+    disabled={disabled}
+  />
+</Form.Item>
           {subjects.length > 0 ? (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
               {subjects.map((subject) => (
-                <Form.Item key={subject} name={["marks", subject]} label={subject}>
-                  <InputNumber className="w-full" min={0} max={100} disabled={disabled} />
+                <Form.Item key={subject} name={["marks", subject]} label={subject} initialValue={storedMarks[subject]}>
+                  <Input className="w-full" min={0} max={100} disabled={disabled} />
                 </Form.Item>
               ))}
             </div>
