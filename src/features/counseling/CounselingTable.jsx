@@ -83,6 +83,17 @@ function CounselingTable({
       render: (value) => formatMarks(value),
     },
     {
+      title: "Total Percentage",
+      dataIndex: "totalPercentage",
+      width: 130,
+      render: (value) => {
+        const percentage = Number(value);
+        return value !== null && value !== undefined && value !== "" && Number.isFinite(percentage)
+          ? `${percentage.toFixed(2)}%`
+          : "-";
+      },
+    },
+    {
       title: "Dream Career",
       width: 220,
       ellipsis: true,

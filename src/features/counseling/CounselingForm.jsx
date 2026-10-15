@@ -7,10 +7,10 @@ import dayjs from "dayjs";
 const { Option } = Select;
 
 // Subjects shown per class/stream, matching the physical counseling sheet
-const SUBJECTS_9_10 = ["ENG", "MATHS", "SCIENCE", "SST", "SANSKRIT/HINDI/ODIYA"];
-const SUBJECTS_SCIENCE = ["ENG", "PHY", "CHE", "MATHS", "BIO", "IT"];
-const SUBJECTS_COMMERCE = ["ENG", "ACCOUNTING", "ECONOMICS", "BUSINESS STUDIES", "LEGAL STUDIES", "COMP/PH. ED"];
-const SUBJECTS_HUMANITIES = ["ENG", "HISTORY", "GEOGRAPHY", "POL. SCIENCE", "PSYCHOLOGY", "SOCIOLOGY"];
+const SUBJECTS_9_10 = ["Subject-1", "Subject-2", "Subject-3", "Subject-4", "Subject-5", "Subject-6"];
+const SUBJECTS_SCIENCE = ["Subject-1", "Subject-2", "Subject-3", "Subject-4", "Subject-5", "Subject-6"];
+const SUBJECTS_COMMERCE = ["Subject-1", "Subject-2", "Subject-3", "Subject-4", "Subject-5", "Subject-6"];
+const SUBJECTS_HUMANITIES = ["Subject-1", "Subject-2", "Subject-3", "Subject-4", "Subject-5", "Subject-6"];
 
 const STREAM_SUBJECTS = {
   Science: SUBJECTS_SCIENCE,
@@ -60,6 +60,7 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
     try {
       const payload = {
         ...values,
+        totalPercentage: values.totalPercentage ?? null,
         counselingDate: values.counselingDate ? values.counselingDate.toISOString() : null,
       };
       await onSubmit(payload);
@@ -192,12 +193,33 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
           <h3 className="mb-2 text-lg font-semibold text-[#9a2119]">
             {`Latest Score (${streamValue || "select stream"})`}
           </h3>
-
+<Form.Item
+  name="totalPercentage"
+  label="Total Percentage (%)"
+  rules={[
+    {
+      type: "number",
+      min: 0,
+      max: 100,
+      message: "Enter a percentage between 0 and 100",
+    },
+  ]}
+>
+  <InputNumber
+    className="w-full"
+    min={0}
+    max={100}
+    step={0.01}
+    precision={2}
+    placeholder="Enter total percentage"
+    disabled={disabled}
+  />
+</Form.Item>
           {subjects.length > 0 ? (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
               {subjects.map((subject) => (
                 <Form.Item key={subject} name={["marks", subject]} label={subject}>
-                  <InputNumber className="w-full" min={0} max={100} disabled={disabled} />
+                  <Input className="w-full" min={0} max={100} disabled={disabled} />
                 </Form.Item>
               ))}
             </div>
