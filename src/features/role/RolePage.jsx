@@ -31,6 +31,56 @@ const mapRole = (item = {}) => ({
   updatedAt: item.updatedAt,
 });
 
+const getDeleteRoleErrorMessage = (error) => {
+  const responseData = error?.response?.data;
+  const rawBackendMessage = [
+    responseData?.message,
+    responseData?.error,
+    responseData?.error?.message,
+    responseData?.detail,
+    responseData?.data?.message,
+    responseData?.data?.error,
+    typeof responseData === "string" ? responseData : null,
+  ].find((candidate) => typeof candidate === "string" && candidate.trim());
+
+  const backendText = `${rawBackendMessage || ""} ${error?.message || ""}`;
+  if (/StaffUser_roleId_fkey|foreign key constraint|violates RESTRICT|roleId.*StaffUser/i.test(backendText)) {
+    return "This role is assigned to staff. Reassign them first.";
+  }
+
+  const candidates = [
+    rawBackendMessage,
+    responseData?.errors,
+  ];
+
+  const backendMessage = candidates.find((candidate) =>
+    typeof candidate === "string" && candidate.trim()
+  );
+  if (backendMessage) return backendMessage.trim();
+
+  const validationErrors = candidates.find(Array.isArray);
+  if (validationErrors?.length) {
+    return validationErrors
+      .map((item) => typeof item === "string" ? item : item?.message)
+      .filter(Boolean)
+      .join(" ");
+  }
+
+  if (responseData?.errors && typeof responseData.errors === "object") {
+    const validationMessage = Object.values(responseData.errors)
+      .flatMap((value) => Array.isArray(value) ? value : [value])
+      .filter((value) => typeof value === "string" && value.trim())
+      .join(" ");
+    if (validationMessage) return validationMessage;
+  }
+
+  if (error?.response?.status === 409) {
+    return "This role is assigned to staff and cannot be deleted. Reassign the staff first.";
+  }
+
+  return error?.message || "Failed to delete role.";
+};
+
 export default function RolePage() {
   const [messageApi, contextHolder] = message.useMessage();
   const [roles, setRoles] = useState([]);
@@ -88,7 +138,7 @@ export default function RolePage() {
       messageApi.success("Role deleted successfully.");
       await loadRoles();
     } catch (error) {
-      messageApi.error(error.response?.data?.message || error.message || "Failed to delete role.");
+      messageApi.error(getDeleteRoleErrorMessage(error));
     }
   };
 

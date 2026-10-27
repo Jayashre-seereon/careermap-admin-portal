@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import {
   ClassicEditor,
@@ -56,12 +56,38 @@ export default function RichTextEditor({
   const lastValue = useRef("");
 
   const data = normalizeEditorValue(value);
+  const initialData = useRef(data);
+  const latestData = useRef(data);
+  latestData.current = data;
+
+  // CKEditor owns its editing state. Updating its `data` prop on each React
+  // render can reset the selection to the beginning (for example, when a
+  // parent updates a word count). Sync only when the form supplies genuinely
+  // different content, such as when another record is loaded.
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor || editor.state === "destroyed") return;
+
+    // Form.Item feeds every keystroke back as `value`. If CKEditor has focus,
+    // preserve its live model and selection; replacing its data here sends
+    // the caret to the start of the document.
+    if (editor.editing.view.document.isFocused) return;
+
+    const currentData = editor.getData();
+    if (data !== currentData && data !== lastValue.current) {
+      editor.setData(data);
+      lastValue.current = data;
+    }
+  }, [data]);
 
   return (
     <div className="overflow-hidden rounded-md border border-[#d9d9d9] bg-white">
       <CKEditor
         editor={ClassicEditor}
-        data={data}
+        // CKEditorReact treats a changed `data` prop as a request to replace
+        // editor content. Keep this initialization value stable and use the
+        // effect above only for genuine external form updates.
+        data={initialData.current}
         disabled={disabled}
         config={{
           licenseKey: "GPL",
@@ -116,6 +142,10 @@ export default function RichTextEditor({
         }}
         onReady={(editor) => {
           editorRef.current = editor;
+          if (editor.getData() !== latestData.current) {
+            editor.setData(latestData.current);
+          }
+          lastValue.current = editor.getData();
 
           // Set height
           editor.editing.view.change((writer) => {
