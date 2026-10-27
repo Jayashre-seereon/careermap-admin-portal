@@ -31,12 +31,12 @@ export const createPermission = async (payload, config = {}) => {
 };
 
 export const updatePermission = async (id, payload, config = {}) => {
-  const res = await api.put(`/api/permissions/${id}/`, payload, config);
+  const res = await api.put(`/api/permissions/${id}`, payload, config);
   return res.data;
 };
 
 export const deletePermission = async (id) => {
-  const res = await api.delete(`/api/permissions/${id}/`);
+  const res = await api.delete(`/api/permissions/${id}`);
   return res.data;
 };
 
