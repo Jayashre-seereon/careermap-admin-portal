@@ -299,14 +299,57 @@ const getInstitutionSources = (record = {}) => {
   return [];
 };
 
+const hasSectionData = (value) =>
+  value !== undefined && value !== null && value !== "" &&
+  !(Array.isArray(value) && value.length === 0);
+
 const deriveSections = (record = {}) => {
   const sections = [];
   if (normalizeSalaryRanges(record.salaryRanges).length > 0) sections.push("salary-range");
   if (normalizeJobScope(record.jobScope ?? record.names).length > 0) sections.push("job-scope");
-  if (getCareerPathSources(record).length > 0) sections.push("career-path");
-  if (getEntranceExamSources(record).length > 0) sections.push("entrance-exam");
-  if (getInstitutionSources(record).length > 0) sections.push("institution");
-  return sections.length > 0 ? sections : ["salary-range"];
+  const careerPaths = getCareerPathSources(record);
+  if (careerPaths.some((path) => [
+    path?.pathType?.id ?? path?.pathType,
+    path?.pathTypeId,
+    path?.pathId,
+    path?.careerpathId,
+    path?.careerPathId,
+    path?.careerpath?.id ?? path?.careerpath?.pathName,
+    path?.pathName,
+    path?.pathTypeName,
+    path?.graduation,
+    path?.afterGraduation ?? path?.aftergraduation,
+    path?.afterPostGraduation ?? path?.afterpostgraduation,
+    path?.anyOther ?? path?.anyother,
+  ].some(hasSectionData))) sections.push("career-path");
+
+  const entranceExams = getEntranceExamSources(record);
+  if (entranceExams.some((exam) => [
+    exam?.exam?.id ?? exam?.exam,
+    exam?.examId,
+    exam?.entranceexam?.id ?? exam?.entranceexam?.examname,
+    exam?.examName ?? exam?.examname,
+    exam?.name,
+    exam?.about,
+    exam?.eligibility,
+    exam?.url,
+    exam?.examDate,
+  ].some(hasSectionData))) sections.push("entrance-exam");
+
+  const institutions = getInstitutionSources(record);
+  if (institutions.some((institution) => [
+    institution?.institutionId,
+    institution?.institution?.id ?? institution?.institution,
+    institution?.institute?.id ?? institution?.institute?.name,
+    institution?.name,
+    institution?.institutionName,
+    institution?.about,
+    institution?.admission ?? institution?.admission_process,
+    institution?.address,
+    institution?.url,
+  ].some(hasSectionData))) sections.push("institution");
+
+  return sections;
 };
 
 const mapInstitution = (inst = {}) => ({
