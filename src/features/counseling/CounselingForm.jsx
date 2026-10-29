@@ -163,7 +163,12 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
         </Form.Item>
 
       <Form.Item name="counselingDate" label="Date" rules={[validationRules.required("Date")]}>
-  <DatePicker className="w-full" format="DD-MM-YYYY" disabled={disabled} />
+  <DatePicker
+    className="w-full"
+    format="DD-MM-YYYY"
+    disabled={disabled}
+    disabledDate={(date) => date && date.isBefore(dayjs().startOf("day"))}
+  />
 </Form.Item>
 
      <Form.Item
@@ -198,7 +203,7 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
 
         <Form.Item
           name="email"
-          label="Gmail Id"
+          label="Email Id"
           rules={[validationRules.required("Email"), validationRules.email("Email")]}
         >
           <Input placeholder="Enter email" disabled={disabled} />
@@ -221,25 +226,32 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
         <>
           <Divider />
           <h3 className="mb-2 text-lg font-semibold text-[#9a2119]">
-            {`Latest Score (${streamValue || "select stream"})`}
+            Latest Score 
           </h3>
 <Form.Item
   name="totalPercentage"
-  initialValue={normalizePercentage(initialValues?.totalPercentage ?? initialValues?.total_percentage ?? initialValues?.percentage)}
   label="Total Percentage (%)"
+  validateTrigger={["onChange", "onBlur"]}
   rules={[
     {
-      type: "number",
-      min: 0,
-      max: 100,
-      message: "Enter a percentage between 0 and 100",
+      validator: (_, value) => {
+        if (value === null || value === undefined || value === "") {
+          return Promise.resolve();
+        }
+        const percentage = Number(value);
+        if (!Number.isFinite(percentage)) {
+          return Promise.reject(new Error("Enter a valid number"));
+        }
+        if (percentage < 0 || percentage > 100) {
+          return Promise.reject(new Error("Percentage cannot be greater than 100"));
+        }
+        return Promise.resolve();
+      },
     },
   ]}
 >
   <InputNumber
     className="w-full"
-    min={0}
-    max={100}
     step={0.01}
     precision={2}
     placeholder="Enter total percentage"
