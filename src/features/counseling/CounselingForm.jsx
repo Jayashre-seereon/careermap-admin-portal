@@ -50,6 +50,7 @@ const normalizePercentage = (value) => {
   return Number.isFinite(parsed) ? parsed : undefined;
 };
 function getSubjectsFor(classValue, streamValue) {
+  if (streamValue === "Not Decided") return SUBJECTS_9_10;
   if (classValue === "9th" || classValue === "10th") {
     return streamValue ? SUBJECTS_9_10 : [];
   }
@@ -66,10 +67,8 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
   const streamValue = Form.useWatch("stream", form);
   const hasClass = Boolean(classValue);
   const storedMarks = normalizeMarks(initialValues?.marks, initialValues?.subjects);
-  const storedSubjectNames = Object.keys(storedMarks).filter((subject) => !subject.startsWith("_"));
-  const subjects = storedSubjectNames.length > 0
-    ? storedSubjectNames
-    : getSubjectsFor(classValue, streamValue);
+  // Keep the same generic subject fields in add, edit, and view modes.
+  const subjects = getSubjectsFor(classValue, streamValue);
   React.useEffect(() => {
     if (!initialValues) {
       form.resetFields();
@@ -86,7 +85,7 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
         ? dayjs(initialValues.counselingDate)
         : undefined,
     });
-  }, [initialValues, form, classValue, streamValue]);
+  }, [initialValues, form]);
   const handleFinish = async (values) => {
     try {
       const payload = {
@@ -250,14 +249,14 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
           {subjects.length > 0 ? (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
               {subjects.map((subject) => (
-                <Form.Item key={subject} name={["marks", subject]} label={subject} initialValue={storedMarks[subject]}>
+                <Form.Item key={subject} name={["marks", subject]} label={subject}>
                   <Input className="w-full" min={0} max={100} disabled={disabled} />
                 </Form.Item>
               ))}
             </div>
-          ) : (
+          ) : streamValue !== "Not Decided" ? (
             <p className="text-sm text-gray-500">Select a stream to enter marks.</p>
-          )}
+          ) : null}
         </>
       )}
 
