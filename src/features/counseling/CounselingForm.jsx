@@ -102,13 +102,10 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
 
   const handleClassChange = () => {
     // Class changed -> stream and marks are no longer valid, clear them
-    form.setFieldsValue({ stream: undefined, marks: undefined });
+    form.setFieldsValue({ stream: undefined });
   };
 
-  const handleStreamChange = () => {
-    // Stream changed -> subject set changed, clear old marks
-    form.setFieldsValue({ marks: undefined });
-  };
+
 
   return (
     <Form
@@ -149,7 +146,7 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
             label={`Desired Stream (${classValue})`}
             rules={[validationRules.required("Stream")]}
           >
-            <Select placeholder="Select stream" disabled={disabled} onChange={handleStreamChange}>
+            <Select placeholder="Select stream" disabled={disabled} >
               <Option value="Science">Science</Option>
               <Option value="Commerce">Commerce</Option>
               <Option value="Humanities">Humanities</Option>
@@ -222,7 +219,7 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
         </Form.Item>
       </div>
 
-      {classValue && (
+     
         <>
           <Divider />
           <h3 className="mb-2 text-lg font-semibold text-[#9a2119]">
@@ -258,19 +255,15 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
     disabled={disabled}
   />
 </Form.Item>
-          {subjects.length > 0 ? (
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-              {subjects.map((subject) => (
-                <Form.Item key={subject} name={["marks", subject]} label={subject}>
-                  <Input className="w-full" min={0} max={100} disabled={disabled} />
-                </Form.Item>
-              ))}
-            </div>
-          ) : streamValue !== "Not Decided" ? (
-            <p className="text-sm text-gray-500">Select a stream to enter marks.</p>
-          ) : null}
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+  {SUBJECTS_9_10.map((subject) => (
+    <Form.Item key={subject} name={["marks", subject]} label={subject}>
+      <Input className="w-full" disabled={disabled} />
+    </Form.Item>
+  ))}
+</div>
         </>
-      )}
+      
 
       {disabled && initialValues?.marks && (
         <div className="mb-4 grid grid-cols-1 gap-2 rounded-lg bg-slate-50 p-3 text-sm sm:grid-cols-2">
