@@ -119,18 +119,7 @@ function CounselingTable({
       ellipsis: true,
       render: (_, record) => record.counselorName || record.marks?._counselorName || "-",
     },
-    {
-      title: "Created By",
-      key: "createdBy",
-      width: 130,
-      render: (_, record) => record.createdByName || record.createdBy || record.marks?._createdById || "-",
-    },
-    {
-      title: "Creator Type",
-      key: "creatorType",
-      width: 120,
-      render: (_, record) => record.creatorType || record.marks?._creatorType || "-",
-    },
+    
     {
       title: "Psychometric",
       dataIndex: "psychometricRecommended",

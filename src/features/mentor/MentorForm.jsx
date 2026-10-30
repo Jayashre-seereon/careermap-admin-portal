@@ -259,74 +259,159 @@ useEffect(() => {
 
   init();
 }, [initialValues]);
-  const renderAvailabilityTimeSlots = (timeFields, addTimeSlot, removeTimeSlot) => (
-    <>
-      <div className="mb-2 flex items-center justify-between gap-3">
-        <span className="text-sm font-medium text-slate-700">Time Ranges</span>
-        {!disabled && (
-          <Button
-            type="dashed"
-            size="small"
-            onClick={() => addTimeSlot([null, null])}
-            icon={<PlusOutlined />}
-          >
-            Add Time Range
-          </Button>
-        )}
-      </div>
-
-      {timeFields.map(({ key, name, ...restField }) => (
-        <div key={key} className="mb-2 flex items-start gap-2">
-          <Form.Item
-            {...restField}
-            name={name}
-            className="mb-0 flex-1"
-            rules={[
-              {
-                validator: (_, value) => {
-                  const [start, end] = Array.isArray(value) ? value : [];
-
-                  if (start && end) {
-                    return Promise.resolve();
-                  }
-
-                  return Promise.reject(new Error("Time range is required"));
-                },
-              },
-            ]}
-          >
-            <TimePicker.RangePicker
-              className="w-full"
-              popupClassName="mentor-time-picker-popup"
-              disabled={disabled}
-              format="HH:mm"
-              use12Hours={false}
-              showSecond={false}
-              showNow={false}
-              inputReadOnly
-              placeholder={["Start time", "End time"]}
-            />
-          </Form.Item>
-
-          {!disabled && timeFields.length > 1 && (
-            <Button
-              danger
-              type="text"
-              className="mt-1"
-              icon={<MinusCircleOutlined />}
-              onClick={() => removeTimeSlot(name)}
-            />
-          )}
-        </div>
-      ))}
-
-      {!disabled && timeFields.length === 0 && (
-        <Button type="dashed" block onClick={() => addTimeSlot([null, null])} icon={<PlusOutlined />}>
+ 
+const renderAvailabilityTimeSlots = (dateIndex, timeFields, addTimeSlot, removeTimeSlot) => (
+  <>
+    <div className="mb-2 flex items-center justify-between gap-3">
+      <span className="text-sm font-medium text-slate-700">Time Ranges</span>
+      {!disabled && (
+        <Button
+          type="dashed"
+          size="small"
+          onClick={() => addTimeSlot([null, null])}
+          icon={<PlusOutlined />}
+        >
           Add Time Range
         </Button>
       )}
-    </>
-  );
+    </div>
+
+    {timeFields.map(({ key, name, ...restField }) => (
+      <div key={key} className="mb-2 flex items-start gap-2">
+        <Form.Item
+          {...restField}
+          name={name}
+          className="mb-0 flex-1"
+          rules={[
+            {
+              validator: (_, value) => {
+                const [start, end] = Array.isArray(value) ? value : [];
+
+                if (!start || !end) {
+                  return Promise.reject(
+                    new Error("Time range is required")
+                  );
+                }
+
+                const toMinutes = (time) => {
+                  if (typeof time?.hour === "function") {
+                    return time.hour() * 60 + time.minute();
+                  }
+
+                  const formatted = formatTimeValue(time);
+                  const [hours, minutes] = formatted.split(":").map(Number);
+
+                  return hours * 60 + minutes;
+                };
+
+                const startMinutes = toMinutes(start);
+                const endMinutes = toMinutes(end);
+
+                if (endMinutes <= startMinutes) {
+                  return Promise.reject(
+                    new Error("End time must be after start time")
+                  );
+                }
+
+                const allAvailability =
+                  form.getFieldValue("availability") || [];
+
+                const currentDate = allAvailability[dateIndex]?.date;
+
+                if (!currentDate) {
+                  return Promise.resolve();
+                }
+
+                const currentDateKey = dayjs(currentDate).format("YYYY-MM-DD");
+
+                for (let dateIndexToCheck = 0;
+                  dateIndexToCheck < allAvailability.length;
+                  dateIndexToCheck++
+                ) {
+                  const entry = allAvailability[dateIndexToCheck];
+
+                  if (!entry?.date) continue;
+
+                  const entryDateKey = dayjs(entry.date).format("YYYY-MM-DD");
+
+                  if (entryDateKey !== currentDateKey) continue;
+
+                  const slots = entry.timeSlots || [];
+
+                  for (let slotIndex = 0; slotIndex < slots.length; slotIndex++) {
+                    // Ignore the current time slot
+                    if (
+                      dateIndexToCheck === dateIndex &&
+                      slotIndex === name
+                    ) {
+                      continue;
+                    }
+
+                    const [existingStart, existingEnd] =
+                      normalizeTimeRangeValue(slots[slotIndex]);
+
+                    if (!existingStart || !existingEnd) continue;
+
+                    const existingStartMinutes = toMinutes(existingStart);
+                    const existingEndMinutes = toMinutes(existingEnd);
+
+                    // Check whether time ranges overlap
+                    if (
+                      startMinutes < existingEndMinutes &&
+                      endMinutes > existingStartMinutes
+                    ) {
+                      return Promise.reject(
+                        new Error(
+                          "This time slot already exists."
+                        )
+                      );
+                    }
+                  }
+                }
+
+                return Promise.resolve();
+              },
+            },
+          ]}
+        >
+          <TimePicker.RangePicker
+            className="w-full"
+            popupClassName="mentor-time-picker-popup"
+            disabled={disabled}
+            format="HH:mm"
+            use12Hours={false}
+            showSecond={false}
+            showNow={false}
+            inputReadOnly
+            placeholder={["Start time", "End time"]}
+          />
+        </Form.Item>
+
+        {!disabled && timeFields.length > 1 && (
+          <Button
+            danger
+            type="text"
+            className="mt-1"
+            icon={<MinusCircleOutlined />}
+            onClick={() => removeTimeSlot(name)}
+          />
+        )}
+      </div>
+    ))}
+
+    {!disabled && timeFields.length === 0 && (
+      <Button
+        type="dashed"
+        block
+        onClick={() => addTimeSlot([null, null])}
+        icon={<PlusOutlined />}
+      >
+        Add Time Range
+      </Button>
+    )}
+  </>
+);
+
 
   return (
     <Form
@@ -411,12 +496,15 @@ useEffect(() => {
         </Form.Item>
 
         <Form.Item name="dateof_birth" label="Date of Birth">
-          <DatePicker
-            className="w-full"
-            disabled={disabled}
-            format={DATE_DISPLAY_FORMAT}
-            placeholder="DD-MM-YYYY"
-          />
+         <DatePicker
+  className="w-full"
+  disabled={disabled}
+  format={DATE_DISPLAY_FORMAT}
+  placeholder="DD-MM-YYYY"
+  onChange={() => {
+    form.validateFields(["availability"]).catch(() => {});
+  }}
+/>
         </Form.Item>
 
         <Form.Item
@@ -575,26 +663,75 @@ useEffect(() => {
                     className="mb-4 rounded-xl border bg-white p-4 last:mb-0"
                   >
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-[220px_1fr_auto] md:items-start">
-                      <Form.Item
-                        {...restField}
-                        name={[name, "date"]}
-                        label="Available Date"
-                        rules={[validationRules.required("Available date")]}
-                        className="mb-0"
-                      >
-                        <DatePicker
-                          className="w-full"
-                          disabled={disabled}
-                          format={DATE_DISPLAY_FORMAT}
-                          placeholder="DD-MM-YYYY"
-                        />
-                      </Form.Item>
+               <Form.Item
+  {...restField}
+  name={[name, "date"]}
+  label="Available Date"
+  className="mb-0"
+  rules={[
+    {
+      required: true,
+      message: "Available date is required",
+    },
+    {
+      validator: (_, value) => {
+        if (!value) return Promise.resolve();
+
+        const allAvailability =
+          form.getFieldValue("availability") || [];
+
+        const selectedDate = dayjs(value).format("YYYY-MM-DD");
+
+        const duplicateDate = allAvailability.some((entry, index) => {
+          if (index === name || !entry?.date) return false;
+
+          return (
+            dayjs(entry.date).format("YYYY-MM-DD") === selectedDate
+          );
+        });
+
+        if (duplicateDate) {
+          return Promise.reject(
+            new Error("This date is already added. Please select another date.")
+          );
+        }
+
+        return Promise.resolve();
+      },
+    },
+  ]}
+>
+  <DatePicker
+    className="w-full"
+    disabled={disabled}
+    format={DATE_DISPLAY_FORMAT}
+    placeholder="DD-MM-YYYY"
+    disabledDate={(current) =>
+      current && current < dayjs().startOf("day")
+    }
+    onChange={() => {
+      const availability = form.getFieldValue("availability") || [];
+
+      const dateFields = availability.map((_, index) => [
+        "availability",
+        index,
+        "date",
+      ]);
+
+      form.validateFields(dateFields).catch(() => {});
+    }}
+  />
+</Form.Item>
 
                       <Form.List name={[name, "timeSlots"]}>
                         {(timeFields, { add: addTimeSlot, remove: removeTimeSlot }) => (
                           <div>
-                            {renderAvailabilityTimeSlots(timeFields, addTimeSlot, removeTimeSlot)}
-                          </div>
+                          {renderAvailabilityTimeSlots(
+  name,
+  timeFields,
+  addTimeSlot,
+  removeTimeSlot
+)}</div>
                         )}
                       </Form.List>
 
