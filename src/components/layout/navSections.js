@@ -8,6 +8,7 @@ import {
   CalendarCheck,
   ClipboardList,
   CreditCard,
+  BadgeCheck,
   FileText,
   FolderTree,
   GitBranch,
@@ -193,7 +194,7 @@ export const navSections = [
         module: "Notifications",
       },
       {
-        icon: Bell,
+        icon: BadgeCheck,
         name: "Subscribers",
         path: "/subscribers",
         module: "Subscribers",
