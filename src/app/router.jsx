@@ -97,6 +97,7 @@ import InstituteDashboardPage from "../pages/InstituteDashboardPage";
 import InstituteStudentsPage from "../features/institute/InstituteStudentsPage";
 import InstituteAttemptsPage from "../features/institute/InstituteAttemptsPage";
 import NewsLetterPage from "../features/newsLetter/NewsLetterPage";
+import UserMessagesPage from "../features/messages/UserMessagesPage";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -614,6 +615,10 @@ export const router = createBrowserRouter([
                 <Permission />
               </PermissionRoute>
             ),
+          },
+          {
+            path: "user-messages",
+            element: <UserMessagesPage />,
           },
           {
             path: "newsletter",
