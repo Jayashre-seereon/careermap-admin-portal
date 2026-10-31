@@ -19,6 +19,7 @@ import {
   LogInIcon,
   MapPin,
   MessageSquare,
+  Mail,
   Tag,
   Users,
   Video,
@@ -220,6 +221,11 @@ export const navSections = [
         name: "Support Tickets",
         path: "/support_tickets",
         module: "Support Tickets",
+      },
+      {
+        icon: Mail,
+        name: "User Messages",
+        path: "/user-messages",
       },
       {
         icon: HelpCircle,
