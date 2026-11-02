@@ -44,9 +44,9 @@ export default function EntranceExamTable({
       .trim();
   };
 
-  const ellipsis = (text) => (
+  const wrappedText = (text) => (
     <Tooltip title={stripHtml(text) || "-"}>
-      <span className="block max-w-[220px] truncate">{stripHtml(text) || "-"}</span>
+      <div className="whitespace-normal break-words">{stripHtml(text) || "-"}</div>
     </Tooltip>
   );
 
@@ -89,8 +89,8 @@ export default function EntranceExamTable({
     {
       title: <span className="text-[#9a2119] font-semibold">Exam Name</span>,
       dataIndex: "examname",
-      width: 180,
-      ellipsis: true,
+      width: 300,
+      render: wrappedText,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Issue Date</span>,
