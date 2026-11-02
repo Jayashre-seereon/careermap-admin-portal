@@ -35,56 +35,56 @@ export default function CareerPathTable({
     {
       title: <span className="text-[#9a2119] font-semibold">Name</span>,
       dataIndex: "pathName",
-      width: 180,
-      ellipsis: true,
+      width: 280,
+      render: (value) => <div className="whitespace-normal break-words">{value || "-"}</div>,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Category</span>,
       dataIndex: "categoryName",
       width: 160,
-      ellipsis: true,
+      render: (value) => <div className="whitespace-normal break-words">{value || "-"}</div>,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">2nd Category</span>,
       dataIndex: "secondCategoryName",
       width: 180,
-      ellipsis: true,
+      render: (value) => <div className="whitespace-normal break-words">{value || "-"}</div>,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Subcategory</span>,
       dataIndex: "subcategoryName",
       width: 180,
-      ellipsis: true,
+      render: (value) => <div className="whitespace-normal break-words">{value || "-"}</div>,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Path Type</span>,
       dataIndex: "pathTypeName",
       width: 140,
-      ellipsis: true,
+      render: (value) => <div className="whitespace-normal break-words">{value || "-"}</div>,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Graduation</span>,
       dataIndex: "graduation",
       width: 160,
-      ellipsis: true,
+      render: (value) => <div className="whitespace-normal break-words">{value || "-"}</div>,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">After Graduation</span>,
       dataIndex: "aftergraduation",
       width: 180,
-      ellipsis: true,
+      render: (value) => <div className="whitespace-normal break-words">{value || "-"}</div>,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">After Post Graduation</span>,
       dataIndex: "afterpostgraduation",
       width: 220,
-      ellipsis: true,
+      render: (value) => <div className="whitespace-normal break-words">{value || "-"}</div>,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Any Other</span>,
       dataIndex: "anyother",
       width: 160,
-      ellipsis: true,
+      render: (value) => <div className="whitespace-normal break-words">{value || "-"}</div>,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Action</span>,
@@ -160,6 +160,7 @@ export default function CareerPathTable({
         pagination={pagination}
         onChange={(pag) => setPagination(pag)}
         rowClassName="hover:bg-gray-50"
+        tableLayout="fixed"
         scroll={{ x: "max-content" }}
       />
     </div>

@@ -77,8 +77,8 @@ export default function EntranceExamTable({
     {
       title: <span className="text-[#9a2119] font-semibold">2nd Category</span>,
       dataIndex: "secondCategoryName",
-      width: 180,
-      ellipsis: true,
+      width: 300,
+      render: (value) => <div className="whitespace-normal break-words">{value || "-"}</div>,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Subcategory</span>,
@@ -220,6 +220,7 @@ export default function EntranceExamTable({
           pagination={pagination}
           onChange={(pag) => setPagination(pag)}
           rowClassName="hover:bg-gray-50"
+          tableLayout="fixed"
           scroll={{ x: "max-content" }}
         />
       </div>
