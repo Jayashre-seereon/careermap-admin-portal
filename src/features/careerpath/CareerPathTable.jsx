@@ -39,6 +39,12 @@ export default function CareerPathTable({
       render: (value) => <div className="whitespace-normal break-words">{value || "-"}</div>,
     },
     {
+      title: <span className="text-[#9a2119] font-semibold">Stream</span>,
+      dataIndex: "stream",
+      width: 150,
+      render: (value) => <div className="whitespace-normal break-words">{value || "-"}</div>,
+    },
+    {
       title: <span className="text-[#9a2119] font-semibold">Category</span>,
       dataIndex: "categoryName",
       width: 160,
