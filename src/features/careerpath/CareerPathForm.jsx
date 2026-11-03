@@ -198,6 +198,10 @@ export default function CareerPathForm({
         </Select>
       </Form.Item>
 
+      <Form.Item name="stream" label="Stream">
+        <Input disabled={isView} placeholder="Enter stream" />
+      </Form.Item>
+
       <Form.Item name="graduation" label="Graduation">
         <Input disabled={isView} />
       </Form.Item>
