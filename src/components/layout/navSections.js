@@ -199,18 +199,18 @@ export const navSections = [
         path: "/subscribers",
         module: "Subscribers",
       },
-      {
-        icon: CalendarCheck,
-        name: "Bookings",
-        path: "/bookings",
-        module: "Bookings",
-      },
-      {
-        icon: IndianRupeeIcon,
-        name: "Transactions",
-        path: "/transactions",
-        module: "Transactions",
-      },
+      // {
+      //   icon: CalendarCheck,
+      //   name: "Bookings",
+      //   path: "/bookings",
+      //   module: "Bookings",
+      // },
+      // {
+      //   icon: IndianRupeeIcon,
+      //   name: "Transactions",
+      //   path: "/transactions",
+      //   module: "Transactions",
+      // },
       {
         icon: LogInIcon,
         name: "Login Activities",
