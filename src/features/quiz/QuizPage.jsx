@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Form, Input, message, Modal, Popconfirm, Select, Table, Button } from "antd";
+import { DatePicker, Form, Input, message, Modal, Popconfirm, Select, Table, Button } from "antd";
+import dayjs from "dayjs";
 import {
   DeleteOutlined,
   EditOutlined,
@@ -52,6 +53,26 @@ const formatDateForInput = (value) => {
 
   return date.toISOString().split("T")[0];
 };
+
+const formatDateForDisplay = (value) => {
+  if (!value) return "-";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? String(value)
+    : new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC" }).format(date);
+};
+
+const parseDateForPicker = (value) => {
+  if (!value) return null;
+  const parsed = dayjs(value);
+  return parsed.isValid() ? parsed : null;
+};
+
+const formatQuizPayload = (values) => ({
+  ...values,
+  from: values.from ? values.from.format("YYYY-MM-DD") : "",
+  to: values.to ? values.to.format("YYYY-MM-DD") : "",
+});
 
 const mapQuiz = (item = {}) => ({
   ...item,
@@ -128,7 +149,7 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
-      await createQuiz(values);
+      await createQuiz(formatQuizPayload(values));
       messageApi.success("Quiz added successfully.");
       closeAddModal();
       await loadQuizzes();
@@ -146,8 +167,8 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
     editForm.setFieldsValue({
       title: quiz.title,
       type: quiz.type,
-      from: quiz.from,
-      to: quiz.to,
+      from: parseDateForPicker(quiz.from),
+      to: parseDateForPicker(quiz.to),
       duration: quiz.duration,
     });
   };
@@ -159,7 +180,7 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
 
     try {
       const values = await editForm.validateFields();
-      await updateQuiz(editingQuiz.id, values);
+      await updateQuiz(editingQuiz.id, formatQuizPayload(values));
       messageApi.success("Quiz updated successfully.");
       closeEditModal();
       await loadQuizzes();
@@ -222,10 +243,12 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
     {
       title: <span className="text-[#9a2119] font-semibold">From</span>,
       dataIndex: "from",
+      render: formatDateForDisplay,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">To</span>,
       dataIndex: "to",
+      render: formatDateForDisplay,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Add</span>,
@@ -413,7 +436,12 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
             name="from"
             rules={[{ required: true, message: "Please select start date." }]}
           >
-            <Input type="date" />
+            <DatePicker
+              className="w-full"
+              format="DD/MM/YYYY"
+              placeholder="DD/MM/YYYY"
+              disabledDate={(current) => current && current.isBefore(dayjs().startOf("day"))}
+            />
           </Form.Item>
 
           <Form.Item
@@ -421,7 +449,12 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
             name="to"
             rules={[{ required: true, message: "Please select end date." }]}
           >
-            <Input type="date" />
+            <DatePicker
+              className="w-full"
+              format="DD/MM/YYYY"
+              placeholder="DD/MM/YYYY"
+              disabledDate={(current) => current && current.isBefore(dayjs().startOf("day"))}
+            />
           </Form.Item>
         </Form>
       </Modal>
@@ -484,7 +517,12 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
               name="from"
               rules={[{ required: true, message: "Please select start date." }]}
             >
-              <Input type="date" />
+              <DatePicker
+                className="w-full"
+                format="DD/MM/YYYY"
+                placeholder="DD/MM/YYYY"
+                disabledDate={(current) => current && current.isBefore(dayjs().startOf("day"))}
+              />
             </Form.Item>
 
             <Form.Item
@@ -492,7 +530,12 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
               name="to"
               rules={[{ required: true, message: "Please select end date." }]}
             >
-              <Input type="date" />
+              <DatePicker
+                className="w-full"
+                format="DD/MM/YYYY"
+                placeholder="DD/MM/YYYY"
+                disabledDate={(current) => current && current.isBefore(dayjs().startOf("day"))}
+              />
             </Form.Item>
           </div>
         </Form>
