@@ -96,6 +96,7 @@ import InstituteLayout from "../components/institute/InstituteLayout";
 import InstituteDashboardPage from "../pages/InstituteDashboardPage";
 import InstituteStudentsPage from "../features/institute/InstituteStudentsPage";
 import InstituteAttemptsPage from "../features/institute/InstituteAttemptsPage";
+import InstituteCounselingPage from "../features/institute/InstituteCounselingPage";
 import NewsLetterPage from "../features/newsLetter/NewsLetterPage";
 import UserMessagesPage from "../features/messages/UserMessagesPage";
 export const router = createBrowserRouter([
@@ -160,6 +161,7 @@ export const router = createBrowserRouter([
           { path: "dashboard", element: <InstituteDashboardPage /> },
           { path: "students", element: <InstituteStudentsPage /> },
           { path: "psychometric-attempts", element: <InstituteAttemptsPage /> },
+          { path: "counseling-reports", element: <InstituteCounselingPage /> },
           { path: "psychometric-attempts/:attemptId/report", element: <AssessmentReportPage /> },
         ],
       },
