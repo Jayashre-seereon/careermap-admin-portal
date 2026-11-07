@@ -66,7 +66,10 @@ function CounselingTable({
     { title: "Student Name", dataIndex: "studentName", width: 160, ellipsis: true },
     { title: "Class", dataIndex: "class", width: 90 },
     { title: "Stream", dataIndex: "stream", width: 110, render: (value) => value || "-" },
-    { title: "School", dataIndex: "school", width: 160, ellipsis: true },
+    { title: "School / Institute", key: "school", width: 180, ellipsis: true, render: (_, record) => {
+      const instituteId = record.instituteId ?? record.schoolInstitutionId;
+      return <span title={`Institute ID: ${instituteId ?? "-"}`}>{record.schoolInstitution?.name || record.school || "-"}{instituteId ? ` (ID ${instituteId})` : ""}</span>;
+    } },
     { title: "Phone", dataIndex: "phoneNumber", width: 130, ellipsis: true },
     { title: "Email", dataIndex: "email", width: 200, ellipsis: true },
     {

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 const ACCESS_TOKEN_KEY = "access_token";
+const INSTITUTE_ACCESS_TOKEN_KEY = "institute_access_token";
 const REFRESH_TOKEN_KEY = "refresh_token";
 const USER_KEY = "auth_user";
 const LOGIN_TYPE_KEY = "auth_login_type";
@@ -21,14 +22,19 @@ const getStoredJson = (key) => {
   }
 };
 
-const getStoredSession = () => ({
-  accessToken: localStorage.getItem(ACCESS_TOKEN_KEY) || "",
-  refreshToken: localStorage.getItem(REFRESH_TOKEN_KEY) || "",
-  user: getStoredJson(USER_KEY),
-  loginType: localStorage.getItem(LOGIN_TYPE_KEY) || "admin",
-  role: getStoredJson(ROLE_KEY),
-  permissions: getStoredJson(PERMISSIONS_KEY),
-});
+const getStoredSession = () => {
+  const loginType = localStorage.getItem(LOGIN_TYPE_KEY) || "admin";
+  return {
+    accessToken: loginType === "institute"
+      ? (localStorage.getItem(INSTITUTE_ACCESS_TOKEN_KEY) || localStorage.getItem(ACCESS_TOKEN_KEY) || "")
+      : (localStorage.getItem(ACCESS_TOKEN_KEY) || ""),
+    refreshToken: localStorage.getItem(REFRESH_TOKEN_KEY) || "",
+    user: getStoredJson(USER_KEY),
+    loginType,
+    role: getStoredJson(ROLE_KEY),
+    permissions: getStoredJson(PERMISSIONS_KEY),
+  };
+};
 
 const setStoredSession = ({
   accessToken = "",
@@ -40,8 +46,14 @@ const setStoredSession = ({
 }) => {
   if (accessToken) {
     localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+    if (loginType === "institute") {
+      localStorage.setItem(INSTITUTE_ACCESS_TOKEN_KEY, accessToken);
+    } else {
+      localStorage.removeItem(INSTITUTE_ACCESS_TOKEN_KEY);
+    }
   } else {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(INSTITUTE_ACCESS_TOKEN_KEY);
   }
 
   if (refreshToken) {
@@ -77,6 +89,7 @@ const setStoredSession = ({
 
 const clearStoredSession = () => {
   localStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.removeItem(INSTITUTE_ACCESS_TOKEN_KEY);
   localStorage.removeItem(REFRESH_TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
   localStorage.removeItem(LOGIN_TYPE_KEY);
@@ -173,4 +186,4 @@ export const useSessionStore = create((set, get) => ({
 },
 }));
 
-export { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, USER_KEY, LOGIN_TYPE_KEY, ROLE_KEY, PERMISSIONS_KEY };
+export { ACCESS_TOKEN_KEY, INSTITUTE_ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, USER_KEY, LOGIN_TYPE_KEY, ROLE_KEY, PERMISSIONS_KEY };

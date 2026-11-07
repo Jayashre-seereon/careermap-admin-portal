@@ -7,6 +7,14 @@ import {
 } from "@ant-design/icons";
 import { getSerialNumber } from "../../utils/slNo";
 
+const formatDate = (value) => {
+  if (!value) return "-";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? String(value)
+    : new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
+};
+
 const stripHtml = (text = "") => {
   const normalizedText = Array.isArray(text)
     ? text.join(", ")
@@ -128,7 +136,7 @@ export default function StudyAbroadConsultTable({
       title: "Date",
       dataIndex: "createdAt",
       width: 150,
-      render: (date) => (date ? new Date(date).toLocaleDateString() : "-"),
+      render: formatDate,
     },
     {
       title: "Action",

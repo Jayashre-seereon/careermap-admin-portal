@@ -11,10 +11,13 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const { accessToken, refreshToken } = useSessionStore.getState();
+    const { accessToken, refreshToken, loginType } = useSessionStore.getState();
+    const requestToken = loginType === "institute"
+      ? (localStorage.getItem("institute_access_token") || accessToken)
+      : accessToken;
 
-    if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
+    if (requestToken) {
+      config.headers.Authorization = `Bearer ${requestToken}`;
     }
 
     if (refreshToken) {

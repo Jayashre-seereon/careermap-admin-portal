@@ -154,6 +154,24 @@ const formatTimeRangeValue = (value) => {
   return "";
 };
 
+const getDisabledTime = (selectedDate) => {
+  if (!selectedDate || !dayjs(selectedDate).isSame(dayjs(), "day")) {
+    return {};
+  }
+
+  const now = dayjs();
+  const currentHour = now.hour();
+  const currentMinute = now.minute();
+
+  return {
+    disabledHours: () => Array.from({ length: currentHour }, (_, hour) => hour),
+    disabledMinutes: (hour) =>
+      hour === currentHour
+        ? Array.from({ length: currentMinute }, (_, minute) => minute)
+        : [],
+  };
+};
+
 const normalizeAvailability = (availability = []) => {
   if (!Array.isArray(availability) || availability.length === 0) {
     return [{ date: null, timeSlots: [[null, null]] }];
@@ -383,6 +401,15 @@ const renderAvailabilityTimeSlots = (dateIndex, timeFields, addTimeSlot, removeT
             showSecond={false}
             showNow={false}
             inputReadOnly
+            disabledTime={() => {
+              const selectedDate = form.getFieldValue([
+                "availability",
+                dateIndex,
+                "date",
+              ]);
+
+              return getDisabledTime(selectedDate);
+            }}
             placeholder={["Start time", "End time"]}
           />
         </Form.Item>

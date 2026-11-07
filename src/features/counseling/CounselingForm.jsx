@@ -3,6 +3,8 @@ import { Button, Form, Input, Select, DatePicker, Radio, InputNumber, Divider } 
 import RichTextEditor from "../../components/ui/RichTextEditor";
 import { validationRules } from "../../utils/formValidation";
 import dayjs from "dayjs";
+import { useEffect, useState } from "react";
+import { getInstitutes } from "../../api/institutions";
 
 const { Option } = Select;
 
@@ -62,6 +64,13 @@ function getSubjectsFor(classValue, streamValue) {
 
 function CounselingForm({ onSubmit, initialValues, disabled }) {
   const [form] = Form.useForm();
+  const [institutes, setInstitutes] = useState([]);
+  useEffect(() => {
+    getInstitutes().then((response) => {
+      const rows = Array.isArray(response) ? response : response?.data || response?.institutes || [];
+      setInstitutes(rows);
+    }).catch((error) => console.error("Could not load institutes", error));
+  }, []);
 
   const classValue = Form.useWatch("class", form);
   const streamValue = Form.useWatch("stream", form);
@@ -77,6 +86,7 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
 
     form.setFieldsValue({
       ...initialValues,
+      instituteId: initialValues.instituteId ?? initialValues.schoolInstitutionId ?? initialValues.schoolInstitution?.id,
       totalPercentage: normalizePercentage(
         initialValues.totalPercentage ?? initialValues.total_percentage ?? initialValues.percentage
       ),
@@ -90,6 +100,8 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
     try {
       const payload = {
         ...values,
+        school: institutes.find((institute) => Number(institute.id) === Number(values.instituteId))?.name || initialValues?.school || null,
+        instituteId: values.instituteId ? Number(values.instituteId) : null,
         totalPercentage: values.totalPercentage ?? null,
         counselingDate: values.counselingDate ? values.counselingDate.toISOString() : null,
       };
@@ -155,8 +167,8 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
           </Form.Item>
         )}
 
-        <Form.Item name="school" label="School" rules={[validationRules.required("School")]}>
-          <Input placeholder="Enter school name" disabled={disabled} />
+        <Form.Item name="instituteId" label="School / Institute" rules={[validationRules.required("School / Institute")]}>
+          <Select showSearch optionFilterProp="label" placeholder="Select institute" disabled={disabled} options={institutes.map((institute) => ({ value: institute.id, label: institute.name }))} />
         </Form.Item>
 
       <Form.Item name="counselingDate" label="Date" rules={[validationRules.required("Date")]}>

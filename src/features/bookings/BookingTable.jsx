@@ -1,5 +1,5 @@
-import React from "react";
-import { Table, Input, Tag, Modal,Button } from "antd";
+import React, { useEffect, useMemo } from "react";
+import { Table, Input, Tag, Modal, Button, Alert } from "antd";
 import {
   EyeOutlined,
   SearchOutlined,
@@ -7,55 +7,53 @@ import {
 } from "@ant-design/icons";
 import { useState } from "react";
 import { getSerialNumber } from "../../utils/slNo";
+import { getAdminMentorBookings } from "../../api/adminRecords";
 
-
-const initialData = [
-  {
-    key: "1",
-    user: "Subhankar Sahu",
-    member: "Macaulay Jackson",
-    date: "2025-12-12",
-    time: "12:10",
-    receivedPayment: "NA",
-    transactionId: "NA",
-    paymentConfirmationId: "NA",
-    status: "Unpaid",
-  },
-  {
-    key: "2",
-    user: "Subhankar Sahu",
-    member: "Macaulay Jackson",
-    date: "2025-12-12",
-    time: "12:10",
-    receivedPayment: "NA",
-    transactionId: "NA",
-    paymentConfirmationId: "NA",
-    status: "Unpaid",
-  },
-  {
-    key: "3",
-    user: "Satyam123 Routray",
-    member: "Macaulay Jackson",
-    date: "2025-07-31",
-    time: "18:59",
-    receivedPayment: "8000",
-    transactionId: "1234567890",
-    paymentConfirmationId: "0987654321",
-    status: "Paid",
-  },
-];
+const rowsFrom = (response) => {
+  const rows = Array.isArray(response) ? response : response?.data ?? response?.bookings ?? response?.mentorBookings ?? [];
+  return Array.isArray(rows) ? rows : [];
+};
+const firstValue = (...values) => values.find((value) => value !== undefined && value !== null && value !== "");
+const displayValue = (value, fallback = "NA") => value === undefined || value === null || value === "" ? fallback : value;
+const mapBooking = (item, index) => {
+  const user = firstValue(item.user, item.student, item.customer, item.userName, item.studentName);
+  const mentor = firstValue(item.mentor, item.member, item.mentorName);
+  const dateValue = firstValue(item.date, item.bookingDate, item.createdAt, item.created_at);
+  const date = dateValue ? new Date(dateValue) : null;
+  return {
+    ...item,
+    key: item.id ?? item._id ?? index,
+    user: typeof user === "object" ? firstValue(user.name, user.fullName, user.email) : displayValue(user),
+    member: typeof mentor === "object" ? firstValue(mentor.name, mentor.fullName, mentor.email) : displayValue(mentor),
+    date: date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString("en-IN") : displayValue(dateValue),
+    time: displayValue(item.time ?? item.bookingTime ?? (date && !Number.isNaN(date.getTime()) ? date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : null)),
+    receivedPayment: displayValue(firstValue(item.receivedPayment, item.amount, item.paymentAmount)),
+    transactionId: displayValue(firstValue(item.transactionId, item.txnId, item.paymentIntentId)),
+    paymentConfirmationId: displayValue(firstValue(item.paymentConfirmationId, item.confirmationId, item.razorpayPaymentId)),
+    status: firstValue(item.status, item.paymentStatus, item.bookingStatus, "Unpaid"),
+  };
+};
 
 export default function BookingTable() {
   const [search, setSearch] = useState("");
-  const [data] = useState(initialData);
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   // Modal state
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(null);
 
-  const filteredData = data.filter((item) =>
-    item.user.toLowerCase().includes(search.toLowerCase())
-  );
+  useEffect(() => {
+    getAdminMentorBookings()
+      .then((response) => setData(rowsFrom(response).map(mapBooking)))
+      .catch((err) => setError(err?.response?.data?.message || err?.message || "Could not load mentor bookings."))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const filteredData = useMemo(() => data.filter((item) =>
+    [item.user, item.member, item.transactionId, item.status].join(" ").toLowerCase().includes(search.toLowerCase())
+  ), [data, search]);
 
   const handleReset = () => setSearch("");
 
@@ -98,12 +96,7 @@ export default function BookingTable() {
       width: 180,
       ellipsis: true,
     },
-    {
-      title: "Payment Confirmation ID",
-      dataIndex: "paymentConfirmationId",
-      width: 220,
-      ellipsis: true,
-    },
+   
     {
       title: "Status",
       dataIndex: "status",
@@ -149,7 +142,7 @@ export default function BookingTable() {
         {/* HEADER */}
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <h2 className="text-lg font-semibold text-[#9a2119]">
-            Bookings
+            Mentor Bookings
           </h2>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -172,9 +165,11 @@ export default function BookingTable() {
         </div>
 
         {/* TABLE */}
+        {error && <Alert className="mb-4" type="error" showIcon message={error} />}
         <Table
           columns={columns}
         dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
+          loading={loading}
           pagination={pagination}
           onChange={(pag) => setPagination(pag)}
           scroll={{ x: "max-content" }}
