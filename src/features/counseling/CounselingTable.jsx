@@ -58,6 +58,7 @@ function CounselingTable({
   onDelete,
   search,
   onSearch,
+  onReset,
   onDownload,
   staffView = false,
 }) {
@@ -178,7 +179,7 @@ function CounselingTable({
             className="w-full sm:w-64 h-8 rounded-md border-[#9a2119]"
           />
           <Button
-            onClick={() => onSearch("")}
+            onClick={onReset}
             style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
           >
             <ReloadOutlined />
