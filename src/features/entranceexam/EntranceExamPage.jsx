@@ -103,6 +103,7 @@ const buildEntranceExamPayload = ({
   totalMark,
   frequency,
   examPattern,
+  tentative,
   topInstitutes,
   url,
 }) => ({
@@ -118,9 +119,10 @@ const buildEntranceExamPayload = ({
   total_mark: totalMark || "",
   frequncy: frequency || "",
   exam_pattern: examPattern || "",
+  tentative: Boolean(tentative),
   top_institution: normalizeStringArray(topInstitutes),
   subject: normalizeStringArray(subject),
-  eligibility: eligibility || "",
+  eligibility: String(tentative ?? eligibility ?? false),
   about: about || "",
   duration: duration || "",
   url: url || "",
@@ -153,6 +155,7 @@ const mapEntranceExam = (item = {}) => ({
   totalMark: item.totalMark || item.total_mark || "",
   frequency: item.frequency || item.frequncy || "",
   examPattern: item.examPattern || item.exam_pattern || "",
+  tentative: item.tentative ?? item.exam_pattern_tentative ?? (item.eligibility === "true" || item.eligibility === true),
   topInstitutes: Array.isArray(item.topInstitutes || item.top_institutes || item.top_institution)
     ? item.topInstitutes || item.top_institutes || item.top_institution
     : normalizeStringArray(item.topInstitutes || item.top_institutes || item.top_institution),
