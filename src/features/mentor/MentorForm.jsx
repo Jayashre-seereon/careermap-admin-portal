@@ -155,11 +155,21 @@ const formatTimeRangeValue = (value) => {
 };
 
 const getDisabledTime = (selectedDate) => {
-  if (!selectedDate || !dayjs(selectedDate).isSame(dayjs(), "day")) {
+  if (!selectedDate) {
     return {};
   }
 
-  const now = dayjs();
+  const date = dayjs(selectedDate);
+  const today = dayjs();
+  if (date.isBefore(today, "day")) {
+    return {
+      disabledHours: () => Array.from({ length: 24 }, (_, hour) => hour),
+      disabledMinutes: () => Array.from({ length: 60 }, (_, minute) => minute),
+    };
+  }
+  if (!date.isSame(today, "day")) return {};
+
+  const now = today;
   const currentHour = now.hour();
   const currentMinute = now.minute();
 
@@ -395,7 +405,10 @@ const renderAvailabilityTimeSlots = (dateIndex, timeFields, addTimeSlot, removeT
           <TimePicker.RangePicker
             className="w-full"
             popupClassName="mentor-time-picker-popup"
-            disabled={disabled}
+            disabled={disabled || (() => {
+              const selectedDate = form.getFieldValue(["availability", dateIndex, "date"]);
+              return Boolean(selectedDate && dayjs(selectedDate).isBefore(dayjs(), "day"));
+            })()}
             format="HH:mm"
             use12Hours={false}
             showSecond={false}
@@ -509,7 +522,7 @@ const renderAvailabilityTimeSlots = (dateIndex, timeFields, addTimeSlot, removeT
         <Form.Item
           name="email"
           label="Email"
-          rules={[validationRules.email("Email")]}
+          rules={[validationRules.required("Email"), validationRules.email("Email")]}
         >
           <Input disabled={disabled} placeholder="Enter email address" />
         </Form.Item>
@@ -517,7 +530,7 @@ const renderAvailabilityTimeSlots = (dateIndex, timeFields, addTimeSlot, removeT
         <Form.Item
           name="phone_number"
           label="Phone Number"
-          rules={[validationRules.phone("Phone number")]}
+          rules={[validationRules.required("Phone number"), validationRules.phone("Phone number")]}
         >
           <Input disabled={disabled} placeholder="Enter phone number" />
         </Form.Item>
@@ -597,7 +610,11 @@ const renderAvailabilityTimeSlots = (dateIndex, timeFields, addTimeSlot, removeT
         <Form.Item
           name="mentor_fees"
           label="Mentor Fees"
-          rules={[validationRules.decimal("Mentor fees")]}
+          rules={[
+            validationRules.required("Mentor fees"),
+            validationRules.decimal("Mentor fees"),
+            { validator: (_, value) => !value || Number(value) > 0 ? Promise.resolve() : Promise.reject(new Error("Mentor fees must be greater than zero.")) },
+          ]}
         >
           <Input disabled={disabled} placeholder="Enter mentor fees" />
         </Form.Item>
@@ -730,7 +747,10 @@ const renderAvailabilityTimeSlots = (dateIndex, timeFields, addTimeSlot, removeT
 >
   <DatePicker
     className="w-full"
-    disabled={disabled}
+    disabled={disabled || (() => {
+      const selectedDate = form.getFieldValue(["availability", name, "date"]);
+      return Boolean(selectedDate && dayjs(selectedDate).isBefore(dayjs(), "day"));
+    })()}
     format={DATE_DISPLAY_FORMAT}
     placeholder="DD-MM-YYYY"
     disabledDate={(current) =>

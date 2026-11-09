@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo } from "react";
-import { Table, Input, Tag, Modal, Button, Alert } from "antd";
+import { Table, Input, Tag, Modal, Button, Alert, message } from "antd";
 import {
-  EyeOutlined,
+  LinkOutlined,
   SearchOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
 import { useState } from "react";
 import { getSerialNumber } from "../../utils/slNo";
-import { getAdminMentorBookings } from "../../api/adminRecords";
+import { getAdminMentorBookings, saveAndEmailMentorMeetingLink } from "../../api/adminRecords";
 
 const rowsFrom = (response) => {
   const rows = Array.isArray(response) ? response : response?.data ?? response?.bookings ?? response?.mentorBookings ?? [];
@@ -15,6 +15,24 @@ const rowsFrom = (response) => {
 };
 const firstValue = (...values) => values.find((value) => value !== undefined && value !== null && value !== "");
 const displayValue = (value, fallback = "NA") => value === undefined || value === null || value === "" ? fallback : value;
+const getMeetingStart = (dateValue, timeSlot) => {
+  const dateKey = dateValue instanceof Date ? dateValue.toISOString().slice(0, 10) : String(dateValue || "").trim().slice(0, 10);
+  const match = String(timeSlot || "").trim().split("-")[0].trim().match(/^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$/i);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey) || !match) return null;
+  let hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  const period = match[3]?.toUpperCase();
+  if (minutes > 59 || hours > 23 || (period && (hours < 1 || hours > 12))) return null;
+  if (period === "PM" && hours < 12) hours += 12;
+  if (period === "AM" && hours === 12) hours = 0;
+  return new Date(`${dateKey}T${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00+05:30`);
+};
+const meetingStatusAt = (booking, now) => {
+  if (booking.meetingUrl) return "Link sent";
+  const startsAt = getMeetingStart(booking.bookingDateValue, booking.bookingTimeValue);
+  if (!startsAt || Number.isNaN(startsAt.getTime())) return "Schedule invalid";
+  return startsAt <= now ? "Expired" : "Link required";
+};
 const mapBooking = (item, index) => {
   const user = firstValue(item.user, item.student, item.customer, item.userName, item.studentName);
   const mentor = firstValue(item.mentor, item.member, item.mentorName);
@@ -23,13 +41,16 @@ const mapBooking = (item, index) => {
   return {
     ...item,
     key: item.id ?? item._id ?? index,
+    bookingDateValue: dateValue,
+    bookingTimeValue: firstValue(item.timeSlot, item.time, item.bookingTime),
     user: typeof user === "object" ? firstValue(user.name, user.fullName, user.email) : displayValue(user),
     member: typeof mentor === "object" ? firstValue(mentor.name, mentor.fullName, mentor.email) : displayValue(mentor),
     date: date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString("en-IN") : displayValue(dateValue),
     time: displayValue(item.time ?? item.bookingTime ?? (date && !Number.isNaN(date.getTime()) ? date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : null)),
     receivedPayment: displayValue(firstValue(item.receivedPayment, item.amount, item.paymentAmount)),
     transactionId: displayValue(firstValue(item.transactionId, item.txnId, item.paymentIntentId)),
-    paymentConfirmationId: displayValue(firstValue(item.paymentConfirmationId, item.confirmationId, item.razorpayPaymentId)),
+    paymentConfirmationId: firstValue(item.paymentConfirmationId, item.confirmationId, item.razorpayPaymentId),
+    meetingLinkStatus: item.meetingLinkStatus || (item.meetingUrl ? "Link sent" : "Link required"),
     status: firstValue(item.status, item.paymentStatus, item.bookingStatus, "Unpaid"),
   };
 };
@@ -43,6 +64,14 @@ export default function BookingTable() {
   // Modal state
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(null);
+  const [meetingUrl, setMeetingUrl] = useState("");
+  const [savingMeetingUrl, setSavingMeetingUrl] = useState(false);
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 15000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     getAdminMentorBookings()
@@ -56,6 +85,28 @@ export default function BookingTable() {
   ), [data, search]);
 
   const handleReset = () => setSearch("");
+
+  const handleSaveMeetingUrl = async () => {
+    const bookingId = selected?.id ?? selected?.key;
+    if (!bookingId || !meetingUrl.trim()) {
+      message.error("Enter the meeting URL first.");
+      return;
+    }
+    setSavingMeetingUrl(true);
+    try {
+      const response = await saveAndEmailMentorMeetingLink(bookingId, meetingUrl.trim());
+      const savedUrl = response?.data?.meetingUrl || meetingUrl.trim();
+      setData((current) => current.map((item) => item.id === bookingId || item.key === bookingId ? { ...item, meetingUrl: savedUrl, meetingLinkStatus: "Link sent" } : item));
+      message.success(response?.message || "Meeting link emailed to the student and mentor.");
+      setOpen(false);
+      setSelected(null);
+      setMeetingUrl("");
+    } catch (err) {
+      message.error(err?.response?.data?.message || err?.message || "Could not save or email the meeting link.");
+    } finally {
+      setSavingMeetingUrl(false);
+    }
+  };
 
   const columns = [
     {
@@ -108,6 +159,14 @@ export default function BookingTable() {
       width: 120,
     },
     {
+      title: "Meeting Link",
+      render: (_, record) => {
+        const status = meetingStatusAt(record, now);
+        return <Tag color={status === "Link sent" ? "green" : status === "Expired" || status === "Schedule invalid" ? "red" : "orange"}>{status}</Tag>;
+      },
+      width: 150,
+    },
+    {
       title: "Action",
       align: "right",
       width: 120,
@@ -115,13 +174,14 @@ export default function BookingTable() {
         <div className="flex justify-end">
           <Button
             onClick={() => {
-              setSelected(record);
+              setSelected({ ...record, meetingLinkStatus: meetingStatusAt(record, new Date()) });
+              setMeetingUrl(record.meetingUrl || "");
               setOpen(true);
             }}
             className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
        
           >
-            <EyeOutlined />
+            <LinkOutlined />
           </Button>
         </div>
       ),
@@ -185,19 +245,49 @@ export default function BookingTable() {
       >
         {selected && (
           <div className="space-y-2">
+            {(() => {
+              const liveStatus = meetingStatusAt(selected, now);
+              const isExpired = liveStatus === "Expired" || liveStatus === "Schedule invalid";
+              return (
+            <>
+            {liveStatus === "Expired" && <Alert type="error" showIcon message="This booking time has expired. The meeting link must be sent before the session start time." />}
+            {liveStatus === "Schedule invalid" && <Alert type="error" showIcon message="This booking has an invalid date or start time, so the meeting link cannot be sent." />}
             <p><b>User:</b> {selected.user}</p>
             <p><b>Member:</b> {selected.member}</p>
             <p><b>Date:</b> {selected.date}</p>
             <p><b>Time:</b> {selected.time}</p>
             <p><b>Received Payment:</b> {selected.receivedPayment}</p>
             <p><b>Transaction ID:</b> {selected.transactionId}</p>
-            <p><b>Payment Confirmation ID:</b> {selected.paymentConfirmationId}</p>
+            {selected.paymentConfirmationId && String(selected.paymentConfirmationId).toUpperCase() !== "NA" && (
+              <p><b>Payment Confirmation ID:</b> {selected.paymentConfirmationId}</p>
+            )}
             <p>
               <b>Status:</b>{" "}
               <Tag color={selected.status === "Paid" ? "green" : "red"}>
                 {selected.status}
               </Tag>
             </p>
+            <div className="space-y-2 border-t pt-4">
+              <label htmlFor="mentor-meeting-url" className="block text-sm font-semibold text-slate-700">Meeting URL</label>
+              {isExpired ? null : (
+              <>
+              <Input
+                id="mentor-meeting-url"
+                type="url"
+                placeholder="https://meet.google.com/..."
+                value={meetingUrl}
+                onChange={(event) => setMeetingUrl(event.target.value)}
+              />
+              <p className="m-0 text-xs text-slate-500">Saving sends the link and session details to both the student and mentor. Use an HTTPS meeting link.</p>
+              <Button type="primary" loading={savingMeetingUrl} disabled={!meetingUrl.trim()} onClick={handleSaveMeetingUrl} className="!bg-[#9a2119]">
+                Save & Email Meeting Link
+              </Button>
+              </>
+              )}
+            </div>
+            </>
+              );
+            })()}
           </div>
         )}
       </Modal>
