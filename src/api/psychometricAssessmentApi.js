@@ -252,6 +252,11 @@ export const getInstitutePsychometricAttempts = async () => {
   return res.data;
 };
 
+export const getInstitutePsychometricAttemptDetails = async (attemptId) => {
+  const res = await api.get(`/api/institutcreate/psychometric-assessments/${attemptId}`);
+  return res.data;
+};
+
 export const getAttemptDetails = async (attemptId) => {
   const res = await api.get(`${BASE_PREFIX}/admin/attempts/${attemptId}`);
   return res.data;
