@@ -228,17 +228,12 @@ export const navSections = [
         name: "User Messages",
         path: "/user-messages",
       },
-      {
-        icon: HelpCircle,
-        name: "Counseling",
-        path: "/counseling",
-        module: "Counseling",
-      },
+      
     ],
   },
 
   {
-    label: "INSTITUTES DETAILS",
+    label: "INSTITUTES & COUNSELING",
     items: [
       {
         icon: Building2,
@@ -246,11 +241,11 @@ export const navSections = [
         path: "/institutes",
         module: "Institutes",
       },
-     {
-        icon: Users,
-        name: "Students",
-        path: "/students",
-        module: "Students",
+      {
+        icon: HelpCircle,
+        name: "Counseling",
+        path: "/counseling",
+        module: "Counseling",
       },
     ],
   },

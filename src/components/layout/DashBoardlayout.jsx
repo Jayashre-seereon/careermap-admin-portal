@@ -61,7 +61,6 @@ const pageNameMap = {
   "/institutes": "Institutes",
   "/questions": "Questions",
   "/sections": "Sections",
-  "/students": "Students",
   "/newsletter": "Newsletter",
   "/assessment": "Assessments",
   "/admin/psychometric-assessments": "Assessments",

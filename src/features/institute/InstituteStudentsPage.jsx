@@ -296,7 +296,7 @@ export default function InstituteStudentsPage() {
   return <section className="space-y-5">
     {contextHolder}
     <div className="flex flex-wrap items-start justify-between gap-4">
-      <div><h2 className="text-2xl font-bold text-[#8f2218]">Student Management</h2><p className="mt-1 text-sm text-slate-500">Manage students registered with your institute.</p></div>
+      <div><h2 className="text-2xl font-bold text-[#8f2218]">Psychometric Students</h2><p className="mt-1 text-sm text-slate-500">Manage students registered with your institute.</p></div>
       <Tag color={limitReached ? "red" : "processing"} className="!m-0 !rounded-full !px-4 !py-2 !text-sm !font-semibold">{totalStudents} / {studentLimit} students used</Tag>
     </div>
 
