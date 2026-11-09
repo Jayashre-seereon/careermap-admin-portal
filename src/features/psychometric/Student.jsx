@@ -400,7 +400,7 @@ export default function Student() {
   return (
     <div className="space-y-5">
       {contextHolder}
-      <h2 className="text-xl font-bold text-[#9a2119]">Student Management</h2>
+      <h2 className="text-xl font-bold text-[#9a2119]">Psychometric Students</h2>
 
       <div className="rounded-2xl border bg-white p-6 shadow-sm">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

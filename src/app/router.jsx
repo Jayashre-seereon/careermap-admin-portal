@@ -80,7 +80,6 @@ import CareerCategory from "../features/psychometric/CareerCategory";
 import Institute from "../features/psychometric/Institute";
 import Question from "../features/psychometric/Question";
 import Section from "../features/psychometric/Section";
-import Student from "../features/psychometric/Student";
 import AssessmentPage from "../features/psychometric/AssessmentPage";
 import SectionPage from "../features/psychometric/SectionPage";
 import QuestionBankPage from "../features/psychometric/QuestionBankPage";
@@ -567,14 +566,6 @@ export const router = createBrowserRouter([
             element: (
               <PermissionRoute module="Institutes">
                 <Institute />
-              </PermissionRoute>
-            ),
-          },
-          {
-            path: "students",
-            element: (
-              <PermissionRoute module="Students">
-                <Student />
               </PermissionRoute>
             ),
           },

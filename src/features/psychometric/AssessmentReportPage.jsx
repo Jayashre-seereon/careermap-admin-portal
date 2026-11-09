@@ -7,7 +7,7 @@ import {
   PrinterOutlined,
 } from "@ant-design/icons";
 import { Button, Select, Spin, message } from "antd";
-import { getAttemptDetails, getAttemptResult } from "../../api/psychometricAssessmentApi";
+import { getAttemptDetails, getAttemptResult, getInstitutePsychometricAttemptDetails } from "../../api/psychometricAssessmentApi";
 import { useSessionStore } from "../../store/sessionStore";
 import {
   CLUSTERS,
@@ -109,13 +109,7 @@ export default function AssessmentReportPage() {
         let res = null;
         const instituteReport = location.pathname.startsWith("/institute/");
         if (instituteReport) {
-          // Institute attempt rows contain summary fields only. Always load the
-          // attempt detail so the profiling report uses the student's actual answers.
-          try {
-            res = await getAttemptDetails(attemptId);
-          } catch {
-            res = await getAttemptResult(attemptId);
-          }
+          res = await getInstitutePsychometricAttemptDetails(attemptId);
         } else {
           try {
             res = await getAttemptDetails(attemptId);

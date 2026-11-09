@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
 import {
-  CircleAlert,
   IndianRupee,
   GraduationCap,
-  LayoutDashboard,
   ShieldCheck,
   Users,
-  ClipboardCheck,
 } from "lucide-react";
-import { useSessionStore } from "../store/sessionStore";
 import { getInstituteDashboard } from "../api/instituteDashboard";
 
 const statCardBase =
@@ -33,22 +29,9 @@ const statCards = [
     icon: ShieldCheck,
     tone: "from-[#a64d24] to-[#da7a34]",
   },
-  {
-    key: "quizAttempted",
-    label: "Quiz Attempted",
-    icon: ClipboardCheck,
-    tone: "from-[#5a1a34] to-[#a12d53]",
-  },
-  {
-    key: "quizNotAttempted",
-    label: "Quiz Pending",
-    icon: CircleAlert,
-    tone: "from-[#4e3620] to-[#ae7a34]",
-  },
 ];
 
 export default function InstituteDashboardPage() {
-  const currentUser = useSessionStore((state) => state.user);
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -83,30 +66,13 @@ export default function InstituteDashboardPage() {
   const totalStudents = dashboardData?.totalStudents ?? 0;
   const studentLimit = dashboardData?.studentLimit ?? 0;
   const availableSeats = dashboardData?.availableSeats ?? 0;
-  const quizAttempted = dashboardData?.quizAttempted ?? 0;
-  const quizNotAttempted = dashboardData?.quizNotAttempted ?? 0;
   const seatUsage = studentLimit > 0 ? Math.min((totalStudents / studentLimit) * 100, 100) : 0;
-  const quizTotal = quizAttempted + quizNotAttempted;
-  const quizProgress = quizTotal > 0 ? Math.min((quizAttempted / quizTotal) * 100, 100) : 0;
-
-  const summaryItems = [
-    {
-      label: "Capacity used",
-      value: `${Math.round(seatUsage)}%`,
-      hint: `${totalStudents} of ${studentLimit || 0} seats filled`,
-    },
-    {
-      label: "Quiz progress",
-      value: `${Math.round(quizProgress)}%`,
-      hint: `${quizAttempted} attempted, ${quizNotAttempted} pending`,
-    },
-  ];
 
   return (
     <div className="space-y-6">
      
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {statCards.map((card) => {
           const Icon = card.icon;
           const value = loading ? "—" : dashboardData?.[card.key] ?? 0;
@@ -150,18 +116,6 @@ export default function InstituteDashboardPage() {
               </div>
             </div>
 
-            <div>
-              <div className="mb-2 flex items-center justify-between text-sm">
-                <span className="font-medium text-slate-600">Quiz attempted</span>
-                <span className="font-semibold text-slate-900">{quizAttempted} / {quizTotal || 0}</span>
-              </div>
-              <div className="h-3 overflow-hidden rounded-full bg-[#f2e7ef]">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-[#6f1d3d] to-[#c63a61] transition-all duration-700"
-                  style={{ width: `${quizProgress}%` }}
-                />
-              </div>
-            </div>
           </div>
         </div>
 
@@ -194,17 +148,6 @@ export default function InstituteDashboardPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl bg-[#fff7f5] p-4">
-              <div className="flex items-center gap-3">
-                <div className="rounded-xl bg-[#6f1d3d] p-2 text-white">
-                  <ClipboardCheck size={18} />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">Quiz engagement</p>
-                  <p className="text-xs text-slate-500">See how many students have attempted the quiz versus those pending.</p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>
