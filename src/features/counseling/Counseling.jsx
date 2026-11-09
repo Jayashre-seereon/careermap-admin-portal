@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Card, Modal } from "antd";
+import { Button, Card, Modal } from "antd";
+import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { useSessionStore } from "../../store/sessionStore";
 import CounselingForm from "./CounselingForm";
 import CounselingTable from "./CounselingTable";
@@ -11,6 +12,7 @@ import {
   deleteCounseling,
   downloadCounselingReport
 } from "../../api/counseling";
+import { getInstitutes } from "../../api/institutions";
 
 function Counseling() {
   const isStaff = useSessionStore((state) => state.loginType === "staff");
@@ -18,10 +20,13 @@ function Counseling() {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedInstituteId, setSelectedInstituteId] = useState(null);
+  const [allInstitutes, setAllInstitutes] = useState([]);
+  const [institutePage, setInstitutePage] = useState(1);
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("add");
   const [selected, setSelected] = useState(null);
   const [editId, setEditId] = useState(null);
+  const [addInitialValues, setAddInitialValues] = useState(null);
 
   const instituteCounts = sections.reduce((counts, section) => {
     const instituteId = section.instituteId ?? section.schoolInstitutionId ?? section.schoolInstitution?.id;
@@ -36,12 +41,19 @@ function Counseling() {
     counts.set(key, current);
     return counts;
   }, new Map());
-  const institutes = [...instituteCounts.values()].sort((a, b) => a.name.localeCompare(b.name));
+  const institutes = allInstitutes.map((institute) => ({
+    id: String(institute.id),
+    name: institute.name || institute.instituteName || `Institute ${institute.id}`,
+    count: instituteCounts.get(String(institute.id))?.count || 0,
+  })).sort((a, b) => a.name.localeCompare(b.name));
+  const institutePageSize = 20;
+  const pageCount = Math.max(1, Math.ceil(institutes.length / institutePageSize));
+  const pagedInstitutes = institutes.slice((institutePage - 1) * institutePageSize, institutePage * institutePageSize);
 
   const filteredSections = sections.filter((section) => {
     const keyword = search.toLowerCase();
     const instituteId = section.instituteId ?? section.schoolInstitutionId ?? section.schoolInstitution?.id;
-    if (selectedInstituteId && String(instituteId ?? "") !== selectedInstituteId) return false;
+    if (!selectedInstituteId || String(instituteId ?? "") !== selectedInstituteId) return false;
     return (
       section.studentName?.toLowerCase().includes(keyword) ||
       section.firstName?.toLowerCase().includes(keyword) ||
@@ -54,6 +66,10 @@ function Counseling() {
 
   useEffect(() => {
     fetchData();
+    getInstitutes().then((response) => {
+      const rows = Array.isArray(response) ? response : response?.data || response?.institutes || [];
+      setAllInstitutes(rows);
+    }).catch((err) => console.error("Could not load institutes", err));
   }, []);
 
   const fetchData = async () => {
@@ -76,6 +92,8 @@ function Counseling() {
       await createCounseling(values);
       await fetchData();
       setOpen(false);
+      setSelectedInstituteId(String(values.instituteId));
+      setSearch("");
     } catch (err) {
       console.error(err);
       throw err;
@@ -161,20 +179,26 @@ function Counseling() {
 
   return (
     <div className="space-y-5">
-      <h2 className="text-xl font-bold text-[#9a2119]">
-        Students Counseling Management
-      </h2>
+      {!selectedInstituteId && (
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="text-xl font-bold text-[#9a2119]">
+            Students Counseling Management
+          </h2>
+          {!isStaff && <Button type="primary" style={{ background: "#9a2119", borderColor: "#9a2119" }} onClick={() => {
+            setMode("add"); setSelected(null); setEditId(null); setAddInitialValues(null); setOpen(true);
+          }}>+ Add</Button>}
+        </div>
+      )}
 
-      {institutes.length > 0 && (
-        <div className="flex gap-3 overflow-x-auto pb-2">
-          {institutes.map((institute) => {
-            const active = selectedInstituteId === institute.id;
-            return (
+      {!selectedInstituteId && (
+        <>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+          {pagedInstitutes.map((institute) => (
               <Card
                 key={institute.id}
                 hoverable
-                onClick={() => setSelectedInstituteId(active ? null : institute.id)}
-                className={`min-w-[190px] max-w-[220px] shrink-0 overflow-hidden rounded-xl border transition-all duration-200 ${active ? "border-[#9a2119] bg-rose-50 shadow-md ring-1 ring-[#9a2119]/20" : "border-slate-200 bg-white hover:-translate-y-0.5 hover:border-rose-300 hover:shadow-md"}`}
+                onClick={() => { setSearch(""); setSelectedInstituteId(institute.id); }}
+                className="w-full cursor-pointer overflow-hidden rounded-xl border border-slate-200 bg-white transition-all duration-200 hover:-translate-y-0.5 hover:border-rose-300 hover:shadow-md"
                 bodyStyle={{ padding: 14 }}
               >
                 <div className="flex items-start justify-between gap-3">
@@ -183,38 +207,42 @@ function Counseling() {
                     <div className="truncate text-sm font-semibold text-slate-800" title={institute.name}>{institute.name}</div>
                     <div className="mt-1 text-xs text-slate-500">Counseling students</div>
                   </div>
-                  <div className={`flex h-10 min-w-10 shrink-0 items-center justify-center rounded-xl px-2 text-lg font-bold ${active ? "bg-[#9a2119] text-white" : "bg-rose-100 text-[#9a2119]"}`}>
+                  <div className="flex h-10 min-w-10 shrink-0 items-center justify-center rounded-xl bg-rose-100 px-2 text-lg font-bold text-[#9a2119]">
                     {institute.count}
                   </div>
                 </div>
-                {active && <div className="mt-3 text-[11px] font-semibold uppercase tracking-wide text-[#9a2119]">Filtered</div>}
               </Card>
-            );
-          })}
-        </div>
+          ))}
+          </div>
+          <div className="flex items-center justify-between text-sm text-slate-500">
+            <span>{institutes.length} institutes</span>
+            <div className="flex items-center gap-2">
+              <Button aria-label="Previous institutes" icon={<LeftOutlined />} disabled={institutePage <= 1} onClick={() => setInstitutePage((page) => page - 1)} />
+              <span>Page {institutePage} of {pageCount}</span>
+              <Button aria-label="Next institutes" icon={<RightOutlined />} disabled={institutePage >= pageCount} onClick={() => setInstitutePage((page) => page + 1)} />
+            </div>
+          </div>
+        </>
       )}
 
+      {selectedInstituteId && <>
+      <div className="flex items-center gap-3">
+        <Button icon={<LeftOutlined />} onClick={() => { setSelectedInstituteId(null); setSearch(""); }}>Institutes</Button>
+        <h2 className="text-xl font-bold text-[#9a2119]">{institutes.find((item) => item.id === selectedInstituteId)?.name}</h2>
+      </div>
       <CounselingTable
         data={filteredSections}
         loading={loading}
         search={search}
         onSearch={setSearch}
-        onReset={() => {
-          setSearch("");
-          setSelectedInstituteId(null);
-        }}
+        onReset={() => setSearch("")}
         staffView={isStaff}
-        onAddClick={() => {
-          setMode("add");
-          setSelected(null);
-          setEditId(null);
-          setOpen(true);
-        }}
         onDelete={handleDelete}
         onView={handleView}
         onEdit={isStaff ? null : handleEdit}
         onDownload={handleDownload}   
       />
+      </>}
 
       <Modal
         title={modalTitle}
@@ -223,6 +251,7 @@ function Counseling() {
           setOpen(false);
           setSelected(null);
           setEditId(null);
+          setAddInitialValues(null);
         }}
         footer={null}
         width={900}
@@ -230,8 +259,10 @@ function Counseling() {
       >
         <CounselingForm
           onSubmit={mode === "edit" ? handleUpdate : handleAdd}
-          initialValues={selected}
+          initialValues={selected || addInitialValues}
           disabled={mode === "view"}
+          instituteDisabled={mode === "edit"}
+          instituteOptions={institutes.map((institute) => ({ id: Number(institute.id), name: institute.name }))}
         />
       </Modal>
     </div>

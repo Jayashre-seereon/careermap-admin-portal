@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Input, Popconfirm, Space, Table, Tag } from "antd";
+import { Button, Input, Popconfirm, Space, Table } from "antd";
 import {
   DeleteOutlined,
   EditOutlined,
@@ -52,7 +52,6 @@ const formatMarks = (marks) => {
 function CounselingTable({
   data,
   loading,
-  onAddClick,
   onView,
   onEdit,
   onDelete,
@@ -184,12 +183,6 @@ function CounselingTable({
           >
             <ReloadOutlined />
             Reset
-          </Button>
-          <Button
-            onClick={onAddClick}
-            style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
-          >
-            + Add
           </Button>
         </div>
       </div>

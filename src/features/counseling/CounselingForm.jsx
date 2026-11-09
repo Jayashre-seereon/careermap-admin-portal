@@ -62,7 +62,7 @@ function getSubjectsFor(classValue, streamValue) {
   return [];
 }
 
-function CounselingForm({ onSubmit, initialValues, disabled }) {
+function CounselingForm({ onSubmit, initialValues, disabled, instituteDisabled = false }) {
   const [form] = Form.useForm();
   const [institutes, setInstitutes] = useState([]);
   useEffect(() => {
@@ -168,7 +168,7 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
         )}
 
         <Form.Item name="instituteId" label="School / Institute" rules={[validationRules.required("School / Institute")]}>
-          <Select showSearch optionFilterProp="label" placeholder="Select institute" disabled={disabled} options={institutes.map((institute) => ({ value: institute.id, label: institute.name }))} />
+          <Select showSearch optionFilterProp="label" placeholder="Select institute" disabled={disabled || instituteDisabled} options={institutes.map((institute) => ({ value: institute.id, label: institute.name }))} />
         </Form.Item>
 
       <Form.Item name="counselingDate" label="Date" rules={[validationRules.required("Date")]}>
