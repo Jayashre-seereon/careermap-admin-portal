@@ -38,15 +38,22 @@ api.interceptors.response.use(
       requestUrl.includes("/api/admin/auth/login") ||
       requestUrl.includes("/api/admin/auth/refresh-token") ||
       requestUrl.includes("/api/staff/login") ||
-      requestUrl.includes("/api/institutcreate/login");
+      requestUrl.includes("/api/institutcreate/login") ||
+      requestUrl.includes("/api/institute/login");
 
     if (error.response?.status === 401 && !originalRequest?._retry && !isAuthEndpoint) {
       originalRequest._retry = true;
       const { refreshToken, loginType } = useSessionStore.getState();
 
-      // Institute and staff tokens do not use the admin refresh endpoint. A
-      // 401 from their APIs must not erase the active portal session; surface
-      // the API error so the page can show it and the user can retry/login.
+      if (loginType === "institute") {
+        useSessionStore.getState().clearSession();
+        if (typeof window !== "undefined") {
+          window.location.assign("/institute/login");
+        }
+        return Promise.reject(error);
+      }
+
+      // Staff tokens do not use the admin refresh endpoint.
       if (loginType !== "admin") {
         return Promise.reject(error);
       }

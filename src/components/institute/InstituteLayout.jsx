@@ -11,7 +11,7 @@ const navItems = [
     path: "/institute/dashboard",
     icon: LayoutDashboard,
   },
-  { name: "All Students", path: "/institute/students", icon: Users },
+  { name: "Student Management", path: "/institute/students", icon: Users },
   { name: "Psychometric Attempts", path: "/institute/psychometric-attempts", icon: ClipboardCheck },
   { name: "Counseling Reports", path: "/institute/counseling-reports", icon: FileText },
 ];
