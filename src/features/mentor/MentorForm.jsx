@@ -509,7 +509,7 @@ const renderAvailabilityTimeSlots = (dateIndex, timeFields, addTimeSlot, removeT
         <Form.Item
           name="email"
           label="Email"
-          rules={[validationRules.email("Email")]}
+          rules={[validationRules.required("Email"), validationRules.email("Email")]}
         >
           <Input disabled={disabled} placeholder="Enter email address" />
         </Form.Item>
@@ -517,7 +517,7 @@ const renderAvailabilityTimeSlots = (dateIndex, timeFields, addTimeSlot, removeT
         <Form.Item
           name="phone_number"
           label="Phone Number"
-          rules={[validationRules.phone("Phone number")]}
+          rules={[validationRules.required("Phone number"), validationRules.phone("Phone number")]}
         >
           <Input disabled={disabled} placeholder="Enter phone number" />
         </Form.Item>
@@ -597,7 +597,11 @@ const renderAvailabilityTimeSlots = (dateIndex, timeFields, addTimeSlot, removeT
         <Form.Item
           name="mentor_fees"
           label="Mentor Fees"
-          rules={[validationRules.decimal("Mentor fees")]}
+          rules={[
+            validationRules.required("Mentor fees"),
+            validationRules.decimal("Mentor fees"),
+            { validator: (_, value) => !value || Number(value) > 0 ? Promise.resolve() : Promise.reject(new Error("Mentor fees must be greater than zero.")) },
+          ]}
         >
           <Input disabled={disabled} placeholder="Enter mentor fees" />
         </Form.Item>
