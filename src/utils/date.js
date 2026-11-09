@@ -34,13 +34,13 @@ export const parseDateValue = (value) => {
   }
 
   if (typeof value === "string") {
-    const direct = dayjs(value);
-    if (direct.isValid()) {
-      return direct;
+    const parsed = dayjs(value, INPUT_FORMATS, true);
+    if (parsed.isValid()) {
+      return parsed;
     }
 
-    const parsed = dayjs(value, INPUT_FORMATS, true);
-    return parsed.isValid() ? parsed : null;
+    const direct = dayjs(value);
+    return direct.isValid() ? direct : null;
   }
 
   const parsed = dayjs(value);
