@@ -155,11 +155,21 @@ const formatTimeRangeValue = (value) => {
 };
 
 const getDisabledTime = (selectedDate) => {
-  if (!selectedDate || !dayjs(selectedDate).isSame(dayjs(), "day")) {
+  if (!selectedDate) {
     return {};
   }
 
-  const now = dayjs();
+  const date = dayjs(selectedDate);
+  const today = dayjs();
+  if (date.isBefore(today, "day")) {
+    return {
+      disabledHours: () => Array.from({ length: 24 }, (_, hour) => hour),
+      disabledMinutes: () => Array.from({ length: 60 }, (_, minute) => minute),
+    };
+  }
+  if (!date.isSame(today, "day")) return {};
+
+  const now = today;
   const currentHour = now.hour();
   const currentMinute = now.minute();
 
@@ -395,7 +405,10 @@ const renderAvailabilityTimeSlots = (dateIndex, timeFields, addTimeSlot, removeT
           <TimePicker.RangePicker
             className="w-full"
             popupClassName="mentor-time-picker-popup"
-            disabled={disabled}
+            disabled={disabled || (() => {
+              const selectedDate = form.getFieldValue(["availability", dateIndex, "date"]);
+              return Boolean(selectedDate && dayjs(selectedDate).isBefore(dayjs(), "day"));
+            })()}
             format="HH:mm"
             use12Hours={false}
             showSecond={false}
@@ -734,7 +747,10 @@ const renderAvailabilityTimeSlots = (dateIndex, timeFields, addTimeSlot, removeT
 >
   <DatePicker
     className="w-full"
-    disabled={disabled}
+    disabled={disabled || (() => {
+      const selectedDate = form.getFieldValue(["availability", name, "date"]);
+      return Boolean(selectedDate && dayjs(selectedDate).isBefore(dayjs(), "day"));
+    })()}
     format={DATE_DISPLAY_FORMAT}
     placeholder="DD-MM-YYYY"
     disabledDate={(current) =>
