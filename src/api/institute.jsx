@@ -1,7 +1,7 @@
 import api from "./axios";
 
 export const getInstitutes = async () => {
-  const res = await api.get("/api/institutes/");
+  const res = await api.get("/api/institutes/?all=true");
   return res.data;
 };
 
