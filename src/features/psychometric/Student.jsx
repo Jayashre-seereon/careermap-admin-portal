@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  Alert,
   Button,
   DatePicker,
   Form,
@@ -12,16 +13,19 @@ import {
 } from "antd";
 import {
   DeleteOutlined,
+  DownloadOutlined,
   EditOutlined,
   EyeOutlined,
   PlusOutlined,
   ReloadOutlined,
   SearchOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
 import { getValueFromInput, inputSanitizers, validationRules } from "../../utils/formValidation";
 import { DATE_DISPLAY_FORMAT, formatDateDisplay, formatDateForPayload, parseDateValue } from "../../utils/date";
 import { getInstitutes } from "../../api/institutions";
 import {
+  bulkUploadStudents,
   createStudent,
   deleteStudent,
   getStudents,
@@ -236,6 +240,10 @@ export default function Student() {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("add");
   const [selectedRecord, setSelectedRecord] = useState(null);
+  const [bulkInstituteId, setBulkInstituteId] = useState(undefined);
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [bulkResult, setBulkResult] = useState(null);
+  const fileInputRef = useRef(null);
 
   const loadStudents = async () => {
     try {
@@ -349,6 +357,40 @@ export default function Student() {
     }
   }
 
+  async function handleBulkFile(event) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (!bulkInstituteId) {
+      messageApi.error("Select an institution before uploading students.");
+      return;
+    }
+    if (!/\.xlsx$/i.test(file.name)) {
+      messageApi.error("Please select an .xlsx file.");
+      return;
+    }
+
+    try {
+      setBulkLoading(true);
+      const result = await bulkUploadStudents(file, bulkInstituteId);
+      if (result?.success === false) throw new Error(result.message || "Bulk upload failed.");
+      setBulkResult(result);
+      messageApi.success(`${result.created ?? 0} of ${result.total ?? 0} students added, ${result.failed ?? 0} failed.`);
+      await loadStudents();
+    } catch (error) {
+      messageApi.error(getApiErrorMessage(error, "Bulk upload failed."));
+    } finally {
+      setBulkLoading(false);
+    }
+  }
+
+  function downloadTemplate() {
+    const link = document.createElement("a");
+    link.href = "/institute-students-template.xlsx";
+    link.download = "institute-students-template.xlsx";
+    link.click();
+  }
+
   const columns = [
     { title: "SL", width: 70, render: (_, __, index) => index + 1 },
     {
@@ -421,6 +463,20 @@ export default function Student() {
               <ReloadOutlined />
               Reset
             </Button>
+            <Select
+              value={bulkInstituteId}
+              onChange={setBulkInstituteId}
+              placeholder="Select institution"
+              showSearch
+              optionFilterProp="label"
+              options={institutes.map((institute) => ({ value: institute.id, label: institute.name }))}
+              className="min-w-[190px]"
+            />
+            <Button icon={<DownloadOutlined />} onClick={downloadTemplate}>Download sample template</Button>
+            <input ref={fileInputRef} type="file" accept=".xlsx" className="hidden" onChange={handleBulkFile} />
+            <Button icon={<UploadOutlined />} loading={bulkLoading} disabled={!bulkInstituteId || bulkLoading} onClick={() => fileInputRef.current?.click()}>
+              Bulk Upload
+            </Button>
             <Button
               onClick={handleOpenAdd}
               style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
@@ -440,6 +496,26 @@ export default function Student() {
           scroll={{ x: "max-content" }}
         />
       </div>
+
+      {bulkResult && (
+        <div className="rounded-2xl border bg-white p-5 shadow-sm">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h3 className="text-lg font-semibold text-slate-800">Bulk upload results</h3>
+            <Button type="text" onClick={() => setBulkResult(null)}>Dismiss</Button>
+          </div>
+          <Alert type={Number(bulkResult.failed) ? "warning" : "success"} showIcon message={`${bulkResult.created ?? 0} of ${bulkResult.total ?? 0} added, ${bulkResult.failed ?? 0} failed`} />
+          {!!bulkResult.failedRecords?.length && (
+            <Table
+              className="mt-4"
+              rowKey={(row, index) => `${row.email}-${index}`}
+              pagination={false}
+              size="small"
+              dataSource={bulkResult.failedRecords}
+              columns={[{ title: "Email", dataIndex: "email", key: "email" }, { title: "Reason", dataIndex: "reason", key: "reason" }]}
+            />
+          )}
+        </div>
+      )}
 
       <Modal
         open={open}
