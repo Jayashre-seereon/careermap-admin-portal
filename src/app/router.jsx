@@ -85,6 +85,7 @@ import SectionPage from "../features/psychometric/SectionPage";
 import QuestionBankPage from "../features/psychometric/QuestionBankPage";
 import CareerClusterPage from "../features/psychometric/CareerClusterPage";
 import StudentAttemptsPage from "../features/psychometric/StudentAttemptsPage";
+import Student from "../features/psychometric/Student";
 import AssessmentReportPage from "../features/psychometric/AssessmentReportPage";
 import PersonalityTest from "../features/personalityTest/PersonalityTest";
 import Counseling from "../features/counseling/Counseling";
@@ -207,6 +208,14 @@ export const router = createBrowserRouter([
               { path: "with-balance", element: <WithBalance /> },
               { path: "notification", element: <NotificationToUser /> },
             ],
+          },
+          {
+            path: "student-management",
+            element: (
+              <PermissionRoute module="Institutes">
+                <Student />
+              </PermissionRoute>
+            ),
           },
           {
             path: "all_orders",
