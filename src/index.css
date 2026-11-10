@@ -473,6 +473,25 @@ body::after {
   color: #fff !important;
 }
 
+/* Keep the reschedule time picker's own OK action visible without hover. */
+.reschedule-time-picker-popup .ant-picker-footer,
+.reschedule-time-picker-popup .ant-picker-footer .ant-picker-ranges,
+.reschedule-time-picker-popup .ant-picker-footer .ant-picker-ok {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.reschedule-time-picker-popup .ant-picker-footer .ant-picker-ok {
+  display: block !important;
+}
+
+.reschedule-time-picker-popup .ant-picker-footer .ant-picker-ok .ant-btn {
+  min-width: 56px;
+  background: #1677ff !important;
+  border-color: #1677ff !important;
+  color: #fff !important;
+}
+
 /* Keep Master Class date-time picker actions visible without hover */
 .masterclass-date-picker-popup .ant-picker-footer,
 .masterclass-date-picker-popup .ant-picker-footer .ant-picker-ranges,
