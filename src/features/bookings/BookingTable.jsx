@@ -108,10 +108,11 @@ export default function BookingTable() {
       message.error("Enter the meeting URL first.");
       return;
     }
+    const enteredUrl = meetingUrl.trim();
     setSavingMeetingUrl(true);
     try {
-      const response = await saveAndEmailMentorMeetingLink(bookingId, meetingUrl.trim());
-      const savedUrl = response?.data?.meetingUrl || meetingUrl.trim();
+      const response = await saveAndEmailMentorMeetingLink(bookingId, enteredUrl);
+      const savedUrl = response?.data?.meetingUrl || enteredUrl;
       setData((current) => current.map((item) => item.id === bookingId || item.key === bookingId ? { ...item, meetingUrl: savedUrl, meetingLinkStatus: "Link sent" } : item));
       message.success(response?.message || "Meeting link emailed to the student and mentor.");
       setOpen(false);
@@ -159,10 +160,11 @@ export default function BookingTable() {
       message.error("End time must be after start time.");
       return;
     }
+    const enteredMeetingUrl = rescheduleMeetingUrl.trim();
     setSavingChange(true);
     try {
       const timeSlot = `${rescheduleStartTime.format("HH:mm")}-${rescheduleEndTime.format("HH:mm")}`;
-      const response = await rescheduleAdminMentorBooking(selected.id, { date: rescheduleDate.format("YYYY-MM-DD"), timeSlot, meetingUrl: rescheduleMeetingUrl.trim() || undefined });
+      const response = await rescheduleAdminMentorBooking(selected.id, { date: rescheduleDate.format("YYYY-MM-DD"), timeSlot, meetingUrl: enteredMeetingUrl || undefined });
       message.success(response?.message || "Booking rescheduled.");
       if (response?.data?.emailNotification && !response.data.emailNotification.sent) {
         message.error(`Email failed: ${response.data.emailNotification.failures.map((failure) => `${failure.role}${failure.email ? ` (${failure.email})` : ""}: ${failure.error}`).join("; ")}`, 10);
@@ -340,12 +342,12 @@ export default function BookingTable() {
               <>
               <Input
                 id="mentor-meeting-url"
-                type="url"
-                placeholder="https://meet.google.com/..."
+                type="text"
+                placeholder="meet.google.com/... or zoom.us/..."
                 value={meetingUrl}
                 onChange={(event) => setMeetingUrl(event.target.value)}
               />
-              <p className="m-0 text-xs text-slate-500">Saving sends the link and session details to both the student and mentor. Use an HTTPS meeting link.</p>
+              <p className="m-0 text-xs text-slate-500">Saving sends the link exactly as entered to both the student and mentor.</p>
               <Button type="primary" loading={savingMeetingUrl} disabled={!meetingUrl.trim()} onClick={handleSaveMeetingUrl} className="!bg-[#9a2119]">
                 Save & Email Meeting Link
               </Button>
@@ -408,7 +410,7 @@ export default function BookingTable() {
               : [],
           })}
         />
-        <AntInput className="mt-3" type="url" value={rescheduleMeetingUrl} onChange={(event) => setRescheduleMeetingUrl(event.target.value)} placeholder="Meeting URL (optional, HTTPS)" />
+        <AntInput className="mt-3" type="text" value={rescheduleMeetingUrl} onChange={(event) => setRescheduleMeetingUrl(event.target.value)} placeholder="Meeting URL (optional, Zoom, Google Meet, Teams, etc.)" />
       </Modal>
     </div>
   );
