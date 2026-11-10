@@ -72,17 +72,19 @@ export default function NotificationsTable({
             icon={<EyeOutlined />}
             onClick={() => onView(record)}
           />
-          <Button
-            className="border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
-            icon={<EditOutlined />}
-            onClick={() => onEdit(record)}
-          />
-          <Popconfirm
-            title="Are you sure you want to delete this notification?"
-            onConfirm={() => onDelete(record)}
-          >
-            <Button danger icon={<DeleteOutlined />} />
-          </Popconfirm>
+          {!record.isComputed ? <>
+            <Button
+              className="border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
+              icon={<EditOutlined />}
+              onClick={() => onEdit(record)}
+            />
+            <Popconfirm
+              title="Are you sure you want to delete this notification?"
+              onConfirm={() => onDelete(record)}
+            >
+              <Button danger icon={<DeleteOutlined />} />
+            </Popconfirm>
+          </> : null}
         </div>
       ),
     },

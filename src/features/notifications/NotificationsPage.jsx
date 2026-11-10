@@ -5,6 +5,7 @@ import NotificationsTable from "./NotificationsTable";
 import {
   createNotification,
   deleteNotification,
+  getAdminNotification,
   getNotifications,
   updateNotification,
 } from "../../api/notification";
@@ -64,11 +65,12 @@ const mapNotification = (item = {}) => ({
   id: item.id,
   title: item.title || "",
   message: item.message || "",
-  target: item.target || "",
+  target: item.target || (typeof item.id === "string" ? "Admin" : ""),
   status: item.status || "",
   type: item.type || "",
   createdAt: item.createdAt,
   updatedAt: item.updatedAt,
+  isComputed: typeof item.id === "string" && !/^\d+$/.test(item.id),
 });
 
 const buildNotificationPayload = (values = {}) => ({
@@ -89,8 +91,11 @@ export default function NotificationsPage() {
   const loadNotifications = async () => {
     try {
       setLoading(true);
-      const response = await getNotifications();
-      setData(sortNewestFirst(normalizeList(response).map(mapNotification)));
+      const [manualResult, adminResult] = await Promise.allSettled([getNotifications(), getAdminNotification()]);
+      if (manualResult.status === "rejected" && adminResult.status === "rejected") throw manualResult.reason;
+      const manualItems = manualResult.status === "fulfilled" ? normalizeList(manualResult.value) : [];
+      const adminItems = adminResult.status === "fulfilled" ? normalizeList(adminResult.value) : [];
+      setData(sortNewestFirst([...adminItems, ...manualItems].map(mapNotification)));
     } catch (error) {
       messageApi.error(getApiErrorMessage(error, "Failed to load notifications."));
     } finally {
