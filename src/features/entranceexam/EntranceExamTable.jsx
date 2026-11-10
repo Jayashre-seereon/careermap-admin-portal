@@ -1,6 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import { Table, Input, Button, Popconfirm } from "antd";
+import { Table, Input, Button, Popconfirm, Tag } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -103,6 +103,12 @@ export default function EntranceExamTable({
       dataIndex: "lastdate",
       width: 140,
       render: (value) => formatDate(value),
+    },
+    {
+      title: <span className="text-[#9a2119] font-semibold">Tentative</span>,
+      dataIndex: "tentative",
+      width: 120,
+      render: (value) => <Tag color={value ? "orange" : "default"}>{value ? "Yes" : "No"}</Tag>,
     },
     // {
     //   title: <span className="text-[#9a2119] font-semibold">Eligibility</span>,
