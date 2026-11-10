@@ -242,6 +242,12 @@ export const navSections = [
         module: "Institutes",
       },
       {
+        icon: GraduationCap,
+        name: "Psychometric Students",
+        path: "/student-management",
+        module: "Institutes",
+      },
+      {
         icon: HelpCircle,
         name: "Counseling",
         path: "/counseling",

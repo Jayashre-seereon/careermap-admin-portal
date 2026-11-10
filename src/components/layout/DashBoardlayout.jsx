@@ -59,6 +59,7 @@ const pageNameMap = {
   "/career-paths": "Career Paths",
   "/career-categories": "Career Categories",
   "/institutes": "Institutes",
+  "/student-management": "Student Management",
   "/questions": "Questions",
   "/sections": "Sections",
   "/newsletter": "Newsletter",
