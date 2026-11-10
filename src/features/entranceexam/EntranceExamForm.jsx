@@ -1,7 +1,8 @@
-import { Form, Input, Select, Button, DatePicker, Radio, Switch } from "antd";
+import { Form, Input, Select, Button, DatePicker, Radio } from "antd";
 import { useEffect } from "react";
 import { validationRules } from "../../utils/formValidation";
 import RichTextEditor from "../../components/ui/RichTextEditor";
+import StatusSwitch from "../../components/ui/StatusSwitch";
 import { DATE_DISPLAY_FORMAT, parseDateValue } from "../../utils/date";
 
 const { Option } = Select;
@@ -207,7 +208,7 @@ export default function EntranceExamForm({
         label="Tentative"
         valuePropName="checked"
       >
-        <Switch disabled={isView} checkedChildren="True" unCheckedChildren="False" />
+        <StatusSwitch disabled={isView} checkedChildren="Yes" unCheckedChildren="No" />
       </Form.Item>
 {/* 
       <Form.Item name="examDate" label="Exam Date">
