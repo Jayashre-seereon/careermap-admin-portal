@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 // import { logoutUser } from "../../features/auth/authStorage";
 import { useSessionStore } from "../../store/sessionStore";
 import { navSections } from "./navSections";
-import { getNotifications } from "../../api/notification";
+import { getAdminNotification, getNotifications } from "../../api/notification";
 import { logout } from "../../api/authApi";
 const stripHtml = (text = "") =>
   String(text || "")
@@ -100,8 +100,15 @@ export default function Header({ activePage, onMenuClick }) {
     const loadNotifications = async () => {
       try {
         setNotificationLoading(true);
-        const response = await getNotifications();
-        const list = Array.isArray(response?.data) ? response.data : [];
+        const [manualResult, adminResult] = await Promise.allSettled([getNotifications(), getAdminNotification()]);
+        const manualList = manualResult.status === "fulfilled" && Array.isArray(manualResult.value?.data)
+          ? manualResult.value.data
+          : [];
+        const adminList = adminResult.status === "fulfilled" && Array.isArray(adminResult.value?.data)
+          ? adminResult.value.data
+          : [];
+        const list = [...adminList, ...manualList]
+          .sort((left, right) => new Date(right.createdAt || 0).getTime() - new Date(left.createdAt || 0).getTime());
 
         if (isMounted) {
           setNotificationItems(list.slice(0, 5));
