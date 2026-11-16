@@ -96,6 +96,9 @@ export default function AssessmentReportPage() {
 
   const [loading, setLoading] = useState(true);
   const [reportData, setReportData] = useState(null);
+  const [loadError, setLoadError] = useState(null);
+  // Sample data is allowed ONLY for the explicit demo report (/.../demo).
+  const isDemo = !attemptId || attemptId === "demo";
 
   useEffect(() => {
     loadReport();
@@ -104,6 +107,7 @@ export default function AssessmentReportPage() {
 
   async function loadReport() {
     setLoading(true);
+    setLoadError(null);
     try {
       if (attemptId && attemptId !== "demo") {
         let res = null;
@@ -123,6 +127,7 @@ export default function AssessmentReportPage() {
           setReportData(data);
         } else {
           setReportData(null);
+          setLoadError("This attempt has no report data yet.");
         }
       } else {
         setReportData(null);
@@ -130,6 +135,11 @@ export default function AssessmentReportPage() {
     } catch (err) {
       console.warn("Could not fetch remote result:", err?.message);
       setReportData(null);
+      setLoadError(
+        err?.response?.data?.message ||
+          (err?.response?.status === 404 ? "Report not found." : err?.message) ||
+          "Could not load the report."
+      );
     } finally {
       setLoading(false);
     }
@@ -184,7 +194,29 @@ export default function AssessmentReportPage() {
     );
   }
 
-  // Normalize API data or use full high-fidelity default dataset matching the PDF
+  // Real attempt that failed to load / has no data: show an error, never a fake report.
+  if (!isDemo && (loadError || !reportData)) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#EAEFF4] p-6">
+        <div className="max-w-md rounded-xl bg-white p-8 text-center shadow">
+          <h2 className="text-xl font-black text-[#1E232A]">Report unavailable</h2>
+          <p className="mt-2 text-sm text-[#6B7280]">
+            {loadError || "This report could not be loaded."}
+          </p>
+          <div className="mt-5 flex justify-center gap-3">
+            <Button onClick={() => navigate(-1)} icon={<ArrowLeftOutlined />}>
+              Go back
+            </Button>
+            <Button type="primary" onClick={loadReport}>
+              Retry
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Normalize API data. Demo placeholders are used only when isDemo is true.
   const rawData = reportData || {};
   const report = rawData.report || {};
   const student = report.student || rawData.student || rawData.user || {};
@@ -195,25 +227,29 @@ export default function AssessmentReportPage() {
     rawData.studentName ||
     rawData.userName ||
     currentUser?.name ||
-    "Aryaman Singh";
+    (isDemo ? "Aryaman Singh" : "Candidate");
   const studentName = candidateFullName;
   const studentFirstName = studentName.split(" ")[0] || "Candidate";
-  const studentClass = student.class || rawData.className || rawData.class || rawData.selectedClass || currentUser?.selectedClass || "12th";
-  const studentSchool = student.school || student.institute?.name || rawData.school || rawData.schoolName || currentUser?.school || "Seereon Academy";
-  const studentEmail = student.email || rawData.studentEmail || rawData.email || currentUser?.email || "student@example.com";
-  const studentPhone = student.phone || rawData.studentPhone || rawData.phone || rawData.mobile || currentUser?.mobile || "+91-88958 12485";
-  const completedDate = student.completedAt || rawData.completedAt || rawData.createdAt || "2025-11-26T10:00:00.000Z";
+  const studentClass = student.class || rawData.className || rawData.class || rawData.selectedClass || currentUser?.selectedClass || (isDemo ? "12th" : "—");
+  const studentSchool = student.school || student.institute?.name || rawData.school || rawData.schoolName || (isDemo ? currentUser?.school || "Seereon Academy" : "—");
+  const studentEmail = student.email || rawData.studentEmail || rawData.email || (isDemo ? currentUser?.email || "student@example.com" : "—");
+  const studentPhone = student.phone || rawData.studentPhone || rawData.phone || rawData.mobile || (isDemo ? currentUser?.mobile || "+91-88958 12485" : "—");
+  const completedDate = student.completedAt || rawData.completedAt || rawData.createdAt || (isDemo ? "2025-11-26T10:00:00.000Z" : null);
 
-  const formattedDate = new Date(completedDate).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  const parsedCompletedDate = completedDate ? new Date(completedDate) : null;
+  const formattedDate =
+    parsedCompletedDate && !Number.isNaN(parsedCompletedDate.getTime())
+      ? parsedCompletedDate.toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })
+      : "—";
 
-  const hollandCode = rawData.hollandCode || report.hollandProfile?.code || "ECS";
+  const hollandCode = rawData.hollandCode || report.hollandProfile?.code || (isDemo ? "ECS" : "—");
   const scores = rawData.scores || rawData.domainScores || {};
   const domains = report.domains || rawData.domainScores || {};
-  const yourProfiling = report.yourProfiling || rawData.yourProfiling || SAMPLE_PROFILING_REPORT;
+  const yourProfiling = report.yourProfiling || rawData.yourProfiling || (isDemo ? SAMPLE_PROFILING_REPORT : null);
 
   // Goal Orientation
   const goalObj = domains.goalOrientation || domains.goal_orientation || {};

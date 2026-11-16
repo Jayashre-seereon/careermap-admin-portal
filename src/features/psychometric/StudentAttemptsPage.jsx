@@ -56,10 +56,7 @@ import {
   recalculateAttempt,
   getApiErrorMessage,
 } from "../../api/psychometricAssessmentApi";
-import {
-  FACET_MAP,
-  INITIAL_STUDENT_ATTEMPTS,
-} from "./psychometricConstants";
+import { FACET_MAP } from "./psychometricConstants";
 import { getSerialNumber } from "../../utils/slNo";
 
 const { Option } = Select;
@@ -86,8 +83,8 @@ export const getCandidateName = (record) => {
 };
 
 export const getCandidateEmail = (record) => {
-  if (!record) return "student@example.com";
-  return record.studentEmail || record.user?.email || record.email || "student@example.com";
+  if (!record) return "";
+  return record.studentEmail || record.user?.email || record.email || "";
 };
 
 export const normalizeAttemptItem = (item) => {
@@ -142,17 +139,15 @@ export default function StudentAttemptsPage() {
 
       const normalizedList = list.map(normalizeAttemptItem);
 
-      if (normalizedList.length > 0) {
-        setAttempts(normalizedList);
-        if (res?.pagination?.total) {
-          setPagination((prev) => ({ ...prev, total: res.pagination.total }));
-        }
-      } else {
-        setAttempts(INITIAL_STUDENT_ATTEMPTS.map(normalizeAttemptItem));
+      // Show exactly what the server returned. Never substitute sample students.
+      setAttempts(normalizedList);
+      if (res?.pagination?.total) {
+        setPagination((prev) => ({ ...prev, total: res.pagination.total }));
       }
     } catch (err) {
-      console.warn("Using fallback attempts:", err);
-      setAttempts(INITIAL_STUDENT_ATTEMPTS.map(normalizeAttemptItem));
+      console.warn("Could not load attempts:", err);
+      setAttempts([]);
+      messageApi.error(getApiErrorMessage(err, "Failed to load student attempts."));
     } finally {
       setLoading(false);
     }
@@ -199,7 +194,10 @@ export default function StudentAttemptsPage() {
         setSelectedAttempt(normalizeAttemptItem(details.data));
       }
     } catch (err) {
-      console.warn("Using local attempt object for audit drawer:", err);
+      console.warn("Could not load attempt details:", err);
+      messageApi.warning(
+        getApiErrorMessage(err, "Could not load full attempt details. Showing list data only.")
+      );
     } finally {
       setDrawerLoading(false);
     }
@@ -211,28 +209,26 @@ export default function StudentAttemptsPage() {
     try {
       setRecalculating(true);
       const res = await recalculateAttempt(selectedAttempt.id);
-      messageApi.success("Psychometric engine re-evaluated and scores updated.");
 
-      // Refresh drawer state if new scores returned
-      if (res?.data) {
-        setSelectedAttempt(res.data);
-        setAttempts((prev) =>
-          prev.map((a) => (a.id === selectedAttempt.id ? res.data : a))
-        );
-      } else {
-        // Boost fit score slightly to simulate recalibration
-        const updated = {
-          ...selectedAttempt,
-          fitScore: Math.min(99.4, Number((selectedAttempt.fitScore + 0.8).toFixed(1))),
-        };
-        setSelectedAttempt(updated);
-        setAttempts((prev) =>
-          prev.map((a) => (a.id === selectedAttempt.id ? updated : a))
-        );
+      // Scores only ever come from the server. If the recalculate response has no
+      // attempt payload, re-fetch the attempt instead of inventing a number.
+      let fresh = res?.data;
+      if (!fresh) {
+        const details = await getAttemptDetails(selectedAttempt.id);
+        fresh = details?.data;
       }
+      if (!fresh) {
+        throw new Error("Recalculation finished but no updated result was returned.");
+      }
+
+      const normalized = normalizeAttemptItem(fresh);
+      setSelectedAttempt(normalized);
+      setAttempts((prev) =>
+        prev.map((a) => (a.id === selectedAttempt.id ? normalized : a))
+      );
+      messageApi.success("Psychometric engine re-evaluated and scores updated.");
     } catch (err) {
-      console.warn("Recalculate fallback simulated:", err);
-      messageApi.success("Engine recalculation complete.");
+      messageApi.error(getApiErrorMessage(err, "Recalculation failed. Scores were not changed."));
     } finally {
       setRecalculating(false);
     }
