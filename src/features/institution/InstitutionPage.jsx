@@ -103,6 +103,9 @@ const buildInstitutePayload = ({
 
   if (file) {
     formData.append("image", file);
+  } else if (Array.isArray(logo) && logo.length === 0) {
+    // User removed the existing logo in the form -> tell the backend to clear it.
+    formData.append("remove_logo", "true");
   }
 
   return {
