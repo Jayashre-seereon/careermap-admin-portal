@@ -522,7 +522,7 @@ const renderAvailabilityTimeSlots = (dateIndex, timeFields, addTimeSlot, removeT
         <Form.Item
           name="email"
           label="Email"
-          rules={[validationRules.required("Email"), validationRules.email("Email")]}
+          rules={[ validationRules.email("Email")]}
         >
           <Input disabled={disabled} placeholder="Enter email address" />
         </Form.Item>
@@ -530,7 +530,7 @@ const renderAvailabilityTimeSlots = (dateIndex, timeFields, addTimeSlot, removeT
         <Form.Item
           name="phone_number"
           label="Phone Number"
-          rules={[validationRules.required("Phone number"), validationRules.phone("Phone number")]}
+          rules={[ validationRules.phone("Phone number")]}
         >
           <Input disabled={disabled} placeholder="Enter phone number" />
         </Form.Item>
