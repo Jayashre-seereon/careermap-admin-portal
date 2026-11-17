@@ -14,6 +14,13 @@ const rowsFrom = (response) => {
   const rows = Array.isArray(response) ? response : response?.data ?? response?.bookings ?? response?.mentorBookings ?? [];
   return Array.isArray(rows) ? rows : [];
 };
+const getBookingChangeErrorMessage = (error, fallback) => {
+  const serverMessage = error?.response?.data?.message || error?.message || "";
+  if (/Mentorbooking.*Mentorpayment_bookingId_fkey|Mentorpayment_bookingId_fkey/i.test(serverMessage)) {
+    return "This mentor already has a paid booking for this session. Please cancel or reschedule the existing booking before making this change.";
+  }
+  return serverMessage || fallback;
+};
 const firstValue = (...values) => values.find((value) => value !== undefined && value !== null && value !== "");
 const displayValue = (value, fallback = "NA") => value === undefined || value === null || value === "" ? fallback : value;
 const getMeetingStart = (dateValue, timeSlot) => {
@@ -141,7 +148,7 @@ export default function BookingTable() {
       }
       setCancelOpen(false); setOpen(false); setCancelReason(""); setSelected(null);
       await reloadBookings();
-    } catch (err) { message.error(err?.response?.data?.message || "Could not cancel booking."); }
+    } catch (err) { message.error(getBookingChangeErrorMessage(err, "Could not cancel booking.")); }
     finally { setSavingChange(false); }
   };
 
@@ -171,7 +178,7 @@ export default function BookingTable() {
       }
       setRescheduleOpen(false); setOpen(false); setSelected(null);
       await reloadBookings();
-    } catch (err) { message.error(err?.response?.data?.message || "Could not reschedule booking."); }
+    } catch (err) { message.error(getBookingChangeErrorMessage(err, "Could not reschedule booking.")); }
     finally { setSavingChange(false); }
   };
 

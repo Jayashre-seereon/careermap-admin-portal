@@ -22,6 +22,7 @@ export default function DetailsTable({
   getRecordDetailsLabel,
   summarizeRecord,
   sectionLabels,
+  loading,
 }) {
   const [pagination, setPagination] = useState({
     current: 1,
@@ -153,6 +154,7 @@ export default function DetailsTable({
       <Table
         columns={columns}
         dataSource={Array.isArray(data) ? [...data].reverse() : []}
+        loading={loading}
         rowKey="id"
         pagination={pagination}
         onChange={(pag) => setPagination(pag)}
