@@ -29,7 +29,10 @@ const buildStreamPayload = ({ name, image }) => {
   const file = extractFile(image);
 
   if (!file) {
-    return { payload: { name }, config: {} };
+    return {
+      payload: { name, image: typeof image === "string" ? image : null },
+      config: {},
+    };
   }
 
   const formData = new FormData();

@@ -72,7 +72,11 @@ const buildSubCategoryPayload = ({
   const coverImageValue = extractFile(coverImage);
 
   if (!fileValue && !coverImageValue) {
-    return { payload, config: {} };  // ✅ no image = plain JSON, types preserved
+    const existingCoverImage =
+      Array.isArray(coverImage) && typeof coverImage[0]?.url === "string"
+        ? coverImage[0].url
+        : null;
+    return { payload: { ...payload, coverImage: existingCoverImage }, config: {} };  // ✅ no image = plain JSON, types preserved
   }
 
   const formData = new FormData();

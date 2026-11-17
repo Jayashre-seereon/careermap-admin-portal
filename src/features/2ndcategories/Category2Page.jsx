@@ -94,7 +94,18 @@ const buildSecondaryCategoryPayload = ({
   const coverImageFile = extractFile(coverImage);
 
   if (!imageFile && !coverImageFile) {
-    return { payload, config: {} };
+    const existingUrl = (value) =>
+      Array.isArray(value) && typeof value[0]?.url === "string"
+        ? value[0].url
+        : null;
+    return {
+      payload: {
+        ...payload,
+        image: existingUrl(image),
+        coverImage: existingUrl(coverImage),
+      },
+      config: {},
+    };
   }
 
   const formData = new FormData();

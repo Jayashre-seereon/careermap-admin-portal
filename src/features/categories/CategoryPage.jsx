@@ -113,9 +113,13 @@ const buildCategoryPayload = ({
 
   const fileValue = extractFile(file);
   const coverImageValue = extractFile(coverImage);
+  const existingCoverImage =
+    Array.isArray(coverImage) && typeof coverImage[0]?.url === "string"
+      ? coverImage[0].url
+      : null;
 
   if (!fileValue && !coverImageValue) {
-    return { payload, config: {} };
+    return { payload: { ...payload, coverImage: existingCoverImage }, config: {} };
   }
 
   const formData = new FormData();
