@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Form, Input, Select, Upload, Button} from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import RichTextEditor from "../../components/ui/RichTextEditor";
@@ -46,6 +46,15 @@ export default function CategoryForm({
   institutionOptions = [],
 }) {
   const [form] = Form.useForm();
+  const pickedCoverRef = useRef(null);
+
+  const handleFinish = (values) =>
+    onSubmit({
+      ...values,
+      coverImage: pickedCoverRef.current
+        ? [{ originFileObj: pickedCoverRef.current }]
+        : values.coverImage,
+    });
 
   useEffect(() => {
     if (initialValues) {
@@ -65,7 +74,7 @@ export default function CategoryForm({
     <Form
       layout="vertical"
       form={form}
-      onFinish={onSubmit}
+      onFinish={handleFinish}
       validateTrigger={["onChange", "onBlur"]}
       initialValues={{ isUpgrade: "Free" }}
     >
@@ -134,7 +143,13 @@ export default function CategoryForm({
           getValueFromEvent={normalizeFile}
         >
           <Upload
-            beforeUpload={() => false}
+            beforeUpload={(file) => {
+              pickedCoverRef.current = file;
+              return false;
+            }}
+            onRemove={() => {
+              pickedCoverRef.current = null;
+            }}
             disabled={disabled}
             maxCount={1}
             listType="picture"

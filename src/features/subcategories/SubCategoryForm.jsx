@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Form, Input, Select, Upload, Button } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import RichTextEditor from "../../components/ui/RichTextEditor";
@@ -39,6 +39,15 @@ export default function SubCategoryForm({
   onCategoryChange,
 }) {
   const [form] = Form.useForm();
+  const pickedCoverRef = useRef(null);
+
+  const handleFinish = (values) =>
+    onSubmit({
+      ...values,
+      coverImage: pickedCoverRef.current
+        ? [{ originFileObj: pickedCoverRef.current }]
+        : values.coverImage,
+    });
   const isView = mode === "view";
   const selectedCategoryId = Form.useWatch("categoryId", form);
 
@@ -61,7 +70,7 @@ export default function SubCategoryForm({
     <Form
       form={form}
       layout="vertical"
-      onFinish={onSubmit}
+      onFinish={handleFinish}
       validateTrigger={["onChange", "onBlur"]}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -141,7 +150,13 @@ export default function SubCategoryForm({
           getValueFromEvent={normalizeFile}
         >
           <Upload
-            beforeUpload={() => false}
+            beforeUpload={(file) => {
+              pickedCoverRef.current = file;
+              return false;
+            }}
+            onRemove={() => {
+              pickedCoverRef.current = null;
+            }}
             disabled={isView}
             maxCount={1}
             listType="picture"

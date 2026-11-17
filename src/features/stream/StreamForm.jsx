@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Form, Input, Button, Upload } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { validationRules } from "../../utils/formValidation";
@@ -14,6 +14,18 @@ function StreamForm({ onSubmit, initialValues, disabled }) {
     return event?.fileList || [];
   };
 
+  const pickedRef = useRef(null);
+
+  const handleFinish = (values) =>
+    onSubmit({
+      ...values,
+      image: pickedRef.current
+        ? [{ originFileObj: pickedRef.current }]
+        : typeof initialValues?.image === "string"
+          ? initialValues.image
+          : null,
+    });
+
   useEffect(() => {
     if (initialValues) {
       form.setFieldsValue({
@@ -26,7 +38,7 @@ function StreamForm({ onSubmit, initialValues, disabled }) {
   }, [form, initialValues]);
 
   return (
-    <Form layout="vertical" form={form} onFinish={onSubmit} validateTrigger={["onChange", "onBlur"]}>
+    <Form layout="vertical" form={form} onFinish={handleFinish} validateTrigger={["onChange", "onBlur"]}>
       <h3 className="mb-4 text-lg font-semibold text-[#9a2119]">Stream Details</h3>
 
       <Form.Item
@@ -38,7 +50,7 @@ function StreamForm({ onSubmit, initialValues, disabled }) {
       </Form.Item>
 
       <Form.Item name="image" label="Image" valuePropName="fileList" getValueFromEvent={normalizeFile}>
-        <Upload beforeUpload={() => false} maxCount={1} disabled={disabled} listType="text">
+        <Upload beforeUpload={(file) => { pickedRef.current = file; return false; }} onRemove={() => { pickedRef.current = null; }} maxCount={1} disabled={disabled} listType="text">
           <Button icon={<UploadOutlined />} className="w-full">
             Upload Image
           </Button>

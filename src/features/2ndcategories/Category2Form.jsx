@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Form, Input, Select, Upload, Button } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import RichTextEditor from "../../components/ui/RichTextEditor";
@@ -38,6 +38,19 @@ export default function Category2Form({
 }) {
   const [form] = Form.useForm();
   const isView = mode === "view";
+  const pickedImageRef = useRef(null);
+  const pickedCoverRef = useRef(null);
+
+  const handleFinish = (values) =>
+    onSubmit({
+      ...values,
+      image: pickedImageRef.current
+        ? [{ originFileObj: pickedImageRef.current }]
+        : values.image,
+      coverImage: pickedCoverRef.current
+        ? [{ originFileObj: pickedCoverRef.current }]
+        : values.coverImage,
+    });
 
   useEffect(() => {
     if (initialValues) {
@@ -60,7 +73,7 @@ export default function Category2Form({
     <Form
       form={form}
       layout="vertical"
-      onFinish={onSubmit}
+      onFinish={handleFinish}
       validateTrigger={["onChange", "onBlur"]}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -121,7 +134,13 @@ export default function Category2Form({
           getValueFromEvent={normalizeFile}
         >
           <Upload
-            beforeUpload={() => false}
+            beforeUpload={(file) => {
+              pickedCoverRef.current = file;
+              return false;
+            }}
+            onRemove={() => {
+              pickedCoverRef.current = null;
+            }}
             disabled={isView}
             maxCount={1}
             listType="picture"
@@ -139,7 +158,13 @@ export default function Category2Form({
           getValueFromEvent={normalizeFile}
         >
           <Upload
-            beforeUpload={() => false}
+            beforeUpload={(file) => {
+              pickedImageRef.current = file;
+              return false;
+            }}
+            onRemove={() => {
+              pickedImageRef.current = null;
+            }}
             disabled={isView}
             maxCount={1}
             listType="picture"
