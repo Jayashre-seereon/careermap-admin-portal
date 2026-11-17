@@ -480,7 +480,7 @@ export default function DetailsPage() {
   const [mode, setMode] = useState("add");
   const [selectedRecord, setSelectedRecord] = useState(null);
 const [selectedSections, setSelectedSections] = useState([]);  const [draftsBySection, setDraftsBySection] = useState(() => buildDrafts());
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [secondaryCategoryOptions, setSecondaryCategoryOptions] = useState([]);
   const [subcategoryOptions, setSubcategoryOptions] = useState([]);
