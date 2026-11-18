@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, LayoutDashboard, LogOut, Menu, Users, ClipboardCheck } from "lucide-react";
+import { ChevronLeft, ChevronRight, LayoutDashboard, LogOut, Menu, Users, ClipboardCheck, FileText } from "lucide-react";
 import { useSessionStore } from "../../store/sessionStore";
 import logoFull from "../../assets/logo_white.png";
 import logoCompact from "../../assets/logo_white_small.png";
@@ -11,8 +11,9 @@ const navItems = [
     path: "/institute/dashboard",
     icon: LayoutDashboard,
   },
-  { name: "All Students", path: "/institute/students", icon: Users },
+  { name: "Psychometric Students", path: "/institute/students", icon: Users },
   { name: "Psychometric Attempts", path: "/institute/psychometric-attempts", icon: ClipboardCheck },
+  { name: "Counseling Reports", path: "/institute/counseling-reports", icon: FileText },
 ];
 
 const getActivePage = (pathname) => {

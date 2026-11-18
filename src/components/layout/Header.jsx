@@ -2,9 +2,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Bell, ChevronDown, LogOut, Menu, Search, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 // import { logoutUser } from "../../features/auth/authStorage";
-import { useSessionStore } from "../../store/sessionStore";
+import { ACCESS_TOKEN_KEY, useSessionStore } from "../../store/sessionStore";
 import { navSections } from "./navSections";
-import { getNotifications } from "../../api/notification";
+import { getAdminNotification, getNotifications } from "../../api/notification";
 import { logout } from "../../api/authApi";
 const stripHtml = (text = "") =>
   String(text || "")
@@ -21,6 +21,7 @@ const flattenNavItems = (sections) =>
           name: child.name,
           path: child.path,
           group: item.name,
+          module: child.module || item.module,
         }));
       }
 
@@ -30,6 +31,7 @@ const flattenNavItems = (sections) =>
               name: item.name,
               path: item.path,
               group: section.label,
+              module: item.module,
             },
           ]
         : [];
@@ -48,7 +50,14 @@ export default function Header({ activePage, onMenuClick }) {
   const notificationRef = useRef(null);
   const searchRef = useRef(null);
 
-  const searchItems = useMemo(() => flattenNavItems(navSections), []);
+  const hasPermission = useSessionStore((state) => state.hasPermission);
+  const permissions = useSessionStore((state) => state.permissions);
+  const loginType = useSessionStore((state) => state.loginType);
+  const searchItems = useMemo(
+    () => flattenNavItems(navSections).filter((item) => !item.module || hasPermission(item.module)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [hasPermission, permissions, loginType]
+  );
   const displayName = useMemo(() => {
     const firstName = currentUser?.firstName?.trim();
     const lastName = currentUser?.lastName?.trim();
@@ -100,8 +109,15 @@ export default function Header({ activePage, onMenuClick }) {
     const loadNotifications = async () => {
       try {
         setNotificationLoading(true);
-        const response = await getNotifications();
-        const list = Array.isArray(response?.data) ? response.data : [];
+        const [manualResult, adminResult] = await Promise.allSettled([getNotifications(), getAdminNotification()]);
+        const manualList = manualResult.status === "fulfilled" && Array.isArray(manualResult.value?.data)
+          ? manualResult.value.data
+          : [];
+        const adminList = adminResult.status === "fulfilled" && Array.isArray(adminResult.value?.data)
+          ? adminResult.value.data
+          : [];
+        const list = [...adminList, ...manualList]
+          .sort((left, right) => new Date(right.createdAt || 0).getTime() - new Date(left.createdAt || 0).getTime());
 
         if (isMounted) {
           setNotificationItems(list.slice(0, 5));
@@ -124,18 +140,29 @@ export default function Header({ activePage, onMenuClick }) {
     };
   }, [isNotificationOpen]);
 
-const handleLogout = async () => {
-  try {
-    const { refreshToken } = useSessionStore.getState();
+  useEffect(() => {
+    // Log out this tab when another tab clears the session.
+    const handleStorage = (event) => {
+      if (event.key === ACCESS_TOKEN_KEY && !event.newValue && useSessionStore.getState().isAuthenticated) {
+        useSessionStore.getState().clearSession();
+        navigate("/login", { replace: true });
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, [navigate]);
 
-    if (refreshToken) {
-      await logout(refreshToken);
-    }
-  } catch (error) {
-    console.error("Logout API Error:", error);
-  } finally {
-    useSessionStore.getState().clearSession();
-    navigate("/login", { replace: true });
+const handleLogout = () => {
+  const { refreshToken } = useSessionStore.getState();
+
+  // Clear the local session first so logout works even on a slow/offline network.
+  useSessionStore.getState().clearSession();
+  navigate("/login", { replace: true });
+
+  if (refreshToken) {
+    Promise.resolve(logout(refreshToken)).catch((error) => {
+      if (import.meta.env.DEV) console.error("Logout API Error:", error);
+    });
   }
 };
 
@@ -174,6 +201,10 @@ const handleLogout = async () => {
             placeholder="Search sidebar menu..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && matchedItems.length > 0) handleSearchNavigate(matchedItems[0].path);
+              if (e.key === "Escape") setSearch("");
+            }}
             className="w-[min(18rem,42vw)] min-w-[220px] rounded-lg border border-[#9a2119] py-2 pl-9 pr-3 text-sm text-black placeholder-black/70 focus:outline-none lg:w-72"
           />
 

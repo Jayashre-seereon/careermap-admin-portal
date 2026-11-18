@@ -6,47 +6,66 @@ import { router } from "./app/router";
 import { RouterProvider } from "react-router-dom";
 import { useSessionStore } from "./store/sessionStore";
 import { refreshAccessToken } from "./api/authApi";
+import { Spin } from "antd";
+
+const BOOTSTRAP_TIMEOUT_MS = 15000;
 
 let sessionBootstrapPromise = null;
 
+const isTokenExpired = (token) => {
+  if (!token) return true;
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+    return typeof payload.exp === "number" && payload.exp * 1000 <= Date.now() + 5000;
+  } catch {
+    return false;
+  }
+};
+
+const withTimeout = (promise, ms) =>
+  Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error("Session refresh timed out")), ms)),
+  ]);
+
+const runBootstrap = async () => {
+  const { accessToken, refreshToken, loginType, setAccessToken, clearSession } =
+    useSessionStore.getState();
+
+  try {
+    const needsRefresh =
+      loginType === "admin" &&
+      refreshToken &&
+      (!accessToken || isTokenExpired(accessToken));
+
+    if (needsRefresh) {
+      const response = await withTimeout(refreshAccessToken(refreshToken), BOOTSTRAP_TIMEOUT_MS);
+      const nextAccessToken =
+        response?.accessToken ||
+        response?.data?.accessToken ||
+        response?.data?.data?.accessToken ||
+        "";
+
+      if (nextAccessToken) {
+        setAccessToken(nextAccessToken);
+      } else {
+        clearSession();
+      }
+    }
+  } catch {
+    clearSession();
+  }
+};
+
 function AuthBootstrap({ children }) {
-  const accessToken = useSessionStore((state) => state.accessToken);
-  const refreshToken = useSessionStore((state) => state.refreshToken);
-  const loginType = useSessionStore((state) => state.loginType);
-  const setAccessToken = useSessionStore((state) => state.setAccessToken);
-  const clearSession = useSessionStore((state) => state.clearSession);
   const [ready, setReady] = useState(false);
 
+  // Run once on mount; later token updates must not re-run the bootstrap.
   useEffect(() => {
     let mounted = true;
 
-    const bootstrapSession = async () => {
-      try {
-        if (loginType === "admin" && !accessToken && refreshToken) {
-          const response = await refreshAccessToken(refreshToken);
-          const nextAccessToken =
-            response?.accessToken ||
-            response?.data?.accessToken ||
-            response?.data?.data?.accessToken ||
-            "";
-
-          if (nextAccessToken) {
-            setAccessToken(nextAccessToken);
-          } else {
-            clearSession();
-          }
-        }
-      } catch {
-        clearSession();
-      } finally {
-        if (mounted) {
-          setReady(true);
-        }
-      }
-    };
-
     if (!sessionBootstrapPromise) {
-      sessionBootstrapPromise = bootstrapSession().finally(() => {
+      sessionBootstrapPromise = runBootstrap().finally(() => {
         sessionBootstrapPromise = null;
       });
     }
@@ -60,10 +79,14 @@ function AuthBootstrap({ children }) {
     return () => {
       mounted = false;
     };
-  }, [accessToken, clearSession, loginType, refreshToken, setAccessToken]);
+  }, []);
 
   if (!ready) {
-    return null;
+    return (
+      <div style={{ display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center" }}>
+        <Spin size="large" />
+      </div>
+    );
   }
 
   return children;

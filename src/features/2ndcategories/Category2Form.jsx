@@ -1,8 +1,10 @@
-import React, { useEffect } from "react";
+import useSubmitGuard from "../../hooks/useSubmitGuard";
+import React, { useEffect, useRef } from "react";
 import { Form, Input, Select, Upload, Button } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import RichTextEditor from "../../components/ui/RichTextEditor";
 import { validationRules } from "../../utils/formValidation";
+import { checkUpload } from "../../utils/uploadValidation";
 
 const { Option } = Select;
 
@@ -38,6 +40,19 @@ export default function Category2Form({
 }) {
   const [form] = Form.useForm();
   const isView = mode === "view";
+  const pickedImageRef = useRef(null);
+  const pickedCoverRef = useRef(null);
+
+  const handleFinish = (values) =>
+    onSubmit({
+      ...values,
+      image: pickedImageRef.current
+        ? [{ originFileObj: pickedImageRef.current }]
+        : values.image,
+      coverImage: pickedCoverRef.current
+        ? [{ originFileObj: pickedCoverRef.current }]
+        : values.coverImage,
+    });
 
   useEffect(() => {
     if (initialValues) {
@@ -56,11 +71,12 @@ export default function Category2Form({
     }
   }, [form, initialValues]);
 
+  const [guardedSubmit, submitting] = useSubmitGuard(handleFinish);
   return (
     <Form
       form={form}
       layout="vertical"
-      onFinish={onSubmit}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -121,7 +137,11 @@ export default function Category2Form({
           getValueFromEvent={normalizeFile}
         >
           <Upload
-            beforeUpload={() => false}
+            beforeUpload={(file) => { if (!checkUpload(file, "image")) return Upload.LIST_IGNORE; pickedCoverRef.current = file; return false; }}
+            accept="image/*"
+            onRemove={() => {
+              pickedCoverRef.current = null;
+            }}
             disabled={isView}
             maxCount={1}
             listType="picture"
@@ -139,7 +159,13 @@ export default function Category2Form({
           getValueFromEvent={normalizeFile}
         >
           <Upload
-            beforeUpload={() => false}
+            beforeUpload={(file) => {
+              pickedImageRef.current = file;
+              return false;
+            }}
+            onRemove={() => {
+              pickedImageRef.current = null;
+            }}
             disabled={isView}
             maxCount={1}
             listType="picture"
@@ -183,7 +209,7 @@ export default function Category2Form({
 
       {!isView && (
         <Button
-          htmlType="submit"
+          htmlType="submit" loading={submitting}
           block
           style={{ background: "#9a2119", borderColor: "#9a2119", color: "#fff" }}
         >

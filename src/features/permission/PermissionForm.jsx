@@ -1,51 +1,29 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import React from "react";
 import { Form, Select, Checkbox, Button, Tag } from "antd";
 import { validationRules } from "../../utils/formValidation";
+import { navSections } from "../../components/layout/navSections";
 
-const MODULE_OPTIONS = [
-  "Dashboard",
-  "Modules",
-  "Permissions",
-  "Staff",
-  "Roles",
-  "Mentors",
-  "Path Type",
-  "Career Path",
-  "Entrance Exam",
-  "Institution",
-  "Scholarship",
-  "Master Class",
-  "Study Abroad",
-  "PlansQuiz",
-  "Stream",
-  "Categories",
-  "Second Categories",
-  "Subcategories",
-  "Details",
-  "All Users",
-  "Notifications",
-  "Subscribers",
-  "Bookings",
-  "Transactions",
-  "Login Activities",
-  "Support Tickets",
-  "Counseling",
-  "Personality",
-  "Test",
-  "Domains",
-  "Careers",
-  "Career Paths",
-  "Career Categories",
-  "Institutes",
-  "Questions",
-  "Sections",
-  "Students",
-];
+// The module list is exactly the sidebar's modules (single source of truth).
+const MODULE_OPTIONS = Array.from(
+  new Set(
+    navSections
+      .flatMap((section) => section.items.map((item) => item.module))
+      .filter(Boolean)
+  )
+);
 
 function PermissionForm({ roles = [], onSubmit, initialValues, disabled }) {
   const [form] = Form.useForm();
   const selectedRoleId = Form.useWatch("roleId", form);
   const selectedRole = roles.find((role) => role.id === selectedRoleId);
+
+  // Sidebar modules, plus any module already saved on this record that is no
+  // longer in the sidebar (so old grants stay visible and can be unticked).
+  const moduleOptions = React.useMemo(() => {
+    const saved = Array.isArray(initialValues?.modules) ? initialValues.modules : [];
+    return [...MODULE_OPTIONS, ...saved.filter((m) => !MODULE_OPTIONS.includes(m))];
+  }, [initialValues]);
 
   React.useEffect(() => {
     if (initialValues) {
@@ -64,11 +42,12 @@ function PermissionForm({ roles = [], onSubmit, initialValues, disabled }) {
     }
   };
 
+  const [guardedSubmit, submitting] = useSubmitGuard(handleFinish);
   return (
     <Form
       layout="vertical"
       form={form}
-      onFinish={handleFinish}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
       initialValues={{ modules: [] }}
     >
@@ -106,7 +85,7 @@ function PermissionForm({ roles = [], onSubmit, initialValues, disabled }) {
             disabled={disabled}
             className="grid max-h-96 grid-cols-2 gap-2 overflow-y-auto rounded-lg border p-4 sm:grid-cols-3"
           >
-            {MODULE_OPTIONS.map((item) => (
+            {moduleOptions.map((item) => (
               <Checkbox key={item} value={item}>
                 {item}
               </Checkbox>
@@ -120,7 +99,7 @@ function PermissionForm({ roles = [], onSubmit, initialValues, disabled }) {
       {!disabled && (
         <Button
           type="primary"
-          htmlType="submit"
+          htmlType="submit" loading={submitting}
           block
           style={{ background: "#9a2119", borderColor: "#9a2119" }}
         >

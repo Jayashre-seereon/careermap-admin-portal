@@ -1,3 +1,4 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import { useEffect } from "react";
 import { Form, Input, Select, Button } from "antd";
 import { validationRules } from "../../utils/formValidation";
@@ -17,11 +18,12 @@ export default function DistrictsForm({
     }
   }, [form, initialValues]);
 
+  const [guardedSubmit, submitting] = useSubmitGuard(onSubmit);
   return (
     <Form
       layout="vertical"
       form={form}
-      onFinish={onSubmit}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
     >
       <h3 className="mb-4 text-lg font-semibold text-[#9a2119]">District Details</h3>
@@ -30,7 +32,7 @@ export default function DistrictsForm({
       <Form.Item
         name="name"
         label="District Name"
-        rules={[validationRules.required("District name"), validationRules.charactersOnly("District name")]}
+        rules={[validationRules.required("District name"), validationRules.nameText("District name")]}
       >
         <Input disabled={viewMode} />
       </Form.Item>
@@ -48,7 +50,7 @@ export default function DistrictsForm({
 
       {!viewMode && (
         <Button
-          htmlType="submit"
+          htmlType="submit" loading={submitting}
           block
           className="bg-[#9a2119] text-white"
         >

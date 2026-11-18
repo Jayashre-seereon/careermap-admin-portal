@@ -9,6 +9,8 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 import { validationRules } from "../../utils/formValidation";
+import useTablePagination from "../../utils/useTablePagination";
+import { getSerialNumber } from "../../utils/slNo";
 
 const { Option } = Select;
 
@@ -195,11 +197,12 @@ export default function CareerPath() {
     handleClose();
   }
 
+  const { pagination, tableProps } = useTablePagination(Array.isArray(filteredData) ? filteredData.length : 0);
   const columns = [
     {
       title: "SL",
       width: 70,
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
     },
     {
       title: "Sections",
@@ -282,7 +285,7 @@ export default function CareerPath() {
           columns={columns}
           dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
           rowKey="id"
-          pagination={{ pageSize: 5 }}
+          {...tableProps}
           scroll={{ x: "max-content" }}
         />
       </div>

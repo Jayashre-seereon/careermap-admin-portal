@@ -1,8 +1,11 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import React from "react";
 import { Button, Form, Input, Select, DatePicker, Radio, InputNumber, Divider } from "antd";
 import RichTextEditor from "../../components/ui/RichTextEditor";
 import { validationRules } from "../../utils/formValidation";
 import dayjs from "dayjs";
+import { useEffect, useState } from "react";
+import { getInstitutes } from "../../api/institutions";
 
 const { Option } = Select;
 
@@ -50,6 +53,7 @@ const normalizePercentage = (value) => {
   return Number.isFinite(parsed) ? parsed : undefined;
 };
 function getSubjectsFor(classValue, streamValue) {
+  if (streamValue === "Not Decided") return SUBJECTS_9_10;
   if (classValue === "9th" || classValue === "10th") {
     return streamValue ? SUBJECTS_9_10 : [];
   }
@@ -59,17 +63,22 @@ function getSubjectsFor(classValue, streamValue) {
   return [];
 }
 
-function CounselingForm({ onSubmit, initialValues, disabled }) {
+function CounselingForm({ onSubmit, initialValues, disabled, instituteDisabled = false }) {
   const [form] = Form.useForm();
+  const [institutes, setInstitutes] = useState([]);
+  useEffect(() => {
+    getInstitutes().then((response) => {
+      const rows = Array.isArray(response) ? response : response?.data || response?.institutes || [];
+      setInstitutes(rows);
+    }).catch((error) => console.error("Could not load institutes", error));
+  }, []);
 
   const classValue = Form.useWatch("class", form);
   const streamValue = Form.useWatch("stream", form);
   const hasClass = Boolean(classValue);
   const storedMarks = normalizeMarks(initialValues?.marks, initialValues?.subjects);
-  const storedSubjectNames = Object.keys(storedMarks).filter((subject) => !subject.startsWith("_"));
-  const subjects = storedSubjectNames.length > 0
-    ? storedSubjectNames
-    : getSubjectsFor(classValue, streamValue);
+  // Keep the same generic subject fields in add, edit, and view modes.
+  const subjects = getSubjectsFor(classValue, streamValue);
   React.useEffect(() => {
     if (!initialValues) {
       form.resetFields();
@@ -78,6 +87,7 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
 
     form.setFieldsValue({
       ...initialValues,
+      instituteId: initialValues.instituteId ?? initialValues.schoolInstitutionId ?? initialValues.schoolInstitution?.id,
       totalPercentage: normalizePercentage(
         initialValues.totalPercentage ?? initialValues.total_percentage ?? initialValues.percentage
       ),
@@ -86,11 +96,13 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
         ? dayjs(initialValues.counselingDate)
         : undefined,
     });
-  }, [initialValues, form, classValue, streamValue]);
+  }, [initialValues, form]);
   const handleFinish = async (values) => {
     try {
       const payload = {
         ...values,
+        school: institutes.find((institute) => Number(institute.id) === Number(values.instituteId))?.name || initialValues?.school || null,
+        instituteId: values.instituteId ? Number(values.instituteId) : null,
         totalPercentage: values.totalPercentage ?? null,
         counselingDate: values.counselingDate ? values.counselingDate.toISOString() : null,
       };
@@ -103,19 +115,17 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
 
   const handleClassChange = () => {
     // Class changed -> stream and marks are no longer valid, clear them
-    form.setFieldsValue({ stream: undefined, marks: undefined });
+    form.setFieldsValue({ stream: undefined });
   };
 
-  const handleStreamChange = () => {
-    // Stream changed -> subject set changed, clear old marks
-    form.setFieldsValue({ marks: undefined });
-  };
 
+
+  const [guardedSubmit, submitting] = useSubmitGuard(handleFinish);
   return (
     <Form
       layout="vertical"
       form={form}
-      onFinish={handleFinish}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
     >
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -150,7 +160,7 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
             label={`Desired Stream (${classValue})`}
             rules={[validationRules.required("Stream")]}
           >
-            <Select placeholder="Select stream" disabled={disabled} onChange={handleStreamChange}>
+            <Select placeholder="Select stream" disabled={disabled} >
               <Option value="Science">Science</Option>
               <Option value="Commerce">Commerce</Option>
               <Option value="Humanities">Humanities</Option>
@@ -159,12 +169,17 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
           </Form.Item>
         )}
 
-        <Form.Item name="school" label="School" rules={[validationRules.required("School")]}>
-          <Input placeholder="Enter school name" disabled={disabled} />
+        <Form.Item name="instituteId" label="School / Institute" rules={[validationRules.required("School / Institute")]}>
+          <Select showSearch optionFilterProp="label" placeholder="Select institute" disabled={disabled || instituteDisabled} options={institutes.map((institute) => ({ value: institute.id, label: institute.name }))} />
         </Form.Item>
 
       <Form.Item name="counselingDate" label="Date" rules={[validationRules.required("Date")]}>
-  <DatePicker className="w-full" format="DD-MM-YYYY" disabled={disabled} />
+  <DatePicker
+    className="w-full"
+    format="DD-MM-YYYY"
+    disabled={disabled}
+    disabledDate={(date) => date && date.isBefore(dayjs().startOf("day"))}
+  />
 </Form.Item>
 
      <Form.Item
@@ -199,7 +214,7 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
 
         <Form.Item
           name="email"
-          label="Gmail Id"
+          label="Email Id"
           rules={[validationRules.required("Email"), validationRules.email("Email")]}
         >
           <Input placeholder="Enter email" disabled={disabled} />
@@ -218,48 +233,51 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
         </Form.Item>
       </div>
 
-      {classValue && (
+     
         <>
           <Divider />
           <h3 className="mb-2 text-lg font-semibold text-[#9a2119]">
-            {`Latest Score (${streamValue || "select stream"})`}
+            Latest Score 
           </h3>
 <Form.Item
   name="totalPercentage"
-  initialValue={normalizePercentage(initialValues?.totalPercentage ?? initialValues?.total_percentage ?? initialValues?.percentage)}
   label="Total Percentage (%)"
+  validateTrigger={["onChange", "onBlur"]}
   rules={[
     {
-      type: "number",
-      min: 0,
-      max: 100,
-      message: "Enter a percentage between 0 and 100",
+      validator: (_, value) => {
+        if (value === null || value === undefined || value === "") {
+          return Promise.resolve();
+        }
+        const percentage = Number(value);
+        if (!Number.isFinite(percentage)) {
+          return Promise.reject(new Error("Enter a valid number"));
+        }
+        if (percentage < 0 || percentage > 100) {
+          return Promise.reject(new Error("Percentage cannot be greater than 100"));
+        }
+        return Promise.resolve();
+      },
     },
   ]}
 >
   <InputNumber
     className="w-full"
-    min={0}
-    max={100}
     step={0.01}
     precision={2}
     placeholder="Enter total percentage"
     disabled={disabled}
   />
 </Form.Item>
-          {subjects.length > 0 ? (
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-              {subjects.map((subject) => (
-                <Form.Item key={subject} name={["marks", subject]} label={subject} initialValue={storedMarks[subject]}>
-                  <Input className="w-full" min={0} max={100} disabled={disabled} />
-                </Form.Item>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-gray-500">Select a stream to enter marks.</p>
-          )}
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+  {SUBJECTS_9_10.map((subject) => (
+    <Form.Item key={subject} name={["marks", subject]} label={subject}>
+      <Input className="w-full" disabled={disabled} />
+    </Form.Item>
+  ))}
+</div>
         </>
-      )}
+      
 
       {disabled && initialValues?.marks && (
         <div className="mb-4 grid grid-cols-1 gap-2 rounded-lg bg-slate-50 p-3 text-sm sm:grid-cols-2">
@@ -325,7 +343,7 @@ function CounselingForm({ onSubmit, initialValues, disabled }) {
       {!disabled && (
         <Button
           type="primary"
-          htmlType="submit"
+          htmlType="submit" loading={submitting}
           block
           style={{ background: "#9a2119", borderColor: "#9a2119" }}
         >

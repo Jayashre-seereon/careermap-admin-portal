@@ -1,6 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import { Table, Input, Button, Popconfirm } from "antd";
+import { Table, Input, Button, Popconfirm, Tag } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -21,7 +21,7 @@ export default function EntranceExamTable({
   onDelete,
   onAdd,
 }) {
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
   const handleReset = () => onSearch("");
 
   const formatDate = (value) => {
@@ -77,8 +77,8 @@ export default function EntranceExamTable({
     {
       title: <span className="text-[#9a2119] font-semibold">2nd Category</span>,
       dataIndex: "secondCategoryName",
-      width: 180,
-      ellipsis: true,
+      width: 300,
+      render: (value) => <div className="whitespace-normal break-words">{value || "-"}</div>,
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Subcategory</span>,
@@ -103,6 +103,12 @@ export default function EntranceExamTable({
       dataIndex: "lastdate",
       width: 140,
       render: (value) => formatDate(value),
+    },
+    {
+      title: <span className="text-[#9a2119] font-semibold">Tentative</span>,
+      dataIndex: "tentative",
+      width: 120,
+      render: (value) => <Tag color={value ? "orange" : "default"}>{value ? "Yes" : "No"}</Tag>,
     },
     // {
     //   title: <span className="text-[#9a2119] font-semibold">Eligibility</span>,
@@ -217,9 +223,10 @@ export default function EntranceExamTable({
           dataSource={data}
           loading={loading}
           rowKey="id"
-          pagination={pagination}
+          pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
           onChange={(pag) => setPagination(pag)}
           rowClassName="hover:bg-gray-50"
+          tableLayout="fixed"
           scroll={{ x: "max-content" }}
         />
       </div>

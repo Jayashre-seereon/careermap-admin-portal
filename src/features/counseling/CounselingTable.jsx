@@ -1,5 +1,5 @@
-import React from "react";
-import { Button, Input, Popconfirm, Space, Table, Tag } from "antd";
+import React, { useState } from "react";
+import { Button, Input, Popconfirm, Space, Table } from "antd";
 import {
   DeleteOutlined,
   EditOutlined,
@@ -52,21 +52,25 @@ const formatMarks = (marks) => {
 function CounselingTable({
   data,
   loading,
-  onAddClick,
   onView,
   onEdit,
   onDelete,
   search,
   onSearch,
+  onReset,
   onDownload,
-  staffView = false,
 }) {
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const columns = [
-    { title: "#", render: (_, __, index) => index + 1, width: 60 },
+    { title: "#", render: (_, __, index) => (page - 1) * pageSize + index + 1, width: 60 },
     { title: "Student Name", dataIndex: "studentName", width: 160, ellipsis: true },
     { title: "Class", dataIndex: "class", width: 90 },
     { title: "Stream", dataIndex: "stream", width: 110, render: (value) => value || "-" },
-    { title: "School", dataIndex: "school", width: 160, ellipsis: true },
+    { title: "School / Institute", key: "school", width: 180, ellipsis: true, render: (_, record) => {
+      const instituteId = record.instituteId ?? record.schoolInstitutionId;
+      return <span title={`Institute ID: ${instituteId ?? "-"}`}>{record.schoolInstitution?.name || record.school || "-"}{instituteId ? ` (ID ${instituteId})` : ""}</span>;
+    } },
     { title: "Phone", dataIndex: "phoneNumber", width: 130, ellipsis: true },
     { title: "Email", dataIndex: "email", width: 200, ellipsis: true },
     {
@@ -119,18 +123,7 @@ function CounselingTable({
       ellipsis: true,
       render: (_, record) => record.counselorName || record.marks?._counselorName || "-",
     },
-    {
-      title: "Created By",
-      key: "createdBy",
-      width: 130,
-      render: (_, record) => record.createdByName || record.createdBy || record.marks?._createdById || "-",
-    },
-    {
-      title: "Creator Type",
-      key: "creatorType",
-      width: 120,
-      render: (_, record) => record.creatorType || record.marks?._creatorType || "-",
-    },
+    
     {
       title: "Psychometric",
       dataIndex: "psychometricRecommended",
@@ -140,7 +133,7 @@ function CounselingTable({
     {
       title: "Actions",
       fixed: "right",
-      width: staffView ? 110 : 200,
+      width: 200,
       render: (_, record) => (
         <Space>
           <Button
@@ -149,11 +142,11 @@ function CounselingTable({
             onClick={() => onView(record)}
           />
 
-          {!staffView && <Button
+          <Button
             className="w-8 h-8 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
             icon={<EditOutlined />}
             onClick={() => onEdit(record)}
-          />}
+          />
 
           <Button
             className="w-8 h-8 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
@@ -161,12 +154,12 @@ function CounselingTable({
             onClick={() => onDownload(record)}
           />
 
-          {!staffView && <Popconfirm
+          <Popconfirm
             title="Are you sure you want to delete this counseling?"
             onConfirm={() => onDelete(record)}
           >
             <Button danger icon={<DeleteOutlined />} />
-          </Popconfirm>}
+          </Popconfirm>
         </Space>
       ),
     },
@@ -182,21 +175,15 @@ function CounselingTable({
             placeholder="Search counseling..."
             prefix={<SearchOutlined className="text-[#9a2119]" />}
             value={search}
-            onChange={(event) => onSearch(event.target.value)}
+            onChange={(event) => { onSearch(event.target.value); setPage(1); }}
             className="w-full sm:w-64 h-8 rounded-md border-[#9a2119]"
           />
           <Button
-            onClick={() => onSearch("")}
+            onClick={() => { onReset(); setPage(1); }}
             style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
           >
             <ReloadOutlined />
             Reset
-          </Button>
-          <Button
-            onClick={onAddClick}
-            style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
-          >
-            + Add
           </Button>
         </div>
       </div>
@@ -206,7 +193,8 @@ function CounselingTable({
         dataSource={Array.isArray(data) ? [...data].reverse() : []}
         loading={loading}
         rowKey="id"
-        pagination={{ pageSize: 5 }}
+        pagination={{ pageSize, current: page, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100], onChange: (p, size) => { setPage(p); setPageSize(size); } }}
+        locale={{ emptyText: String(search || "").trim() ? `No results for "${String(search).trim()}"` : "No data" }}
         scroll={{ x: "max-content" }}
       />
     </div>

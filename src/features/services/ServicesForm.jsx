@@ -1,8 +1,10 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import { useEffect } from "react";
 import { Form, Input, Upload, Button, Select } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import RichTextEditor from "../../components/ui/RichTextEditor";
 import { validationRules } from "../../utils/formValidation";
+import { createBeforeUpload } from "../../utils/uploadValidation";
 
 export default function ServicesForm({ onSubmit, initialValues, viewMode }) {
   const [form] = Form.useForm();
@@ -15,11 +17,12 @@ export default function ServicesForm({ onSubmit, initialValues, viewMode }) {
     }
   }, [form, initialValues]);
 
+  const [guardedSubmit, submitting] = useSubmitGuard(onSubmit);
   return (
     <Form
       layout="vertical"
       form={form}
-      onFinish={onSubmit}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
       className="grid grid-cols-1 md:grid-cols-2 gap-4"
     >
@@ -44,13 +47,13 @@ export default function ServicesForm({ onSubmit, initialValues, viewMode }) {
       </Form.Item>
 
       <Form.Item name="icon" label="Icon">
-        <Upload beforeUpload={() => false} disabled={viewMode}>
+        <Upload beforeUpload={createBeforeUpload("image")} accept="image/*" disabled={viewMode}>
           <Button icon={<UploadOutlined />}>Upload Icon</Button>
         </Upload>
       </Form.Item>
 
       <Form.Item name="file" label="File (Max 200MB)">
-        <Upload beforeUpload={() => false} disabled={viewMode}>
+        <Upload beforeUpload={createBeforeUpload("any")} disabled={viewMode}>
           <Button icon={<UploadOutlined />}>Upload File</Button>
         </Upload>
       </Form.Item>
@@ -72,7 +75,7 @@ export default function ServicesForm({ onSubmit, initialValues, viewMode }) {
 
       {!viewMode && (
         <Button
-          htmlType="submit"
+          htmlType="submit" loading={submitting}
           className="md:col-span-2 bg-[#9a2119] text-white"
         >
           Add Services

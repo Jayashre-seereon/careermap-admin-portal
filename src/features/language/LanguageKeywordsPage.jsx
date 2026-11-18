@@ -19,6 +19,8 @@ import {
 } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import { getLanguages, saveLanguages } from "./languageStore";
+import useTablePagination from "../../utils/useTablePagination";
+import { getSerialNumber } from "../../utils/slNo";
 
 const initialKeywordValues = {
   key: "",
@@ -137,6 +139,8 @@ export default function LanguageKeywordsPage() {
     );
   };
 
+  const { pagination, tableProps } = useTablePagination(Array.isArray(filteredKeywords) ? filteredKeywords.length : 0);
+
   if (!language) {
     return (
       <div className="rounded-[24px] border border-[#f0d7d4] bg-white p-6 shadow-[0_18px_40px_rgba(154,33,25,0.06)]">
@@ -161,7 +165,7 @@ export default function LanguageKeywordsPage() {
     {
       title: <span className="font-semibold text-[#9a2119]">SL</span>,
       width: 70,
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
     },
     {
       title: <span className="font-semibold text-[#9a2119]">Key</span>,
@@ -247,7 +251,7 @@ export default function LanguageKeywordsPage() {
             rowKey="key"
             columns={columns}
             dataSource={Array.isArray(filteredKeywords) ? [...filteredKeywords].reverse() : []}
-            pagination={{ pageSize: 8 }}
+            {...tableProps}
             scroll={{ x: 720 }}
            
           />

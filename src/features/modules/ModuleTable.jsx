@@ -1,5 +1,5 @@
 import {React,useState}from "react";
-import { Table, Button, Space, Popconfirm, Input, Tag } from "antd";
+import { Table, Button, Space, Popconfirm, Input, Select, Tag } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -17,9 +17,12 @@ function ModuleTable({
   onDelete,
   search,
   onSearch,
+  accessFilter = "all",
+  onAccessFilterChange,
   loading,
 }) {
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
+  const firstPage = () => setPagination((prev) => ({ ...prev, current: 1 }));
   const columns = [
     {
       title: "No.",
@@ -99,11 +102,21 @@ function ModuleTable({
             placeholder="Search module..."
             prefix={<SearchOutlined className="text-[#9a2119]" />}
             value={search}
-            onChange={(event) => onSearch(event.target.value)}
+            onChange={(event) => { onSearch(event.target.value); firstPage(); }}
             className="w-full sm:w-64 h-8 rounded-md border-[#9a2119]"
           />
+          <Select
+            value={accessFilter}
+            onChange={(value) => { onAccessFilterChange?.(value); firstPage(); }}
+            style={{ minWidth: 140 }}
+            options={[
+              { value: "all", label: "All access" },
+              { value: "unlocked", label: "Unlocked" },
+              { value: "locked", label: "Locked" },
+            ]}
+          />
           <Button
-            onClick={() => onSearch("")}
+            onClick={() => { onSearch(""); onAccessFilterChange?.("all"); firstPage(); }}
             style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
           >
             <ReloadOutlined />
@@ -124,7 +137,7 @@ function ModuleTable({
         dataSource={Array.isArray(data) ? [...data].reverse() : []}
         rowKey={(record) => record.id}
         loading={loading}
-        pagination={pagination}
+        pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
         onChange={(pag) => setPagination(pag)}
         scroll={{ x: "max-content" }}
       />

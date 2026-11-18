@@ -86,6 +86,7 @@ export default function QuizQuestionsPage() {
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
   const [loading, setLoading] = useState(false);
 
   const loadQuiz = async () => {
@@ -356,13 +357,19 @@ export default function QuizQuestionsPage() {
           <div className="flex flex-wrap items-center gap-3">
             <Input
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setPagination((prev) => ({ ...prev, current: 1 }));
+              }}
               prefix={<SearchOutlined className="text-[#9a2119]" />}
               placeholder="Search question..."
               className="w-full sm:w-64 h-8 rounded-md border-[#9a2119]"
             />
             <Button
-              onClick={() => setSearch("")}
+              onClick={() => {
+                setSearch("");
+                setPagination((prev) => ({ ...prev, current: 1 }));
+              }}
               style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
             >
               <ReloadOutlined />
@@ -382,7 +389,16 @@ export default function QuizQuestionsPage() {
           columns={columns}
           dataSource={Array.isArray(filteredQuestions) ? [...filteredQuestions].reverse() : []}
           loading={loading}
-          pagination={{ pageSize: 6 }}
+          pagination={{
+            current: Math.min(
+              pagination.current,
+              Math.max(1, Math.ceil(filteredQuestions.length / pagination.pageSize))
+            ),
+            pageSize: pagination.pageSize,
+            showSizeChanger: true,
+            pageSizeOptions: [10, 20, 50, 100],
+          }}
+          onChange={(pag) => setPagination({ current: pag.current, pageSize: pag.pageSize })}
           scroll={{ x: 1300 }}
           rowClassName="hover:bg-[#fff8f7]"
         />

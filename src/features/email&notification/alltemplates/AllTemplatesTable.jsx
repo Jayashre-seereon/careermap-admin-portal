@@ -34,7 +34,7 @@ export default function AllTemplatesTable({ data, onEdit }) {
       <Table
         columns={columns}
         dataSource={Array.isArray(data) ? [...data].reverse() : []}
-      pagination={{ pageSize: 6 }}
+      pagination={{ pageSize: 10, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
       rowKey="key"
       rowClassName="hover:bg-gray-50"
       scroll={{ x: "max-content" }}

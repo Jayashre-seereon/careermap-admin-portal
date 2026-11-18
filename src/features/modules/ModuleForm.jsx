@@ -1,6 +1,8 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import React, { useEffect } from "react";
 import { Form, Button, Select, Upload, Image } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
+import { createBeforeUpload } from "../../utils/uploadValidation";
 import StatusSwitch from "../../components/ui/StatusSwitch";
 import { validationRules } from "../../utils/formValidation";
 
@@ -20,11 +22,12 @@ function ModuleForm({ onSubmit, initialValues, disabled, moduleOptions = [] }) {
     }
   }, [form, initialValues]);
 
+  const [guardedSubmit, submitting] = useSubmitGuard(onSubmit);
   return (
     <Form
       layout="vertical"
       form={form}
-      onFinish={onSubmit}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -77,7 +80,7 @@ function ModuleForm({ onSubmit, initialValues, disabled, moduleOptions = [] }) {
             )
           ) : (
             <Upload
-              beforeUpload={() => false}   // prevent auto-upload
+              beforeUpload={createBeforeUpload("image")}   // validates, prevents auto-upload
               maxCount={1}
               accept="image/*"
               listType="picture"
@@ -108,7 +111,7 @@ function ModuleForm({ onSubmit, initialValues, disabled, moduleOptions = [] }) {
       {!disabled && (
         <Button
           type="primary"
-          htmlType="submit"
+          htmlType="submit" loading={submitting}
           block
           style={{ background: "#9a2119", borderColor: "#9a2119" }}
         >

@@ -1,7 +1,9 @@
-import { Form, Input, Select, Button, DatePicker } from "antd";
+import useSubmitGuard from "../../hooks/useSubmitGuard";
+import { Form, Input, Select, Button, DatePicker, Radio } from "antd";
 import { useEffect } from "react";
 import { validationRules } from "../../utils/formValidation";
 import RichTextEditor from "../../components/ui/RichTextEditor";
+import StatusSwitch from "../../components/ui/StatusSwitch";
 import { DATE_DISPLAY_FORMAT, parseDateValue } from "../../utils/date";
 
 const { Option } = Select;
@@ -66,6 +68,7 @@ export default function EntranceExamForm({
         examDate: parseDateValue(initialValues.examDate),
         subject: normalizeTagValues(initialValues.subject),
         topInstitutes: normalizeTagValues(initialValues.topInstitutes),
+        tentative: initialValues.tentative ?? initialValues.exam_pattern_tentative,
       });
     } else {
       form.resetFields();
@@ -96,11 +99,12 @@ export default function EntranceExamForm({
     onSecondCategoryChange?.(secondCategoryId);
   };
 
+  const [guardedSubmit, submitting] = useSubmitGuard(onSubmit);
   return (
     <Form
       form={form}
       layout="vertical"
-      onFinish={onSubmit}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
       className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
     >
@@ -201,6 +205,13 @@ export default function EntranceExamForm({
           placeholder="DD-MM-YYYY"
         />
       </Form.Item>
+      <Form.Item
+        name="tentative"
+        label="Tentative"
+        valuePropName="checked"
+      >
+        <StatusSwitch disabled={isView} checkedChildren="Yes" unCheckedChildren="No" />
+      </Form.Item>
 {/* 
       <Form.Item name="examDate" label="Exam Date">
         <DatePicker
@@ -277,29 +288,11 @@ export default function EntranceExamForm({
       </Form.Item>
 
 
-      {/* FULL WIDTH FIELDS */}
-      {/* <Form.Item
-        name="eligibility"
-        label="Eligibility"
-        className="md:col-span-2 lg:col-span-4"
-      >
-        <Input.TextArea rows={3} disabled={isView} />
-      </Form.Item>
-
-     
-
-      <Form.Item
-        name="examPattern"
-        label="Exam Pattern"
-        className="md:col-span-2 lg:col-span-4"
-      >
-        <RichTextEditor disabled={isView} height={220} />
-      </Form.Item> */}
 
       {!isView && (
         <div className="md:col-span-2 lg:col-span-4">
           <Button
-            htmlType="submit"
+            htmlType="submit" loading={submitting}
             block
             style={{ background: "#9a2119", borderColor: "#9a2119" }}
             className="text-white"

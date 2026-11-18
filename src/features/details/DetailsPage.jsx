@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Form, Modal, message } from "antd";
 import DetailsTable from "./DetailsTable";
 import DetailsForm from "./DetailsForm";
@@ -480,7 +480,7 @@ export default function DetailsPage() {
   const [mode, setMode] = useState("add");
   const [selectedRecord, setSelectedRecord] = useState(null);
 const [selectedSections, setSelectedSections] = useState([]);  const [draftsBySection, setDraftsBySection] = useState(() => buildDrafts());
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [secondaryCategoryOptions, setSecondaryCategoryOptions] = useState([]);
   const [subcategoryOptions, setSubcategoryOptions] = useState([]);
@@ -492,7 +492,19 @@ const [selectedSections, setSelectedSections] = useState([]);  const [draftsBySe
   const filteredData = useMemo(() => {
     const query = search.trim().toLowerCase();
     if (!query) return data;
-    return data.filter((item) => JSON.stringify(item).toLowerCase().includes(query));
+    return data.filter((item) => {
+      const haystack = [
+        item.streamName,
+        item.categoryName,
+        item.secondCategoryName,
+        item.subcategoryName,
+        getRecordTitle(item),
+        getRecordDetailsLabel(item),
+        item.specialization,
+        ...(item.descriptions || []).flatMap((d) => [d?.title, d?.description]),
+      ];
+      return haystack.some((v) => String(v ?? "").toLowerCase().includes(query));
+    });
   }, [data, search]);
 
   const loadDetails = async () => {
@@ -501,9 +513,15 @@ const [selectedSections, setSelectedSections] = useState([]);  const [draftsBySe
     setData(buildDetailsState(detailGroups).records);
   };
 
+  const categoryReqRef = useRef(0);
+  const secondaryReqRef = useRef(0);
+  const subReqRef = useRef(0);
+
   const loadCategories = async (streamId) => {
-    if (!streamId) { setCategoryOptions([]); setSecondaryCategoryOptions([]); setSubcategoryOptions([]); return; }
+    const reqId = ++categoryReqRef.current;
+    if (!streamId) { secondaryReqRef.current++; subReqRef.current++; setCategoryOptions([]); setSecondaryCategoryOptions([]); setSubcategoryOptions([]); return; }
     const response = await getCategoriesByStream(streamId);
+    if (reqId !== categoryReqRef.current) return;
     setCategoryOptions(normalizeList(response).map((item) => mapOption(item, ["title", "name"])));
   };
 
@@ -535,16 +553,20 @@ const [selectedSections, setSelectedSections] = useState([]);  const [draftsBySe
   };
 
   const loadSecondaryCategories = async (categoryId) => {
-    if (!categoryId) { setSecondaryCategoryOptions([]); setSubcategoryOptions([]); return; }
+    const reqId = ++secondaryReqRef.current;
+    if (!categoryId) { subReqRef.current++; setSecondaryCategoryOptions([]); setSubcategoryOptions([]); return; }
     const response = await getSecondaryCategoriesByCategory(categoryId);
     const nextOptions = normalizeList(response).map((item) => ({ ...mapOption(item, ["name", "title"]), categoryId: item.categoryId || item.category?.id || undefined }));
+    if (reqId !== secondaryReqRef.current) return nextOptions;
     setSecondaryCategoryOptions(nextOptions);
     return nextOptions;
   };
 
   const loadSubCategories = async (secondCategoryId) => {
+    const reqId = ++subReqRef.current;
     if (!secondCategoryId) { setSubcategoryOptions([]); return; }
     const response = await getSubCategoriesBySecondCategory(secondCategoryId);
+    if (reqId !== subReqRef.current) return;
     setSubcategoryOptions(
       normalizeList(response).map((item) => ({
         ...mapOption(item, ["title", "name"]),
@@ -617,6 +639,20 @@ const [selectedSections, setSelectedSections] = useState([]);  const [draftsBySe
     if (ids.length > 0) formData.append("institutionIds", JSON.stringify(ids));
   }
 
+  // Editing: an unchecked (or emptied) section sends NO data at all - only its name in
+  // "removedSections", so the backend clears that section.
+  if (mode === "edit") {
+    const sectionFields = {
+      "salary-range": "salaryRanges",
+      "job-scope": "jobScope",
+      "career-path": "careerpathIds",
+      "entrance-exam": "entranceexamIds",
+      "institution": "institutionIds",
+    };
+    const removedSections = Object.keys(sectionFields).filter((section) => !formData.has(sectionFields[section]));
+    formData.append("removedSections", JSON.stringify(removedSections));
+  }
+
   const mediaFile = values.media?.[0]?.originFileObj;
   if (mediaFile) formData.append("media", mediaFile);
 
@@ -633,9 +669,14 @@ const [selectedSections, setSelectedSections] = useState([]);  const [draftsBySe
   const handleSecondCategoryChange = async (secondCategoryId) => { await loadSubCategories(secondCategoryId); };
 
   const prepareFormForRecord = async (record) => {
-    await loadCategories(record.stream);
-    await loadSecondaryCategories(record.category);
-    await loadSubCategories(record.secondCategory);
+    try {
+      await loadCategories(record.stream);
+      await loadSecondaryCategories(record.category);
+      await loadSubCategories(record.secondCategory);
+    } catch (error) {
+      if (import.meta.env.DEV) console.error(error);
+      messageApi.warning("Some dropdown options could not be loaded.");
+    }
     return record;
   };
 const fetchDetailsRecord = async (id) => {
@@ -643,12 +684,7 @@ const fetchDetailsRecord = async (id) => {
 
   const apiData = response?.data?.data || response?.data;
 
-  console.log("GET BY ID RESPONSE", response);
-  console.log("API DATA", apiData);
-
   const mapped = mapDetailsRecord(apiData);
-
-  console.log("MAPPED", mapped);
 
   return mapped;
 };
@@ -689,8 +725,8 @@ async function handleOpenEdit(record) {
 
     setOpen(true);
   } catch (error) {
-    console.error(error);
-    messageApi.error("Failed to load details");
+    if (import.meta.env.DEV) console.error(error);
+    messageApi.error(error?.response?.data?.message || "Failed to load details");
   }
 }
 async function handleOpenView(record) {
@@ -721,8 +757,8 @@ async function handleOpenView(record) {
 
     setOpen(true);
   } catch (error) {
-    console.error(error);
-    messageApi.error("Failed to load details");
+    if (import.meta.env.DEV) console.error(error);
+    messageApi.error(error?.response?.data?.message || "Failed to load details");
   }
 }
   function handleClose() {

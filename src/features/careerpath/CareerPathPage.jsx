@@ -40,6 +40,10 @@ const mapCareerPath = (item = {}) => ({
   id: item.id,
   moduleId: item.moduleId || item.module?.id || undefined,
   pathName: item.pathName || item.title || "",
+  stream:
+    typeof item.stream === "string"
+      ? item.stream
+      : item.stream?.name || item.streamName || item.streamId || "",
   categoryId: item.categoryId || item.category?.id || undefined,
   secondcategoryId:
     item.secondcategoryId || item.secondcategory?.id || item.secondCategory?.id || undefined,
@@ -66,6 +70,7 @@ const mapCareerPath = (item = {}) => ({
 
 const buildCareerPathPayload = ({
   moduleId,
+  stream,
   pathName,
   categoryId,
   secondcategoryId,
@@ -77,6 +82,7 @@ const buildCareerPathPayload = ({
   anyother,
 }) => ({
   moduleId,
+  stream: stream || "",
   pathName: pathName || "",
   categoryId,
   secondcategoryId,
@@ -184,10 +190,26 @@ export default function CareerPathPage() {
     pathTypeName: getLabel(paths, item.pathId, item.pathTypeName),
   }));
 
+  const searchQuery = search.trim().toLowerCase();
   const filteredData = tableData.filter((item) =>
-    `${item.moduleName} ${item.pathName} ${item.categoryName} ${item.secondCategoryName} ${item.subcategoryName} ${item.pathTypeName} ${item.graduation} ${item.aftergraduation} ${item.afterpostgraduation} ${item.anyother}`
+    !searchQuery ||
+    [
+      item.moduleName,
+      item.pathName,
+      item.stream,
+      item.categoryName,
+      item.secondCategoryName,
+      item.subcategoryName,
+      item.pathTypeName,
+      item.graduation,
+      item.aftergraduation,
+      item.afterpostgraduation,
+      item.anyother,
+    ]
+      .filter((value) => value !== undefined && value !== null && value !== "")
+      .join(" ")
       .toLowerCase()
-      .includes(search.toLowerCase())
+      .includes(searchQuery)
   );
 
   const handleSubmit = async (values) => {

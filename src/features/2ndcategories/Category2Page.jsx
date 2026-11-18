@@ -94,7 +94,18 @@ const buildSecondaryCategoryPayload = ({
   const coverImageFile = extractFile(coverImage);
 
   if (!imageFile && !coverImageFile) {
-    return { payload, config: {} };
+    const existingUrl = (value) =>
+      Array.isArray(value) && typeof value[0]?.url === "string"
+        ? value[0].url
+        : null;
+    return {
+      payload: {
+        ...payload,
+        image: existingUrl(image),
+        coverImage: existingUrl(coverImage),
+      },
+      config: {},
+    };
   }
 
   const formData = new FormData();
@@ -155,6 +166,7 @@ export default function Category2Page() {
   const [messageApi, contextHolder] = message.useMessage();
   const [data, setData] = useState([]);
   const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("add");
   const [selected, setSelected] = useState(null);
@@ -224,11 +236,27 @@ export default function Category2Page() {
     institutionName: getInstituteName(item.institution, item.institutionName),
   }));
 
-  const filteredData = tableData.filter((item) =>
-    `${item.categoryName} ${item.name} ${item.institutionName} ${item.path} ${item.description}`
+  const categoryFilterOptions = categories.map((item) => ({
+    value: item.id,
+    label: item.title || item.name || `Category ${item.id}`,
+  }));
+
+  const filteredData = tableData.filter((item) => {
+    if (categoryFilter !== "all" && item.category !== categoryFilter) {
+      return false;
+    }
+
+    const keyword = search.trim().toLowerCase();
+    if (!keyword) {
+      return true;
+    }
+
+    return [item.categoryName, item.name, item.institutionName, item.path, item.description]
+      .filter((value) => value !== undefined && value !== null && value !== "")
+      .join(" ")
       .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+      .includes(keyword);
+  });
 
   const handleSubmit = async (values) => {
     try {
@@ -299,6 +327,9 @@ export default function Category2Page() {
           onDelete={handleDelete}
           search={search}
           setSearch={setSearch}
+          categoryOptions={categoryFilterOptions}
+          categoryFilter={categoryFilter}
+          setCategoryFilter={setCategoryFilter}
         />
       </div>
 

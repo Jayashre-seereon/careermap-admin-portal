@@ -32,8 +32,8 @@ const mapPlan = (item = {}) => ({
   name: item.name || "",
   features: item.features || "",
   description: item.description || "",
-  validity: item.validity || "",
-  price: item.price || "",
+  validity: item.validity ?? "",
+  price: item.price ?? "",
   plan_type: item.plan_type || item.planType || "",
   moduleIds: Array.isArray(item.modules) ? item.modules.map((module) => module.id) : [],
   modules: Array.isArray(item.modules) ? item.modules : [],
@@ -51,8 +51,8 @@ const buildPlanPayload = ({
   name,
   features: features || "",
   description: description || "",
-  validity: validity || "",
-  price: price || "",
+  validity: validity ?? "",
+  price: price ?? "",
   plan_type: plan_type || null,
   moduleIds: Array.isArray(moduleIds) ? moduleIds : [],
 });
@@ -66,6 +66,7 @@ export default function PlansPage() {
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const [planTypeFilter, setPlanTypeFilter] = useState("all");
 
   const loadPlans = async () => {
     try {
@@ -93,11 +94,20 @@ export default function PlansPage() {
     loadModules();
   }, []);
 
-  const filteredData = data.filter((item) =>
-    `${item.name} ${item.features} ${item.description} ${item.validity} ${item.price} ${item.plan_type}`
-      .toLowerCase()
-      .includes(search.toLowerCase())
+  const planTypeOptions = Array.from(
+    new Set(["best seller", "recommended", ...data.map((item) => String(item.plan_type ?? "").trim()).filter(Boolean)])
   );
+
+  const filteredData = data.filter((item) => {
+    if (planTypeFilter !== "all" && String(item.plan_type ?? "").trim() !== planTypeFilter) {
+      return false;
+    }
+    const query = search.trim().toLowerCase();
+    if (!query) return true;
+    return [item.name, item.plan_type].some((value) =>
+      String(value ?? "").toLowerCase().includes(query)
+    );
+  });
 
   const handleSubmit = async (values) => {
     try {
@@ -147,6 +157,9 @@ const handleDelete = async (record) => {
         loading={loading}
         search={search}
         onSearch={setSearch}
+        planTypeFilter={planTypeFilter}
+        onPlanTypeFilterChange={setPlanTypeFilter}
+        planTypeOptions={planTypeOptions}
         onAdd={() => {
           setSelected(null);
           setMode("add");

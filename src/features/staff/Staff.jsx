@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Modal } from "antd";
+import { Modal, message } from "antd";
+import { getApiErrorMessage } from "../../api/authApi";
 import StaffForm from "./StaffForm";
 import StaffTable from "./StaffTable";
 import { getStaffs, getStaffById, createStaff, updateStaff, deleteStaff } from "../../api/rolePermission";
@@ -14,12 +15,17 @@ function Staff() {
   const [mode, setMode] = useState("add");
   const [selected, setSelected] = useState(null);
   const [editId, setEditId] = useState(null);
+  const [roleFilter, setRoleFilter] = useState("all");
 
   const filteredSections = sections.filter((section) => {
-    const keyword = search.toLowerCase();
+    const keyword = search.trim().toLowerCase();
+    if (roleFilter !== "all" && section.roleId !== roleFilter) return false;
+    if (!keyword) return true;
+    const roleName = roles.find((role) => role.id === section.roleId)?.name || "";
     return (
       section.name?.toLowerCase().includes(keyword) ||
-      section.email?.toLowerCase().includes(keyword)
+      section.email?.toLowerCase().includes(keyword) ||
+      roleName.toLowerCase().includes(keyword)
     );
   });
 
@@ -35,6 +41,7 @@ function Staff() {
       setRoles(Array.isArray(roleRes) ? roleRes : roleRes.data || []);
     } catch (err) {
       console.error(err);
+      message.error(getApiErrorMessage(err, "Failed to load staff."));
     } finally {
       setLoading(false);
     }
@@ -68,8 +75,10 @@ function Staff() {
       if (!record?.id) return;
       await deleteStaff(record.id);
       await fetchData();
+      message.success("Staff deleted successfully.");
     } catch (err) {
       console.error(err);
+      message.error(getApiErrorMessage(err, "Failed to delete staff."));
     }
   };
 
@@ -109,6 +118,8 @@ function Staff() {
         loading={loading}
         search={search}
         onSearch={setSearch}
+        roleFilter={roleFilter}
+        onRoleFilterChange={setRoleFilter}
         onAddClick={() => {
           setMode("add");
           setSelected(null);

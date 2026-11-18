@@ -22,10 +22,11 @@ export default function DetailsTable({
   getRecordDetailsLabel,
   summarizeRecord,
   sectionLabels,
+  loading,
 }) {
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 5,
+    pageSize: 10,
   });
 
   const columns = [
@@ -35,21 +36,15 @@ export default function DetailsTable({
       render: (_, __, index) => getSerialNumber(index, pagination),
     },
     {
-      title: "Section",
-      width: 180,
-      render: (_, record) => {
-        const sections =
-          record.sections || (record.section ? [record.section] : []);
-        return sections
-          .map((value) => sectionLabels[value] || value)
-          .join(", ");
-      },
-    },
-    {
-      title: "Title / Name",
-      width: 220,
-      render: (_, record) => getRecordTitle(record),
-    },
+  title: "Details Name",
+  width: 200,
+  render: (_, record) =>
+    record.subcategoryName ||
+    record.secondCategoryName ||
+    record.categoryName ||
+    "-",
+},
+   
     {
       title: "Stream",
       dataIndex: "stream",
@@ -75,6 +70,11 @@ export default function DetailsTable({
       width: 150,
       render: (value, record) =>
         record.subcategoryName || value || "-",
+    },
+    {
+      title: "Career Path",
+      width: 220,
+      render: (_, record) => getRecordTitle(record),
     },
     {
       title: "Details Type",
@@ -154,8 +154,9 @@ export default function DetailsTable({
       <Table
         columns={columns}
         dataSource={Array.isArray(data) ? [...data].reverse() : []}
+        loading={loading}
         rowKey="id"
-        pagination={pagination}
+        pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
         onChange={(pag) => setPagination(pag)}
         scroll={{ x: "max-content" }}
       />

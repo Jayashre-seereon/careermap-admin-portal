@@ -1,27 +1,34 @@
 import api from "./axios";
 import { useSessionStore } from "../store/sessionStore";
 
-const isStaffSession = () => useSessionStore.getState().loginType === "staff";
+const getLoginType = () => useSessionStore.getState().loginType;
+const isStaffSession = () => getLoginType() === "staff";
 
 const getCounselingAuthConfig = (config = {}) => {
-  const token =
-    useSessionStore.getState().accessToken ||
-    localStorage.getItem("token") ||
-    localStorage.getItem("staffToken") ||
-    localStorage.getItem("adminToken") ||
-    localStorage.getItem("access_token");
+  // Authorization is supplied by the shared axios request interceptor (always the latest token).
+  return { ...config };
+};
 
-  return {
-    ...config,
-    headers: {
-      ...config.headers,
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-  };
+const assertInstituteSession = () => {
+  const { loginType, accessToken } = useSessionStore.getState();
+  const token = accessToken;
+  if (loginType !== "institute" || !token) {
+    throw new Error("Please sign in with your institute account to view counseling reports.");
+  }
+};
+
+export const getInstituteCounselingReports = async () => {
+  assertInstituteSession();
+  // Use the same Axios client and institute-session interceptor as /api/institutcreate/dashboard.
+  const res = await api.get("/api/counseling/institute-reports");
+  return res.data;
 };
 
 // GET
 export const getCounselings = async () => {
+  if (getLoginType() === "institute") {
+    return getInstituteCounselingReports();
+  }
   const res = await api.get(
     isStaffSession() ? "/api/counseling/my-reports" : "/api/counseling/",
     getCounselingAuthConfig()
@@ -55,8 +62,14 @@ export const deleteCounseling = async (id) => {
 
 // DOWNLOAD PDF
 export const downloadCounselingReport = async (id) => {
-  const res = await api.get(`/api/counseling/${id}/report`, getCounselingAuthConfig({
+  const isInstitute = getLoginType() === "institute";
+  if (isInstitute) assertInstituteSession();
+  const config = isInstitute ? {} : getCounselingAuthConfig();
+  const path = isInstitute
+    ? `/api/counseling/${id}/report`
+    : `/api/counseling/${id}/report`;
+  const res = await api.get(path, { ...config,
     responseType: "blob", // IMPORTANT for file download
-  }));
+  });
   return res.data;
 };

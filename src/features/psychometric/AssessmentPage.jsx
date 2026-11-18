@@ -44,7 +44,6 @@ import {
   getApiErrorMessage,
 } from "../../api/psychometricAssessmentApi";
 import {
-  INITIAL_ASSESSMENTS,
   getStatusBadgeConfig,
   normalizeAssessmentsResponse,
   slugify,
@@ -77,20 +76,15 @@ export default function AssessmentPage() {
   const loadAssessments = async () => {
     try {
       setLoading(true);
-      const res = await getAssessments({
-        status: statusFilter,
-        search: search.trim(),
-      });
+      // Fetch the full list once (the API defaults to 20 rows). Search / status are applied
+      // client-side so the stat cards always reflect the unfiltered set.
+      const res = await getAssessments({ page: 1, limit: 1000 });
 
-      const list = normalizeAssessmentsResponse(res);
-      if (list.length > 0) {
-        setAssessments(list);
-      } else {
-        setAssessments(INITIAL_ASSESSMENTS);
-      }
+      // Show exactly what the server returned (an empty list is a valid result).
+      setAssessments(normalizeAssessmentsResponse(res));
     } catch (err) {
-      console.warn("Using fallback assessment records due to API response:", err);
-      setAssessments(INITIAL_ASSESSMENTS);
+      console.warn("Could not load assessments:", err);
+      messageApi.error(getApiErrorMessage(err, "Failed to load assessments."));
     } finally {
       setLoading(false);
     }
@@ -115,13 +109,15 @@ export default function AssessmentPage() {
 
   useEffect(() => {
     loadAssessments();
-  }, [statusFilter]);
+  }, []);
+
+  const firstPage = () => setPagination((prev) => ({ ...prev, current: 1 }));
 
   // Compute summary stats
   const stats = useMemo(() => {
     const total = assessments.length;
-    const published = assessments.filter((a) => a.status === "published").length;
-    const draft = assessments.filter((a) => a.status === "draft").length;
+    const published = assessments.filter((a) => String(a.status).toLowerCase() === "published").length;
+    const draft = assessments.filter((a) => String(a.status).toLowerCase() === "draft").length;
     const totalQuestions = assessments.reduce(
       (sum, a) => sum + (Number(a.questionCount) || 0),
       0
@@ -224,11 +220,8 @@ export default function AssessmentPage() {
       };
 
       if (modalMode === "edit" && currentRecord) {
-        try {
-          await updateAssessment(currentRecord.id, payload);
-        } catch (apiErr) {
-          console.warn("Backend update error, updating local state:", apiErr);
-        }
+        // No inner try/catch: if the API fails, the outer catch shows the real error.
+        await updateAssessment(currentRecord.id, payload);
         setAssessments((prev) =>
           prev.map((item) =>
             item.id === currentRecord.id
@@ -238,16 +231,13 @@ export default function AssessmentPage() {
         );
         messageApi.success("Assessment updated successfully.");
       } else {
-        try {
-          const created = await createAssessment(payload);
-          if (created?.data?.id) {
-            payload.id = created.data.id;
-          }
-        } catch (apiErr) {
-          console.warn("Backend create error, adding to local state:", apiErr);
+        const created = await createAssessment(payload);
+        const createdId = created?.data?.data?.id ?? created?.data?.id ?? created?.id;
+        if (!createdId) {
+          throw new Error("Assessment was not saved: the server returned no id.");
         }
         const newRecord = {
-          id: payload.id || `assess-${Date.now()}`,
+          id: createdId,
           ...payload,
           sectionCount: 0,
           questionCount: 0,
@@ -272,16 +262,16 @@ export default function AssessmentPage() {
     try {
       setStatusUpdatingId(record.id);
       await updateAssessmentStatus(record.id, nextStatus);
-      messageApi.success(`Status updated to "${nextStatus}".`);
-    } catch (err) {
-      console.warn("Status update fallback:", err);
-      messageApi.success(`Status updated to "${nextStatus}".`);
-    } finally {
+      // Update the row only after the server confirmed the change.
       setAssessments((prev) =>
         prev.map((item) =>
           item.id === record.id ? { ...item, status: nextStatus } : item
         )
       );
+      messageApi.success(`Status updated to "${nextStatus}".`);
+    } catch (err) {
+      messageApi.error(getApiErrorMessage(err, "Failed to update status."));
+    } finally {
       setStatusUpdatingId(null);
     }
   };
@@ -289,12 +279,10 @@ export default function AssessmentPage() {
   const handleDeleteAssessment = async (record) => {
     try {
       await deleteAssessment(record.id);
+      setAssessments((prev) => prev.filter((item) => item.id !== record.id));
       messageApi.success("Assessment deleted successfully.");
     } catch (err) {
-      console.warn("Delete API error, removing from local state:", err);
-      messageApi.success("Assessment removed.");
-    } finally {
-      setAssessments((prev) => prev.filter((item) => item.id !== record.id));
+      messageApi.error(getApiErrorMessage(err, "Failed to delete assessment."));
     }
   };
 
@@ -405,12 +393,34 @@ export default function AssessmentPage() {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
 
             {/* Search */}
-          
+            <Input
+              allowClear
+              placeholder="Search title, slug..."
+              prefix={<SearchOutlined className="text-[#9a2119]" />}
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); firstPage(); }}
+              className="h-8 w-full sm:w-64 rounded-md border-[#9a2119]"
+            />
+
+            {/* Status filter */}
+            <Select
+              value={statusFilter}
+              onChange={(value) => { setStatusFilter(value); firstPage(); }}
+              className="w-full sm:w-36"
+              options={[
+                { value: "all", label: "All Status" },
+                { value: "published", label: "Published" },
+                { value: "draft", label: "Draft" },
+                { value: "archived", label: "Archived" },
+              ]}
+            />
 
             {/* Reset */}
             <Button
               onClick={() => {
                 setSearch("");
+                setStatusFilter("all");
+                firstPage();
                 loadAssessments();
               }}
               icon={<ReloadOutlined />}
@@ -456,7 +466,7 @@ export default function AssessmentPage() {
           columns={columns}
           dataSource={filteredAssessments}
           loading={loading}
-          pagination={pagination}
+          pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
           onChange={(pag) => setPagination(pag)}
           scroll={{ x: 1000 }}
           className="custom-table"

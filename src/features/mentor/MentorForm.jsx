@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import useSubmitGuard from "../../hooks/useSubmitGuard";
+import React, { useEffect, useRef, useState } from "react";
 import dayjs from "dayjs";
 import { Button, DatePicker, Form, Input, TimePicker, Upload,Select } from "antd";
 import { MinusCircleOutlined, PlusOutlined, UploadOutlined } from "@ant-design/icons";
@@ -14,6 +15,7 @@ import {
   validationRules,
 } from "../../utils/formValidation";
 import { DATE_DISPLAY_FORMAT, parseDateValue } from "../../utils/date";
+import { createBeforeUpload } from "../../utils/uploadValidation";
 
 const normalizeFile = (event) => {
   if (Array.isArray(event)) {
@@ -154,6 +156,34 @@ const formatTimeRangeValue = (value) => {
   return "";
 };
 
+const getDisabledTime = (selectedDate) => {
+  if (!selectedDate) {
+    return {};
+  }
+
+  const date = dayjs(selectedDate);
+  const today = dayjs();
+  if (date.isBefore(today, "day")) {
+    return {
+      disabledHours: () => Array.from({ length: 24 }, (_, hour) => hour),
+      disabledMinutes: () => Array.from({ length: 60 }, (_, minute) => minute),
+    };
+  }
+  if (!date.isSame(today, "day")) return {};
+
+  const now = today;
+  const currentHour = now.hour();
+  const currentMinute = now.minute();
+
+  return {
+    disabledHours: () => Array.from({ length: currentHour }, (_, hour) => hour),
+    disabledMinutes: (hour) =>
+      hour === currentHour
+        ? Array.from({ length: currentMinute }, (_, minute) => minute)
+        : [],
+  };
+};
+
 const normalizeAvailability = (availability = []) => {
   if (!Array.isArray(availability) || availability.length === 0) {
     return [{ date: null, timeSlots: [[null, null]] }];
@@ -219,30 +249,48 @@ const fetchCategories = async () => {
   const res = await getCategories();
   setCategories(res.data || []);
 };
+const secondReqRef = useRef(0);
+const subReqRef = useRef(0);
+
 const handleCategoryChange = async (categoryId, isInit = false) => {
+  const reqId = ++secondReqRef.current;
   if (!isInit) {
     form.setFieldsValue({
       secondcategoryId: undefined,
       subcategoryId: undefined,
     });
+    subReqRef.current += 1;
     setSubCategories([]);
   }
+  setSecondaryCategories([]);
 
   if (!categoryId) return;
 
-  const res = await getSecondaryCategoriesByCategory(categoryId);
-  setSecondaryCategories(res.data || []);
+  try {
+    const res = await getSecondaryCategoriesByCategory(categoryId);
+    if (reqId !== secondReqRef.current) return; // stale response
+    setSecondaryCategories(res.data || []);
+  } catch {
+    if (reqId === secondReqRef.current) setSecondaryCategories([]);
+  }
 };
 
 const handleSecondCategoryChange = async (secondCategoryId, isInit = false) => {
+  const reqId = ++subReqRef.current;
   if (!isInit) {
     form.setFieldsValue({ subcategoryId: undefined });
   }
+  setSubCategories([]);
 
   if (!secondCategoryId) return;
 
-  const res = await getSubCategoriesBySecondCategory(secondCategoryId);
-  setSubCategories(res.data || []);
+  try {
+    const res = await getSubCategoriesBySecondCategory(secondCategoryId);
+    if (reqId !== subReqRef.current) return; // stale response
+    setSubCategories(res.data || []);
+  } catch {
+    if (reqId === subReqRef.current) setSubCategories([]);
+  }
 };
 useEffect(() => {
   const init = async () => {
@@ -259,80 +307,178 @@ useEffect(() => {
 
   init();
 }, [initialValues]);
-  const renderAvailabilityTimeSlots = (timeFields, addTimeSlot, removeTimeSlot) => (
-    <>
-      <div className="mb-2 flex items-center justify-between gap-3">
-        <span className="text-sm font-medium text-slate-700">Time Ranges</span>
-        {!disabled && (
-          <Button
-            type="dashed"
-            size="small"
-            onClick={() => addTimeSlot([null, null])}
-            icon={<PlusOutlined />}
-          >
-            Add Time Range
-          </Button>
-        )}
-      </div>
-
-      {timeFields.map(({ key, name, ...restField }) => (
-        <div key={key} className="mb-2 flex items-start gap-2">
-          <Form.Item
-            {...restField}
-            name={name}
-            className="mb-0 flex-1"
-            rules={[
-              {
-                validator: (_, value) => {
-                  const [start, end] = Array.isArray(value) ? value : [];
-
-                  if (start && end) {
-                    return Promise.resolve();
-                  }
-
-                  return Promise.reject(new Error("Time range is required"));
-                },
-              },
-            ]}
-          >
-            <TimePicker.RangePicker
-              className="w-full"
-              popupClassName="mentor-time-picker-popup"
-              disabled={disabled}
-              format="HH:mm"
-              use12Hours={false}
-              showSecond={false}
-              showNow={false}
-              inputReadOnly
-              placeholder={["Start time", "End time"]}
-            />
-          </Form.Item>
-
-          {!disabled && timeFields.length > 1 && (
-            <Button
-              danger
-              type="text"
-              className="mt-1"
-              icon={<MinusCircleOutlined />}
-              onClick={() => removeTimeSlot(name)}
-            />
-          )}
-        </div>
-      ))}
-
-      {!disabled && timeFields.length === 0 && (
-        <Button type="dashed" block onClick={() => addTimeSlot([null, null])} icon={<PlusOutlined />}>
+ 
+const renderAvailabilityTimeSlots = (dateIndex, timeFields, addTimeSlot, removeTimeSlot) => (
+  <>
+    <div className="mb-2 flex items-center justify-between gap-3">
+      <span className="text-sm font-medium text-slate-700">Time Ranges</span>
+      {!disabled && (
+        <Button
+          type="dashed"
+          size="small"
+          onClick={() => addTimeSlot([null, null])}
+          icon={<PlusOutlined />}
+        >
           Add Time Range
         </Button>
       )}
-    </>
-  );
+    </div>
 
+    {timeFields.map(({ key, name, ...restField }) => (
+      <div key={key} className="mb-2 flex items-start gap-2">
+        <Form.Item
+          {...restField}
+          name={name}
+          className="mb-0 flex-1"
+          rules={[
+            {
+              validator: (_, value) => {
+                const [start, end] = Array.isArray(value) ? value : [];
+
+                if (!start || !end) {
+                  return Promise.reject(
+                    new Error("Time range is required")
+                  );
+                }
+
+                const toMinutes = (time) => {
+                  if (typeof time?.hour === "function") {
+                    return time.hour() * 60 + time.minute();
+                  }
+
+                  const formatted = formatTimeValue(time);
+                  const [hours, minutes] = formatted.split(":").map(Number);
+
+                  return hours * 60 + minutes;
+                };
+
+                const startMinutes = toMinutes(start);
+                const endMinutes = toMinutes(end);
+
+                if (endMinutes <= startMinutes) {
+                  return Promise.reject(
+                    new Error("End time must be after start time")
+                  );
+                }
+
+                const allAvailability =
+                  form.getFieldValue("availability") || [];
+
+                const currentDate = allAvailability[dateIndex]?.date;
+
+                if (!currentDate) {
+                  return Promise.resolve();
+                }
+
+                const currentDateKey = dayjs(currentDate).format("YYYY-MM-DD");
+
+                for (let dateIndexToCheck = 0;
+                  dateIndexToCheck < allAvailability.length;
+                  dateIndexToCheck++
+                ) {
+                  const entry = allAvailability[dateIndexToCheck];
+
+                  if (!entry?.date) continue;
+
+                  const entryDateKey = dayjs(entry.date).format("YYYY-MM-DD");
+
+                  if (entryDateKey !== currentDateKey) continue;
+
+                  const slots = entry.timeSlots || [];
+
+                  for (let slotIndex = 0; slotIndex < slots.length; slotIndex++) {
+                    // Ignore the current time slot
+                    if (
+                      dateIndexToCheck === dateIndex &&
+                      slotIndex === name
+                    ) {
+                      continue;
+                    }
+
+                    const [existingStart, existingEnd] =
+                      normalizeTimeRangeValue(slots[slotIndex]);
+
+                    if (!existingStart || !existingEnd) continue;
+
+                    const existingStartMinutes = toMinutes(existingStart);
+                    const existingEndMinutes = toMinutes(existingEnd);
+
+                    // Check whether time ranges overlap
+                    if (
+                      startMinutes < existingEndMinutes &&
+                      endMinutes > existingStartMinutes
+                    ) {
+                      return Promise.reject(
+                        new Error(
+                          "This time slot already exists."
+                        )
+                      );
+                    }
+                  }
+                }
+
+                return Promise.resolve();
+              },
+            },
+          ]}
+        >
+          <TimePicker.RangePicker
+            className="w-full"
+            popupClassName="mentor-time-picker-popup"
+            disabled={disabled || (() => {
+              const selectedDate = form.getFieldValue(["availability", dateIndex, "date"]);
+              return Boolean(selectedDate && dayjs(selectedDate).isBefore(dayjs(), "day"));
+            })()}
+            format="HH:mm"
+            use12Hours={false}
+            showSecond={false}
+            showNow={false}
+            inputReadOnly
+            disabledTime={() => {
+              const selectedDate = form.getFieldValue([
+                "availability",
+                dateIndex,
+                "date",
+              ]);
+
+              return getDisabledTime(selectedDate);
+            }}
+            placeholder={["Start time", "End time"]}
+          />
+        </Form.Item>
+
+        {!disabled && timeFields.length > 1 && (
+          <Button
+            danger
+            type="text"
+            className="mt-1"
+            icon={<MinusCircleOutlined />}
+            onClick={() => removeTimeSlot(name)}
+          />
+        )}
+      </div>
+    ))}
+
+    {!disabled && timeFields.length === 0 && (
+      <Button
+        type="dashed"
+        block
+        onClick={() => addTimeSlot([null, null])}
+        icon={<PlusOutlined />}
+      >
+        Add Time Range
+      </Button>
+    )}
+  </>
+);
+
+
+  const [guardedSubmit, submitting] = useSubmitGuard(onSubmit);
   return (
     <Form
       layout="vertical"
       form={form}
-      onFinish={onSubmit}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
       initialValues={{ status: true, availability: [{ date: null, timeSlots: [[null, null]] }] }}
     >
@@ -397,7 +543,7 @@ useEffect(() => {
         <Form.Item
           name="email"
           label="Email"
-          rules={[validationRules.email("Email")]}
+          rules={[ validationRules.email("Email")]}
         >
           <Input disabled={disabled} placeholder="Enter email address" />
         </Form.Item>
@@ -405,18 +551,47 @@ useEffect(() => {
         <Form.Item
           name="phone_number"
           label="Phone Number"
-          rules={[validationRules.phone("Phone number")]}
+          rules={[ validationRules.phone("Phone number")]}
         >
           <Input disabled={disabled} placeholder="Enter phone number" />
         </Form.Item>
 
-        <Form.Item name="dateof_birth" label="Date of Birth">
-          <DatePicker
-            className="w-full"
-            disabled={disabled}
-            format={DATE_DISPLAY_FORMAT}
-            placeholder="DD-MM-YYYY"
-          />
+        <Form.Item
+          name="dateof_birth"
+          label="Date of Birth"
+          rules={[
+            {
+              validator: (_, value) => {
+                if (!value) return Promise.resolve();
+                const dob = dayjs(value);
+                if (dob.isAfter(dayjs(), "day")) {
+                  return Promise.reject(new Error("Date of birth cannot be in the future."));
+                }
+                if (dob.isBefore(dayjs().subtract(100, "year"), "day")) {
+                  return Promise.reject(new Error("Please enter a valid date of birth."));
+                }
+                // Minimum age of 18 for newly entered/changed dates only, so
+                // existing mentors can still be edited.
+                const original = initialValues?.dateof_birth ? toDateValue(initialValues.dateof_birth) : null;
+                const unchanged = original && dayjs(original).isSame(dob, "day");
+                if (!unchanged && dob.isAfter(dayjs().subtract(18, "year"), "day")) {
+                  return Promise.reject(new Error("Mentor must be at least 18 years old."));
+                }
+                return Promise.resolve();
+              },
+            },
+          ]}
+        >
+         <DatePicker
+  className="w-full"
+  disabled={disabled}
+  disabledDate={(current) => current && current.isAfter(dayjs(), "day")}
+  format={DATE_DISPLAY_FORMAT}
+  placeholder="DD-MM-YYYY"
+  onChange={() => {
+    form.validateFields(["availability"]).catch(() => {});
+  }}
+/>
         </Form.Item>
 
         <Form.Item
@@ -474,7 +649,10 @@ useEffect(() => {
         <Form.Item
           name="experience"
           label="Experience (Years)"
-          rules={[validationRules.numbersOnly("Experience")]}
+          rules={[
+            validationRules.numbersOnly("Experience"),
+            { validator: (_, value) => !value || (Number(value) >= 0 && Number(value) <= 70) ? Promise.resolve() : Promise.reject(new Error("Experience must be between 0 and 70 years.")) },
+          ]}
         >
           <Input disabled={disabled} placeholder="Enter years of experience" />
         </Form.Item>
@@ -482,7 +660,12 @@ useEffect(() => {
         <Form.Item
           name="mentor_fees"
           label="Mentor Fees"
-          rules={[validationRules.decimal("Mentor fees")]}
+          rules={[
+            validationRules.required("Mentor fees"),
+            validationRules.decimal("Mentor fees"),
+            { validator: (_, value) => !value || Number(value) > 0 ? Promise.resolve() : Promise.reject(new Error("Mentor fees must be greater than zero.")) },
+            { validator: (_, value) => !value || Number(value) <= 10000000 ? Promise.resolve() : Promise.reject(new Error("Mentor fees cannot exceed 1,00,00,000.")) },
+          ]}
         >
           <Input disabled={disabled} placeholder="Enter mentor fees" />
         </Form.Item>
@@ -498,7 +681,10 @@ useEffect(() => {
         <Form.Item
           name="year"
           label="Year"
-          rules={[validationRules.numbersOnly("Year")]}
+          rules={[
+            validationRules.numbersOnly("Year"),
+            { validator: (_, value) => !value || (Number(value) >= 1900 && Number(value) <= dayjs().year() + 1) ? Promise.resolve() : Promise.reject(new Error(`Year must be between 1900 and ${dayjs().year() + 1}.`)) },
+          ]}
         >
           <Input disabled={disabled} placeholder="Enter year" />
         </Form.Item>
@@ -509,7 +695,7 @@ useEffect(() => {
           valuePropName="fileList"
           getValueFromEvent={normalizeFile}
         >
-          <Upload beforeUpload={() => false} maxCount={1} disabled={disabled}>
+          <Upload beforeUpload={createBeforeUpload("image")} accept="image/*" maxCount={1} disabled={disabled}>
             <Button icon={<UploadOutlined />} className="w-full">
               Upload Image
             </Button>
@@ -522,7 +708,7 @@ useEffect(() => {
           valuePropName="fileList"
           getValueFromEvent={normalizeFile}
         >
-          <Upload beforeUpload={() => false} maxCount={1} disabled={disabled}>
+          <Upload beforeUpload={createBeforeUpload("document")} accept=".pdf,.doc,.docx" maxCount={1} disabled={disabled}>
             <Button icon={<UploadOutlined />} className="w-full">
               Upload Resume
             </Button>
@@ -575,36 +761,94 @@ useEffect(() => {
                     className="mb-4 rounded-xl border bg-white p-4 last:mb-0"
                   >
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-[220px_1fr_auto] md:items-start">
-                      <Form.Item
-                        {...restField}
-                        name={[name, "date"]}
-                        label="Available Date"
-                        rules={[validationRules.required("Available date")]}
-                        className="mb-0"
-                      >
-                        <DatePicker
-                          className="w-full"
-                          disabled={disabled}
-                          format={DATE_DISPLAY_FORMAT}
-                          placeholder="DD-MM-YYYY"
-                        />
-                      </Form.Item>
+               <Form.Item
+  {...restField}
+  name={[name, "date"]}
+  label="Available Date"
+  className="mb-0"
+  rules={[
+    {
+      required: true,
+      message: "Available date is required",
+    },
+    {
+      validator: (_, value) => {
+        if (!value) return Promise.resolve();
+
+        const allAvailability =
+          form.getFieldValue("availability") || [];
+
+        const selectedDate = dayjs(value).format("YYYY-MM-DD");
+
+        const duplicateDate = allAvailability.some((entry, index) => {
+          if (index === name || !entry?.date) return false;
+
+          return (
+            dayjs(entry.date).format("YYYY-MM-DD") === selectedDate
+          );
+        });
+
+        if (duplicateDate) {
+          return Promise.reject(
+            new Error("This date is already added. Please select another date.")
+          );
+        }
+
+        return Promise.resolve();
+      },
+    },
+  ]}
+>
+  <DatePicker
+    className="w-full"
+    disabled={disabled || (() => {
+      const selectedDate = form.getFieldValue(["availability", name, "date"]);
+      return Boolean(selectedDate && dayjs(selectedDate).isBefore(dayjs(), "day"));
+    })()}
+    format={DATE_DISPLAY_FORMAT}
+    placeholder="DD-MM-YYYY"
+    disabledDate={(current) =>
+      current && current < dayjs().startOf("day")
+    }
+    onChange={() => {
+      const availability = form.getFieldValue("availability") || [];
+
+      const dateFields = availability.map((_, index) => [
+        "availability",
+        index,
+        "date",
+      ]);
+
+      form.validateFields(dateFields).catch(() => {});
+    }}
+  />
+</Form.Item>
 
                       <Form.List name={[name, "timeSlots"]}>
                         {(timeFields, { add: addTimeSlot, remove: removeTimeSlot }) => (
                           <div>
-                            {renderAvailabilityTimeSlots(timeFields, addTimeSlot, removeTimeSlot)}
-                          </div>
+                          {renderAvailabilityTimeSlots(
+  name,
+  timeFields,
+  addTimeSlot,
+  removeTimeSlot
+)}</div>
                         )}
                       </Form.List>
 
-                      {!disabled && dateFields.length > 1 && (
+                      {!disabled && (dateFields.length > 1 || Boolean(form.getFieldValue(["availability", name, "date"]))) && (
                         <Button
                           danger
                           type="text"
                           className="mt-8 justify-self-start md:mt-10"
                           icon={<MinusCircleOutlined />}
-                          onClick={() => removeDate(name)}
+                          onClick={() => {
+                            const onlyOne = dateFields.length === 1;
+                            removeDate(name);
+                            if (onlyOne) {
+                              addDate({ date: null, timeSlots: [[null, null]] });
+                            }
+                          }}
                         >
                           Remove
                         </Button>
@@ -632,7 +876,7 @@ useEffect(() => {
       {!disabled && (
         <Button
           type="primary"
-          htmlType="submit"
+          htmlType="submit" loading={submitting}
           block
           style={{ background: "#9a2119", borderColor: "#9a2119" }}
           className="mt-4"

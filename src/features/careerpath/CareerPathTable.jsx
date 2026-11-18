@@ -19,7 +19,7 @@ export default function CareerPathTable({
   onSearch,
 }) {
   const handleReset = () => onSearch("");
-    const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
+    const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
   const columns = [
     {
       title: <span className="text-[#9a2119] font-semibold">SL</span>,
@@ -36,6 +36,12 @@ export default function CareerPathTable({
       title: <span className="text-[#9a2119] font-semibold">Name</span>,
       dataIndex: "pathName",
       width: 280,
+      render: (value) => <div className="whitespace-normal break-words">{value || "-"}</div>,
+    },
+    {
+      title: <span className="text-[#9a2119] font-semibold">Stream</span>,
+      dataIndex: "stream",
+      width: 150,
       render: (value) => <div className="whitespace-normal break-words">{value || "-"}</div>,
     },
     {
@@ -154,12 +160,13 @@ export default function CareerPathTable({
 
       <Table
         columns={columns}
-        dataSource={Array.isArray(data) ? [...data].reverse() : []}
+        dataSource={Array.isArray(data) ? data : []}
         loading={loading}
         rowKey="id"
-        pagination={pagination}
+        pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
         onChange={(pag) => setPagination(pag)}
         rowClassName="hover:bg-gray-50"
+        tableLayout="fixed"
         scroll={{ x: "max-content" }}
       />
     </div>

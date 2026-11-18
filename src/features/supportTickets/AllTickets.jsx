@@ -9,6 +9,7 @@ export default function AllTickets() {
       title="All Tickets"
       data={tickets}
       loading={loading}
+      showStatusFilter
       onUpdateStatus={updateTicketStatus}
     />
   );

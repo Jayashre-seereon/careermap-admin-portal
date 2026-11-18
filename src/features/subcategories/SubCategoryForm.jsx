@@ -1,8 +1,10 @@
-import React, { useEffect } from "react";
+import useSubmitGuard from "../../hooks/useSubmitGuard";
+import React, { useEffect, useRef } from "react";
 import { Form, Input, Select, Upload, Button } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import RichTextEditor from "../../components/ui/RichTextEditor";
 import { validationRules } from "../../utils/formValidation";
+import { checkUpload } from "../../utils/uploadValidation";
 
 const { Option } = Select;
 
@@ -39,8 +41,27 @@ export default function SubCategoryForm({
   onCategoryChange,
 }) {
   const [form] = Form.useForm();
+  const pickedCoverRef = useRef(null);
+
+  const handleFinish = (values) =>
+    onSubmit({
+      ...values,
+      coverImage: pickedCoverRef.current
+        ? [{ originFileObj: pickedCoverRef.current }]
+        : values.coverImage,
+    });
   const isView = mode === "view";
   const selectedCategoryId = Form.useWatch("categoryId", form);
+  // Only offer 2nd categories that belong to the selected category.
+  const filteredSecondCategories = selectedCategoryId
+    ? secondCategoryOptions.filter(
+        (item) =>
+          item.categoryId === undefined ||
+          item.categoryId === null ||
+          item.categoryId === "" ||
+          String(item.categoryId) === String(selectedCategoryId)
+      )
+    : [];
 
   useEffect(() => {
     if (initialValues) {
@@ -57,11 +78,12 @@ export default function SubCategoryForm({
     }
   }, [form, initialValues]);
 
+  const [guardedSubmit, submitting] = useSubmitGuard(handleFinish);
   return (
     <Form
       form={form}
       layout="vertical"
-      onFinish={onSubmit}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -96,7 +118,7 @@ export default function SubCategoryForm({
           rules={[validationRules.required("2nd category")]}
         >
           <Select disabled={isView || !selectedCategoryId} placeholder="Select 2nd category">
-            {secondCategoryOptions.map((item) => (
+            {filteredSecondCategories.map((item) => (
               <Option key={item.id} value={item.id}>
                 {item.name || item.title}
               </Option>
@@ -141,7 +163,11 @@ export default function SubCategoryForm({
           getValueFromEvent={normalizeFile}
         >
           <Upload
-            beforeUpload={() => false}
+            beforeUpload={(file) => { if (!checkUpload(file, "image")) return Upload.LIST_IGNORE; pickedCoverRef.current = file; return false; }}
+            accept="image/*"
+            onRemove={() => {
+              pickedCoverRef.current = null;
+            }}
             disabled={isView}
             maxCount={1}
             listType="picture"
@@ -203,7 +229,7 @@ export default function SubCategoryForm({
 
       {!isView && (
         <Button
-          htmlType="submit"
+          htmlType="submit" loading={submitting}
           block
           style={{ background: "#9a2119", borderColor: "#9a2119", color: "#fff" }}
         >

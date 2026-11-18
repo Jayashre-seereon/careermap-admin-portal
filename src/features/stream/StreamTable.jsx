@@ -10,9 +10,12 @@ import {
 import { useState } from "react";
 import { getSerialNumber } from "../../utils/slNo";
 function StreamTable({ data, onAddClick, onView, onEdit, onDelete, search, onSearch, loading }) {
-  const handleReset = () => onSearch("");
-  
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
+  const handleSearch = (value) => {
+    onSearch(value);
+    setPagination((prev) => ({ ...prev, current: 1 }));
+  };
+  const handleReset = () => handleSearch("");
   const columns = [
     {
       title: "No.",
@@ -69,7 +72,7 @@ function StreamTable({ data, onAddClick, onView, onEdit, onDelete, search, onSea
             placeholder="Search stream..."
             prefix={<SearchOutlined className="text-[#9a2119]" />}
             value={search}
-            onChange={(event) => onSearch(event.target.value)}
+            onChange={(event) => handleSearch(event.target.value)}
             className="w-full sm:w-64 h-8 rounded-md border-[#9a2119]"
           />
           <Button
@@ -93,7 +96,7 @@ function StreamTable({ data, onAddClick, onView, onEdit, onDelete, search, onSea
         dataSource={Array.isArray(data) ? [...data].reverse() : []}
         rowKey={(record) => record.id}
         loading={loading}
-       pagination={pagination}
+       pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
        onChange={(pag) => setPagination(pag)}
         scroll={{ x: "max-content" }}
       />

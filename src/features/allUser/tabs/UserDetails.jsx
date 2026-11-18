@@ -147,9 +147,9 @@ export default function UserDetails({ user, onBack, onNotify }) {
         if (!trimmedValue) return "Mobile number is required.";
         return validationMessages.phone("Mobile number")(trimmedValue);
       case "city":
-        return trimmedValue ? validationMessages.charactersOnly("City")(trimmedValue) : "";
+        return trimmedValue ? validationMessages.nameText("City")(trimmedValue) : "";
       case "state":
-        return trimmedValue ? validationMessages.charactersOnly("State")(trimmedValue) : "";
+        return trimmedValue ? validationMessages.nameText("State")(trimmedValue) : "";
       case "zip":
         return trimmedValue ? validationMessages.numbersOnly("Zip / postal")(trimmedValue) : "";
       default:

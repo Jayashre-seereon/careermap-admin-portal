@@ -1,27 +1,20 @@
 import React from "react";
-import { useEffect, useState } from "react";
 import { Table, Input ,Button} from "antd";
 import {
-  EyeOutlined,
   SearchOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
-import { useOutletContext } from "react-router-dom";
+import useUsersPage from "../useUsersPage";
 import { getSerialNumber } from "../../../utils/slNo";
 import { Tag } from "antd";
 
 
 export default function AllUsers() {
-  const [data, setData] = useState([]);
-  const { users, setSelectedUser } = useOutletContext();
-  const [search, setSearch] = useState("");
- const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
-  const filteredData = users.filter((item) =>
-  item.user.toLowerCase().includes(search.toLowerCase())
-);
+  const { search, setSearch, rows, loading, reset, tablePagination, onTableChange, emptyText, page, pageSize } =
+    useUsersPage("");
+  const pagination = { current: page, pageSize };
 
-
-  const handleReset = () => setSearch("");
+  const handleReset = () => reset();
 
   const columns = [
     {
@@ -55,24 +48,6 @@ export default function AllUsers() {
     );
   },
 },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Action</span>,
-      render: (_, record) => (
-        <div className="flex gap-2">
-          <Button
-            onClick={() => setSelectedUser(record)} // ✅ pass full user object
-            className="w-8 h-8 flex items-center justify-center rounded-md 
-                       border border-[#9a2119] 
-                       text-[#9a2119]
-                       hover:border-[#e57373]
-                       hover:text-[#e57373]
-                      "
-          >
-            <EyeOutlined />
-          </Button>
-        </div>
-      ),
-    },
   ];
 
   return (
@@ -98,15 +73,18 @@ export default function AllUsers() {
 
       <Table
         columns={columns}
-        dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
-        pagination={pagination}
-        onChange={(pag) => setPagination(pag)}
+        dataSource={rows}
+        loading={loading}
+        pagination={tablePagination}
+        onChange={onTableChange}
+        locale={{ emptyText }}
         rowClassName="hover:bg-gray-50"
         scroll={{ x: "max-content" }}
       />
     </div>
   );
 }
+
 
 
 

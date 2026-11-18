@@ -67,6 +67,11 @@ const MASTER_CLASS_CATEGORY_OPTIONS = [
   { label: "Expert Video", value: "Expert Video" },
 ];
 
+// Categories are free text on the record ("Career Videos", "Career Video", with stray spaces...),
+// so compare them in one normalised form (trimmed, lower-case, single spaces, no plural "s").
+const normalizeCategory = (value) =>
+  String(value ?? "").trim().toLowerCase().replace(/\s+/g, " ").replace(/s$/, "");
+
 const getCategoryLabel = (value) =>
   MASTER_CLASS_CATEGORY_OPTIONS.find((item) => item.value === value)?.label || value || "";
 
@@ -74,7 +79,8 @@ const normalizeBoolean = (...values) => {
   const matchedValue = values.find((value) => value !== undefined && value !== null);
 
   if (typeof matchedValue === "string") {
-    return matchedValue.toLowerCase() === "true" || matchedValue === "1";
+    const text = matchedValue.trim().toLowerCase();
+    return text === "true" || text === "1" || text === "active";
   }
 
   return !!matchedValue;
@@ -184,6 +190,8 @@ export default function MasterClassPage() {
   const [current, setCurrent] = useState(null);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
 
  const loadMasterClasses = async () => {
     try {
@@ -223,11 +231,30 @@ export default function MasterClassPage() {
 
 
 
-  const filteredData = data.filter((item) =>
-    `${item.title} ${item.name} ${item.time} ${item.views} ${item.videoUrl} ${item.categoryLabel}`
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+  // Filter choices: the known video types plus every category actually used by a record.
+  const categoryFilterOptions = (() => {
+    const byKey = new Map();
+    [
+      ...MASTER_CLASS_CATEGORY_OPTIONS.map((item) => item.label),
+      "Career Videos",
+      "Personality Development Videos",
+      ...data.map((item) => item.category),
+    ].forEach((label) => {
+      const key = normalizeCategory(label);
+      if (key && !byKey.has(key)) byKey.set(key, String(label).trim());
+    });
+    return [...byKey.entries()].map(([value, label]) => ({ value, label }));
+  })();
+
+  const keyword = search.trim().toLowerCase();
+  const filteredData = data.filter((item) => {
+    if (categoryFilter !== "all" && normalizeCategory(item.category) !== categoryFilter) return false;
+    if (statusFilter === "active" && !item.isActive) return false;
+    if (statusFilter === "inactive" && item.isActive) return false;
+    if (!keyword) return true;
+    return [item.title, item.name, item.time, item.views, item.videoUrl, item.categoryLabel]
+      .some((field) => String(field ?? "").toLowerCase().includes(keyword));
+  });
 
   const handleSubmit = async (values) => {
     try {
@@ -274,6 +301,11 @@ export default function MasterClassPage() {
         loading={loading}
         search={search}
         onSearch={setSearch}
+        categoryFilter={categoryFilter}
+        onCategoryFilterChange={setCategoryFilter}
+        categoryOptions={categoryFilterOptions}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
         onAdd={() => {
           setCurrent(null);
           setOpen(true);

@@ -1,7 +1,8 @@
 const regex = {
   email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-  phone: /^\d{10,15}$/,
+  phone: /^\+?\d{10,15}$/,
   charactersOnly: /^[A-Za-z\s]+$/,
+  nameText: /^[\p{L}\p{N}][\p{L}\p{M}\p{N}\s&.,'’()\-/]*$/u,
   numbersOnly: /^\d+$/,
   decimal: /^\d+(\.\d+)?$/,
   duration: /^\d+\s*(hr|hrs|hour|hours|min|mins|minute|minutes)$/i,
@@ -49,10 +50,6 @@ export const validationMessages = {
       return `Three dots are not allowed in ${label.toLowerCase()}.`;
     }
 
-    if (/\.com.+$/i.test(value)) {
-      return `After .com no input is allowed in ${label.toLowerCase()}.`;
-    }
-
     return regex.email.test(value)
       ? ""
       : `Please enter a valid ${label.toLowerCase()}.`;
@@ -62,13 +59,13 @@ export const validationMessages = {
       return `Only numbers are allowed in ${label.toLowerCase()}.`;
     }
 
-    if (/[^0-9\s]/.test(value)) {
-      return `Special characters are not allowed in ${label.toLowerCase()}.`;
+    if (/[^0-9\s+]/.test(value) || /.\+/.test(value)) {
+      return `Only digits with an optional leading + are allowed in ${label.toLowerCase()}.`;
     }
 
-    const digitCount = value.replace(/\s/g, "").length;
+    const digitCount = value.replace(/[\s+]/g, "").length;
     if (digitCount < 10 || digitCount > 15) {
-      return `Please enter a valid ${label.toLowerCase()}.`;
+      return `Please enter a valid ${label.toLowerCase()} (10-15 digits).`;
     }
 
     return "";
@@ -85,6 +82,15 @@ export const validationMessages = {
     return regex.charactersOnly.test(value)
       ? ""
       : `Only characters are allowed in ${label.toLowerCase()}.`;
+  },
+  nameText: (label = "This field") => (value) => {
+    if (String(value).length > 150) {
+      return `${label} must be 150 characters or fewer.`;
+    }
+
+    return regex.nameText.test(value)
+      ? ""
+      : `${label} may contain letters, numbers, spaces and & . , ' ( ) - / only.`;
   },
   numbersOnly: (label = "This field") => (value) => {
     if (/[A-Za-z]/.test(value)) {
@@ -140,6 +146,9 @@ export const validationRules = {
   charactersOnly: (label = "This field") => ({
     validator: createCustomValidator(validationMessages.charactersOnly(label)),
   }),
+  nameText: (label = "This field") => ({
+    validator: createCustomValidator(validationMessages.nameText(label)),
+  }),
   numbersOnly: (label = "This field") => ({
     validator: createCustomValidator(validationMessages.numbersOnly(label)),
   }),
@@ -176,7 +185,11 @@ export const inputSanitizers = {
   trim: (value = "") => value.trimStart(),
   charactersOnly: (value = "") => value.replace(/[^A-Za-z\s]/g, ""),
   numbersOnly: (value = "") => value.replace(/\D/g, ""),
-  phone: (value = "") => value.replace(/\D/g, "").slice(0, 15),
+  phone: (value = "") => {
+    const text = String(value);
+    const plus = text.trimStart().startsWith("+") ? "+" : "";
+    return plus + text.replace(/\D/g, "").slice(0, 15);
+  },
   decimal: (value = "") => {
     const cleanedValue = value.replace(/[^\d.]/g, "");
     const parts = cleanedValue.split(".");
@@ -188,6 +201,13 @@ export const inputSanitizers = {
     return `${parts[0]}.${parts.slice(1).join("")}`;
   },
   url: (value = "") => value.trim(),
+};
+
+// Normalised phone: optional leading +, digits only (spaces/dashes removed).
+export const normalizePhone = (value = "") => {
+  const text = String(value ?? "").trim();
+  if (!text) return "";
+  return (text.startsWith("+") ? "+" : "") + text.replace(/\D/g, "");
 };
 
 export const getValueFromInput =

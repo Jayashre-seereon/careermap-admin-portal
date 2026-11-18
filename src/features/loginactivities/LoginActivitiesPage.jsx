@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { message, Modal } from "antd";
 import LoginActivitiesTable from "./LoginActivitiesTable";
 import { getUserHistory } from "../../api/userhistory";
+import { formatDateTimeDisplay } from "../../utils/date";
 
 const getApiErrorMessage = (error, fallbackMessage) =>
   error.response?.data?.message || error.message || fallbackMessage;
@@ -25,13 +26,15 @@ const formatDateTime = (value) => {
     return "-";
   }
 
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString();
+  return formatDateTimeDisplay(value, String(value));
 };
 
 const mapHistory = (item = {}) => ({
   id: item.id,
   userId: item.userId ?? "",
+  userName: [item.user?.firstName, item.user?.lastName].filter(Boolean).join(" ").trim(),
+  userEmail: item.user?.email || "",
+  userMobile: item.user?.mobile || "",
   ipAddress: item.ipAddress || "",
   location: item.location || "",
   device: item.device || "",
@@ -46,47 +49,75 @@ export default function LoginActivitiesPage() {
   const [messageApi, contextHolder] = message.useMessage();
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(null);
-  const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState({ key: "", data: [], total: 0 });
   const [search, setSearch] = useState("");
-
-  const loadHistory = async () => {
-    try {
-      setLoading(true);
-      const response = await getUserHistory();
-      setHistory(normalizeList(response).map(mapHistory));
-    } catch (error) {
-      messageApi.error(getApiErrorMessage(error, "Failed to load login activities."));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [dateRange, setDateRange] = useState(null);
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
+  const requestIdRef = useRef(0);
 
   useEffect(() => {
-    loadHistory();
-  }, []);
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+      setPagination((prev) => ({ ...prev, current: 1 }));
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  const dateFrom = dateRange?.[0] ? dateRange[0].format("YYYY-MM-DD") : "";
+  const dateTo = dateRange?.[1] ? dateRange[1].format("YYYY-MM-DD") : "";
+  const queryParams = { page: pagination.current, limit: pagination.pageSize };
+  if (debouncedSearch) queryParams.search = debouncedSearch;
+  if (dateFrom) queryParams.dateFrom = dateFrom;
+  if (dateTo) queryParams.dateTo = dateTo;
+  const queryKey = JSON.stringify(queryParams);
+  const loading = result.key !== queryKey;
+
+  useEffect(() => {
+    const requestId = ++requestIdRef.current;
+    getUserHistory(JSON.parse(queryKey))
+      .then((response) => {
+        if (requestId !== requestIdRef.current) return;
+        const rows = normalizeList(response).map(mapHistory);
+        setResult({ key: queryKey, data: rows, total: response?.pagination?.total ?? rows.length });
+      })
+      .catch((error) => {
+        if (requestId !== requestIdRef.current) return;
+        setResult({ key: queryKey, data: [], total: 0 });
+        messageApi.error(getApiErrorMessage(error, "Failed to load login activities."));
+      });
+  }, [queryKey, messageApi]);
+
+  const handleReset = () => {
+    setSearch("");
+    setDebouncedSearch("");
+    setDateRange(null);
+    setPagination((prev) => ({ ...prev, current: 1 }));
+  };
 
   const handleView = (record) => {
     setSelected(record);
     setOpen(true);
   };
 
-  const filteredHistory = history.filter((item) =>
-    `${item.userId} ${item.ipAddress} ${item.location} ${item.device} ${item.browser} ${item.os}`
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
-
   return (
     <>
       {contextHolder}
       <LoginActivitiesTable
-        data={filteredHistory}
+        data={result.data}
         loading={loading}
         search={search}
         onSearch={setSearch}
-        onReset={() => setSearch("")}
+        onReset={handleReset}
         onView={handleView}
+        dateRange={dateRange}
+        onDateRangeChange={(value) => {
+          setDateRange(value);
+          setPagination((prev) => ({ ...prev, current: 1 }));
+        }}
+        pagination={pagination}
+        total={result.total}
+        onPaginationChange={(pag) => setPagination({ current: pag.current, pageSize: pag.pageSize })}
       />
 
       <Modal
@@ -100,8 +131,12 @@ export default function LoginActivitiesPage() {
         {selected && (
           <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
             <div>
-              <p className="text-gray-500">User ID</p>
-              <p className="font-medium">{selected.userId || "-"}</p>
+              <p className="text-gray-500">User</p>
+              <p className="font-medium">
+                {selected.userName || selected.userEmail || "-"}
+                {selected.userId ? ` (ID ${selected.userId})` : ""}
+              </p>
+              {selected.userEmail && <p className="text-xs text-gray-500">{selected.userEmail}{selected.userMobile ? ` | ${selected.userMobile}` : ""}</p>}
             </div>
 
             <div>

@@ -1,3 +1,4 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import { useEffect } from "react";
 import { Button, DatePicker, Form, Input, Select, Upload } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
@@ -8,6 +9,7 @@ import {
   validationRules,
 } from "../../utils/formValidation";
 import { DATE_DISPLAY_FORMAT, parseDateValue } from "../../utils/date";
+import { createBeforeUpload } from "../../utils/uploadValidation";
 
 const normalizeFile = (event) => {
   if (Array.isArray(event)) {
@@ -54,11 +56,12 @@ export default function MasterClassForm({ onSubmit, initialValues, mode }) {
     form.setFieldsValue({ isActive: true });
   }, [form, initialValues]);
 
+  const [guardedSubmit, submitting] = useSubmitGuard(onSubmit);
   return (
     <Form
       layout="vertical"
       form={form}
-      onFinish={onSubmit}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
       initialValues={{ isActive: true }}
       className="grid grid-cols-1 md:grid-cols-2 gap-4"
@@ -148,14 +151,14 @@ export default function MasterClassForm({ onSubmit, initialValues, mode }) {
         className="md:col-span-2"
         rules={[validationRules.required("Image")]}
       >
-        <Upload beforeUpload={() => false} maxCount={1} disabled={isView} listType="picture" >
+        <Upload beforeUpload={createBeforeUpload("image")} accept="image/*" maxCount={1} disabled={isView} listType="picture" >
           <Button icon={<UploadOutlined />}>Upload Image</Button>
         </Upload>
       </Form.Item>
 
       {!isView && (
         <Button
-          htmlType="submit"
+          htmlType="submit" loading={submitting}
           className="md:col-span-2 bg-[#9a2119] text-white"
         >
           {mode === "edit" ? "Update" : "Submit"}

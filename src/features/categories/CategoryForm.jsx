@@ -1,9 +1,11 @@
-import React, { useEffect } from "react";
+import useSubmitGuard from "../../hooks/useSubmitGuard";
+import React, { useEffect, useRef } from "react";
 import { Form, Input, Select, Upload, Button} from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import RichTextEditor from "../../components/ui/RichTextEditor";
 import StatusSwitch from "../../components/ui/StatusSwitch";
 import { validationRules } from "../../utils/formValidation";
+import { checkUpload } from "../../utils/uploadValidation";
 
 const { Option } = Select;
 
@@ -46,6 +48,15 @@ export default function CategoryForm({
   institutionOptions = [],
 }) {
   const [form] = Form.useForm();
+  const pickedCoverRef = useRef(null);
+
+  const handleFinish = (values) =>
+    onSubmit({
+      ...values,
+      coverImage: pickedCoverRef.current
+        ? [{ originFileObj: pickedCoverRef.current }]
+        : values.coverImage,
+    });
 
   useEffect(() => {
     if (initialValues) {
@@ -61,11 +72,12 @@ export default function CategoryForm({
     }
   }, [form, initialValues]);
 
+  const [guardedSubmit, submitting] = useSubmitGuard(handleFinish);
   return (
     <Form
       layout="vertical"
       form={form}
-      onFinish={onSubmit}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
       initialValues={{ isUpgrade: "Free" }}
     >
@@ -134,7 +146,11 @@ export default function CategoryForm({
           getValueFromEvent={normalizeFile}
         >
           <Upload
-            beforeUpload={() => false}
+            beforeUpload={(file) => { if (!checkUpload(file, "image")) return Upload.LIST_IGNORE; pickedCoverRef.current = file; return false; }}
+            accept="image/*"
+            onRemove={() => {
+              pickedCoverRef.current = null;
+            }}
             disabled={disabled}
             maxCount={1}
             listType="picture"
@@ -198,7 +214,7 @@ export default function CategoryForm({
       {!disabled && (
         <Button
           type="primary"
-          htmlType="submit"
+          htmlType="submit" loading={submitting}
           block
           style={{ background: "#9a2119", borderColor: "#9a2119" }}
         >

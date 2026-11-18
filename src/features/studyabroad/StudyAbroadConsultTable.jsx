@@ -1,11 +1,19 @@
 import React, { useState } from "react";
-import { Table, Input, Tag, Button, Space, Tooltip } from "antd";
+import { Table, Input, Tag, Button, Space, Tooltip, Select } from "antd";
 import {
   EyeOutlined,
   SearchOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
 import { getSerialNumber } from "../../utils/slNo";
+
+const formatDate = (value) => {
+  if (!value) return "-";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? String(value)
+    : new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
+};
 
 const stripHtml = (text = "") => {
   const normalizedText = Array.isArray(text)
@@ -27,9 +35,12 @@ export default function StudyAbroadConsultTable({
   loading,
   search,
   onSearch,
+  statusFilter = "all",
+  onStatusFilter,
+  statusOptions = [],
   onView,
 }) {
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
 
   const ellipsis = (text) => (
     <Tooltip title={stripHtml(text) || "-"}>
@@ -128,7 +139,7 @@ export default function StudyAbroadConsultTable({
       title: "Date",
       dataIndex: "createdAt",
       width: 150,
-      render: (date) => (date ? new Date(date).toLocaleDateString() : "-"),
+      render: formatDate,
     },
     {
       title: "Action",
@@ -163,8 +174,20 @@ export default function StudyAbroadConsultTable({
               className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
               onChange={(e) => onSearch(e.target.value)}
             />
+            <Select
+              value={statusFilter}
+              onChange={(value) => {
+                onStatusFilter?.(value);
+                setPagination((prev) => ({ ...prev, current: 1 }));
+              }}
+              options={[{ value: "all", label: "All Status" }, ...statusOptions]}
+              className="w-full sm:w-40"
+            />
             <Button
-              onClick={() => onSearch("")}
+              onClick={() => {
+                onSearch("");
+                onStatusFilter?.("all");
+              }}
               style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
             >
               <ReloadOutlined /> Reset
@@ -177,7 +200,7 @@ export default function StudyAbroadConsultTable({
           dataSource={data}
           loading={loading}
           rowKey="id"
-          pagination={pagination}
+          pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
           onChange={(pag) => setPagination(pag)}
           scroll={{ x: 1300 }}
         />

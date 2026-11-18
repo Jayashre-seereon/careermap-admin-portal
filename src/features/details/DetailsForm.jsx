@@ -1,3 +1,4 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import { useEffect } from "react";
 import { Button, Checkbox, DatePicker, Form, Input, InputNumber, Select, Upload } from "antd";
 import { MinusCircleOutlined, PlusOutlined, UploadOutlined } from "@ant-design/icons";
@@ -5,6 +6,7 @@ import StatusSwitch from "../../components/ui/StatusSwitch";
 import RichTextEditor from "../../components/ui/RichTextEditor";
 import { validationRules } from "../../utils/formValidation";
 import { DATE_DISPLAY_FORMAT, parseDateValue } from "../../utils/date";
+import { createBeforeUpload } from "../../utils/uploadValidation";
 
 const { Option } = Select;
 
@@ -88,7 +90,7 @@ function renderMediaField(viewMode) {
         getValueProps={(value) => ({ fileList: Array.isArray(value) ? value : [] })}
         required
       >
-        <Upload beforeUpload={() => false} disabled={viewMode} maxCount={1}>
+        <Upload beforeUpload={createBeforeUpload("media")} disabled={viewMode} maxCount={1}>
           <Button icon={<UploadOutlined />} disabled={viewMode}>Upload Media</Button>
         </Upload>
       </Form.Item>
@@ -710,11 +712,15 @@ export default function DetailsForm({
   const selectedCategory = Form.useWatch("category", form);
   const selectedSecondCategory = Form.useWatch("secondCategory", form);
 
+  const handleStreamChange = (value) => {
+    form.setFieldsValue({ category: undefined, secondCategory: undefined, subcategory: undefined });
+    onStreamChange?.(value);
+  };
+
   const handleCategoryChange = (value) => {
+    // Career path rows are kept; the effect below clears only the ones whose
+    // path type is no longer valid for the new category.
     form.setFieldsValue({ secondCategory: undefined, subcategory: undefined });
-    // reset pathType inside each careerPath entry
-    const paths = form.getFieldValue("careerPaths") || [];
-    form.setFieldsValue({ careerPaths: paths.map((p) => ({ ...p, pathType: undefined, graduation: "", afterGraduation: "", afterPostGraduation: "", anyOther: "" })) });
     onCategoryChange?.(value);
   };
 
@@ -920,11 +926,12 @@ export default function DetailsForm({
   const hasSalary = selectedSections.includes("salary-range");
   const hasJobScope = selectedSections.includes("job-scope");
 
+  const [guardedSubmit, submitting] = useSubmitGuard(onSubmit);
   return (
     <Form
       form={form}
       layout="vertical"
-      onFinish={onSubmit}
+      onFinish={guardedSubmit}
       onFinishFailed={({ errorFields }) => {
         const firstError = errorFields?.[0];
         if (firstError) form.scrollToField(firstError.name, { block: "center" });
@@ -934,7 +941,7 @@ export default function DetailsForm({
     >
       {/* ── Common: 4 per row ── */}
      <div className="grid grid-cols-4 gap-4 mb-4">
-  {renderCommonFields(viewMode, options, onStreamChange, handleCategoryChange, handleSecondCategoryChange)}
+  {renderCommonFields(viewMode, options, handleStreamChange, handleCategoryChange, handleSecondCategoryChange)}
   {renderMediaField(viewMode)}
 </div>
 
@@ -1012,7 +1019,7 @@ export default function DetailsForm({
       <div className="mt-4 flex items-center justify-end gap-2">
         <Button onClick={onCancel}>{viewMode ? "Back" : "Cancel"}</Button>
         {!viewMode && (
-          <Button htmlType="submit" style={{ background: "#9a2119", borderColor: "#9a2119" }} className="text-white">
+          <Button htmlType="submit" loading={submitting} style={{ background: "#9a2119", borderColor: "#9a2119" }} className="text-white">
             {initialValues ? "Update Details" : "Create Details"}
           </Button>
         )}

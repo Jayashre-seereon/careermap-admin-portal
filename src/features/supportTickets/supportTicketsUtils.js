@@ -21,7 +21,10 @@ export const normalizeStatus = (status) => {
     return text;
   }
 
-  return "pending";
+  // Empty status defaults to pending; any other unknown value (open,
+  // resolved, in_progress...) is kept in its own "other" bucket instead of
+  // being coerced to Pending.
+  return text ? "other" : "pending";
 };
 
 export const formatStatusLabel = (status) => {
@@ -34,6 +37,7 @@ export const formatStatusClasses = (status) => {
 
   if (value === "pending") return "bg-yellow-100 text-yellow-800";
   if (value === "answered") return "bg-blue-100 text-blue-800";
+  if (value === "other") return "bg-gray-100 text-gray-800";
   return "bg-green-100 text-green-800";
 };
 
@@ -48,6 +52,7 @@ export const mapSupportTicket = (item = {}) => {
     subject: item.subject || "",
     message: item.message || "",
     status: normalizeStatus(item.status),
+    rawStatus: String(item.status || "").trim(),
     createdAt: item.createdAt || "",
     updatedAt: item.updatedAt || "",
     user,
@@ -57,7 +62,8 @@ export const mapSupportTicket = (item = {}) => {
 };
 
 export const filterTicketsByStatus = (tickets = [], status = "all") => {
-  const normalizedStatus = normalizeStatus(status);
+  const requested = String(status || "").trim().toLowerCase();
+  const normalizedStatus = requested === "all" ? "all" : normalizeStatus(status);
 
   if (normalizedStatus === "all") {
     return tickets;

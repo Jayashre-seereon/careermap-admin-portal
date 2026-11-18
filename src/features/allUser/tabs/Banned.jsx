@@ -7,24 +7,19 @@ import {
   
 } from "@ant-design/icons";
 import{Tag,Popconfirm,message} from "antd";
-import { useState } from "react";
+import useUsersPage from "../useUsersPage";
 import { useOutletContext } from "react-router-dom";
 import { unbanUser } from "../../../api/allusers";
 
 
 export default function Banned() {
-  const [search, setSearch] = useState("");
-  
-  const { users, setSelectedUser, fetchUsers } = useOutletContext();
-const filteredData = users
-  .filter((u) => u.status === "banned") // ✅ small change
-  .filter((u) =>
-    u.user.toLowerCase().includes(search.toLowerCase())
-  );
+  const { setSelectedUser } = useOutletContext();
+  const { search, setSearch, rows, loading, reload, reset, tablePagination, onTableChange, emptyText } =
+    useUsersPage("banned");
 
   const handleUnban = async (id) => {
   if (!id) {
-    console.log("ID missing ❌");
+    if (import.meta.env.DEV) console.warn("ID missing");
     return;
   }
 
@@ -32,13 +27,13 @@ const filteredData = users
     await unbanUser(id);
     message.success("User unbanned");
 
-    await fetchUsers(); // ✅ REFRESH
+    reload();
   } catch (err) {
     message.error("Unban failed");
   }
 };
 
-  const handleReset = () => setSearch("");
+  const handleReset = () => reset();
 
   const columns = [
     {
@@ -136,8 +131,11 @@ const filteredData = users
       {/* TABLE */}
       <Table
         columns={columns}
-        dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
-        pagination={{ pageSize: 5 }}
+        dataSource={rows}
+        loading={loading}
+        pagination={tablePagination}
+        onChange={onTableChange}
+        locale={{ emptyText }}
         rowClassName="hover:bg-gray-50"
         scroll={{ x: "max-content" }}
       />

@@ -56,11 +56,9 @@ import {
   recalculateAttempt,
   getApiErrorMessage,
 } from "../../api/psychometricAssessmentApi";
-import {
-  FACET_MAP,
-  INITIAL_STUDENT_ATTEMPTS,
-} from "./psychometricConstants";
+import { FACET_MAP } from "./psychometricConstants";
 import { getSerialNumber } from "../../utils/slNo";
+import useDebouncedValue from "../../hooks/useDebouncedValue";
 
 const { Option } = Select;
 
@@ -86,8 +84,8 @@ export const getCandidateName = (record) => {
 };
 
 export const getCandidateEmail = (record) => {
-  if (!record) return "student@example.com";
-  return record.studentEmail || record.user?.email || record.email || "student@example.com";
+  if (!record) return "";
+  return record.studentEmail || record.user?.email || record.email || "";
 };
 
 export const normalizeAttemptItem = (item) => {
@@ -118,6 +116,10 @@ export default function StudentAttemptsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [pagination, setPagination] = useState({ current: 1, pageSize: 8 });
+  const [total, setTotal] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const debouncedSearch = useDebouncedValue(search.trim(), 400);
+  const { current: currentPage, pageSize: currentPageSize } = pagination;
 
   // Drawer State
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -125,68 +127,48 @@ export default function StudentAttemptsPage() {
   const [drawerLoading, setDrawerLoading] = useState(false);
   const [recalculating, setRecalculating] = useState(false);
 
-  // Load Attempts
-  const loadAttempts = async () => {
-    try {
-      setLoading(true);
-      const res = await getStudentAttempts({
-        assessmentId: queryAssessmentId || undefined,
-        status: statusFilter !== "all" ? statusFilter : undefined,
-        search: search.trim(),
-      });
+  const loadAttempts = () => setRefreshKey((key) => key + 1);
 
-      let list = [];
-      if (Array.isArray(res)) list = res;
-      else if (Array.isArray(res?.data)) list = res.data;
-      else if (Array.isArray(res?.attempts)) list = res.attempts;
-
-      const normalizedList = list.map(normalizeAttemptItem);
-
-      if (normalizedList.length > 0) {
-        setAttempts(normalizedList);
-        if (res?.pagination?.total) {
-          setPagination((prev) => ({ ...prev, total: res.pagination.total }));
-        }
-      } else {
-        setAttempts(INITIAL_STUDENT_ATTEMPTS.map(normalizeAttemptItem));
-      }
-    } catch (err) {
-      console.warn("Using fallback attempts:", err);
-      setAttempts(INITIAL_STUDENT_ATTEMPTS.map(normalizeAttemptItem));
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Load Attempts (server-side search, status filter and pagination)
   useEffect(() => {
-    loadAttempts();
-  }, [statusFilter, queryAssessmentId]);
+    let cancelled = false;
+    const load = async () => {
+      try {
+        setLoading(true);
+        const res = await getStudentAttempts({
+          assessmentId: queryAssessmentId || undefined,
+          status: statusFilter !== "all" ? statusFilter : undefined,
+          search: debouncedSearch || undefined,
+          page: currentPage,
+          limit: currentPageSize,
+        });
+        if (cancelled) return;
 
-  // Filtered Attempts
-  const filteredAttempts = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    return attempts.filter((att) => {
-      const name = att.studentName || getCandidateName(att);
-      const email = att.studentEmail || getCandidateEmail(att);
-      const title = att.assessmentTitle || att.assessment?.title || "";
-      const code = att.hollandCode || att.result?.hollandCode || "";
-      const cluster = att.topClusterName || att.result?.topCareerCluster || "";
-      const institute = att.instituteName || att.user?.institute?.name || "";
+        let list = [];
+        if (Array.isArray(res)) list = res;
+        else if (Array.isArray(res?.data)) list = res.data;
+        else if (Array.isArray(res?.attempts)) list = res.attempts;
 
-      const matchSearch =
-        !query ||
-        [name, email, title, code, cluster, institute]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase()
-          .includes(query);
-
-      const matchStatus =
-        statusFilter === "all" || att.status?.toLowerCase() === statusFilter.toLowerCase();
-
-      return matchSearch && matchStatus;
-    });
-  }, [attempts, search, statusFilter]);
+        // Show exactly what the server returned. Never substitute sample students.
+        setAttempts(list.map(normalizeAttemptItem));
+        const serverTotal = Number(res?.pagination?.total);
+        setTotal(Number.isFinite(serverTotal) ? serverTotal : list.length);
+      } catch (err) {
+        if (cancelled) return;
+        console.warn("Could not load attempts:", err);
+        setAttempts([]);
+        setTotal(0);
+        messageApi.error(getApiErrorMessage(err, "Failed to load student attempts."));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter, queryAssessmentId, debouncedSearch, currentPage, currentPageSize, refreshKey]);
 
   // Open Attempt Details Drawer
   const handleOpenAudit = async (record) => {
@@ -199,7 +181,10 @@ export default function StudentAttemptsPage() {
         setSelectedAttempt(normalizeAttemptItem(details.data));
       }
     } catch (err) {
-      console.warn("Using local attempt object for audit drawer:", err);
+      console.warn("Could not load attempt details:", err);
+      messageApi.warning(
+        getApiErrorMessage(err, "Could not load full attempt details. Showing list data only.")
+      );
     } finally {
       setDrawerLoading(false);
     }
@@ -211,28 +196,26 @@ export default function StudentAttemptsPage() {
     try {
       setRecalculating(true);
       const res = await recalculateAttempt(selectedAttempt.id);
-      messageApi.success("Psychometric engine re-evaluated and scores updated.");
 
-      // Refresh drawer state if new scores returned
-      if (res?.data) {
-        setSelectedAttempt(res.data);
-        setAttempts((prev) =>
-          prev.map((a) => (a.id === selectedAttempt.id ? res.data : a))
-        );
-      } else {
-        // Boost fit score slightly to simulate recalibration
-        const updated = {
-          ...selectedAttempt,
-          fitScore: Math.min(99.4, Number((selectedAttempt.fitScore + 0.8).toFixed(1))),
-        };
-        setSelectedAttempt(updated);
-        setAttempts((prev) =>
-          prev.map((a) => (a.id === selectedAttempt.id ? updated : a))
-        );
+      // Scores only ever come from the server. If the recalculate response has no
+      // attempt payload, re-fetch the attempt instead of inventing a number.
+      let fresh = res?.data;
+      if (!fresh) {
+        const details = await getAttemptDetails(selectedAttempt.id);
+        fresh = details?.data;
       }
+      if (!fresh) {
+        throw new Error("Recalculation finished but no updated result was returned.");
+      }
+
+      const normalized = normalizeAttemptItem(fresh);
+      setSelectedAttempt(normalized);
+      setAttempts((prev) =>
+        prev.map((a) => (a.id === selectedAttempt.id ? normalized : a))
+      );
+      messageApi.success("Psychometric engine re-evaluated and scores updated.");
     } catch (err) {
-      console.warn("Recalculate fallback simulated:", err);
-      messageApi.success("Engine recalculation complete.");
+      messageApi.error(getApiErrorMessage(err, "Recalculation failed. Scores were not changed."));
     } finally {
       setRecalculating(false);
     }
@@ -383,9 +366,25 @@ export default function StudentAttemptsPage() {
             placeholder="Search candidate name, email, RIASEC..."
             prefix={<SearchOutlined className="text-[#9a2119]" />}
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPagination((p) => ({ ...p, current: 1 }));
+            }}
             allowClear
             className="h-9 w-full sm:w-72 rounded-lg border-gray-300 hover:border-[#9a2119]"
+          />
+          <Select
+            value={statusFilter}
+            onChange={(value) => {
+              setStatusFilter(value);
+              setPagination((p) => ({ ...p, current: 1 }));
+            }}
+            style={{ width: 170 }}
+            options={[
+              { value: "all", label: "All Status" },
+              { value: "completed", label: "Completed" },
+              { value: "in_progress", label: "In Progress" },
+            ]}
           />
         </div>
 
@@ -393,10 +392,10 @@ export default function StudentAttemptsPage() {
         <Table
           rowKey="id"
           columns={columns}
-          dataSource={filteredAttempts}
+          dataSource={attempts}
           loading={loading}
-          pagination={pagination}
-          onChange={(pag) => setPagination(pag)}
+          pagination={{ current: currentPage, pageSize: currentPageSize, total, showSizeChanger: true }}
+          onChange={(pag) => setPagination({ current: pag.current, pageSize: pag.pageSize })}
           scroll={{ x: 1000 }}
           className="custom-table"
         />

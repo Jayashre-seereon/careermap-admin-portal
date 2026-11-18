@@ -1,16 +1,15 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useSessionStore } from "../../store/sessionStore";
+import { getHomePath } from "../../utils/authRedirect";
 
 export default function PublicOnlyRoute() {
   const isAuthenticated = useSessionStore((state) => state.isAuthenticated);
   const loginType = useSessionStore((state) => state.loginType);
+  const hasPermission = useSessionStore((state) => state.hasPermission);
 
   if (isAuthenticated) {
     return (
-      <Navigate
-        to={loginType === "institute" ? "/institute/dashboard" : "/dashboard"}
-        replace
-      />
+      <Navigate to={getHomePath(loginType, hasPermission)} replace />
     );
   }
 

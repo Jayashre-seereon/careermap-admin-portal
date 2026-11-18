@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Avatar, Button, Input, Popconfirm, Space, Table, Tag, Tooltip } from "antd";
+import { Avatar, Button, Input, Popconfirm, Select, Space, Table, Tag, Tooltip } from "antd";
 import {
   DeleteOutlined,
   EditOutlined,
@@ -14,6 +14,11 @@ export default function MasterClassTable({
   loading,
   search,
   onSearch,
+  categoryFilter = "all",
+  onCategoryFilterChange,
+  categoryOptions = [],
+  statusFilter = "all",
+  onStatusFilterChange,
   onView,
   onEdit,
   onDelete,
@@ -26,7 +31,14 @@ export default function MasterClassTable({
     </Tooltip>
   );
 
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
+  const [pageState, setPagination] = useState({ current: 1, pageSize: 10 });
+  // Clamp the page so deleting/filtering the last rows never leaves a stale page (and wrong SL numbers).
+  const rowCount = Array.isArray(data) ? data.length : 0;
+  const pagination = {
+    ...pageState,
+    current: Math.min(pageState.current, Math.max(1, Math.ceil(rowCount / pageState.pageSize))),
+  };
+  const firstPage = () => setPagination((prev) => ({ ...prev, current: 1 }));
 
   const columns = [
     {
@@ -135,10 +147,26 @@ export default function MasterClassTable({
               value={search}
               prefix={<SearchOutlined />}
               className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
-              onChange={(e) => onSearch(e.target.value)}
+              onChange={(e) => { onSearch(e.target.value); firstPage(); }}
+            />
+            <Select
+              value={categoryFilter}
+              onChange={(value) => { onCategoryFilterChange?.(value); firstPage(); }}
+              style={{ minWidth: 150 }}
+              options={[{ value: "all", label: "All categories" }, ...categoryOptions]}
+            />
+            <Select
+              value={statusFilter}
+              onChange={(value) => { onStatusFilterChange?.(value); firstPage(); }}
+              style={{ minWidth: 130 }}
+              options={[
+                { value: "all", label: "All status" },
+                { value: "active", label: "Active" },
+                { value: "inactive", label: "Inactive" },
+              ]}
             />
             <Button
-              onClick={() => onSearch("")}
+              onClick={() => { onSearch(""); onCategoryFilterChange?.("all"); onStatusFilterChange?.("all"); firstPage(); }}
               style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
             >
               <ReloadOutlined /> Reset
@@ -157,7 +185,7 @@ export default function MasterClassTable({
           dataSource={data}
           loading={loading}
           rowKey="id"
-          pagination={pagination}
+          pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
           onChange={(pag) => setPagination(pag)}
           scroll={{ x: 1200 }}
         />

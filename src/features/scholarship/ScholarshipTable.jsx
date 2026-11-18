@@ -1,6 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import { Table, Input, Tooltip, Button, Popconfirm } from "antd";
+import { Table, Input, Tooltip, Button, Popconfirm, Select } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -16,13 +16,18 @@ export default function ScholarshipTable({
   loading,
   search,
   onSearch,
+  filters,
   onView,
   onEdit,
   onDelete,
   onAdd,
   onStatusChange,  
 }) {
-  const handleReset = () => onSearch("");
+  const handleReset = () => {
+    onSearch("");
+    filters?.setType?.("all");
+    filters?.setCategory?.("all");
+  };
 
   const stripHtml = (text = "") => {
     const normalizedText = Array.isArray(text)
@@ -39,7 +44,7 @@ export default function ScholarshipTable({
       .replace(/\s+/g, " ")
       .trim();
   };
-const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
+const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
   const ellipsis = (text) => (
     <Tooltip title={stripHtml(text) || "-"}>
       <span className="truncate block max-w-[200px]">{stripHtml(text) || "-"}</span>
@@ -174,6 +179,24 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
               onChange={(e) => onSearch(e.target.value)}
             />
 
+            {filters && (
+              <>
+                <Select
+                  value={filters.type}
+                  onChange={filters.setType}
+                  options={[{ value: "all", label: "All Types" }, ...(filters.typeOptions || [])]}
+                  className="w-full sm:w-36"
+                />
+                <Select
+                  value={filters.category}
+                  onChange={filters.setCategory}
+                  options={[{ value: "all", label: "All Categories" }, ...(filters.categoryOptions || [])]}
+                  showSearch
+                  optionFilterProp="label"
+                  className="w-full sm:w-44"
+                />
+              </>
+            )}
             <Button
               onClick={handleReset}
               style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
@@ -195,7 +218,7 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
           dataSource={Array.isArray(data) ? data : []}
           loading={loading}
           rowKey="id"
-          pagination={pagination}
+          pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
           onChange={(pag) => setPagination(pag)}
           scroll={{ x: 1200 }}
         />

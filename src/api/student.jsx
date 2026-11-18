@@ -19,3 +19,13 @@ export const deleteStudent = async (id) => {
   const res = await api.delete(`/api/student/${id}`);
   return res.data;
 };
+
+export const bulkUploadStudents = async (file, instituteId) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("instituteId", String(instituteId));
+  const res = await api.post("/api/student/bulk-upload", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data;
+};

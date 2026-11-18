@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button, Form, Input, Modal, Popconfirm, Table, message } from "antd";
 import {
   DeleteOutlined,
@@ -15,6 +15,8 @@ import {
   getInstitutes,
   updateInstitute,
 } from "../../api/institutions";
+import useTablePagination from "../../utils/useTablePagination";
+import { getSerialNumber } from "../../utils/slNo";
 
 const getApiErrorMessage = (error, fallbackMessage) =>
   error.response?.data?.message || error.message || fallbackMessage;
@@ -35,6 +37,7 @@ const mapInstitute = (item = {}) => ({
   mobile: item.mobile || "",
   address: item.address || "",
   allowedStudents: item.limit ?? "",
+  studentCount: Number(item.studentCount) || 0,
 });
 
 // frontend -> backend
@@ -63,7 +66,7 @@ const buildInstitutePayload = ({
   return payload;
 };
 
-function InstituteForm({ form, mode, initialValues, onSubmit, onCancel }) {
+function InstituteForm({ form, mode, initialValues, onSubmit, onCancel, minStudents = 0 }) {
   const isView = mode === "view";
   const isAdd = mode === "add";
 
@@ -133,6 +136,24 @@ function InstituteForm({ form, mode, initialValues, onSubmit, onCancel }) {
         rules={[
           validationRules.required("Allowed students"),
           validationRules.numbersOnly("Allowed students"),
+          {
+            validator: (_, value) => {
+              if (value === undefined || value === null || value === "") return Promise.resolve();
+              const limit = Number(value);
+              if (!Number.isInteger(limit) || limit < 1) {
+                return Promise.reject(new Error("Allowed students must be at least 1."));
+              }
+              if (limit > 100000) {
+                return Promise.reject(new Error("Allowed students cannot exceed 100000."));
+              }
+              if (mode === "edit" && limit < minStudents) {
+                return Promise.reject(
+                  new Error(`Allowed students cannot be lower than the current student count (${minStudents}).`)
+                );
+              }
+              return Promise.resolve();
+            },
+          },
         ]}
         getValueFromEvent={getValueFromInput(inputSanitizers.numbersOnly)}
       >
@@ -175,31 +196,38 @@ export default function Institute() {
   const [mode, setMode] = useState("add");
   const [selectedRecord, setSelectedRecord] = useState(null);
 
+  const mountedRef = useRef(true);
+
   const loadInstitutes = async () => {
     try {
-      setLoading(true);
+      if (mountedRef.current) setLoading(true);
       const response = await getInstitutes();
+      if (!mountedRef.current) return;
       setData(normalizeList(response).map(mapInstitute));
     } catch (error) {
-      messageApi.error(getApiErrorMessage(error, "Failed to load institutes."));
+      if (mountedRef.current) messageApi.error(getApiErrorMessage(error, "Failed to load institutes."));
     } finally {
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
     }
   };
 
   useEffect(() => {
+    mountedRef.current = true;
     loadInstitutes();
+    return () => { mountedRef.current = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filteredData = data.filter((item) =>
-    [item.name, item.email, item.address, item.contactPerson, item.mobile, item.allowedStudents]
+    [item.name, item.email, item.contactPerson]
       .join(" ")
       .toLowerCase()
       .includes(search.trim().toLowerCase())
   );
 
+  const { pagination, tableProps } = useTablePagination(Array.isArray(filteredData) ? filteredData.length : 0);
   const columns = [
-    { title: "SL", width: 70, render: (_, __, index) => index + 1 },
+    { title: "SL", width: 70, render: (_, __, index) => getSerialNumber(index, pagination) },
     { title: "Name", dataIndex: "name", width: 180 },
     { title: "Email", dataIndex: "email", width: 220 },
     { title: "Address", dataIndex: "address", width: 240, render: (v) => v || "-" },
@@ -309,7 +337,7 @@ export default function Institute() {
 
           <div className="flex flex-wrap items-center gap-3">
             <Input
-              placeholder="Search institutes..."
+              placeholder="Search name, email, contact person..."
               prefix={<SearchOutlined className="text-[#9a2119]" />}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -337,7 +365,7 @@ export default function Institute() {
           dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
           rowKey="id"
           loading={loading}
-          pagination={{ pageSize: 5 }}
+          {...tableProps}
           scroll={{ x: "max-content" }}
         />
       </div>
@@ -354,6 +382,7 @@ export default function Institute() {
           form={form}
           mode={mode}
           initialValues={selectedRecord}
+          minStudents={selectedRecord?.studentCount || 0}
           onSubmit={handleSubmit}
           onCancel={handleClose}
         />

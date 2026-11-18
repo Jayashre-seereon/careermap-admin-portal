@@ -234,7 +234,7 @@ export default function PersonalityTest() {
           rowKey="id"
           columns={columns}
           dataSource={Array.isArray(filteredQuestions) ? [...filteredQuestions].reverse() : []}
-          pagination={{ pageSize: 6 }}
+          pagination={{ pageSize: 10, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
           scroll={{ x: 1300 }}
           rowClassName="hover:bg-[#fff8f7]"
           locale={{ emptyText: "No personality test questions added yet." }}

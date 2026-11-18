@@ -29,7 +29,10 @@ const buildStreamPayload = ({ name, image }) => {
   const file = extractFile(image);
 
   if (!file) {
-    return { payload: { name }, config: {} };
+    return {
+      payload: { name, image: typeof image === "string" ? image : null },
+      config: {},
+    };
   }
 
   const formData = new FormData();
@@ -159,7 +162,7 @@ export default function StreamPage() {
   };
 
   const filteredStreams = streams.filter((stream) =>
-    `${stream.name}`.toLowerCase().includes(search.toLowerCase())
+    String(stream.name ?? "").toLowerCase().includes(search.trim().toLowerCase())
   );
 
   return (

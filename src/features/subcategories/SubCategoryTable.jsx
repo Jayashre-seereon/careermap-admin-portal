@@ -1,5 +1,5 @@
 import React,{useState} from "react";
-import { Table, Button, Popconfirm, Input, Space } from "antd";
+import { Table, Button, Popconfirm, Input, Select, Space } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -17,9 +17,21 @@ export default function SubCategoryTable({
   onDelete,
   search,
   setSearch,
+  categoryFilter = "all",
+  onCategoryFilterChange,
+  categoryFilterOptions = [],
+  secondCategoryFilter = "all",
+  onSecondCategoryFilterChange,
+  secondCategoryFilterOptions = [],
 }) {
-  const handleReset = () => setSearch("");
-const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
+const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
+  const firstPage = () => setPagination((prev) => ({ ...prev, current: 1 }));
+  const handleReset = () => {
+    setSearch("");
+    onCategoryFilterChange?.("all");
+    onSecondCategoryFilterChange?.("all");
+    firstPage();
+  };
   const columns = [
     { title: "SL", render: (_, __, index) => getSerialNumber(index, pagination), width: 70 },
     {
@@ -104,7 +116,23 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
             prefix={<SearchOutlined className="text-[#9a2119]" />}
             className="w-full sm:w-64 h-8 rounded-md border-[#9a2119]"
             value={search}
-            onChange={(e) => setSearch(e.target.value || "")}
+            onChange={(e) => { setSearch(e.target.value || ""); firstPage(); }}
+          />
+          <Select
+            showSearch
+            optionFilterProp="label"
+            value={categoryFilter}
+            onChange={(value) => { onCategoryFilterChange?.(value); firstPage(); }}
+            style={{ minWidth: 170 }}
+            options={[{ value: "all", label: "All categories" }, ...categoryFilterOptions]}
+          />
+          <Select
+            showSearch
+            optionFilterProp="label"
+            value={secondCategoryFilter}
+            onChange={(value) => { onSecondCategoryFilterChange?.(value); firstPage(); }}
+            style={{ minWidth: 190 }}
+            options={[{ value: "all", label: "All second categories" }, ...secondCategoryFilterOptions]}
           />
           <Button
             onClick={handleReset}
@@ -127,7 +155,7 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
         dataSource={Array.isArray(data) ? [...data].reverse() : []}
         loading={loading}
         rowKey="id"
-        pagination={pagination}
+        pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
         onChange={(pag) => setPagination(pag)}
         scroll={{ x: "max-content" }}
       />

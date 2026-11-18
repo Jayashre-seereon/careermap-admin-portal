@@ -142,8 +142,14 @@ export default function RolePage() {
     }
   };
 
+  const roleQuery = search.trim().toLowerCase();
   const filteredRoles = roles.filter((item) =>
-    `${item.name} ${item.description}`.toLowerCase().includes(search.toLowerCase())
+    !roleQuery ||
+    [item.name, item.description]
+      .filter((value) => value !== undefined && value !== null && value !== "")
+      .join(" ")
+      .toLowerCase()
+      .includes(roleQuery)
   );
 
   return (

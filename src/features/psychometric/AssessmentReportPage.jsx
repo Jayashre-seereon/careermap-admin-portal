@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeftOutlined,
@@ -7,7 +7,7 @@ import {
   PrinterOutlined,
 } from "@ant-design/icons";
 import { Button, Select, Spin, message } from "antd";
-import { getAttemptDetails, getAttemptResult } from "../../api/psychometricAssessmentApi";
+import { getAttemptDetails, getAttemptResult, getInstitutePsychometricAttemptDetails } from "../../api/psychometricAssessmentApi";
 import { useSessionStore } from "../../store/sessionStore";
 import {
   CLUSTERS,
@@ -96,26 +96,33 @@ export default function AssessmentReportPage() {
 
   const [loading, setLoading] = useState(true);
   const [reportData, setReportData] = useState(null);
+  const [loadError, setLoadError] = useState(null);
+  // Sample data is allowed ONLY for the explicit demo report (/.../demo).
+  const isDemo = !attemptId || attemptId === "demo";
+
+  const reportRequestRef = useRef(0);
 
   useEffect(() => {
     loadReport();
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [attemptId, location.pathname, location.state]);
+    return () => {
+      // Invalidate any in-flight request when the attempt/route changes or on unmount.
+      reportRequestRef.current += 1;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attemptId, location.pathname]);
 
   async function loadReport() {
+    const requestId = ++reportRequestRef.current;
+    const isStale = () => requestId !== reportRequestRef.current;
     setLoading(true);
+    setLoadError(null);
     try {
       if (attemptId && attemptId !== "demo") {
         let res = null;
         const instituteReport = location.pathname.startsWith("/institute/");
         if (instituteReport) {
-          // Institute attempt rows contain summary fields only. Always load the
-          // attempt detail so the profiling report uses the student's actual answers.
-          try {
-            res = await getAttemptDetails(attemptId);
-          } catch {
-            res = await getAttemptResult(attemptId);
-          }
+          res = await getInstitutePsychometricAttemptDetails(attemptId);
         } else {
           try {
             res = await getAttemptDetails(attemptId);
@@ -124,24 +131,36 @@ export default function AssessmentReportPage() {
           }
         }
 
+        if (isStale()) return;
         const data = res?.data?.data || res?.data?.attempt || res?.data || res?.attempt || res;
         if (data && (data.report || data.domainScores || data.scores || data.topClusterName || data.studentName)) {
           setReportData(data);
         } else {
           setReportData(null);
+          setLoadError("This attempt has no report data yet.");
         }
       } else {
         setReportData(null);
       }
     } catch (err) {
-      console.warn("Could not fetch remote result:", err?.message);
+      if (isStale()) return;
+      if (import.meta.env.DEV) console.warn("Could not fetch remote result:", err?.message);
       setReportData(null);
+      setLoadError(
+        err?.response?.data?.message ||
+          (err?.response?.status === 404 ? "Report not found." : err?.message) ||
+          "Could not load the report."
+      );
     } finally {
-      setLoading(false);
+      if (!isStale()) setLoading(false);
     }
   }
 
   function handlePrint() {
+    // Lazy images below the fold must be loaded before printing.
+    document.querySelectorAll(".report-app-container img[loading='lazy']").forEach((img) => {
+      img.loading = "eager";
+    });
     window.print();
   }
 
@@ -190,7 +209,29 @@ export default function AssessmentReportPage() {
     );
   }
 
-  // Normalize API data or use full high-fidelity default dataset matching the PDF
+  // Real attempt that failed to load / has no data: show an error, never a fake report.
+  if (!isDemo && (loadError || !reportData)) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#EAEFF4] p-6">
+        <div className="max-w-md rounded-xl bg-white p-8 text-center shadow">
+          <h2 className="text-xl font-black text-[#1E232A]">Report unavailable</h2>
+          <p className="mt-2 text-sm text-[#6B7280]">
+            {loadError || "This report could not be loaded."}
+          </p>
+          <div className="mt-5 flex justify-center gap-3">
+            <Button onClick={() => navigate(-1)} icon={<ArrowLeftOutlined />}>
+              Go back
+            </Button>
+            <Button type="primary" onClick={loadReport}>
+              Retry
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Normalize API data. Demo placeholders are used only when isDemo is true.
   const rawData = reportData || {};
   const report = rawData.report || {};
   const student = report.student || rawData.student || rawData.user || {};
@@ -201,25 +242,29 @@ export default function AssessmentReportPage() {
     rawData.studentName ||
     rawData.userName ||
     currentUser?.name ||
-    "Aryaman Singh";
+    (isDemo ? "Aryaman Singh" : "Candidate");
   const studentName = candidateFullName;
   const studentFirstName = studentName.split(" ")[0] || "Candidate";
-  const studentClass = student.class || rawData.className || rawData.class || rawData.selectedClass || currentUser?.selectedClass || "12th";
-  const studentSchool = student.school || student.institute?.name || rawData.school || rawData.schoolName || currentUser?.school || "Seereon Academy";
-  const studentEmail = student.email || rawData.studentEmail || rawData.email || currentUser?.email || "student@example.com";
-  const studentPhone = student.phone || rawData.studentPhone || rawData.phone || rawData.mobile || currentUser?.mobile || "+91-88958 12485";
-  const completedDate = student.completedAt || rawData.completedAt || rawData.createdAt || "2025-11-26T10:00:00.000Z";
+  const studentClass = student.class || rawData.className || rawData.class || rawData.selectedClass || currentUser?.selectedClass || (isDemo ? "12th" : "—");
+  const studentSchool = student.school || student.institute?.name || rawData.school || rawData.schoolName || (isDemo ? currentUser?.school || "Seereon Academy" : "—");
+  const studentEmail = student.email || rawData.studentEmail || rawData.email || (isDemo ? currentUser?.email || "student@example.com" : "—");
+  const studentPhone = student.phone || rawData.studentPhone || rawData.phone || rawData.mobile || (isDemo ? currentUser?.mobile || "+91-88958 12485" : "—");
+  const completedDate = student.completedAt || rawData.completedAt || rawData.createdAt || (isDemo ? "2025-11-26T10:00:00.000Z" : null);
 
-  const formattedDate = new Date(completedDate).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  const parsedCompletedDate = completedDate ? new Date(completedDate) : null;
+  const formattedDate =
+    parsedCompletedDate && !Number.isNaN(parsedCompletedDate.getTime())
+      ? parsedCompletedDate.toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })
+      : "—";
 
-  const hollandCode = rawData.hollandCode || report.hollandProfile?.code || "ECS";
+  const hollandCode = rawData.hollandCode || report.hollandProfile?.code || (isDemo ? "ECS" : "—");
   const scores = rawData.scores || rawData.domainScores || {};
   const domains = report.domains || rawData.domainScores || {};
-  const yourProfiling = report.yourProfiling || rawData.yourProfiling || SAMPLE_PROFILING_REPORT;
+  const yourProfiling = report.yourProfiling || rawData.yourProfiling || (isDemo ? SAMPLE_PROFILING_REPORT : null);
 
   // Goal Orientation
   const goalObj = domains.goalOrientation || domains.goal_orientation || {};
@@ -534,7 +579,13 @@ const bandLabelFor = (arr, facet, fallback = "Moderate") => {
           <div className="flex items-center gap-3">
             <Button
               icon={<ArrowLeftOutlined />}
-              onClick={() => navigate("/admin/psychometric-attempts")}
+              onClick={() =>
+                navigate(
+                  location.pathname.startsWith("/institute")
+                    ? "/institute/psychometric-attempts"
+                    : "/admin/psychometric-attempts"
+                )
+              }
               className="rounded-full font-bold"
             >
               Candidate Attempts
@@ -636,7 +687,7 @@ const bandLabelFor = (arr, facet, fallback = "Moderate") => {
           {/* Center Graphic: Large Hero 3D Brain Illustration */}
           <div className="my-auto py-1 text-center flex justify-center items-center z-10">
             <img
-              src={ReportImg9}
+              src={ReportImg9} loading="lazy" decoding="async"
               alt="Career Assessment 3D Brain"
               className="w-[430px] h-[390px] max-w-full object-contain mx-auto drop-shadow-sm"
             />
@@ -759,7 +810,7 @@ const bandLabelFor = (arr, facet, fallback = "Moderate") => {
 
             <div className="flex-1 py-2 flex justify-center items-center">
               <img
-                src={ReportImg2}
+                src={ReportImg2} loading="lazy" decoding="async"
                 alt="RIASEC Model"
                 className="max-h-[440px] w-full max-w-[620px] mx-auto object-contain"
               />
@@ -976,7 +1027,7 @@ const bandLabelFor = (arr, facet, fallback = "Moderate") => {
 
             <div className="flex-1 py-2 flex justify-center items-center">
               <img
-                src={ReportImg3}
+                src={ReportImg3} loading="lazy" decoding="async"
                 alt="Big Five Personality"
                 className="max-h-[380px] w-full max-w-[540px] mx-auto object-contain"
               />
@@ -1101,7 +1152,7 @@ const bandLabelFor = (arr, facet, fallback = "Moderate") => {
 
             <div className="flex-1 py-2 flex justify-center items-center">
               <img
-                src={ReportImg4}
+                src={ReportImg4} loading="lazy" decoding="async"
                 alt="Learning Styles VARK"
                 className="max-h-[380px] w-full max-w-[540px] mx-auto object-contain"
               />
@@ -1291,7 +1342,7 @@ const bandLabelFor = (arr, facet, fallback = "Moderate") => {
 
            <div className="py-2 flex justify-center items-center">
   <img
-    src={ReportImg5}
+    src={ReportImg5} loading="lazy" decoding="async"
     alt="Schwartz Values"
     className="max-h-[350px] w-full max-w-[500px] mx-auto object-contain"
   />
@@ -1523,7 +1574,7 @@ const bandLabelFor = (arr, facet, fallback = "Moderate") => {
 
             <div className="my-2 flex justify-center items-center overflow-hidden">
               <img
-                src={ReportImg6}
+                src={ReportImg6} loading="lazy" decoding="async"
                 alt="Aptitude Categories"
                 className="w-full object-contain scale-100 max-w-[540px] mx-auto"
               />
@@ -1795,7 +1846,7 @@ const bandLabelFor = (arr, facet, fallback = "Moderate") => {
 
             <div className="cluster-map" aria-label="Your five top career clusters">
               <div className="cluster-map-illustration">
-                <img src={ReportImg7} alt="Career counsellor" />
+                <img src={ReportImg7} loading="lazy" decoding="async" alt="Career counsellor" />
               </div>
               <svg className="cluster-map-connectors" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
                 {[9, 29.5, 50, 70.5, 91].map((endY) => (
@@ -2005,7 +2056,7 @@ const bandLabelFor = (arr, facet, fallback = "Moderate") => {
 
             <div className="my-2 flex justify-center items-center overflow-hidden">
               <img
-                src={ReportImg8}
+                src={ReportImg8} loading="lazy" decoding="async"
                 alt="Study & Pathway Roadmap"
                 className="w-full object-contain scale-100 max-w-[540px] mx-auto"
               />
@@ -2136,7 +2187,7 @@ const bandLabelFor = (arr, facet, fallback = "Moderate") => {
                 <div className="flex-1 space-y-2.5">
                   <div className="p-2 bg-[#FAF2F0] border border-[#F0DDD8] rounded-xl flex items-center gap-3">
                     <img
-                      src={FeaturePsychometric}
+                      src={FeaturePsychometric} loading="lazy" decoding="async"
                       alt="Psychometric Counselling"
                       className="w-14 h-10 object-cover rounded-md flex-shrink-0"
                     />
@@ -2146,7 +2197,7 @@ const bandLabelFor = (arr, facet, fallback = "Moderate") => {
                   </div>
                   <div className="p-2 bg-[#FAF2F0] border border-[#F0DDD8] rounded-xl flex items-center gap-3">
                     <img
-                      src={FeatureOnetoone}
+                      src={FeatureOnetoone} loading="lazy" decoding="async"
                       alt="One to One Counselling"
                       className="w-14 h-10 object-cover rounded-md flex-shrink-0"
                     />
@@ -2156,7 +2207,7 @@ const bandLabelFor = (arr, facet, fallback = "Moderate") => {
                   </div>
                   <div className="p-2 bg-[#FAF2F0] border border-[#F0DDD8] rounded-xl flex items-center gap-3">
                     <img
-                      src={FeatureMentorship}
+                      src={FeatureMentorship} loading="lazy" decoding="async"
                       alt="Student Mentorship"
                       className="w-14 h-10 object-cover rounded-md flex-shrink-0"
                     />
@@ -2175,7 +2226,7 @@ const bandLabelFor = (arr, facet, fallback = "Moderate") => {
                 <div className="flex-1 space-y-2.5">
                   <div className="p-2 bg-[#FAF2F0] border border-[#F0DDD8] rounded-xl flex items-center gap-3">
                     <img
-                      src={FeatureCell}
+                      src={FeatureCell} loading="lazy" decoding="async"
                       alt="Career Counseling Cell"
                       className="w-14 h-10 object-cover rounded-md flex-shrink-0"
                     />
@@ -2185,7 +2236,7 @@ const bandLabelFor = (arr, facet, fallback = "Moderate") => {
                   </div>
                   <div className="p-2 bg-[#FAF2F0] border border-[#F0DDD8] rounded-xl flex items-center gap-3">
                     <img
-                      src={FeatureBehavioral}
+                      src={FeatureBehavioral} loading="lazy" decoding="async"
                       alt="Behavioral Counselling"
                       className="w-14 h-10 object-cover rounded-md flex-shrink-0"
                     />
@@ -2195,7 +2246,7 @@ const bandLabelFor = (arr, facet, fallback = "Moderate") => {
                   </div>
                   <div className="p-2 bg-[#FAF2F0] border border-[#F0DDD8] rounded-xl flex items-center gap-3">
                     <img
-                      src={FeatureDashboard}
+                      src={FeatureDashboard} loading="lazy" decoding="async"
                       alt="Information Dashboard & App"
                       className="w-14 h-10 object-cover rounded-md flex-shrink-0"
                     />

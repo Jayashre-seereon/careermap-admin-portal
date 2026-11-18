@@ -1,6 +1,8 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import React, { useEffect } from "react";
 import { Form, Input, Upload, Button ,Select} from "antd";
 import { UploadOutlined } from "@ant-design/icons";
+import { createBeforeUpload } from "../../utils/uploadValidation";
 
 const normalizeFile = (event) => {
   if (Array.isArray(event)) {
@@ -45,8 +47,9 @@ export default function NewsletterForm({ onSubmit, initialValues, disabled }) {
     }
   }, [form, initialValues]);
 
+  const [guardedSubmit, submitting] = useSubmitGuard(onSubmit);
   return (
-    <Form layout="vertical" form={form} onFinish={onSubmit} validateTrigger={["onChange", "onBlur"]}>
+    <Form layout="vertical" form={form} onFinish={guardedSubmit} validateTrigger={["onChange", "onBlur"]}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
        
         <Form.Item
@@ -87,7 +90,8 @@ export default function NewsletterForm({ onSubmit, initialValues, disabled }) {
           rules={[{ required: true, message: "Title is required" }]}
         >
           <Upload
-            beforeUpload={() => false}
+            beforeUpload={createBeforeUpload("attachment")}
+            accept="image/*,.pdf,.doc,.docx"
             disabled={disabled}
             maxCount={1}
             listType="picture"
@@ -109,7 +113,7 @@ export default function NewsletterForm({ onSubmit, initialValues, disabled }) {
       {!disabled && (
         <Button
           type="primary"
-          htmlType="submit"
+          htmlType="submit" loading={submitting}
           block
           style={{ background: "#9a2119", borderColor: "#9a2119" }}
         >
