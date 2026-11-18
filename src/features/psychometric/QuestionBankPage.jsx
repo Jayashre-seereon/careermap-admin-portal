@@ -958,7 +958,7 @@ export default function QuestionBankPage() {
           columns={columns}
           dataSource={filteredQuestions}
           loading={loading}
-          pagination={{ ...pagination, total: totalQuestions, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
+          pagination={{ ...pagination, total: totalQuestions, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100, 200, 500, 1000] }}
           onChange={(pag) => setPagination(pag)}
           locale={loadError ? { emptyText: loadError } : undefined}
           scroll={{ x: 1000 }}

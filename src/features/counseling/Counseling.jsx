@@ -127,9 +127,6 @@ function Counseling() {
 
   const handleUpdate = async (values) => {
     try {
-      if (isStaff) {
-        throw new Error("Staff can create and view their counseling reports, but cannot edit them.");
-      }
       await updateCounseling(editId, values);
       await fetchData();
       setOpen(false);
@@ -142,7 +139,7 @@ function Counseling() {
 
   const handleDelete = async (record) => {
     try {
-      if (!record?.id || isStaff) return;
+      if (!record?.id) return;
       await deleteCounseling(record.id);
       await fetchData();
     } catch (err) {
@@ -281,7 +278,7 @@ function Counseling() {
               staffView={isStaff}
               onDelete={handleDelete}
               onView={handleView}
-              onEdit={isStaff ? null : handleEdit}
+              onEdit={handleEdit}
               onDownload={handleDownload}
             />
           )}
@@ -306,7 +303,7 @@ function Counseling() {
         staffView={isStaff}
         onDelete={handleDelete}
         onView={handleView}
-        onEdit={isStaff ? null : handleEdit}
+        onEdit={handleEdit}
         onDownload={handleDownload}   
       />
       </>}
