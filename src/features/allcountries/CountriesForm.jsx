@@ -1,3 +1,4 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import { useEffect } from "react";
 import { Form, Input, Button } from "antd";
 import { validationRules } from "../../utils/formValidation";
@@ -13,11 +14,12 @@ export default function CountriesForm({ onSubmit, initialValues, viewMode }) {
     }
   }, [form, initialValues]);
 
+  const [guardedSubmit, submitting] = useSubmitGuard(onSubmit);
   return (
     <Form
       layout="vertical"
       form={form}
-      onFinish={onSubmit}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
     >
       <h3 className="mb-4 text-lg font-semibold text-[#9a2119]">Country Details</h3>
@@ -25,14 +27,14 @@ export default function CountriesForm({ onSubmit, initialValues, viewMode }) {
       <Form.Item
         name="name"
         label="Country Name"
-        rules={[validationRules.required("Country name") ,validationRules.charactersOnly("Country name")]}
+        rules={[validationRules.required("Country name") ,validationRules.nameText("Country name")]}
       >
         <Input disabled={viewMode} />
       </Form.Item>
 
       {!viewMode && (
         <Button
-          htmlType="submit"
+          htmlType="submit" loading={submitting}
           block
           className="bg-[#9a2119] text-white"
         >

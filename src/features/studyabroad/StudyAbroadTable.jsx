@@ -40,7 +40,7 @@ export default function StudyAbroadTable({
       <span className="block max-w-[220px] truncate">{stripHtml(text) || "-"}</span>
     </Tooltip>
   );
-const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
+const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
   const columns = [
     {
       title: "SL",
@@ -143,7 +143,7 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
           dataSource={data}
           loading={loading}
           rowKey="id"
-          pagination={pagination}
+          pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
           onChange={(pag) => setPagination(pag)}
           scroll={{ x: 1300 }}
         />

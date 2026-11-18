@@ -1,6 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import { Table, Input, Tooltip, Button, Popconfirm, Avatar } from "antd";
+import { Table, Input, Tooltip, Button, Popconfirm, Avatar, Select } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -11,6 +11,29 @@ import {
 } from "@ant-design/icons";
 import { formatDateDisplay } from "../../utils/date";
 import { getSerialNumber } from "../../utils/slNo";
+// Explicit newest-first ordering: createdAt desc, then numeric id desc. Rows with
+// no usable createdAt fall back to the previous behaviour (reverse of API order).
+const sortNewestFirst = (rows) => {
+  if (!Array.isArray(rows)) return [];
+  const time = (row) => {
+    const value = Date.parse(row?.createdAt);
+    return Number.isNaN(value) ? null : value;
+  };
+  if (!rows.some((row) => time(row) !== null)) return [...rows].reverse();
+  return rows
+    .map((row, index) => ({ row, index }))
+    .sort((a, b) => {
+      const ta = time(a.row);
+      const tb = time(b.row);
+      if (ta !== tb) return (tb ?? -Infinity) - (ta ?? -Infinity);
+      const ia = Number(a.row?.id);
+      const ib = Number(b.row?.id);
+      if (Number.isFinite(ia) && Number.isFinite(ib) && ia !== ib) return ib - ia;
+      return b.index - a.index;
+    })
+    .map(({ row }) => row);
+};
+
 export default function InstitutionTable({
   data,
   onView,
@@ -21,8 +44,21 @@ export default function InstitutionTable({
   search,
   onSearch,
   loading,
+  typeFilter = "all",
+  onTypeFilterChange,
+  typeOptions = [],
+  stateFilter = "all",
+  onStateFilterChange,
+  stateOptions = [],
 }) {
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
+  const [pageState, setPagination] = useState({ current: 1, pageSize: 10 });
+  // Clamp the page so deleting/filtering the last rows never leaves a stale page (and wrong SL numbers).
+  const rowCount = Array.isArray(data) ? data.length : 0;
+  const pagination = {
+    ...pageState,
+    current: Math.min(pageState.current, Math.max(1, Math.ceil(rowCount / pageState.pageSize))),
+  };
+  const firstPage = () => setPagination((prev) => ({ ...prev, current: 1 }));
 
   const renderEllipsis = (text) => (
     <Tooltip title={text}>
@@ -190,11 +226,25 @@ export default function InstitutionTable({
             placeholder="Search institution..."
             prefix={<SearchOutlined className="text-[#9a2119]" />}
             value={search}
-            onChange={(event) => onSearch(event.target.value)}
+            onChange={(event) => { onSearch(event.target.value); firstPage(); }}
             className="w-full sm:w-64 h-8 rounded-md border-[#9a2119]"
           />
+          <Select
+            value={typeFilter}
+            onChange={(value) => { onTypeFilterChange?.(value); firstPage(); }}
+            style={{ minWidth: 160 }}
+            options={[{ value: "all", label: "All types" }, ...typeOptions.map((value) => ({ value, label: value }))]}
+          />
+          <Select
+            showSearch
+            optionFilterProp="label"
+            value={stateFilter}
+            onChange={(value) => { onStateFilterChange?.(value); firstPage(); }}
+            style={{ minWidth: 160 }}
+            options={[{ value: "all", label: "All states" }, ...stateOptions.map((value) => ({ value, label: value }))]}
+          />
           <Button
-            onClick={() => onSearch("")}
+            onClick={() => { onSearch(""); onTypeFilterChange?.("all"); onStateFilterChange?.("all"); firstPage(); }}
             style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
           >
             <ReloadOutlined />
@@ -218,10 +268,11 @@ export default function InstitutionTable({
 
       <Table
         columns={columns}
-        dataSource={Array.isArray(data) ? [...data].reverse() : []}
+        dataSource={sortNewestFirst(data)}
         rowKey={(record) => record.id}
         loading={loading}
-        pagination={pagination}
+        pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
+        locale={{ emptyText: String(search || "").trim() ? `No results for "${String(search).trim()}"` : "No data" }}
         onChange={(pag) => setPagination(pag)}
         scroll={{ x: "max-content" }}
       />

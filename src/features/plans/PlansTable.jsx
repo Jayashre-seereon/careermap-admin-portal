@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Table, Input, Button, Popconfirm, Tooltip } from "antd";
+import { Table, Input, Button, Popconfirm, Tooltip, Select } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -8,6 +8,7 @@ import {
   ReloadOutlined,
 } from "@ant-design/icons";
 import { getSerialNumber } from "../../utils/slNo";
+import { formatCurrency } from "../../utils/format";
 const stripHtml = (text = "") => {
   const normalizedText = Array.isArray(text)
     ? text.join(", ")
@@ -33,15 +34,22 @@ export default function PlansTable({
   onAdd,
   search,
   onSearch,
+  planTypeFilter = "all",
+  onPlanTypeFilterChange,
+  planTypeOptions = [],
 }) {
-  const handleReset = () => onSearch("");
+  const handleReset = () => {
+    onSearch("");
+    onPlanTypeFilterChange?.("all");
+    setPagination((prev) => ({ ...prev, current: 1 }));
+  };
 
   const ellipsis = (text) => (
     <Tooltip title={stripHtml(text) || "-"}>
       <span className="truncate block max-w-[220px]">{stripHtml(text) || "-"}</span>
     </Tooltip>
   );
-const [pagination, setPagination] = useState({ current: 1, pageSize: 5, });
+const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
   const columns = [
     {
       title: <span className="text-[#9a2119] font-semibold">SL</span>,
@@ -91,6 +99,7 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5, });
       title: <span className="text-[#9a2119] font-semibold">Price</span>,
       dataIndex: "price",
       width: 120,
+      render: (price) => formatCurrency(price, price || "—"),
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Action</span>,
@@ -142,7 +151,23 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5, });
               value={search}
               prefix={<SearchOutlined className="text-[#9a2119]" />}
               className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
-              onChange={(e) => onSearch(e.target.value)}
+              onChange={(e) => {
+                onSearch(e.target.value);
+                setPagination((prev) => ({ ...prev, current: 1 }));
+              }}
+            />
+
+            <Select
+              value={planTypeFilter}
+              onChange={(value) => {
+                onPlanTypeFilterChange?.(value);
+                setPagination((prev) => ({ ...prev, current: 1 }));
+              }}
+              className="w-full sm:w-40"
+              options={[
+                { value: "all", label: "All Plan Types" },
+                ...planTypeOptions.map((type) => ({ value: type, label: type })),
+              ]}
             />
 
             <Button
@@ -167,7 +192,7 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5, });
           dataSource={Array.isArray(data) ? [...data].reverse() : []}
           loading={loading}
           rowKey="id"
-           pagination={pagination}
+           pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
            onChange={(pag) => setPagination(pag)}
           rowClassName="hover:bg-gray-50"
           scroll={{ x: "max-content" }}

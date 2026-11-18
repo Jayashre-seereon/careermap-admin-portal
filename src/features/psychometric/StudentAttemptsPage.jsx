@@ -58,6 +58,7 @@ import {
 } from "../../api/psychometricAssessmentApi";
 import { FACET_MAP } from "./psychometricConstants";
 import { getSerialNumber } from "../../utils/slNo";
+import useDebouncedValue from "../../hooks/useDebouncedValue";
 
 const { Option } = Select;
 
@@ -115,6 +116,10 @@ export default function StudentAttemptsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [pagination, setPagination] = useState({ current: 1, pageSize: 8 });
+  const [total, setTotal] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const debouncedSearch = useDebouncedValue(search.trim(), 400);
+  const { current: currentPage, pageSize: currentPageSize } = pagination;
 
   // Drawer State
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -122,66 +127,48 @@ export default function StudentAttemptsPage() {
   const [drawerLoading, setDrawerLoading] = useState(false);
   const [recalculating, setRecalculating] = useState(false);
 
-  // Load Attempts
-  const loadAttempts = async () => {
-    try {
-      setLoading(true);
-      const res = await getStudentAttempts({
-        assessmentId: queryAssessmentId || undefined,
-        status: statusFilter !== "all" ? statusFilter : undefined,
-        search: search.trim(),
-      });
+  const loadAttempts = () => setRefreshKey((key) => key + 1);
 
-      let list = [];
-      if (Array.isArray(res)) list = res;
-      else if (Array.isArray(res?.data)) list = res.data;
-      else if (Array.isArray(res?.attempts)) list = res.attempts;
-
-      const normalizedList = list.map(normalizeAttemptItem);
-
-      // Show exactly what the server returned. Never substitute sample students.
-      setAttempts(normalizedList);
-      if (res?.pagination?.total) {
-        setPagination((prev) => ({ ...prev, total: res.pagination.total }));
-      }
-    } catch (err) {
-      console.warn("Could not load attempts:", err);
-      setAttempts([]);
-      messageApi.error(getApiErrorMessage(err, "Failed to load student attempts."));
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Load Attempts (server-side search, status filter and pagination)
   useEffect(() => {
-    loadAttempts();
-  }, [statusFilter, queryAssessmentId]);
+    let cancelled = false;
+    const load = async () => {
+      try {
+        setLoading(true);
+        const res = await getStudentAttempts({
+          assessmentId: queryAssessmentId || undefined,
+          status: statusFilter !== "all" ? statusFilter : undefined,
+          search: debouncedSearch || undefined,
+          page: currentPage,
+          limit: currentPageSize,
+        });
+        if (cancelled) return;
 
-  // Filtered Attempts
-  const filteredAttempts = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    return attempts.filter((att) => {
-      const name = att.studentName || getCandidateName(att);
-      const email = att.studentEmail || getCandidateEmail(att);
-      const title = att.assessmentTitle || att.assessment?.title || "";
-      const code = att.hollandCode || att.result?.hollandCode || "";
-      const cluster = att.topClusterName || att.result?.topCareerCluster || "";
-      const institute = att.instituteName || att.user?.institute?.name || "";
+        let list = [];
+        if (Array.isArray(res)) list = res;
+        else if (Array.isArray(res?.data)) list = res.data;
+        else if (Array.isArray(res?.attempts)) list = res.attempts;
 
-      const matchSearch =
-        !query ||
-        [name, email, title, code, cluster, institute]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase()
-          .includes(query);
-
-      const matchStatus =
-        statusFilter === "all" || att.status?.toLowerCase() === statusFilter.toLowerCase();
-
-      return matchSearch && matchStatus;
-    });
-  }, [attempts, search, statusFilter]);
+        // Show exactly what the server returned. Never substitute sample students.
+        setAttempts(list.map(normalizeAttemptItem));
+        const serverTotal = Number(res?.pagination?.total);
+        setTotal(Number.isFinite(serverTotal) ? serverTotal : list.length);
+      } catch (err) {
+        if (cancelled) return;
+        console.warn("Could not load attempts:", err);
+        setAttempts([]);
+        setTotal(0);
+        messageApi.error(getApiErrorMessage(err, "Failed to load student attempts."));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter, queryAssessmentId, debouncedSearch, currentPage, currentPageSize, refreshKey]);
 
   // Open Attempt Details Drawer
   const handleOpenAudit = async (record) => {
@@ -379,9 +366,25 @@ export default function StudentAttemptsPage() {
             placeholder="Search candidate name, email, RIASEC..."
             prefix={<SearchOutlined className="text-[#9a2119]" />}
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPagination((p) => ({ ...p, current: 1 }));
+            }}
             allowClear
             className="h-9 w-full sm:w-72 rounded-lg border-gray-300 hover:border-[#9a2119]"
+          />
+          <Select
+            value={statusFilter}
+            onChange={(value) => {
+              setStatusFilter(value);
+              setPagination((p) => ({ ...p, current: 1 }));
+            }}
+            style={{ width: 170 }}
+            options={[
+              { value: "all", label: "All Status" },
+              { value: "completed", label: "Completed" },
+              { value: "in_progress", label: "In Progress" },
+            ]}
           />
         </div>
 
@@ -389,10 +392,10 @@ export default function StudentAttemptsPage() {
         <Table
           rowKey="id"
           columns={columns}
-          dataSource={filteredAttempts}
+          dataSource={attempts}
           loading={loading}
-          pagination={pagination}
-          onChange={(pag) => setPagination(pag)}
+          pagination={{ current: currentPage, pageSize: currentPageSize, total, showSizeChanger: true }}
+          onChange={(pag) => setPagination({ current: pag.current, pageSize: pag.pageSize })}
           scroll={{ x: 1000 }}
           className="custom-table"
         />

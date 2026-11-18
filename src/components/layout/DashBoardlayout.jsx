@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import { Outlet, useLocation } from "react-router-dom";
+import { navSections } from "./navSections";
 
 const pageNameMap = {
   "/dashboard": "Dashboard",
@@ -130,7 +131,37 @@ function getActivePage(pathname) {
     return "Student Attempts";
   }
 
-  return pageNameMap[pathname] || "Dashboard";
+  const normalizedPath = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+  const matchesPrefix = (base) =>
+    normalizedPath === base || normalizedPath.startsWith(`${base}/`);
+
+  // Prefer the sidebar definition so the header title and the sidebar
+  // highlight always agree (longest matching path prefix wins).
+  let bestNav = null;
+  navSections.forEach((section) =>
+    section.items.forEach((item) => {
+      if (item.path && matchesPrefix(item.path) && (!bestNav || item.path.length > bestNav.path.length)) {
+        bestNav = item;
+      }
+    })
+  );
+  if (bestNav) {
+    return bestNav.name;
+  }
+
+  if (pageNameMap[normalizedPath]) {
+    return pageNameMap[normalizedPath];
+  }
+
+  // Unmapped sub-routes fall back to the longest mapped parent path.
+  const mappedPrefix = Object.keys(pageNameMap)
+    .filter((base) => base !== "/" && matchesPrefix(base))
+    .sort((a, b) => b.length - a.length)[0];
+  if (mappedPrefix) {
+    return pageNameMap[mappedPrefix];
+  }
+
+  return "Dashboard";
 }
 
 const DashBoardlayout = () => {

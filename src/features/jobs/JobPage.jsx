@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Input, message, Modal, Popconfirm, Table, Tag, Button } from "antd";
+import { Input, message, Modal, Popconfirm, Select, Table, Tag, Button } from "antd";
 import {
   DeleteOutlined,
   EditOutlined,
@@ -8,30 +8,33 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { getJobs, saveJobs } from "./jobStore";
+import { getJobs, saveJobs, sortNewestFirstByDate } from "./jobStore";
+import useTablePagination from "../../utils/useTablePagination";
 import JobForm from "./JobForm";
 
 export default function JobPage() {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState(getJobs);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [modalMode, setModalMode] = useState(null);
   const [activeJobId, setActiveJobId] = useState(null);
 
   const filteredJobs = useMemo(() => {
     const query = search.trim().toLowerCase();
 
-    if (!query) {
-      return jobs;
-    }
-
-    return jobs.filter(
+    const matched = jobs.filter(
       (job) =>
-        job.name.toLowerCase().includes(query) ||
-        job.jobType.toLowerCase().includes(query) ||
-        job.salary.toLowerCase().includes(query)
+        (statusFilter === "all" || job.status === statusFilter) &&
+        (!query ||
+          String(job.name ?? "").toLowerCase().includes(query) ||
+          String(job.jobType ?? "").toLowerCase().includes(query) ||
+          String(job.salary ?? "").toLowerCase().includes(query))
     );
-  }, [jobs, search]);
+    return sortNewestFirstByDate(matched, "created");
+  }, [jobs, search, statusFilter]);
+
+  const { tableProps } = useTablePagination(filteredJobs.length);
 
   const handleDelete = (jobId) => {
     const updatedJobs = jobs.filter((job) => job.id !== jobId);
@@ -135,8 +138,19 @@ export default function JobPage() {
               onChange={(e) => setSearch(e.target.value)}
             />
 
+            <Select
+              value={statusFilter}
+              onChange={setStatusFilter}
+              className="w-full sm:w-36"
+              options={[
+                { value: "all", label: "All Status" },
+                { value: "Enabled", label: "Enabled" },
+                { value: "Disabled", label: "Disabled" },
+              ]}
+            />
+
             <Button
-              onClick={() => setSearch("")}
+              onClick={() => { setSearch(""); setStatusFilter("all"); }}
               style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}  >
               <ReloadOutlined />
               Reset
@@ -153,8 +167,8 @@ export default function JobPage() {
 
         <Table
           columns={columns}
-          dataSource={Array.isArray(filteredJobs) ? [...filteredJobs].reverse() : []}
-          pagination={{ pageSize: 5 }}
+          dataSource={filteredJobs}
+          {...tableProps}
           rowClassName="hover:bg-gray-50"
           scroll={{ x: true }}
         />

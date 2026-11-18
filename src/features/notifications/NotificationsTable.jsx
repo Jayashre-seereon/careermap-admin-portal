@@ -1,5 +1,5 @@
 import React,{useState} from "react";
-import { Button, Input, Popconfirm, Table, Tag } from "antd";
+import { Button, DatePicker, Input, Popconfirm, Select, Table, Tag } from "antd";
 import {
   DeleteOutlined,
   EditOutlined,
@@ -29,13 +29,22 @@ export default function NotificationsTable({
   loading,
   search,
   onSearch,
+  typeFilter = "all",
+  onTypeFilter,
+  typeOptions = [],
+  statusFilter = "all",
+  onStatusFilter,
+  statusOptions = [],
+  dateRange = null,
+  onDateRange,
   onAdd,
   onView,
   onEdit,
   onDelete,
 }) 
 {
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
+  const resetPage = () => setPagination((prev) => ({ ...prev, current: 1 }));
   const columns = [
     {
       title: <span className="text-[#9a2119] font-semibold">SL</span>,
@@ -59,6 +68,24 @@ export default function NotificationsTable({
       dataIndex: "target",
       width: 160,
       ellipsis: true,
+    },
+    {
+      title: <span className="text-[#9a2119] font-semibold">Type</span>,
+      dataIndex: "type",
+      width: 120,
+      render: (value) => (value ? <Tag color="blue">{value}</Tag> : "-"),
+    },
+    {
+      title: <span className="text-[#9a2119] font-semibold">Status</span>,
+      dataIndex: "status",
+      width: 110,
+      render: (value) => (value ? <Tag color={getTagColor(value)}>{value}</Tag> : "-"),
+    },
+    {
+      title: <span className="text-[#9a2119] font-semibold">Date</span>,
+      dataIndex: "createdAt",
+      width: 130,
+      render: (value) => (value ? new Date(value).toLocaleDateString("en-IN") : "-"),
     },
    
     {
@@ -104,15 +131,31 @@ export default function NotificationsTable({
 
         <div className="flex flex-wrap items-center gap-3">
           <Input
-            placeholder="Search notification..."
+            placeholder="Search title or target..."
             prefix={<SearchOutlined className="text-[#9a2119]" />}
             value={search}
-            onChange={(event) => onSearch(event.target.value)}
+            onChange={(event) => { onSearch(event.target.value); resetPage(); }}
             className="w-full sm:w-72 h-8 rounded-md border-[#9a2119]"
           />
 
+          <Select
+            value={typeFilter}
+            onChange={(value) => { onTypeFilter?.(value); resetPage(); }}
+            style={{ width: 140 }}
+            options={[{ value: "all", label: "All Types" }, ...typeOptions.map((v) => ({ value: v, label: v }))]}
+          />
+
+          <Select
+            value={statusFilter}
+            onChange={(value) => { onStatusFilter?.(value); resetPage(); }}
+            style={{ width: 140 }}
+            options={[{ value: "all", label: "All Status" }, ...statusOptions.map((v) => ({ value: v, label: v }))]}
+          />
+
+          <DatePicker.RangePicker value={dateRange} onChange={(value) => { onDateRange?.(value); resetPage(); }} allowClear />
+
           <Button
-            onClick={() => onSearch("")}
+            onClick={() => { onSearch(""); onTypeFilter?.("all"); onStatusFilter?.("all"); onDateRange?.(null); resetPage(); }}
             style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
           >
             <ReloadOutlined />
@@ -133,7 +176,7 @@ export default function NotificationsTable({
         dataSource={data}
         loading={loading}
         rowKey="id"
-        pagination={pagination}
+        pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
         onChange={(pag) => setPagination(pag)}
         scroll={{ x: "max-content" }}
       />

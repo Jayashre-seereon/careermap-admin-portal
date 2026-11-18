@@ -1,10 +1,31 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import { useEffect } from "react";
-import { Button, Form, Input } from "antd";
+import { Button, Form, Input, Select } from "antd";
 import RichTextEditor from "../../components/ui/RichTextEditor";
 import { validationRules } from "../../utils/formValidation";
 
+const TARGET_OPTIONS = [
+  { label: "All Users", value: "All Users" },
+  { label: "Students", value: "Students" },
+  { label: "Admin", value: "Admin" },
+];
+
+const isMessageEmpty = (html) => {
+  const text = String(html || "")
+    .replace(/<(img|video|iframe)\b/gi, "MEDIA")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;|\u00a0/g, " ")
+    .trim();
+  return !text;
+};
+
 export default function NotificationsForm({ onSubmit, initialValues, disabled }) {
   const [form] = Form.useForm();
+  const currentTarget = initialValues?.target;
+  const targetOptions =
+    currentTarget && !TARGET_OPTIONS.some((o) => o.value.toLowerCase() === String(currentTarget).toLowerCase())
+      ? [...TARGET_OPTIONS, { label: currentTarget, value: currentTarget }]
+      : TARGET_OPTIONS;
 
   useEffect(() => {
     if (initialValues) {
@@ -15,11 +36,12 @@ export default function NotificationsForm({ onSubmit, initialValues, disabled })
     form.resetFields();
   }, [form, initialValues]);
 
+  const [guardedSubmit, submitting] = useSubmitGuard(onSubmit);
   return (
     <Form
       layout="vertical"
       form={form}
-      onFinish={onSubmit}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
       className="grid grid-cols-1 md:grid-cols-2 gap-4"
     >
@@ -40,14 +62,21 @@ export default function NotificationsForm({ onSubmit, initialValues, disabled })
         label="Target"
         rules={[validationRules.required("Target")]}
       >
-        <Input disabled={disabled} placeholder="Enter target" />
+        <Select disabled={disabled} placeholder="Select target audience" options={targetOptions} />
       </Form.Item>
 
       <Form.Item
         name="message"
         label="Message"
         className="md:col-span-2"
-        rules={[validationRules.required("Message")]}
+        rules={[
+          {
+            validator: (_, value) =>
+              isMessageEmpty(value)
+                ? Promise.reject(new Error("Message is required."))
+                : Promise.resolve(),
+          },
+        ]}
       >
         <RichTextEditor
           disabled={disabled}
@@ -58,7 +87,7 @@ export default function NotificationsForm({ onSubmit, initialValues, disabled })
 
       {!disabled && (
         <Button
-          htmlType="submit"
+          htmlType="submit" loading={submitting}
           block
           className="md:col-span-2 bg-[#9a2119] text-white"
         >

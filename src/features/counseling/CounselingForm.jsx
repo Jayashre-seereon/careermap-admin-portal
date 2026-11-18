@@ -1,3 +1,4 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import React from "react";
 import { Button, Form, Input, Select, DatePicker, Radio, InputNumber, Divider } from "antd";
 import RichTextEditor from "../../components/ui/RichTextEditor";
@@ -119,11 +120,12 @@ function CounselingForm({ onSubmit, initialValues, disabled, instituteDisabled =
 
 
 
+  const [guardedSubmit, submitting] = useSubmitGuard(handleFinish);
   return (
     <Form
       layout="vertical"
       form={form}
-      onFinish={handleFinish}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
     >
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -341,7 +343,7 @@ function CounselingForm({ onSubmit, initialValues, disabled, instituteDisabled =
       {!disabled && (
         <Button
           type="primary"
-          htmlType="submit"
+          htmlType="submit" loading={submitting}
           block
           style={{ background: "#9a2119", borderColor: "#9a2119" }}
         >

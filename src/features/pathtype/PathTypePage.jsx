@@ -54,7 +54,7 @@ export default function PathTypePage() {
   }, []);
 
   const filteredData = data.filter((item) =>
-    item.pathtype.toLowerCase().includes(search.toLowerCase())
+    String(item?.pathtype ?? "").toLowerCase().includes(search.trim().toLowerCase())
   );
 
   const handleSubmit = async (values) => {

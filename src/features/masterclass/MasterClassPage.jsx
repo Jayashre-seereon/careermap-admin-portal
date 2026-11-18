@@ -74,7 +74,8 @@ const normalizeBoolean = (...values) => {
   const matchedValue = values.find((value) => value !== undefined && value !== null);
 
   if (typeof matchedValue === "string") {
-    return matchedValue.toLowerCase() === "true" || matchedValue === "1";
+    const text = matchedValue.trim().toLowerCase();
+    return text === "true" || text === "1" || text === "active";
   }
 
   return !!matchedValue;
@@ -184,6 +185,8 @@ export default function MasterClassPage() {
   const [current, setCurrent] = useState(null);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
 
  const loadMasterClasses = async () => {
     try {
@@ -223,11 +226,15 @@ export default function MasterClassPage() {
 
 
 
-  const filteredData = data.filter((item) =>
-    `${item.title} ${item.name} ${item.time} ${item.views} ${item.videoUrl} ${item.categoryLabel}`
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+  const keyword = search.trim().toLowerCase();
+  const filteredData = data.filter((item) => {
+    if (categoryFilter !== "all" && item.category !== categoryFilter) return false;
+    if (statusFilter === "active" && !item.isActive) return false;
+    if (statusFilter === "inactive" && item.isActive) return false;
+    if (!keyword) return true;
+    return [item.title, item.name, item.time, item.views, item.videoUrl, item.categoryLabel]
+      .some((field) => String(field ?? "").toLowerCase().includes(keyword));
+  });
 
   const handleSubmit = async (values) => {
     try {
@@ -274,6 +281,11 @@ export default function MasterClassPage() {
         loading={loading}
         search={search}
         onSearch={setSearch}
+        categoryFilter={categoryFilter}
+        onCategoryFilterChange={setCategoryFilter}
+        categoryOptions={MASTER_CLASS_CATEGORY_OPTIONS}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
         onAdd={() => {
           setCurrent(null);
           setOpen(true);

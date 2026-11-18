@@ -1,19 +1,62 @@
-import React, { useState } from "react";
-import { Button, Input, Select, Table, Tag } from "antd";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Alert, Button, Input, Select, Table, Tag } from "antd";
 import { SearchOutlined, ReloadOutlined } from "@ant-design/icons";
-import { initialSubscriptions } from "../plans/planData";
+import api from "../../api/axios";
 import { getSerialNumber } from "../../utils/slNo";
+
+const formatDate = (value) => {
+  if (!value) return "-";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? "-"
+    : new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
+};
+
+const getStatus = (record) =>
+  String(record.isExpired ? "expired" : record.status || "unknown").toLowerCase();
+
 export default function SubscriptionsPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("All");
-const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
-  const filteredData = initialSubscriptions.filter((item) => {
-    const matchesSearch = `${item.user} ${item.email} ${item.planName}`
-      .toLowerCase()
-      .includes(search.toLowerCase());
-    const matchesStatus = status === "All" || item.status === status;
-    return matchesSearch && matchesStatus;
-  });
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
+
+  const loadSubscriptions = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await api.get("/api/admin/subscribers");
+      const payload = response.data;
+      const rows = Array.isArray(payload) ? payload : payload?.data;
+      setSubscriptions(Array.isArray(rows) ? rows : []);
+    } catch (requestError) {
+      setError(
+        requestError.response?.data?.message ||
+          requestError.message ||
+          "Could not load subscriptions."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadSubscriptions();
+  }, [loadSubscriptions]);
+
+  const filteredData = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return subscriptions.filter((item) => {
+      const matchesSearch =
+        !query ||
+        [item.userName, item.userEmail, item.userMobile, item.planName, item.planType]
+          .some((value) => String(value ?? "").toLowerCase().includes(query));
+      const matchesStatus = status === "All" || getStatus(item) === status;
+      return matchesSearch && matchesStatus;
+    });
+  }, [subscriptions, search, status]);
 
   const columns = [
     {
@@ -21,19 +64,24 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
       render: (_, __, index) => getSerialNumber(index, pagination),
       width: 70,
     },
-    { title: "User", dataIndex: "user", width: 220, ellipsis: true },
-    { title: "Email", dataIndex: "email", width: 260, ellipsis: true },
-    { title: "Plan Name", dataIndex: "planName", width: 260, ellipsis: true },
-    { title: "Time", dataIndex: "time", width: 140 },
+    { title: "User", dataIndex: "userName", width: 220, ellipsis: true, render: (v) => v || "-" },
+    { title: "Email", dataIndex: "userEmail", width: 260, ellipsis: true, render: (v) => v || "-" },
+    { title: "Plan Name", dataIndex: "planName", width: 260, ellipsis: true, render: (v) => v || "-" },
+    { title: "Start Date", dataIndex: "startDate", width: 140, render: formatDate },
     {
       title: "Status",
-      dataIndex: "status",
-      render: (value) => (
-        <Tag color={value === "Active" ? "red" : "default"}>{value}</Tag>
-      ),
+      key: "status",
+      render: (_, record) => {
+        const value = getStatus(record);
+        return (
+          <Tag color={value === "active" ? "green" : value === "expired" ? "red" : "default"}>
+            {value}
+          </Tag>
+        );
+      },
       width: 130,
     },
-    { title: "Expiry Date", dataIndex: "expiryDate", width: 160 },
+    { title: "Expiry Date", dataIndex: "endDate", width: 160, render: formatDate },
   ];
 
   return (
@@ -47,17 +95,24 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
               placeholder="Search user or plan..."
               prefix={<SearchOutlined className="text-[#9a2119]" />}
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setPagination((prev) => ({ ...prev, current: 1 }));
+              }}
               className="w-full sm:w-64"
             />
             <Select
               value={status}
-              onChange={setStatus}
+              onChange={(value) => {
+                setStatus(value);
+                setPagination((prev) => ({ ...prev, current: 1 }));
+              }}
               className="w-36"
               options={[
                 { label: "All", value: "All" },
-                { label: "Active", value: "Active" },
-                { label: "Inactive", value: "Inactive" },
+                { label: "Active", value: "active" },
+                { label: "Expired", value: "expired" },
+                { label: "Cancelled", value: "cancelled" },
               ]}
             />
           </div>
@@ -67,6 +122,8 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
             onClick={() => {
               setSearch("");
               setStatus("All");
+              setPagination((prev) => ({ ...prev, current: 1 }));
+              loadSubscriptions();
             }}
             style={{ color: "#9a2119", borderColor: "#9a2119" }}
           >
@@ -74,17 +131,26 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
           </Button>
         </div>
 
+        {error && (
+          <Alert
+            className="mb-4"
+            type="error"
+            showIcon
+            message="Unable to load subscriptions"
+            description={error}
+          />
+        )}
+
         <Table
           columns={columns}
-          dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
-          rowKey="id"
-         pagination={pagination}
-         onChange={(pag) => setPagination(pag)}
-         
+          dataSource={filteredData}
+          loading={loading}
+          rowKey={(record) => record.id ?? `${record.userId}-${record.planId}-${record.createdAt}`}
+          pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: [10, 20, 50] }}
+          onChange={(pag) => setPagination({ current: pag.current, pageSize: pag.pageSize })}
           scroll={{ x: "max-content" }}
         />
       </div>
     </div>
   );
 }
-

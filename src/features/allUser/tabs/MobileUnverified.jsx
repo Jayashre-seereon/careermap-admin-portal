@@ -127,7 +127,7 @@ export default function MobileUnverified() {
       <Table
         columns={columns}
         dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
-        pagination={{ pageSize: 5 }}
+        pagination={{ pageSize: 10, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
         rowClassName="hover:bg-gray-50"
         scroll={{ x: "max-content" }}
       />

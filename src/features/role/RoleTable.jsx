@@ -7,15 +7,19 @@ import {
   ReloadOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
+import { getSerialNumber } from "../../utils/slNo";
 
 function RoleTable({ data, loading, onAddClick, onView, onEdit, onDelete, search, onSearch }) {
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
+  const rowCount = Array.isArray(data) ? data.length : 0;
+  const lastPage = Math.max(1, Math.ceil(rowCount / pagination.pageSize));
+  const activePagination = { ...pagination, current: Math.min(pagination.current, lastPage) };
 
   const columns = [
     {
       title: "S.No",
       width: 70,
-      render: (_, __, index) => (pagination.current - 1) * pagination.pageSize + index + 1,
+      render: (_, __, index) => getSerialNumber(index, activePagination),
     },
     {
       title: "Name",
@@ -69,11 +73,11 @@ function RoleTable({ data, loading, onAddClick, onView, onEdit, onDelete, search
               placeholder="Search roles..."
               prefix={<SearchOutlined className="text-[#9a2119]" />}
               value={search}
-              onChange={(event) => onSearch(event.target.value)}
+              onChange={(event) => { onSearch(event.target.value); setPagination((prev) => ({ ...prev, current: 1 })); }}
               className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
             />
             <Button
-              onClick={() => onSearch("")}
+              onClick={() => { onSearch(""); setPagination((prev) => ({ ...prev, current: 1 })); }}
               style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
             >
               <ReloadOutlined />
@@ -93,7 +97,8 @@ function RoleTable({ data, loading, onAddClick, onView, onEdit, onDelete, search
           dataSource={Array.isArray(data) ? [...data].reverse() : []}
           rowKey={(record) => record.id}
           loading={loading}
-          pagination={pagination}
+          pagination={{ ...activePagination, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
+          locale={{ emptyText: String(search || "").trim() ? `No results for "${String(search).trim()}"` : "No data" }}
           onChange={(pag) => setPagination(pag)}
           scroll={{ x: "max-content" }}
         />

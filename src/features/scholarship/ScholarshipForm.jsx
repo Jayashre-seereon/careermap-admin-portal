@@ -1,3 +1,4 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import { Form, Input, Select, Button, Upload, DatePicker } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
@@ -107,15 +108,10 @@ useEffect(() => {
           ? initialValues.sections
           : [{ title: "", description: "" }], // ← fallback to 1 row even in edit mode
 
-      categoryId: initialValues?.categoryId
-        ? { value: initialValues.categoryId, label: initialValues.categoryName }
-        : undefined,
-      secondcategoryId: initialValues?.secondcategoryId
-        ? { value: initialValues.secondcategoryId, label: initialValues.secondCategoryName }
-        : undefined,
-      subcategoryId: initialValues?.subcategoryId
-        ? { value: initialValues.subcategoryId, label: initialValues.subCategoryName }
-        : undefined,
+      // Scalar ids; labels come from the loaded option lists.
+      categoryId: initialValues?.categoryId || undefined,
+      secondcategoryId: initialValues?.secondcategoryId || undefined,
+      subcategoryId: initialValues?.subcategoryId || undefined,
     });
   } else {
     form.resetFields();
@@ -145,11 +141,12 @@ useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialValues]);
 
+  const [guardedSubmit, submitting] = useSubmitGuard(onSubmit);
   return (
    <Form
   layout="vertical"
   form={form}
-  onFinish={onSubmit}
+  onFinish={guardedSubmit}
   validateTrigger={["onChange", "onBlur"]}
   className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
 >
@@ -160,10 +157,10 @@ useEffect(() => {
   {/* CATEGORY */}
   <Form.Item name="categoryId" label="Category">
     <Select
-      labelInValue
+      allowClear
       disabled={isView}
       placeholder="Select Category"
-      onChange={(val) => handleCategoryChange(val?.value)}
+      onChange={(val) => handleCategoryChange(val)}
     >
       {categories.map((cat) => (
         <Option key={cat.id} value={cat.id}>
@@ -176,10 +173,10 @@ useEffect(() => {
   {/* SECONDARY CATEGORY */}
   <Form.Item name="secondcategoryId" label="Secondary Category">
     <Select
-      labelInValue
+      allowClear
       disabled={isView}
       placeholder="Select Secondary Category"
-      onChange={(val) => handleSecondCategoryChange(val?.value)}
+      onChange={(val) => handleSecondCategoryChange(val)}
     >
       {secondaryCategories.map((sec) => (
         <Option key={sec.id} value={sec.id}>
@@ -191,7 +188,7 @@ useEffect(() => {
 
   {/* SUB CATEGORY */}
   <Form.Item name="subcategoryId" label="Sub Category">
-    <Select labelInValue disabled={isView} placeholder="Select Sub Category">
+    <Select allowClear disabled={isView} placeholder="Select Sub Category">
       {subCategories.map((sub) => (
         <Option key={sub.id} value={sub.id}>
           {sub.title}
@@ -338,7 +335,7 @@ useEffect(() => {
 
   {!isView && (
     <Button
-      htmlType="submit"
+      htmlType="submit" loading={submitting}
       className="md:col-span-2 lg:col-span-4 bg-[#9a2119] text-white"
     >
       {mode === "edit" ? "Update" : "Submit"}

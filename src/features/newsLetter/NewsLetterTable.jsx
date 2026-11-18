@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Table, Button, Input, Space, Popconfirm } from "antd";
+import React, { useMemo, useState } from "react";
+import { Table, Button, Input, Select, Space, Popconfirm } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -15,11 +15,28 @@ import { getSerialNumber } from "../../utils/slNo";
 
 export default function NewsletterTable({ data, onAddClick, onView, onEdit, onDelete, loading }) {
   const [search, setSearch] = useState("");
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
 
-  const filtered = (data || []).filter((item) =>
-    (item.title || "").toLowerCase().includes((search || "").toLowerCase())
+  const [typeFilter, setTypeFilter] = useState("all");
+  const resetPage = () => setPagination((prev) => ({ ...prev, current: 1 }));
+  const typeOptions = useMemo(
+    () => [...new Set((data || []).map((item) => String(item.type || "").trim()).filter(Boolean))].sort(),
+    [data]
   );
+  const query = (search || "").trim().toLowerCase();
+  const filtered = (data || []).filter((item) => {
+    if (typeFilter !== "all" && String(item.type || "").trim() !== typeFilter) return false;
+    if (!query) return true;
+    const description = String(item.description || "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ");
+    return [item.title, description]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+      .includes(query);
+  });
+  // Clamp the controlled page so serial numbers stay correct after a delete/filter shrinks the list.
+  const lastPage = Math.max(1, Math.ceil(filtered.length / pagination.pageSize));
+  const activePagination = { ...pagination, current: Math.min(pagination.current, lastPage) };
 
   const getFileMeta = (file) => {
     if (!file) return null;
@@ -42,7 +59,7 @@ export default function NewsletterTable({ data, onAddClick, onView, onEdit, onDe
   const columns = [
     {
       title: "SL",
-      render: (_, __, index) => getSerialNumber(index, pagination),
+      render: (_, __, index) => getSerialNumber(index, activePagination),
       width: 70,
     },
     {
@@ -140,14 +157,20 @@ export default function NewsletterTable({ data, onAddClick, onView, onEdit, onDe
         <h2 className="text-lg font-semibold text-[#9a2119]">News letters</h2>
         <div className="flex flex-wrap items-center gap-3">
           <Input
-            placeholder="Search newsletter..."
+            placeholder="Search title or description..."
             prefix={<SearchOutlined className="text-[#9a2119]" />}
             className="w-full sm:w-64 h-8 rounded-md border-[#9a2119]"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); resetPage(); }}
+          />
+          <Select
+            value={typeFilter}
+            onChange={(value) => { setTypeFilter(value); resetPage(); }}
+            style={{ width: 150 }}
+            options={[{ value: "all", label: "All Types" }, ...typeOptions.map((v) => ({ value: v, label: v }))]}
           />
           <Button
-            onClick={() => setSearch("")}
+            onClick={() => { setSearch(""); setTypeFilter("all"); resetPage(); }}
             style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
           >
             <ReloadOutlined />
@@ -167,7 +190,7 @@ export default function NewsletterTable({ data, onAddClick, onView, onEdit, onDe
         dataSource={Array.isArray(filtered) ? [...filtered].reverse() : []}
         rowKey={(record) => record.id}
         loading={loading}
-        pagination={pagination}
+        pagination={{ ...activePagination, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
         onChange={(pag) => setPagination(pag)}
         scroll={{ x: "max-content" }}
       />

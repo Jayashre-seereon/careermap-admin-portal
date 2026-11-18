@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Modal, message } from "antd";
 import NotificationsForm from "./NotificationsForm";
 import NotificationsTable from "./NotificationsTable";
@@ -84,6 +84,9 @@ export default function NotificationsPage() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [dateRange, setDateRange] = useState(null);
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("add");
   const [selected, setSelected] = useState(null);
@@ -107,11 +110,32 @@ export default function NotificationsPage() {
     loadNotifications();
   }, []);
 
-  const filteredData = data.filter((item) =>
-    `${item.title} ${item.message} ${item.target} ${item.status} ${item.type}`
-      .toLowerCase()
-      .includes(search.toLowerCase())
+  const typeOptions = useMemo(
+    () => [...new Set(data.map((item) => String(item.type || "").trim()).filter(Boolean))].sort(),
+    [data]
   );
+  const statusOptions = useMemo(
+    () => [...new Set(data.map((item) => String(item.status || "").trim()).filter(Boolean))].sort(),
+    [data]
+  );
+
+  const filteredData = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    const from = dateRange?.[0] ? dateRange[0].startOf("day").valueOf() : null;
+    const to = dateRange?.[1] ? dateRange[1].endOf("day").valueOf() : null;
+    return data.filter((item) => {
+      if (query && !`${item.title} ${item.target}`.toLowerCase().includes(query)) return false;
+      if (typeFilter !== "all" && String(item.type || "").trim() !== typeFilter) return false;
+      if (statusFilter !== "all" && String(item.status || "").trim() !== statusFilter) return false;
+      if (from !== null || to !== null) {
+        const created = item.createdAt ? new Date(item.createdAt).getTime() : NaN;
+        if (Number.isNaN(created)) return false;
+        if (from !== null && created < from) return false;
+        if (to !== null && created > to) return false;
+      }
+      return true;
+    });
+  }, [data, search, typeFilter, statusFilter, dateRange]);
 
   const handleSubmit = async (values) => {
     try {
@@ -158,6 +182,14 @@ export default function NotificationsPage() {
         loading={loading}
         search={search}
         onSearch={setSearch}
+        typeFilter={typeFilter}
+        onTypeFilter={setTypeFilter}
+        typeOptions={typeOptions}
+        statusFilter={statusFilter}
+        onStatusFilter={setStatusFilter}
+        statusOptions={statusOptions}
+        dateRange={dateRange}
+        onDateRange={setDateRange}
         onAdd={() => {
           setSelected(null);
           setMode("add");

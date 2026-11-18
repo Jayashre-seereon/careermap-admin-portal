@@ -1,7 +1,9 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import React, { useEffect, useRef } from "react";
 import { Form, Input, Button, Upload } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { validationRules } from "../../utils/formValidation";
+import { checkUpload } from "../../utils/uploadValidation";
 
 function StreamForm({ onSubmit, initialValues, disabled }) {
   const [form] = Form.useForm();
@@ -37,20 +39,21 @@ function StreamForm({ onSubmit, initialValues, disabled }) {
     }
   }, [form, initialValues]);
 
+  const [guardedSubmit, submitting] = useSubmitGuard(handleFinish);
   return (
-    <Form layout="vertical" form={form} onFinish={handleFinish} validateTrigger={["onChange", "onBlur"]}>
+    <Form layout="vertical" form={form} onFinish={guardedSubmit} validateTrigger={["onChange", "onBlur"]}>
       <h3 className="mb-4 text-lg font-semibold text-[#9a2119]">Stream Details</h3>
 
       <Form.Item
         name="name"
         label="Stream Name"
-        rules={[validationRules.required("Stream name"), validationRules.charactersOnly("Stream name")]}
+        rules={[validationRules.required("Stream name"), validationRules.nameText("Stream name")]}
       >
         <Input disabled={disabled} />
       </Form.Item>
 
       <Form.Item name="image" label="Image" valuePropName="fileList" getValueFromEvent={normalizeFile}>
-        <Upload beforeUpload={(file) => { pickedRef.current = file; return false; }} onRemove={() => { pickedRef.current = null; }} maxCount={1} disabled={disabled} listType="text">
+        <Upload beforeUpload={(file) => { if (!checkUpload(file, "image")) return Upload.LIST_IGNORE; pickedRef.current = file; return false; }} accept="image/*" onRemove={() => { pickedRef.current = null; }} maxCount={1} disabled={disabled} listType="text">
           <Button icon={<UploadOutlined />} className="w-full">
             Upload Image
           </Button>
@@ -70,7 +73,7 @@ function StreamForm({ onSubmit, initialValues, disabled }) {
       {!disabled && (
         <Button
           type="primary"
-          htmlType="submit"
+          htmlType="submit" loading={submitting}
           block
           style={{ background: "#9a2119", borderColor: "#9a2119" }}
         >

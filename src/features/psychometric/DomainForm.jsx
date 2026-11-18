@@ -1,3 +1,4 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import React, { useEffect } from "react";
 import { Button, Form, Input, InputNumber, Select } from "antd";
 import RichTextEditor from "../../components/ui/RichTextEditor";
@@ -21,11 +22,12 @@ function DomainForm({ onSubmit, initialValues, disabled }) {
     }
   }, [form, initialValues]);
 
+  const [guardedSubmit, submitting] = useSubmitGuard(onSubmit);
   return (
     <Form
       layout="vertical"
       form={form}
-      onFinish={onSubmit}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
     >
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -38,7 +40,7 @@ function DomainForm({ onSubmit, initialValues, disabled }) {
           label="Name"
           rules={[
             validationRules.required("Name"),
-            validationRules.charactersOnly("Name"),
+            validationRules.nameText("Name"),
           ]}
         >
           <Input placeholder="Enter name" disabled={disabled} />
@@ -110,7 +112,7 @@ function DomainForm({ onSubmit, initialValues, disabled }) {
       {!disabled && (
         <Button
           type="primary"
-          htmlType="submit"
+          htmlType="submit" loading={submitting}
           block
           style={{ background: "#9a2119", borderColor: "#9a2119" }}
         >

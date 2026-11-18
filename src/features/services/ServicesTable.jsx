@@ -7,6 +7,8 @@ import {
   ReloadOutlined,
 } from "@ant-design/icons";
 import { useState } from "react";
+import useTablePagination from "../../utils/useTablePagination";
+import { getSerialNumber } from "../../utils/slNo";
 
 export default function ServicesTable({
   data = [],
@@ -23,10 +25,11 @@ export default function ServicesTable({
 
   const handleReset = () => setSearch("");
 
+  const { pagination, tableProps } = useTablePagination(Array.isArray(filteredData) ? filteredData.length : 0);
   const columns = [
     {
       title: <span className="text-[#9a2119] font-semibold">SL</span>,
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
       width: 60,
     },
     {
@@ -125,7 +128,7 @@ export default function ServicesTable({
         <Table
           columns={columns}
           dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
-          pagination={{ pageSize: 5 }}
+          {...tableProps}
           scroll={{ x: true }}
         />
       </div>

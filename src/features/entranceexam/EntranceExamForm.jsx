@@ -1,3 +1,4 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import { Form, Input, Select, Button, DatePicker, Radio } from "antd";
 import { useEffect } from "react";
 import { validationRules } from "../../utils/formValidation";
@@ -98,11 +99,12 @@ export default function EntranceExamForm({
     onSecondCategoryChange?.(secondCategoryId);
   };
 
+  const [guardedSubmit, submitting] = useSubmitGuard(onSubmit);
   return (
     <Form
       form={form}
       layout="vertical"
-      onFinish={onSubmit}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
       className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
     >
@@ -290,7 +292,7 @@ export default function EntranceExamForm({
       {!isView && (
         <div className="md:col-span-2 lg:col-span-4">
           <Button
-            htmlType="submit"
+            htmlType="submit" loading={submitting}
             block
             style={{ background: "#9a2119", borderColor: "#9a2119" }}
             className="text-white"

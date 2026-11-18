@@ -7,6 +7,8 @@ import {
   ReloadOutlined,
 } from "@ant-design/icons";
 import { useState } from "react";
+import useTablePagination from "../../utils/useTablePagination";
+import { getSerialNumber } from "../../utils/slNo";
 
 export default function CareerPlanTable({
   data = [],
@@ -29,10 +31,11 @@ export default function CareerPlanTable({
     </Tooltip>
   );
 
+  const { pagination, tableProps } = useTablePagination(Array.isArray(filteredData) ? filteredData.length : 0);
   const columns = [
     {
       title: "SL",
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
       width: 60,
       fixed: "left",
     },
@@ -148,7 +151,7 @@ export default function CareerPlanTable({
         <Table
           columns={columns}
           dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
-          pagination={{ pageSize: 5 }}
+          {...tableProps}
           scroll={{ x: 1100 }}
         />
       </div>

@@ -1,3 +1,4 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import React, { useEffect } from "react";
 import { Form, Input, Button } from "antd";
 import { validationRules } from "../../utils/formValidation";
@@ -14,11 +15,12 @@ export default function PathTypeForm({ onSubmit, initialValues, mode }) {
     }
   }, [form, initialValues]);
 
+  const [guardedSubmit, submitting] = useSubmitGuard(onSubmit);
   return (
     <Form
       layout="vertical"
       form={form}
-      onFinish={onSubmit}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
     >
       <h3 className="mb-4 text-lg font-semibold text-[#9a2119]">
@@ -35,7 +37,7 @@ export default function PathTypeForm({ onSubmit, initialValues, mode }) {
 
       {!isView && (
         <Button
-          htmlType="submit"
+          htmlType="submit" loading={submitting}
           style={{ background: "#9a2119", borderColor: "#9a2119" }}
           className="text-white w-full"
         >

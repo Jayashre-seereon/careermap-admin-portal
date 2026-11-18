@@ -33,6 +33,26 @@ export const defaultSmsConfig = {
   customPayload: "",
 };
 
+// Secrets are never written to localStorage. They are kept in memory only for the
+// current page session (lost on reload) until a secure backend endpoint stores them.
+const SECRET_FIELDS = {
+  [EMAIL_CONFIG_KEY]: ["password"],
+  [SMS_CONFIG_KEY]: ["nexmoApiSecret", "twilioAuthToken", "customApiKey"],
+};
+const memorySecrets = {};
+
+function stripSecrets(key, value) {
+  const copy = { ...value };
+  (SECRET_FIELDS[key] || []).forEach((field) => {
+    delete copy[field];
+  });
+  return copy;
+}
+
+function withSecrets(key, value) {
+  return { ...value, ...(memorySecrets[key] || {}) };
+}
+
 function readConfig(key, fallback) {
   if (typeof window === "undefined") {
     return { ...fallback };
@@ -41,16 +61,20 @@ function readConfig(key, fallback) {
   const stored = window.localStorage.getItem(key);
 
   if (!stored) {
-    window.localStorage.setItem(key, JSON.stringify(fallback));
-    return { ...fallback };
+    window.localStorage.setItem(key, JSON.stringify(stripSecrets(key, fallback)));
+    return withSecrets(key, fallback);
   }
 
   try {
     const parsed = JSON.parse(stored);
-    return { ...fallback, ...parsed };
+    // Purge secrets saved by older versions of this store.
+    if ((SECRET_FIELDS[key] || []).some((field) => parsed?.[field])) {
+      window.localStorage.setItem(key, JSON.stringify(stripSecrets(key, parsed)));
+    }
+    return withSecrets(key, { ...fallback, ...stripSecrets(key, parsed) });
   } catch {
-    window.localStorage.setItem(key, JSON.stringify(fallback));
-    return { ...fallback };
+    window.localStorage.setItem(key, JSON.stringify(stripSecrets(key, fallback)));
+    return withSecrets(key, fallback);
   }
 }
 
@@ -59,7 +83,11 @@ function writeConfig(key, value) {
     return;
   }
 
-  window.localStorage.setItem(key, JSON.stringify(value));
+  const secretFields = SECRET_FIELDS[key] || [];
+  if (secretFields.length) {
+    memorySecrets[key] = Object.fromEntries(secretFields.map((field) => [field, value?.[field] ?? ""]));
+  }
+  window.localStorage.setItem(key, JSON.stringify(stripSecrets(key, value)));
 }
 
 export function getGlobalTemplateConfig() {

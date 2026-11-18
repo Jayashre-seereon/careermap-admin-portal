@@ -25,9 +25,9 @@ const getStoredJson = (key) => {
 const getStoredSession = () => {
   const loginType = localStorage.getItem(LOGIN_TYPE_KEY) || "admin";
   return {
-    accessToken: loginType === "institute"
-      ? (localStorage.getItem(INSTITUTE_ACCESS_TOKEN_KEY) || localStorage.getItem(ACCESS_TOKEN_KEY) || "")
-      : (localStorage.getItem(ACCESS_TOKEN_KEY) || ""),
+    // Single token key. The legacy institute key is only read as a one-time migration fallback.
+    accessToken: localStorage.getItem(ACCESS_TOKEN_KEY)
+      || (loginType === "institute" ? (localStorage.getItem(INSTITUTE_ACCESS_TOKEN_KEY) || "") : ""),
     refreshToken: localStorage.getItem(REFRESH_TOKEN_KEY) || "",
     user: getStoredJson(USER_KEY),
     loginType,
@@ -46,11 +46,7 @@ const setStoredSession = ({
 }) => {
   if (accessToken) {
     localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
-    if (loginType === "institute") {
-      localStorage.setItem(INSTITUTE_ACCESS_TOKEN_KEY, accessToken);
-    } else {
-      localStorage.removeItem(INSTITUTE_ACCESS_TOKEN_KEY);
-    }
+    localStorage.removeItem(INSTITUTE_ACCESS_TOKEN_KEY);
   } else {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(INSTITUTE_ACCESS_TOKEN_KEY);
@@ -178,9 +174,26 @@ export const useSessionStore = create((set, get) => ({
 
   if (loginType !== "staff") return true;
 
-  const permission = permissions?.find(
+  let permission = permissions?.find(
     (p) => p.module === moduleName
   );
+
+  // Plans and Quiz are separate modules; until they are granted explicitly,
+  // fall back to the legacy shared "PlansQuiz" module.
+  if (!permission && (moduleName === "Plans" || moduleName === "Quiz")) {
+    permission = permissions?.find((p) => p.module === "PlansQuiz");
+  }
+
+  // "Assessment" also accepts the legacy per-page module names that older
+  // permission records may still carry.
+  if (moduleName === "Assessment" && !permission?.[action]) {
+    const legacy = permissions?.find(
+      (p) =>
+        ["Sections", "Questions", "Career Clusters", "Student Attempts"].includes(p.module) &&
+        p?.[action]
+    );
+    if (legacy) permission = legacy;
+  }
 
   return Boolean(permission?.[action]);
 },

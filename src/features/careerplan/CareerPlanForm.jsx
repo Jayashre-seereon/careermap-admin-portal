@@ -1,7 +1,9 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import { useEffect } from "react";
 import { Form, Input, Upload, Button } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { validationRules } from "../../utils/formValidation";
+import { createBeforeUpload } from "../../utils/uploadValidation";
 
 export default function CareerPlanForm({ onSubmit, initialValues, viewMode }) {
   const [form] = Form.useForm();
@@ -14,12 +16,13 @@ export default function CareerPlanForm({ onSubmit, initialValues, viewMode }) {
     }
   }, [form, initialValues]);
 
+  const [guardedSubmit, submitting] = useSubmitGuard(onSubmit);
   return (
     <Form
       layout="vertical"
       form={form}
       initialValues={initialValues}
-      onFinish={onSubmit}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
       className="grid grid-cols-1 md:grid-cols-2 gap-4"
     >
@@ -36,7 +39,7 @@ export default function CareerPlanForm({ onSubmit, initialValues, viewMode }) {
       </Form.Item>
 
       <Form.Item name="image" label="Image">
-        <Upload beforeUpload={() => false} disabled={viewMode}>
+        <Upload beforeUpload={createBeforeUpload("image")} accept="image/*" disabled={viewMode}>
           <Button icon={<UploadOutlined />}>Upload</Button>
         </Upload>
       </Form.Item>
@@ -55,7 +58,7 @@ export default function CareerPlanForm({ onSubmit, initialValues, viewMode }) {
 
       {!viewMode && (
         <Button
-          htmlType="submit"
+          htmlType="submit" loading={submitting}
           className="md:col-span-2 bg-[#9a2119] text-white"
         >
           Submit
