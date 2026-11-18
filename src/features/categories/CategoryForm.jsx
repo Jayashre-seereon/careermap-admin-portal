@@ -6,6 +6,7 @@ import RichTextEditor from "../../components/ui/RichTextEditor";
 import StatusSwitch from "../../components/ui/StatusSwitch";
 import { validationRules } from "../../utils/formValidation";
 import { checkUpload } from "../../utils/uploadValidation";
+import { selectLoadingProps } from "../../utils/selectLoading";
 
 const { Option } = Select;
 
@@ -46,6 +47,7 @@ export default function CategoryForm({
   disabled,
   streamOptions = [],
   institutionOptions = [],
+  optionsLoading = false,
 }) {
   const [form] = Form.useForm();
   const pickedCoverRef = useRef(null);
@@ -87,7 +89,7 @@ export default function CategoryForm({
         </h3>
 
         <Form.Item name="stream" label="Stream" rules={[{ required: true }]}>
-          <Select placeholder="Select Stream" disabled={disabled}>
+          <Select placeholder="Select Stream" disabled={disabled} {...selectLoadingProps(optionsLoading)}>
             {streamOptions.map((item) => (
               <Option key={item.id} value={item.id}>
                 {item.name}

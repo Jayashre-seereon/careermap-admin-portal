@@ -485,6 +485,16 @@ const [selectedSections, setSelectedSections] = useState([]);  const [draftsBySe
   const [secondaryCategoryOptions, setSecondaryCategoryOptions] = useState([]);
   const [subcategoryOptions, setSubcategoryOptions] = useState([]);
   const [streamOptions, setStreamOptions] = useState([]);
+  // which dropdowns are still waiting for their API data (forms show a spinner, not "No data")
+  const [optionsLoading, setOptionsLoading] = useState({ stream: true, path: true, exam: true, institution: true });
+  const withLoading = async (key, task) => {
+    setOptionsLoading((prev) => ({ ...prev, [key]: true }));
+    try {
+      return await task();
+    } finally {
+      setOptionsLoading((prev) => ({ ...prev, [key]: false }));
+    }
+  };
   const [pathOptions, setPathOptions] = useState([]);
   const [examOptions, setExamOptions] = useState([]);
   const [institutionOptions, setInstitutionOptions] = useState([]);
@@ -520,18 +530,18 @@ const [selectedSections, setSelectedSections] = useState([]);  const [draftsBySe
   const loadCategories = async (streamId) => {
     const reqId = ++categoryReqRef.current;
     if (!streamId) { secondaryReqRef.current++; subReqRef.current++; setCategoryOptions([]); setSecondaryCategoryOptions([]); setSubcategoryOptions([]); return; }
-    const response = await getCategoriesByStream(streamId);
+    const response = await withLoading("category", () => getCategoriesByStream(streamId));
     if (reqId !== categoryReqRef.current) return;
     setCategoryOptions(normalizeList(response).map((item) => mapOption(item, ["title", "name"])));
   };
 
   const loadStreams = async () => {
-    const response = await getStreams();
+    const response = await withLoading("stream", () => getStreams());
     setStreamOptions(normalizeList(response).map((item) => mapOption(item, ["name", "title"])));
   };
 
   const loadPathOptions = async () => {
-    const response = await getCareerPaths();
+    const response = await withLoading("path", () => getCareerPaths());
     setPathOptions(
       normalizeList(response).map((item) => ({
         ...mapOption(item, ["pathName", "title", "name"]),
@@ -543,19 +553,19 @@ const [selectedSections, setSelectedSections] = useState([]);  const [draftsBySe
   };
 
   const loadExamOptions = async () => {
-    const response = await getEntranceExams();
+    const response = await withLoading("exam", () => getEntranceExams());
     setExamOptions(normalizeList(response).map((item) => mapOption(item, ["examname", "name", "title"])));
   };
 
   const loadInstitutionOptions = async () => {
-    const response = await getInstitutes();
+    const response = await withLoading("institution", () => getInstitutes());
     setInstitutionOptions(normalizeList(response).map((item) => mapOption(item, ["name", "title"])));
   };
 
   const loadSecondaryCategories = async (categoryId) => {
     const reqId = ++secondaryReqRef.current;
     if (!categoryId) { subReqRef.current++; setSecondaryCategoryOptions([]); setSubcategoryOptions([]); return; }
-    const response = await getSecondaryCategoriesByCategory(categoryId);
+    const response = await withLoading("secondary", () => getSecondaryCategoriesByCategory(categoryId));
     const nextOptions = normalizeList(response).map((item) => ({ ...mapOption(item, ["name", "title"]), categoryId: item.categoryId || item.category?.id || undefined }));
     if (reqId !== secondaryReqRef.current) return nextOptions;
     setSecondaryCategoryOptions(nextOptions);
@@ -565,7 +575,7 @@ const [selectedSections, setSelectedSections] = useState([]);  const [draftsBySe
   const loadSubCategories = async (secondCategoryId) => {
     const reqId = ++subReqRef.current;
     if (!secondCategoryId) { setSubcategoryOptions([]); return; }
-    const response = await getSubCategoriesBySecondCategory(secondCategoryId);
+    const response = await withLoading("sub", () => getSubCategoriesBySecondCategory(secondCategoryId));
     if (reqId !== subReqRef.current) return;
     setSubcategoryOptions(
       normalizeList(response).map((item) => ({
@@ -855,7 +865,7 @@ async function handleOpenView(record) {
           onCancel={handleClose}
           onSectionChange={handleSectionChange}
           sectionLabels={SECTION_LABELS}
-          options={{ streamOptions, categoryOptions, secondaryCategoryOptions, subcategoryOptions, pathOptions, examOptions, institutionOptions }}
+          options={{ streamOptions, categoryOptions, secondaryCategoryOptions, subcategoryOptions, pathOptions, examOptions, institutionOptions, loading: optionsLoading }}
           normalizeUpload={(event) => (Array.isArray(event) ? event : event?.fileList || [])}
           onStreamChange={handleStreamChange}
           onCategoryChange={handleCategoryChange}

@@ -5,6 +5,7 @@ import { UploadOutlined } from "@ant-design/icons";
 import RichTextEditor from "../../components/ui/RichTextEditor";
 import { validationRules } from "../../utils/formValidation";
 import { checkUpload } from "../../utils/uploadValidation";
+import { selectLoadingProps } from "../../utils/selectLoading";
 
 const { Option } = Select;
 
@@ -37,6 +38,7 @@ export default function Category2Form({
   mode,
   categoryOptions = [],
   institutionOptions = [],
+  optionsLoading = false,
 }) {
   const [form] = Form.useForm();
   const isView = mode === "view";
@@ -89,7 +91,7 @@ export default function Category2Form({
           label="Category"
           rules={[validationRules.required("Category")]}
         >
-          <Select disabled={isView} placeholder="Select category">
+          <Select disabled={isView} placeholder="Select category" {...selectLoadingProps(optionsLoading)}>
             {categoryOptions.map((item) => (
               <Option key={item.id} value={item.id}>
                 {item.title || item.name}

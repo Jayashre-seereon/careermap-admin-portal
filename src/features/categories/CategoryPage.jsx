@@ -189,6 +189,7 @@ export default function CategoryPage() {
   const [loading, setLoading] = useState(false);
   const [streams, setStreams] = useState([]);
   const [institutes, setInstitutes] = useState([]);
+  const [optionsLoading, setOptionsLoading] = useState(true);
 
   const loadCategories = async () => {
     try {
@@ -225,6 +226,7 @@ export default function CategoryPage() {
   };
 
   const loadDropdowns = async () => {
+    setOptionsLoading(true);
     try {
       const [streamResponse, instituteResponse] = await Promise.all([
         getStreams(),
@@ -237,6 +239,8 @@ export default function CategoryPage() {
       messageApi.error(
         getApiErrorMessage(error, "Failed to load stream and institute options.")
       );
+    } finally {
+      setOptionsLoading(false);
     }
   };
 
@@ -329,6 +333,7 @@ export default function CategoryPage() {
         }
       >
         <CategoryForm
+          optionsLoading={optionsLoading}
           onSubmit={mode === "edit" ? handleUpdate : handleAdd}
           initialValues={selected}
           disabled={mode === "view"}
