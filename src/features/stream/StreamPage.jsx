@@ -162,7 +162,7 @@ export default function StreamPage() {
   };
 
   const filteredStreams = streams.filter((stream) =>
-    `${stream.name}`.toLowerCase().includes(search.toLowerCase())
+    String(stream.name ?? "").toLowerCase().includes(search.trim().toLowerCase())
   );
 
   return (

@@ -2,36 +2,19 @@ import { Tabs } from "antd";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import NotificationToUser from "./tabs/NotificationToUser";
 import UserDetails from "./tabs/UserDetails";
-import { useEffect, useState } from "react";
-import { getAllUsers } from "../../api/allusers"; 
+import { useState } from "react";
 export default function AllUsers() {
   const location = useLocation();
   const navigate = useNavigate();
   const [selectedUser, setSelectedUser] = useState(null);
   const [notificationUser, setNotificationUser] = useState(null);
   const [users, setUsers] = useState([]);
-  useEffect(() => {
-  fetchUsers();
-}, []);
-
-const fetchUsers = async () => {
-  try {
-    const res = await getAllUsers();
-
-   const formatted = res.data.map((item) => ({
-  key: item.id,
-  id: item.id,   // ✅ MUST (this fixes undefined issue)
-  user: `${item.firstName} ${item.lastName}`,
-  email: item.email,
-  mobile: item.mobile,
-  status: item.status.toLowerCase(),
-}));
-
-    setUsers(formatted);
-  } catch (err) {
-    console.log(err);
-  }
-};
+  // Per-tab search/page state, kept here so it survives tab switches and the details view.
+  const [listState, setListState] = useState({});
+  // Each status tab loads its own server-side page (see useUsersPage), so the
+  // full user list is no longer fetched here. fetchUsers is kept as a no-op
+  // for backwards compatibility with consumers of the outlet context.
+  const fetchUsers = async () => {};
   // map URL → tab key
   const pathToKey = {
     "/all_users": "1",
@@ -119,6 +102,8 @@ const fetchUsers = async () => {
             users,
             setUsers,
             fetchUsers,
+            listState,
+            setListState,
           }}
         />
       )}

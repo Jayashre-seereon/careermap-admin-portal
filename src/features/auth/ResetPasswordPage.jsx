@@ -96,7 +96,11 @@ export default function ResetPasswordPage() {
               style={{ marginBottom: 14 }}
               rules={[
                 { required: true, message: "Please enter a new password." },
-                { min: 6, message: "Password must be at least 6 characters." },
+                { min: 8, message: "Password must be at least 8 characters." },
+                {
+                  pattern: /^(?=.*[A-Za-z])(?=.*\d).+$/,
+                  message: "Password must include at least one letter and one number.",
+                },
               ]}
             >
               <Input.Password

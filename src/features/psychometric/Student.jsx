@@ -21,7 +21,7 @@ import {
   SearchOutlined,
   UploadOutlined,
 } from "@ant-design/icons";
-import { getValueFromInput, inputSanitizers, validationRules } from "../../utils/formValidation";
+import { getValueFromInput, inputSanitizers, normalizePhone, validationRules } from "../../utils/formValidation";
 import { DATE_DISPLAY_FORMAT, formatDateDisplay, formatDateForPayload, parseDateValue } from "../../utils/date";
 import { getInstitutes } from "../../api/institutions";
 import {
@@ -35,6 +35,7 @@ import {
 const { Option } = Select;
 
 const GENDER_OPTIONS = ["Male", "Female", "Other"];
+const MAX_BULK_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
 const getApiErrorMessage = (error, fallbackMessage) =>
   error.response?.data?.message || error.message || fallbackMessage;
@@ -46,19 +47,9 @@ const normalizeList = (response) => {
   return [];
 };
 
-// Strip "+91" (or any leading +) so the input only ever shows the bare 10 digits
-const stripCountryCode = (value) => {
-  const text = (value || "").trim();
-  if (!text) return "";
-  return text.replace(/^\+91/, "").replace(/^\+/, "");
-};
-
-// Always re-add "+91" before sending to the backend
-const formatMobileForPayload = (value) => {
-  const digits = (value || "").trim();
-  if (!digits) return "";
-  return `+91${digits}`;
-};
+// One phone rule across forms: optional leading "+", 10-15 digits, stored normalised.
+const stripCountryCode = (value) => normalizePhone(value);
+const formatMobileForPayload = (value) => normalizePhone(value);
 
 // backend -> frontend
 const mapStudent = (item = {}) => ({
@@ -94,7 +85,9 @@ const buildStudentPayload = ({
   email,
   mobile: formatMobileForPayload(mobile),
   gender,
-  dataOfBirth: dob ? formatDateForPayload(dob) : null,
+  // Omit dataOfBirth when unset (the DOB field is not on the admin form) so an
+  // update never overwrites an existing date of birth with null.
+  ...(dob ? { dataOfBirth: formatDateForPayload(dob) } : {}),
   address,
 });
 
@@ -166,13 +159,12 @@ function StudentForm({ form, initialValues, viewMode, onSubmit, onCancel, instit
         name="mobile"
         label="Mobile"
         rules={[validationRules.required("Mobile"), validationRules.phone("Mobile")]}
-        getValueFromEvent={getValueFromInput(inputSanitizers.numbersOnly)}
+        getValueFromEvent={getValueFromInput(inputSanitizers.phone)}
       >
         <Input
-          addonBefore="+91"
           disabled={viewMode}
-          placeholder="Enter 10-digit mobile number"
-          maxLength={10}
+          placeholder="Enter mobile number (e.g. +919876543210)"
+          maxLength={16}
         />
       </Form.Item>
 
@@ -244,54 +236,72 @@ export default function Student() {
   const [bulkLoading, setBulkLoading] = useState(false);
   const [bulkResult, setBulkResult] = useState(null);
   const fileInputRef = useRef(null);
+  const [instituteFilter, setInstituteFilter] = useState("all");
+  const [genderFilter, setGenderFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const mountedRef = useRef(true);
 
   const loadStudents = async () => {
     try {
-      setLoading(true);
+      if (mountedRef.current) setLoading(true);
       const response = await getStudents();
+      if (!mountedRef.current) return;
       setData(normalizeList(response).map(mapStudent));
     } catch (error) {
-      messageApi.error(getApiErrorMessage(error, "Failed to load students."));
+      if (mountedRef.current) messageApi.error(getApiErrorMessage(error, "Failed to load students."));
     } finally {
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
     }
   };
 
   const loadInstitutes = async () => {
     try {
-      setInstitutesLoading(true);
+      if (mountedRef.current) setInstitutesLoading(true);
       const response = await getInstitutes();
+      if (!mountedRef.current) return;
       setInstitutes(normalizeList(response));
     } catch (error) {
-      messageApi.error(getApiErrorMessage(error, "Failed to load institutions."));
+      if (mountedRef.current) messageApi.error(getApiErrorMessage(error, "Failed to load institutions."));
     } finally {
-      setInstitutesLoading(false);
+      if (mountedRef.current) setInstitutesLoading(false);
     }
   };
 
   useEffect(() => {
+    mountedRef.current = true;
     loadStudents();
     loadInstitutes();
+    return () => { mountedRef.current = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => { setPage(1); }, [search, instituteFilter, genderFilter]);
 
   const institutionName = (id) => institutes.find((inst) => inst.id === id)?.name || "-";
 
-  const filteredData = data.filter((item) =>
-    [
+  const genderOptions = [...new Set([...GENDER_OPTIONS, ...data.map((item) => item.gender).filter(Boolean)])];
+
+  const filteredData = data.filter((item) => {
+    if (instituteFilter !== "all" && item.registerInstitution !== instituteFilter) return false;
+    if (genderFilter !== "all" && String(item.gender || "").toLowerCase() !== genderFilter.toLowerCase()) return false;
+    const keyword = search.trim().toLowerCase();
+    if (!keyword) return true;
+    // Gender is filtered with its own exact-match dropdown (not substring
+    // search), so "male" no longer matches "female".
+    const dobRaw = item.dob && typeof item.dob.format === "function" ? item.dob.format("YYYY-MM-DD") : "";
+    return [
       institutionName(item.registerInstitution),
       item.firstName,
       item.lastName,
       item.username,
       item.email,
       item.mobile,
-      item.gender,
-      formatDateDisplay(item.dob),
+      dobRaw,
+      item.dob ? formatDateDisplay(item.dob) : "",
       item.address,
-    ]
-      .join(" ")
-      .toLowerCase()
-      .includes(search.trim().toLowerCase())
-  );
+    ].some((field) => String(field ?? "").toLowerCase().includes(keyword));
+  });
 
   const isViewMode = mode === "view";
 
@@ -369,6 +379,14 @@ export default function Student() {
       messageApi.error("Please select an .xlsx file.");
       return;
     }
+    if (file.size > MAX_BULK_FILE_SIZE) {
+      messageApi.error("File is too large. Maximum allowed size is 5 MB.");
+      return;
+    }
+    if (file.size === 0) {
+      messageApi.error("The selected file is empty.");
+      return;
+    }
 
     try {
       setBulkLoading(true);
@@ -392,7 +410,7 @@ export default function Student() {
   }
 
   const columns = [
-    { title: "SL", width: 70, render: (_, __, index) => index + 1 },
+    { title: "SL", width: 70, render: (_, __, index) => (page - 1) * pageSize + index + 1 },
     {
       title: "Institution",
       dataIndex: "registerInstitution",
@@ -407,7 +425,7 @@ export default function Student() {
       title: "Mobile",
       dataIndex: "mobile",
       width: 150,
-      render: (value) => (value ? `+91${value}` : "-"),
+      render: (value) => value || "-",
     },
        {
       title: "Action",
@@ -456,8 +474,22 @@ export default function Student() {
               onChange={(event) => setSearch(event.target.value)}
               className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
             />
+            <Select
+              value={instituteFilter}
+              onChange={setInstituteFilter}
+              showSearch
+              optionFilterProp="label"
+              options={[{ value: "all", label: "All institutions" }, ...institutes.map((institute) => ({ value: institute.id, label: institute.name }))]}
+              className="min-w-[190px]"
+            />
+            <Select
+              value={genderFilter}
+              onChange={setGenderFilter}
+              options={[{ value: "all", label: "All genders" }, ...genderOptions.map((value) => ({ value, label: value }))]}
+              className="min-w-[130px]"
+            />
             <Button
-              onClick={() => setSearch("")}
+              onClick={() => { setSearch(""); setInstituteFilter("all"); setGenderFilter("all"); }}
               style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
             >
               <ReloadOutlined />
@@ -466,7 +498,7 @@ export default function Student() {
             <Select
               value={bulkInstituteId}
               onChange={setBulkInstituteId}
-              placeholder="Select institution"
+              placeholder="Institution for bulk upload"
               showSearch
               optionFilterProp="label"
               options={institutes.map((institute) => ({ value: institute.id, label: institute.name }))}
@@ -492,7 +524,8 @@ export default function Student() {
           dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
           rowKey="id"
           loading={loading}
-          pagination={{ pageSize: 5 }}
+          pagination={{ pageSize, current: page, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100], onChange: (p, size) => { setPage(p); setPageSize(size); } }}
+          locale={{ emptyText: String(search || "").trim() ? `No results for "${String(search).trim()}"` : "No data" }}
           scroll={{ x: "max-content" }}
         />
       </div>
@@ -507,7 +540,7 @@ export default function Student() {
           {!!bulkResult.failedRecords?.length && (
             <Table
               className="mt-4"
-              rowKey={(row, index) => `${row.email}-${index}`}
+              rowKey={(row, index) => `${row.row ?? row.email ?? "row"}-${index}`}
               pagination={false}
               size="small"
               dataSource={bulkResult.failedRecords}

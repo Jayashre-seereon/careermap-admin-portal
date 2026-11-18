@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Modal } from "antd";
+import { Modal, message } from "antd";
 import PermissionForm from "./PermissionForm";
 import PermissionTable from "./PermissionTable";
 import {
@@ -19,15 +19,6 @@ function Permission() {
   const [mode, setMode] = useState("add");
   const [selected, setSelected] = useState(null);
   const [editId, setEditId] = useState(null);
-
-  const filteredSections = sections.filter((section) => {
-    const keyword = search.toLowerCase();
-    const roleName = roles.find((role) => role.id === section.roleId)?.name || "";
-    const modulesMatch = Array.isArray(section.modules)
-      ? section.modules.some((m) => m.toLowerCase().includes(keyword))
-      : false;
-    return roleName.toLowerCase().includes(keyword) || modulesMatch;
-  });
 
   useEffect(() => {
     fetchData();
@@ -96,14 +87,25 @@ const handleAdd = async (values) => {
       (item) => item.roleId === record.roleId
     );
 
-    // delete all one by one
-    await Promise.all(
+    // delete every permission row of this role
+    const results = await Promise.allSettled(
       recordsToDelete.map((item) => deletePermission(item.id))
     );
+    const failed = results.filter((r) => r.status === "rejected");
 
     await fetchData();
+
+    if (failed.length === 0) {
+      message.success("Permission deleted successfully");
+    } else {
+      console.error(failed.map((r) => r.reason));
+      message.error(
+        `${failed.length} of ${results.length} permission entries could not be deleted. Please retry.`
+      );
+    }
   } catch (err) {
     console.error(err);
+    message.error(err?.response?.data?.message || "Failed to delete permission");
   }
 };
 
@@ -143,12 +145,24 @@ const groupedData = Object.values(
     return acc;
   }, {})
 );
+  const filteredData = (() => {
+    const keyword = String(search || "").trim().toLowerCase();
+    if (!keyword) return groupedData;
+    return groupedData.filter((group) => {
+      const roleName = String(roles.find((role) => role.id === group.roleId)?.name ?? "");
+      const modulesMatch = (group.modules || []).some((m) =>
+        String(m?.title ?? m?.name ?? m ?? "").toLowerCase().includes(keyword)
+      );
+      return roleName.toLowerCase().includes(keyword) || modulesMatch;
+    });
+  })();
+
   return (
     <div className="space-y-5">
       <h2 className="text-xl font-bold text-[#9a2119]">Role Permissions Management</h2>
 
       <PermissionTable
-        data={groupedData}
+        data={filteredData}
         roles={roles}
         loading={loading}
         search={search}

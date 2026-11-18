@@ -76,10 +76,9 @@ export default function AssessmentPage() {
   const loadAssessments = async () => {
     try {
       setLoading(true);
-      const res = await getAssessments({
-        status: statusFilter,
-        search: search.trim(),
-      });
+      // Fetch the full list once (the API defaults to 20 rows). Search / status are applied
+      // client-side so the stat cards always reflect the unfiltered set.
+      const res = await getAssessments({ page: 1, limit: 1000 });
 
       // Show exactly what the server returned (an empty list is a valid result).
       setAssessments(normalizeAssessmentsResponse(res));
@@ -110,13 +109,15 @@ export default function AssessmentPage() {
 
   useEffect(() => {
     loadAssessments();
-  }, [statusFilter]);
+  }, []);
+
+  const firstPage = () => setPagination((prev) => ({ ...prev, current: 1 }));
 
   // Compute summary stats
   const stats = useMemo(() => {
     const total = assessments.length;
-    const published = assessments.filter((a) => a.status === "published").length;
-    const draft = assessments.filter((a) => a.status === "draft").length;
+    const published = assessments.filter((a) => String(a.status).toLowerCase() === "published").length;
+    const draft = assessments.filter((a) => String(a.status).toLowerCase() === "draft").length;
     const totalQuestions = assessments.reduce(
       (sum, a) => sum + (Number(a.questionCount) || 0),
       0
@@ -392,12 +393,34 @@ export default function AssessmentPage() {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
 
             {/* Search */}
-          
+            <Input
+              allowClear
+              placeholder="Search title, slug..."
+              prefix={<SearchOutlined className="text-[#9a2119]" />}
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); firstPage(); }}
+              className="h-8 w-full sm:w-64 rounded-md border-[#9a2119]"
+            />
+
+            {/* Status filter */}
+            <Select
+              value={statusFilter}
+              onChange={(value) => { setStatusFilter(value); firstPage(); }}
+              className="w-full sm:w-36"
+              options={[
+                { value: "all", label: "All Status" },
+                { value: "published", label: "Published" },
+                { value: "draft", label: "Draft" },
+                { value: "archived", label: "Archived" },
+              ]}
+            />
 
             {/* Reset */}
             <Button
               onClick={() => {
                 setSearch("");
+                setStatusFilter("all");
+                firstPage();
                 loadAssessments();
               }}
               icon={<ReloadOutlined />}
@@ -443,7 +466,7 @@ export default function AssessmentPage() {
           columns={columns}
           dataSource={filteredAssessments}
           loading={loading}
-          pagination={pagination}
+          pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
           onChange={(pag) => setPagination(pag)}
           scroll={{ x: 1000 }}
           className="custom-table"

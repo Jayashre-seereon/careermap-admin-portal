@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button, Input, Popconfirm, Space, Table } from "antd";
 import {
   DeleteOutlined,
@@ -61,8 +61,10 @@ function CounselingTable({
   onDownload,
   staffView = false,
 }) {
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const columns = [
-    { title: "#", render: (_, __, index) => index + 1, width: 60 },
+    { title: "#", render: (_, __, index) => (page - 1) * pageSize + index + 1, width: 60 },
     { title: "Student Name", dataIndex: "studentName", width: 160, ellipsis: true },
     { title: "Class", dataIndex: "class", width: 90 },
     { title: "Stream", dataIndex: "stream", width: 110, render: (value) => value || "-" },
@@ -174,11 +176,11 @@ function CounselingTable({
             placeholder="Search counseling..."
             prefix={<SearchOutlined className="text-[#9a2119]" />}
             value={search}
-            onChange={(event) => onSearch(event.target.value)}
+            onChange={(event) => { onSearch(event.target.value); setPage(1); }}
             className="w-full sm:w-64 h-8 rounded-md border-[#9a2119]"
           />
           <Button
-            onClick={onReset}
+            onClick={() => { onReset(); setPage(1); }}
             style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
           >
             <ReloadOutlined />
@@ -192,7 +194,8 @@ function CounselingTable({
         dataSource={Array.isArray(data) ? [...data].reverse() : []}
         loading={loading}
         rowKey="id"
-        pagination={{ pageSize: 5 }}
+        pagination={{ pageSize, current: page, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100], onChange: (p, size) => { setPage(p); setPageSize(size); } }}
+        locale={{ emptyText: String(search || "").trim() ? `No results for "${String(search).trim()}"` : "No data" }}
         scroll={{ x: "max-content" }}
       />
     </div>

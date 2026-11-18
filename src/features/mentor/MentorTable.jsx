@@ -1,5 +1,5 @@
 import {React,useState }from "react";
-import { Table, Button, Tag, Avatar, Space, Popconfirm, Input } from "antd";
+import { Table, Button, Tag, Avatar, Space, Popconfirm, Input, Select } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -18,8 +18,11 @@ function MentorTable({
   onDelete,
   search,
   onSearch,
+  statusFilter = "all",
+  onStatusFilterChange,
 }) {
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
+  const firstPage = () => setPagination((prev) => ({ ...prev, current: 1 }));
   const columns = [
     {
       title: "SL No.",
@@ -81,8 +84,8 @@ function MentorTable({
       title: "Status",
       dataIndex: "status",
       render: (status) => (
-        <Tag color={status === false ? "default" : "red"}>
-          {status === false ? "Inactive" : "Active"}
+        <Tag color={status === true ? "red" : "default"}>
+          {status === true ? "Active" : "Inactive"}
         </Tag>
       ),
       width: 120,
@@ -123,11 +126,21 @@ function MentorTable({
             placeholder="Search mentor..."
             prefix={<SearchOutlined className="text-[#9a2119]" />}
             value={search}
-            onChange={(event) => onSearch(event.target.value)}
+            onChange={(event) => { onSearch(event.target.value); firstPage(); }}
             className="w-full sm:w-64 h-8 rounded-md border-[#9a2119]"
           />
+          <Select
+            value={statusFilter}
+            onChange={(value) => { onStatusFilterChange?.(value); firstPage(); }}
+            style={{ minWidth: 130 }}
+            options={[
+              { value: "all", label: "All status" },
+              { value: "active", label: "Active" },
+              { value: "inactive", label: "Inactive" },
+            ]}
+          />
           <Button
-            onClick={() => onSearch("")}
+            onClick={() => { onSearch(""); onStatusFilterChange?.("all"); firstPage(); }}
             style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
           >
             <ReloadOutlined />
@@ -147,7 +160,7 @@ function MentorTable({
         dataSource={Array.isArray(data) ? [...data].reverse() : []}
         loading={loading}
         rowKey="id"
-        pagination={pagination}
+        pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
         onChange={(pag) => setPagination(pag)}
         scroll={{ x: "max-content" }}
       />

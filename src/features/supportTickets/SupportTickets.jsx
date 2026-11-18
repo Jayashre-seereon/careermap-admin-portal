@@ -1,9 +1,13 @@
+import { useState } from "react";
 import { Tabs } from "antd";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
 export default function SupportTickets() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
 
   const pathToKey = {
     "/support_tickets/all": "1",
@@ -41,7 +45,7 @@ export default function SupportTickets() {
         items={items}
       />
 
-      <Outlet />
+      <Outlet context={{ search, setSearch, statusFilter, setStatusFilter, pagination, setPagination }} />
     </div>
   );
 }

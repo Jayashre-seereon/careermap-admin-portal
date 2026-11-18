@@ -34,13 +34,11 @@ import {
   deleteSection,
   getAssessments,
   getSections,
-  getSectionsByAssessment,
   updateSection,
   getApiErrorMessage,
 } from "../../api/psychometricAssessmentApi";
 import {
   INITIAL_ASSESSMENTS,
-  INITIAL_SECTIONS,
   SECTION_CODE_PRESETS,
   getSectionBadgeConfig,
   normalizeAssessmentsResponse,
@@ -48,6 +46,8 @@ import {
 } from "./psychometricConstants";
 import { validationRules } from "../../utils/formValidation";
 import { getSerialNumber } from "../../utils/slNo";
+import useDebouncedValue from "../../hooks/useDebouncedValue";
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -66,6 +66,10 @@ export default function SectionPage() {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [pagination, setPagination] = useState({ current: 1, pageSize: 8 });
+  const [total, setTotal] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const debouncedSearch = useDebouncedValue(search.trim(), 400);
+  const { current: currentPage, pageSize: currentPageSize } = pagination;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState("add"); // "add" | "edit" | "view"
@@ -90,89 +94,55 @@ export default function SectionPage() {
     }
   };
 
-  // Load Sections
-  const loadSections = async () => {
-    try {
-      setLoading(true);
-      let res;
-      if (selectedAssessmentId && selectedAssessmentId !== "all") {
-        res = await getSectionsByAssessment(selectedAssessmentId);
-      } else {
-        res = await getSections({ search: search.trim() });
-      }
-
-      const list = normalizeSectionsResponse(res);
-      if (list.length > 0) {
-        setSections(
-          list.map((sec) => ({
-            ...sec,
-            questionCount: sec._count?.questions ?? sec.questions?.length ?? sec.questionCount ?? 0,
-          }))
-        );
-      } else {
-        // Filter initial sections
-        if (selectedAssessmentId && selectedAssessmentId !== "all") {
-          setSections(
-            INITIAL_SECTIONS.filter(
-              (s) => String(s.assessmentId) === String(selectedAssessmentId)
-            )
-          );
-        } else {
-          setSections(INITIAL_SECTIONS);
-        }
-      }
-    } catch (err) {
-      console.warn("Using fallback sections:", err);
-      if (selectedAssessmentId && selectedAssessmentId !== "all") {
-        setSections(
-          INITIAL_SECTIONS.filter(
-            (s) => String(s.assessmentId) === String(selectedAssessmentId)
-          )
-        );
-      } else {
-        setSections(INITIAL_SECTIONS);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Load Sections (server-side search, scope and pagination)
+  const reloadSections = () => setRefreshKey((key) => key + 1);
 
   useEffect(() => {
     loadAssessmentsList();
   }, []);
 
   useEffect(() => {
-    loadSections();
-  }, [selectedAssessmentId]);
+    let cancelled = false;
+    const load = async () => {
+      try {
+        setLoading(true);
+        const params = { page: currentPage, limit: currentPageSize };
+        if (debouncedSearch) params.search = debouncedSearch;
+        if (selectedAssessmentId && selectedAssessmentId !== "all") {
+          params.assessmentId = selectedAssessmentId;
+        }
+        const res = await getSections(params);
+        if (cancelled) return;
+        const list = normalizeSectionsResponse(res);
+        setSections(
+          list.map((sec) => ({
+            ...sec,
+            questionCount: sec._count?.questions ?? sec.questions?.length ?? sec.questionCount ?? 0,
+          }))
+        );
+        const serverTotal = res?.data?.pagination?.total ?? res?.pagination?.total;
+        setTotal(Number.isFinite(Number(serverTotal)) ? Number(serverTotal) : list.length);
+      } catch (err) {
+        if (cancelled) return;
+        setSections([]);
+        setTotal(0);
+        messageApi.error(getApiErrorMessage(err, "Failed to load sections."));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedAssessmentId, currentPage, currentPageSize, debouncedSearch, refreshKey]);
 
   // Get active assessment metadata if scoped
   const currentAssessment = useMemo(() => {
     if (!selectedAssessmentId || selectedAssessmentId === "all") return null;
     return assessments.find((a) => a.id === selectedAssessmentId) || null;
   }, [assessments, selectedAssessmentId]);
-
-  // Filtered and sorted sections
-  const filteredSections = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    return sections
-      .filter((sec) => {
-        const matchAssessment =
-          !selectedAssessmentId ||
-          selectedAssessmentId === "all" ||
-          sec.assessmentId === selectedAssessmentId;
-
-        const matchSearch =
-          !query ||
-          [sec.title, sec.code, sec.description]
-            .filter(Boolean)
-            .join(" ")
-            .toLowerCase()
-            .includes(query);
-
-        return matchAssessment && matchSearch;
-      })
-      .sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
-  }, [sections, search, selectedAssessmentId]);
 
   // Handlers
   const handleOpenAdd = () => {
@@ -188,7 +158,7 @@ export default function SectionPage() {
       code: "interest",
       title: "RIASEC Career Interest Inventory",
       description: "Evaluates Vocational Interests across 6 dimensions.",
-      order: sections.length + 1,
+      order: total + 1,
     });
     setIsModalOpen(true);
   };
@@ -255,32 +225,13 @@ export default function SectionPage() {
       };
 
       if (modalMode === "edit" && currentRecord) {
-        try {
-          await updateSection(currentRecord.id, payload);
-        } catch (apiErr) {
-          console.warn("Backend update section error:", apiErr);
-        }
-        setSections((prev) =>
-          prev.map((sec) =>
-            sec.id === currentRecord.id ? { ...sec, ...payload } : sec
-          )
-        );
+        await updateSection(currentRecord.id, payload);
         messageApi.success("Section updated successfully.");
       } else {
-        try {
-          const created = await createSection(targetAssessmentId, payload);
-          if (created?.data?.id) payload.id = created.data.id;
-        } catch (apiErr) {
-          console.warn("Backend create section error:", apiErr);
-        }
-        const newSec = {
-          id: payload.id || `sec-${Date.now()}`,
-          ...payload,
-          questionCount: 0,
-        };
-        setSections((prev) => [...prev, newSec]);
+        await createSection(targetAssessmentId, payload);
         messageApi.success("Section created successfully.");
       }
+      reloadSections();
 
       handleCloseModal();
     } catch (err) {
@@ -290,15 +241,18 @@ export default function SectionPage() {
     }
   };
 
+  const [guardedSubmitForm, savingSection] = useSubmitGuard(handleSubmitForm);
+
   const handleDeleteSection = async (record) => {
     try {
       await deleteSection(record.id);
       messageApi.success("Section deleted successfully.");
+      if (sections.length === 1 && currentPage > 1) {
+        setPagination((p) => ({ ...p, current: p.current - 1 }));
+      }
+      reloadSections();
     } catch (err) {
-      console.warn("Delete section API error:", err);
-      messageApi.success("Section removed.");
-    } finally {
-      setSections((prev) => prev.filter((sec) => sec.id !== record.id));
+      messageApi.error(getApiErrorMessage(err, "Failed to delete section."));
     }
   };
 
@@ -473,7 +427,10 @@ export default function SectionPage() {
               placeholder="Search section title, code..."
               prefix={<SearchOutlined className="text-[#9a2119]" />}
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPagination((p) => ({ ...p, current: 1 }));
+              }}
               allowClear
               
               className="h-8 w-full sm:w-64 rounded-lg  border-[#9a2119]
@@ -481,7 +438,11 @@ export default function SectionPage() {
         focus:border-[#9a2119] "
             />
           <Button
-            onClick={() => loadSections()}
+            onClick={() => {
+              setSearch("");
+              setPagination((p) => ({ ...p, current: 1 }));
+              reloadSections();
+            }}
             icon={<ReloadOutlined />}
             className=" border-[#9a2119]
         bg-[#9a2119]
@@ -507,10 +468,10 @@ export default function SectionPage() {
         <Table
           rowKey="id"
           columns={columns}
-          dataSource={filteredSections}
+          dataSource={sections}
           loading={loading}
-          pagination={pagination}
-          onChange={(pag) => setPagination(pag)}
+          pagination={{ current: currentPage, pageSize: currentPageSize, total, showSizeChanger: true }}
+          onChange={(pag) => setPagination({ current: pag.current, pageSize: pag.pageSize })}
           scroll={{ x: 800 }}
           className="custom-table"
         />
@@ -542,7 +503,8 @@ export default function SectionPage() {
               <Button onClick={handleCloseModal}>Cancel</Button>
               <Button
                 type="primary"
-                onClick={handleSubmitForm}
+                loading={savingSection}
+                onClick={guardedSubmitForm}
                 style={{ backgroundColor: "#9a2119", borderColor: "#9a2119" }}
               >
                 {modalMode === "edit" ? "Save Section" : "Add Section"}

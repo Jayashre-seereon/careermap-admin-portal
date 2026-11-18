@@ -10,12 +10,8 @@ export default function NotificationToUser({ user = null }) {
   const targetUser = user || outletContext?.notificationUser || null;
 
   const handleSend = () => {
-    console.log({
-      userId: targetUser?.id,
-      userEmail: targetUser?.email,
-      subject,
-      message,
-    });
+    // Sending is not wired to an API yet; never log user data or message content.
+    if (import.meta.env.DEV) console.debug("Notification send requested", { userId: targetUser?.id });
   };
 
   return (

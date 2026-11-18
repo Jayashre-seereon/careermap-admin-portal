@@ -1,5 +1,5 @@
 import React,{useState} from "react";
-import { Table, Button, Space, Input, Popconfirm } from "antd";
+import { Table, Button, Space, Input, Popconfirm, Select } from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -17,9 +17,16 @@ export default function Category2Table({
   onDelete,
   search,
   setSearch,
+  categoryOptions = [],
+  categoryFilter = "all",
+  setCategoryFilter,
 }) {
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
-  const handleReset = () => setSearch("");
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
+  const handleReset = () => {
+    setSearch("");
+    setCategoryFilter?.("all");
+    setPagination((prev) => ({ ...prev, current: 1 }));
+  };
 
   const columns = [
     {
@@ -108,6 +115,17 @@ export default function Category2Table({
             onChange={(e) => setSearch(e.target.value)}
             className="w-full sm:w-64 h-8 rounded-md border-[#9a2119]"
           />
+          <Select
+            value={categoryFilter}
+            onChange={(value) => {
+              setCategoryFilter?.(value);
+              setPagination((prev) => ({ ...prev, current: 1 }));
+            }}
+            options={[{ value: "all", label: "All Categories" }, ...categoryOptions]}
+            showSearch
+            optionFilterProp="label"
+            className="w-full sm:w-52"
+          />
           <Button
             onClick={handleReset}
             style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
@@ -129,7 +147,7 @@ export default function Category2Table({
         dataSource={Array.isArray(data) ? [...data].reverse() : []}
         loading={loading}
         rowKey="id"
-        pagination={pagination}
+        pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
         onChange={(pag) => setPagination(pag)}
         scroll={{ x: "max-content" }}
       />

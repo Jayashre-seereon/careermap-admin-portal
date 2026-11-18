@@ -80,6 +80,7 @@ export default function ModulePage() {
   const [messageApi, contextHolder] = message.useMessage();
   const [modules, setModules] = useState([]);
   const [search, setSearch] = useState("");
+  const [accessFilter, setAccessFilter] = useState("all");
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("add");
   const [selected, setSelected] = useState(null);
@@ -180,11 +181,12 @@ export default function ModulePage() {
     }
   };
 
-  const filteredModules = modules.filter((module) =>
-    `${module.title} ${module.isFree ? "unlocked" : "locked"}`
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+  const keyword = search.trim().toLowerCase();
+  const filteredModules = modules.filter((module) => {
+    if (accessFilter === "unlocked" && !module.isFree) return false;
+    if (accessFilter === "locked" && module.isFree) return false;
+    return !keyword || String(module.title ?? "").toLowerCase().includes(keyword);
+  });
 
   return (
     <div className="space-y-5">
@@ -195,6 +197,8 @@ export default function ModulePage() {
         data={filteredModules}
         search={search}
         onSearch={setSearch}
+        accessFilter={accessFilter}
+        onAccessFilterChange={setAccessFilter}
         onAddDefaults={handleAddDefaults}
         onAddClick={() => {
           setMode("add");

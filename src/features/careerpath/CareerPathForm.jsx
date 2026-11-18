@@ -1,8 +1,12 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import React, { useEffect, useMemo } from "react";
 import { Form, Select, Input, Button } from "antd";
 import { validationRules } from "../../utils/formValidation";
 
 const { Option } = Select;
+
+const sameId = (a, b) =>
+  a !== undefined && a !== null && b !== undefined && b !== null && String(a) === String(b);
 
 export default function CareerPathForm({
   onSubmit,
@@ -42,31 +46,33 @@ export default function CareerPathForm({
 
   const filteredSecondCategories = useMemo(() => {
     if (!selectedCategoryId) {
-      return secondCategoryOptions;
+      return [];
     }
 
     return secondCategoryOptions.filter(
-      (item) => !item.categoryId || item.categoryId === selectedCategoryId
+      (item) => sameId(item.categoryId, selectedCategoryId)
     );
   }, [secondCategoryOptions, selectedCategoryId]);
 
   const filteredSubcategories = useMemo(() => {
     return subcategoryOptions.filter((item) => {
       const matchesCategory =
-        !selectedCategoryId || !item.categoryId || item.categoryId === selectedCategoryId;
+        !selectedCategoryId || sameId(item.categoryId, selectedCategoryId);
       const matchesSecondCategory =
         !selectedSecondCategoryId ||
-        !item.secondcategoryId ||
-        item.secondcategoryId === selectedSecondCategoryId;
+        sameId(item.secondcategoryId, selectedSecondCategoryId);
 
       return matchesCategory && matchesSecondCategory;
     });
   }, [subcategoryOptions, selectedCategoryId, selectedSecondCategoryId]);
 
   useEffect(() => {
+    // Nothing to compare against until a category is selected (a freshly opened
+    // edit form has no category value on its first render) - do not wipe saved values.
+    if (!selectedCategoryId) return;
     const currentSecondCategoryId = form.getFieldValue("secondcategoryId");
     const hasSecondCategory = filteredSecondCategories.some(
-      (item) => item.id === currentSecondCategoryId
+      (item) => sameId(item.id, currentSecondCategoryId)
     );
 
     if (currentSecondCategoryId && !hasSecondCategory) {
@@ -75,12 +81,12 @@ export default function CareerPathForm({
         subcategoryId: undefined,
       });
     }
-  }, [filteredSecondCategories, form]);
+  }, [filteredSecondCategories, form, selectedCategoryId]);
 
   useEffect(() => {
     const currentSubcategoryId = form.getFieldValue("subcategoryId");
     const hasSubcategory = filteredSubcategories.some(
-      (item) => item.id === currentSubcategoryId
+      (item) => sameId(item.id, currentSubcategoryId)
     );
 
     if (currentSubcategoryId && !hasSubcategory) {
@@ -90,11 +96,12 @@ export default function CareerPathForm({
     }
   }, [filteredSubcategories, form]);
 
+  const [guardedSubmit, submitting] = useSubmitGuard(onSubmit);
   return (
     <Form
       layout="vertical"
       form={form}
-      onFinish={onSubmit}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
       className="grid grid-cols-1 md:grid-cols-2 gap-4"
     >
@@ -134,6 +141,7 @@ export default function CareerPathForm({
         <Select
           disabled={isView}
           placeholder="Select category"
+          allowClear
           onChange={() =>
             form.setFieldsValue({
               secondcategoryId: undefined,
@@ -221,7 +229,7 @@ export default function CareerPathForm({
       {!isView && (
         <div className="md:col-span-2 text-right">
           <Button
-            htmlType="submit"
+            htmlType="submit" loading={submitting}
             block
             style={{ background: "#9a2119", borderColor: "#9a2119" }}
             className="text-white"

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Modal, message } from "antd";
 import SubCategoryTable from "./SubCategoryTable";
 import SubCategoryForm from "./SubCategoryForm";
@@ -163,6 +163,8 @@ export default function SubCategoryPage() {
   const [categories, setCategories] = useState([]);
   const [secondCategories, setSecondCategories] = useState([]);
   const [institutes, setInstitutes] = useState([]);
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [secondCategoryFilter, setSecondCategoryFilter] = useState("all");
 
   const loadSubCategories = async () => {
     try {
@@ -197,13 +199,16 @@ export default function SubCategoryPage() {
     loadDropdowns();
   }, []);
 
+  const secondCategoryReqRef = useRef(0);
   const loadSecondCategoriesByCategory = async (categoryId) => {
+    const reqId = ++secondCategoryReqRef.current;
     if (!categoryId) {
       setSecondCategories([]);
       return;
     }
 
     const response = await getSecondaryCategoriesByCategory(categoryId);
+    if (reqId !== secondCategoryReqRef.current) return;
     const items = normalizeList(response);
     setSecondCategories(items.map(mapSecondCategory));
   };
@@ -242,11 +247,42 @@ export default function SubCategoryPage() {
     institutionName: getInstituteName(item.institutionId, item.institutionName),
   }));
 
-  const filteredData = tableData.filter((item) =>
-    `${item.categoryName} ${item.secondCategoryName} ${item.institutionName} ${item.title} ${item.path} ${item.description}`
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+  const categoryFilterOptions = [
+    ...new Map(
+      tableData
+        .filter((item) => item.categoryId != null && item.categoryName)
+        .map((item) => [item.categoryId, { value: item.categoryId, label: item.categoryName }])
+    ).values(),
+  ].sort((a, b) => a.label.localeCompare(b.label));
+
+  // Second-category options depend on the selected category (cascading).
+  const secondCategoryFilterOptions = [
+    ...new Map(
+      tableData
+        .filter(
+          (item) =>
+            item.secondcategoryId != null &&
+            item.secondCategoryName &&
+            (categoryFilter === "all" || item.categoryId === categoryFilter)
+        )
+        .map((item) => [item.secondcategoryId, { value: item.secondcategoryId, label: item.secondCategoryName }])
+    ).values(),
+  ].sort((a, b) => a.label.localeCompare(b.label));
+
+  const keyword = search.trim().toLowerCase();
+  const filteredData = tableData.filter((item) => {
+    if (categoryFilter !== "all" && item.categoryId !== categoryFilter) return false;
+    if (secondCategoryFilter !== "all" && item.secondcategoryId !== secondCategoryFilter) return false;
+    if (!keyword) return true;
+    return [
+      item.categoryName,
+      item.secondCategoryName,
+      item.institutionName,
+      item.title,
+      item.path,
+      item.description,
+    ].some((field) => String(field ?? "").toLowerCase().includes(keyword));
+  });
 
   const handleSubmit = async (values) => {
     try {
@@ -323,6 +359,15 @@ export default function SubCategoryPage() {
         onDelete={handleDelete}
         search={search}
         setSearch={setSearch}
+        categoryFilter={categoryFilter}
+        onCategoryFilterChange={(value) => {
+          setCategoryFilter(value);
+          setSecondCategoryFilter("all");
+        }}
+        categoryFilterOptions={categoryFilterOptions}
+        secondCategoryFilter={secondCategoryFilter}
+        onSecondCategoryFilterChange={setSecondCategoryFilter}
+        secondCategoryFilterOptions={secondCategoryFilterOptions}
         />
       </div>
 

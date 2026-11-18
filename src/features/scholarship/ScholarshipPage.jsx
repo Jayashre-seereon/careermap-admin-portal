@@ -61,9 +61,9 @@ const buildScholarshipPayload = ({
   sections,
 }) => {
   const payload = {
-    categoryId: categoryId?.value || "",
-    secondcategoryId: secondcategoryId?.value || "",
-    subcategoryId: subcategoryId?.value || "",
+    categoryId: categoryId?.value ?? categoryId ?? "",
+    secondcategoryId: secondcategoryId?.value ?? secondcategoryId ?? "",
+    subcategoryId: subcategoryId?.value ?? subcategoryId ?? "",
     name,
     type,
     url: url || "",
@@ -112,6 +112,7 @@ const mapScholarship = (item = {}) => ({
   categoryName: item.category?.title,
   secondCategoryName: item.secondaryCategory?.name,
   subCategoryName: item.subCategory?.title,
+  createdAt: item.createdAt,
   name: item.name || "",
   type: item.type || "",
   url: item.url || "",
@@ -136,6 +137,9 @@ export default function ScholarshipPage() {
   const [current, setCurrent] = useState(null);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [pricingFilter, setPricingFilter] = useState("all");
 
   const loadScholarships = async () => {
     try {
@@ -176,11 +180,29 @@ export default function ScholarshipPage() {
     loadScholarships();
   }, []);
 
-  const filteredData = data.filter((item) =>
-    `${item.name} ${item.type} ${item.description} ${item.eligibility} ${item.requirement}`
+  const typeOptions = [...new Set(data.map((item) => item.type).filter(Boolean))].map((value) => ({
+    value,
+    label: value,
+  }));
+
+  const categoryOptions = [
+    ...new Map(
+      data
+        .filter((item) => item.categoryId)
+        .map((item) => [item.categoryId, item.categoryName || `Category ${item.categoryId}`])
+    ),
+  ].map(([value, label]) => ({ value, label }));
+
+  const filteredData = data.filter((item) => {
+    if (typeFilter !== "all" && item.type !== typeFilter) return false;
+    if (categoryFilter !== "all" && item.categoryId !== categoryFilter) return false;
+    if (pricingFilter === "free" && !item.is_free) return false;
+    if (pricingFilter === "paid" && item.is_free) return false;
+
+    return `${item.name} ${item.type} ${item.description} ${item.eligibility} ${item.requirement}`
       .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+      .includes(search.trim().toLowerCase());
+  });
 
   const handleSubmit = async (values) => {
     try {
@@ -227,6 +249,16 @@ export default function ScholarshipPage() {
         loading={loading}
         search={search}
         onSearch={setSearch}
+        filters={{
+          type: typeFilter,
+          category: categoryFilter,
+          pricing: pricingFilter,
+          typeOptions,
+          categoryOptions,
+          setType: setTypeFilter,
+          setCategory: setCategoryFilter,
+          setPricing: setPricingFilter,
+        }}
         onAdd={() => {
           setCurrent(null);
           setOpen(true);

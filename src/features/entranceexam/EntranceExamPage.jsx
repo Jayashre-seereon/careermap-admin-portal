@@ -31,38 +31,43 @@ const normalizeList = (response) => {
   return [];
 };
 
-const getSortScore = (item = {}, index = 0) => {
-  const candidates = [
-    item.createdAt,
-    item.updatedAt,
-    item.created_at,
-    item.updated_at,
-    item.id,
-  ];
-
-  for (const value of candidates) {
-    if (value === undefined || value === null || value === "") {
-      continue;
-    }
-
-    const dateScore = Date.parse(value);
-    if (!Number.isNaN(dateScore)) {
-      return dateScore;
-    }
-
-    const numericScore = Number(value);
-    if (Number.isFinite(numericScore)) {
-      return numericScore;
-    }
+// Newest first: createdAt/updatedAt (parsed as dates only), then numeric id, then original order.
+const getTimeValue = (item = {}) => {
+  for (const value of [item.createdAt, item.created_at, item.updatedAt, item.updated_at]) {
+    if (value === undefined || value === null || value === "") continue;
+    const time = Date.parse(value);
+    if (!Number.isNaN(time)) return time;
   }
+  return null;
+};
 
-  return -index;
+const getIdValue = (item = {}) => {
+  const id = Number(item.id);
+  return Number.isFinite(id) ? id : null;
+};
+
+const compareNewestFirst = (a, b) => {
+  const timeA = getTimeValue(a.item);
+  const timeB = getTimeValue(b.item);
+  if (timeA !== timeB) {
+    if (timeA === null) return 1;
+    if (timeB === null) return -1;
+    return timeB - timeA;
+  }
+  const idA = getIdValue(a.item);
+  const idB = getIdValue(b.item);
+  if (idA !== idB) {
+    if (idA === null) return 1;
+    if (idB === null) return -1;
+    return idB - idA;
+  }
+  return b.index - a.index;
 };
 
 const sortNewestFirst = (items = []) =>
   [...items]
     .map((item, index) => ({ item, index }))
-    .sort((a, b) => getSortScore(b.item, b.index) - getSortScore(a.item, a.index))
+    .sort(compareNewestFirst)
     .map(({ item }) => item);
 
 const formatDateValue = (value) => {
@@ -258,9 +263,22 @@ export default function EntranceExamPage() {
   }, []);
 
   const filteredData = data.filter((item) =>
-    `${item.streamName} ${item.categoryName} ${item.secondCategoryName} ${item.subcategoryName} ${item.examname} ${item.eligibility} ${item.examMode} ${item.subject} ${item.topInstitutes} ${item.url}`
+    [
+      item.streamName,
+      item.categoryName,
+      item.secondCategoryName,
+      item.subcategoryName,
+      item.examname,
+      item.eligibility,
+      item.examMode,
+      item.subject,
+      item.topInstitutes,
+      item.url,
+    ]
+      .filter((value) => value !== undefined && value !== null && value !== "")
+      .join(" ")
       .toLowerCase()
-      .includes(search.toLowerCase())
+      .includes(search.trim().toLowerCase())
   );
 
   const handleStreamChange = async (streamId) => {

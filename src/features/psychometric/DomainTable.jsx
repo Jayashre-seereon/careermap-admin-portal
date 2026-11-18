@@ -7,6 +7,8 @@ import {
   ReloadOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
+import useTablePagination from "../../utils/useTablePagination";
+import { getSerialNumber } from "../../utils/slNo";
 
 const stripHtml = (value = "") =>
   value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
@@ -30,10 +32,11 @@ function DomainTable({
   search,
   onSearch,
 }) {
+  const { pagination, tableProps } = useTablePagination(Array.isArray(data) ? data.length : 0);
   const columns = [
     {
       title: "#",
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
       width: 70,
     },
     {
@@ -141,7 +144,7 @@ function DomainTable({
         columns={columns}
         dataSource={Array.isArray(data) ? [...data].reverse() : []}
         rowKey="id"
-        pagination={{ pageSize: 5 }}
+        {...tableProps}
         scroll={{ x: "max-content" }}
       />
     </div>

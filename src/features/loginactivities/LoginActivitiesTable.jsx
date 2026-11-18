@@ -1,18 +1,19 @@
-import { Table, Input, Tag, Button } from "antd";
+import { Table, Input, Tag, Button, DatePicker } from "antd";
 import {
   EyeOutlined,
   SearchOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
-import { useState } from "react";
+
+const { RangePicker } = DatePicker;
 import { getSerialNumber } from "../../utils/slNo";
+import { formatDateTimeDisplay } from "../../utils/date";
 const formatDateTime = (value) => {
   if (!value) {
     return "-";
   }
 
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? String(value) : new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }).format(date);
+  return formatDateTimeDisplay(value, String(value));
 };
 
 const getDeviceLabel = (record = {}) => {
@@ -30,15 +31,28 @@ export default function LoginActivitiesTable({
   onSearch,
   onReset,
   onView,
+  dateRange = null,
+  onDateRangeChange,
+  pagination = { current: 1, pageSize: 10 },
+  total,
+  onPaginationChange,
 }) {
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   const columns = [
     {
       title: <span className="text-[#9a2119] font-semibold">SL</span>,
       render: (_, __, index) => getSerialNumber(index, pagination),
       width: 60,
     },
-   
+    {
+      title: <span className="text-[#9a2119] font-semibold">User</span>,
+      width: 220,
+      render: (_, record) => (
+        <div className="text-sm">
+          <div className="font-medium text-slate-800">{record.userName || `User #${record.userId || "-"}`}</div>
+          {record.userEmail && <div className="text-xs text-slate-500">{record.userEmail}</div>}
+        </div>
+      ),
+    },
     {
       title: <span className="text-[#9a2119] font-semibold">Login Time</span>,
       dataIndex: "loginAt",
@@ -98,11 +112,17 @@ export default function LoginActivitiesTable({
 
           <div className="flex w-full flex-wrap gap-3 sm:w-auto">
             <Input
-              placeholder="Search user id, ip, location..."
+              placeholder="Search user, email, mobile, ip, location..."
               value={search}
               prefix={<SearchOutlined className="text-[#9a2119]" />}
               className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
               onChange={(e) => onSearch(e.target.value)}
+            />
+
+            <RangePicker
+              value={dateRange}
+              onChange={(value) => onDateRangeChange?.(value)}
+              className="w-full sm:w-64"
             />
 
             <Button
@@ -117,10 +137,10 @@ export default function LoginActivitiesTable({
 
         <Table
           columns={columns}
-          dataSource={Array.isArray(data) ? [...data].reverse() : []}
+          dataSource={Array.isArray(data) ? data : []}
           loading={loading}
-          pagination={pagination}
-          onChange={(pag) => setPagination(pag)}
+          pagination={{ ...pagination, total: total ?? data.length, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
+          onChange={(pag) => onPaginationChange?.(pag)}
           rowClassName="hover:bg-gray-50"
           scroll={{ x: "max-content" }}
           rowKey={(record) => record.id}

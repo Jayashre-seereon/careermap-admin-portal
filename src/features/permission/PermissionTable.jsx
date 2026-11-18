@@ -7,6 +7,8 @@ import {
   ReloadOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
+import useTablePagination from "../../utils/useTablePagination";
+import { getSerialNumber } from "../../utils/slNo";
 
 function PermissionTable({
   data,
@@ -22,8 +24,9 @@ function PermissionTable({
   const getRoleName = (roleId) =>
     roles.find((role) => role.id === roleId)?.name || "-";
 
+  const { pagination, tableProps } = useTablePagination(Array.isArray(data) ? data.length : 0);
   const columns = [
-    { title: "#", render: (_, __, index) => index + 1, width: 60 },
+    { title: "#", render: (_, __, index) => getSerialNumber(index, pagination), width: 60 },
     {
       title: "Role",
       dataIndex: "roleId",
@@ -107,7 +110,7 @@ function PermissionTable({
         dataSource={Array.isArray(data) ? [...data].reverse() : []}
         loading={loading}
         rowKey="id"
-        pagination={{ pageSize: 5 }}
+        {...tableProps}
         scroll={{ x: "max-content" }}
       />
     </div>

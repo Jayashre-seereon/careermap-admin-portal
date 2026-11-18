@@ -17,6 +17,7 @@ import {
   Legend,
   ArcElement,
 } from "chart.js";
+import { Alert, Button } from "antd";
 import { getAdminDashboard } from "../api/adminDashboard";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend, ArcElement);
@@ -142,21 +143,44 @@ const PLAN_COLORS = ["#9a2119", "#c4392e", "#d4614f", "#e8927a", "#f0b8a8"];
 export default function Dashboard() {
   const [animate, setAnimate] = useState(false);
   const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    setTimeout(() => setAnimate(true), 80);
+    const animateTimer = setTimeout(() => setAnimate(true), 80);
+    return () => clearTimeout(animateTimer);
+  }, []);
+
+  useEffect(() => {
+    let active = true;
 
     const loadDashboard = async () => {
+      setLoading(true);
+      setLoadError("");
       try {
         const res = await getAdminDashboard();
-        setDashboardData(res.data);
+        if (active) setDashboardData(res.data);
       } catch (err) {
-        console.log(err);
+        if (import.meta.env.DEV) console.error(err);
+        if (active) {
+          const status = err?.response?.status;
+          setLoadError(
+            status === 403
+              ? "You do not have permission to view the dashboard data."
+              : err?.response?.data?.message || err?.message || "Could not load dashboard data."
+          );
+        }
+      } finally {
+        if (active) setLoading(false);
       }
     };
 
     loadDashboard();
-  }, []);
+    return () => {
+      active = false;
+    };
+  }, [reloadKey]);
 
   /* ── Derived values from API ── */
   const totalUsers      = dashboardData?.totalUsers      ?? 0;
@@ -245,13 +269,23 @@ export default function Dashboard() {
       <style>{globalStyle}</style>
       <div className="min-w-0">
 
+        {loadError && (
+          <Alert
+            type="error"
+            showIcon
+            style={{ marginBottom: 16 }}
+            message={loadError}
+            action={<Button size="small" loading={loading} onClick={() => setReloadKey((k) => k + 1)}>Retry</Button>}
+          />
+        )}
+
         {/* Stat Cards */}
         <div className="dashboard-stat-grid">
           {statCards.map((c, i) => (
             <div key={i} className="stat-card" style={{ background: c.grad, ...anim(animate, i + 2) }}>
               <div style={{ fontSize: 24, marginBottom: 8, position: "relative", zIndex: 1 }}>{c.icon}</div>
               <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: "-0.5px", position: "relative", zIndex: 1, fontFamily: "'Sora', sans-serif" }}>
-                {dashboardData ? c.value : "—"}
+                {dashboardData ? c.value : loading ? "…" : "—"}
               </div>
               <div style={{ fontSize: 12, opacity: 0.82, marginTop: 4, position: "relative", zIndex: 1 }}>{c.label}</div>
             </div>
@@ -356,14 +390,14 @@ export default function Dashboard() {
                     background: PRIMARY_BG, borderRadius: 8, padding: "2px 12px",
                     fontFamily: "'Sora', sans-serif",
                   }}>
-                    {dashboardData ? u.value : "—"}
+                    {dashboardData ? u.value : loading ? "…" : "—"}
                   </span>
                 </div>
               ))}
               {totalUsers > 0 && (
                 <div style={{ marginTop: 4 }}>
                   <div style={{ fontSize: 11, color: "#aaa", marginBottom: 4 }}>
-                    Mentor ratio ({totalUsers > 0 ? Math.round((totalMentors / totalUsers) * 100) : 0}%)
+                    Mentors per user ({totalUsers > 0 ? Math.round((totalMentors / totalUsers) * 100) : 0}%)
                   </div>
                   <div style={{ background: ACCENT, borderRadius: 99, height: 8, overflow: "hidden" }}>
                     <div style={{

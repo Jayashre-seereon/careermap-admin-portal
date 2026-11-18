@@ -190,10 +190,26 @@ export default function CareerPathPage() {
     pathTypeName: getLabel(paths, item.pathId, item.pathTypeName),
   }));
 
+  const searchQuery = search.trim().toLowerCase();
   const filteredData = tableData.filter((item) =>
-    `${item.moduleName} ${item.pathName} ${item.stream} ${item.categoryName} ${item.secondCategoryName} ${item.subcategoryName} ${item.pathTypeName} ${item.graduation} ${item.aftergraduation} ${item.afterpostgraduation} ${item.anyother}`
+    !searchQuery ||
+    [
+      item.moduleName,
+      item.pathName,
+      item.stream,
+      item.categoryName,
+      item.secondCategoryName,
+      item.subcategoryName,
+      item.pathTypeName,
+      item.graduation,
+      item.aftergraduation,
+      item.afterpostgraduation,
+      item.anyother,
+    ]
+      .filter((value) => value !== undefined && value !== null && value !== "")
+      .join(" ")
       .toLowerCase()
-      .includes(search.toLowerCase())
+      .includes(searchQuery)
   );
 
   const handleSubmit = async (values) => {

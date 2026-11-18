@@ -1,5 +1,8 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import PermissionRoute from "./PermissionRoute";
+import AdminOnly from "./AdminOnly";
+import NotFoundPage from "./NotFoundPage";
+import { useSessionStore } from "../store/sessionStore";
 import DashboardPage from "../pages/DashboardPage";
 import DashBoardlayout from "../components/layout/DashBoardlayout";
 import MentorPage from "../features/mentor/MentorPage";
@@ -26,7 +29,6 @@ import PublicOnlyRoute from "../features/auth/PublicOnlyRoute";
 import AuthLayout from "../features/auth/AuthLayout";
 import LoginPage from "../features/auth/LoginPage";
 import InstituteLoginPage from "../features/auth/InstituteLoginPage";
-import SignupPage from "../features/auth/SignupPage";
 import ForgotPasswordPage from "../features/auth/ForgotPasswordPage";
 import ResetPasswordPage from "../features/auth/ResetPasswordPage";
 import RootRedirect from "../features/auth/RootRedirect";
@@ -86,7 +88,7 @@ import QuestionBankPage from "../features/psychometric/QuestionBankPage";
 import CareerClusterPage from "../features/psychometric/CareerClusterPage";
 import StudentAttemptsPage from "../features/psychometric/StudentAttemptsPage";
 import Student from "../features/psychometric/Student";
-import AssessmentReportPage from "../features/psychometric/AssessmentReportPage";
+import AssessmentReportPage from "../features/psychometric/AssessmentReportPageLazy";
 import PersonalityTest from "../features/personalityTest/PersonalityTest";
 import Counseling from "../features/counseling/Counseling";
 import Staff from "../features/staff/Staff";
@@ -99,6 +101,14 @@ import InstituteAttemptsPage from "../features/institute/InstituteAttemptsPage";
 import InstituteCounselingPage from "../features/institute/InstituteCounselingPage";
 import NewsLetterPage from "../features/newsLetter/NewsLetterPage";
 import UserMessagesPage from "../features/messages/UserMessagesPage";
+function CatchAll() {
+  const isAuthenticated = useSessionStore((state) => state.isAuthenticated);
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  return <NotFoundPage />;
+}
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -108,14 +118,6 @@ export const router = createBrowserRouter([
  
 
   {
-    path: "/forgot-password",
-    element: <ForgotPasswordPage />,
-  },
-  {
-    path: "/reset-password",
-    element: <ResetPasswordPage />,
-  },
-  {
     path: "/admin",
     element: <PublicOnlyRoute />,
     children: [
@@ -124,7 +126,6 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <Navigate to="/admin/login" replace /> },
           { path: "login", element: <LoginPage /> },
-          { path: "signup", element: <SignupPage /> },
           { path: "forgot-password", element: <ForgotPasswordPage /> },
           { path: "reset-password", element: <ResetPasswordPage /> },
           { path: "reset-password/:token", element: <ResetPasswordPage /> },
@@ -140,7 +141,6 @@ export const router = createBrowserRouter([
         children: [
           { path: "/login", element: <LoginPage /> },
           { path: "/institute/login", element: <InstituteLoginPage /> },
-          { path: "/signup", element: <SignupPage /> },
           { path: "/forgot-password", element: <ForgotPasswordPage /> },
           { path: "/reset-password", element: <ResetPasswordPage /> },
           { path: "/reset-password/:token", element: <ResetPasswordPage /> },
@@ -173,7 +173,9 @@ export const router = createBrowserRouter([
       {
         path: "/",
         element: <DashBoardlayout />,
+        errorElement: <NotFoundPage />,
         children: [
+          { path: "*", element: <NotFoundPage /> },
           { index: true, element: <Navigate to="/dashboard" replace /> },
 
           {
@@ -219,7 +221,7 @@ export const router = createBrowserRouter([
           },
           {
             path: "all_orders",
-            element: <AllOrder />,
+            element: <AdminOnly><AllOrder /></AdminOnly>,
             children: [
               { index: true, element: <Navigate to="/all_orders/approved" replace /> },
               { path: "approved", element: <ApprovedOrder /> },
@@ -252,9 +254,9 @@ export const router = createBrowserRouter([
           {
             path: "modules",
             element: (
-              <PermissionRoute module="Modules">
+              <AdminOnly>
                 <ModulePage />
-              </PermissionRoute>
+              </AdminOnly>
             ),
           },
           {
@@ -347,8 +349,8 @@ export const router = createBrowserRouter([
               </PermissionRoute>
             ),
           },
-          { path: "studyabroad", element: <StudyAbroadPage /> },
-          { path: "careerplan", element: <CareerPlanPage /> },
+          { path: "studyabroad", element: (<PermissionRoute module="Study Abroad"><StudyAbroadPage /></PermissionRoute>) },
+          { path: "careerplan", element: <AdminOnly><CareerPlanPage /></AdminOnly> },
           {
             path: "bookings",
             element: (
@@ -368,16 +370,16 @@ export const router = createBrowserRouter([
           {
             path: "plans",
             element: (
-              <PermissionRoute module="PlansQuiz">
+              <PermissionRoute module="Plans">
                 <PlansPage />
               </PermissionRoute>
             ),
           },
-          { path: "subscriptions", element: <SubscriptionsPage /> },
-          { path: "services", element: <ServicesPage /> },
-          { path: "allcountries", element: <CountriesPage /> },
-          { path: "states", element: <StatesPage /> },
-          { path: "districts", element: <DistrictsPage /> },
+          { path: "subscriptions", element: <AdminOnly><SubscriptionsPage /></AdminOnly> },
+          { path: "services", element: <AdminOnly><ServicesPage /></AdminOnly> },
+          { path: "allcountries", element: <AdminOnly><CountriesPage /></AdminOnly> },
+          { path: "states", element: <AdminOnly><StatesPage /></AdminOnly> },
+          { path: "districts", element: <AdminOnly><DistrictsPage /></AdminOnly> },
           {
             path: "transactions",
             element: (
@@ -402,20 +404,20 @@ export const router = createBrowserRouter([
               </PermissionRoute>
             ),
           },
-          { path: "logo-favicon", element: <LogoFavicon /> },
-          { path: "email-notification/alltemplates", element: <AllTemplatesPage /> },
-          { path: "email-notification/globaltemplates", element: <GlobalTemplatePage /> },
-          { path: "email-notification/emailconfig", element: <EmailConfigPage /> },
-          { path: "email-notification/smsconfig", element: <SmsConfigPage /> },
-          { path: "jobs", element: <JobPage /> },
-          { path: "jobs/add", element: <JobFormPage mode="add" /> },
-          { path: "jobs/:jobId/edit", element: <JobFormPage mode="edit" /> },
-          { path: "jobs/:jobId/view", element: <JobFormPage mode="view" /> },
-          { path: "job-applications", element: <JobApplicationsPage /> },
+          { path: "logo-favicon", element: <AdminOnly><LogoFavicon /></AdminOnly> },
+          { path: "email-notification/alltemplates", element: <AdminOnly><AllTemplatesPage /></AdminOnly> },
+          { path: "email-notification/globaltemplates", element: <AdminOnly><GlobalTemplatePage /></AdminOnly> },
+          { path: "email-notification/emailconfig", element: <AdminOnly><EmailConfigPage /></AdminOnly> },
+          { path: "email-notification/smsconfig", element: <AdminOnly><SmsConfigPage /></AdminOnly> },
+          { path: "jobs", element: <AdminOnly><JobPage /></AdminOnly> },
+          { path: "jobs/add", element: <AdminOnly><JobFormPage mode="add" /></AdminOnly> },
+          { path: "jobs/:jobId/edit", element: <AdminOnly><JobFormPage mode="edit" /></AdminOnly> },
+          { path: "jobs/:jobId/view", element: <AdminOnly><JobFormPage mode="view" /></AdminOnly> },
+          { path: "job-applications", element: <AdminOnly><JobApplicationsPage /></AdminOnly> },
           {
             path: "quiz",
             element: (
-              <PermissionRoute module="PlansQuiz">
+              <PermissionRoute module="Quiz">
                 <QuizPage />
               </PermissionRoute>
             ),
@@ -423,17 +425,17 @@ export const router = createBrowserRouter([
           {
             path: "quiz/:quizId/questions",
             element: (
-              <PermissionRoute module="PlansQuiz">
+              <PermissionRoute module="Quiz">
                 <QuizQuestionsPage />
               </PermissionRoute>
             ),
           },
-          { path: "globalsettings", element: <GlobalSettingsPage /> },
+          { path: "globalsettings", element: <AdminOnly><GlobalSettingsPage /></AdminOnly> },
           { path: "profile", element: <ProfilePage /> },
-          { path: "language", element: <LanguagePage /> },
-          { path: "language/:languageId/keywords", element: <LanguageKeywordsPage /> },
-          { path: "seo", element: <SeoPage /> },
-          { path: "social-credential", element: <SocialCredentialPage /> },
+          { path: "language", element: <AdminOnly><LanguagePage /></AdminOnly> },
+          { path: "language/:languageId/keywords", element: <AdminOnly><LanguageKeywordsPage /></AdminOnly> },
+          { path: "seo", element: <AdminOnly><SeoPage /></AdminOnly> },
+          { path: "social-credential", element: <AdminOnly><SocialCredentialPage /></AdminOnly> },
           {
             path: "domains",
             element: (
@@ -597,30 +599,30 @@ export const router = createBrowserRouter([
           {
             path: "staff",
             element: (
-              <PermissionRoute module="Staff">
+              <AdminOnly>
                 <Staff />
-              </PermissionRoute>
+              </AdminOnly>
             ),
           },
           {
             path: "roles",
             element: (
-              <PermissionRoute module="Roles">
+              <AdminOnly>
                 <RolePage />
-              </PermissionRoute>
+              </AdminOnly>
             ),
           },
           {
             path: "permissions",
             element: (
-              <PermissionRoute module="Permissions">
+              <AdminOnly>
                 <Permission />
-              </PermissionRoute>
+              </AdminOnly>
             ),
           },
           {
             path: "user-messages",
-            element: <UserMessagesPage />,
+            element: <AdminOnly><UserMessagesPage /></AdminOnly>,
           },
           {
             path: "newsletter",
@@ -634,4 +636,5 @@ export const router = createBrowserRouter([
       },
     ],
   },
+  { path: "*", element: <CatchAll /> },
 ]);

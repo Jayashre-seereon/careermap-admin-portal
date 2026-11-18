@@ -14,7 +14,7 @@ const initialCredentials = [
     key: "1",
     title: "Google",
     clientId: "103948572934-demo.apps.googleusercontent.com",
-    clientSecret: "google-client-secret",
+    clientSecret: "",
     callbackUrl: "https://admin.careermap.io/auth/google/callback",
     status: "Enabled",
   },
@@ -44,8 +44,8 @@ export default function SocialCredentialPage() {
     if (!query) return credentials;
     return credentials.filter(
       (item) =>
-        item.title.toLowerCase().includes(query) ||
-        item.clientId.toLowerCase().includes(query)
+        String(item.title ?? "").toLowerCase().includes(query) ||
+        String(item.clientId ?? "").toLowerCase().includes(query)
     );
   }, [credentials, search]);
 
@@ -54,7 +54,7 @@ export default function SocialCredentialPage() {
     form.setFieldsValue({
       title: record.title,
       clientId: record.clientId,
-      clientSecret: record.clientSecret,
+      clientSecret: "", // secrets are never loaded back into the form
       callbackUrl: record.callbackUrl,
     });
   };
@@ -73,7 +73,7 @@ export default function SocialCredentialPage() {
               ...item,
               title: values.title,
               clientId: values.clientId,
-              clientSecret: values.clientSecret,
+              clientSecret: values.clientSecret || item.clientSecret,
             }
           : item
       )
@@ -171,7 +171,7 @@ export default function SocialCredentialPage() {
           <Table
             columns={columns}
             dataSource={Array.isArray(filteredCredentials) ? [...filteredCredentials].reverse() : []}
-            pagination={{ pageSize: 5 }}
+            pagination={{ pageSize: 10, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
             rowClassName="hover:bg-gray-50"
             scroll={{ x: true }}
           />
@@ -216,9 +216,9 @@ export default function SocialCredentialPage() {
           <Form.Item
             name="clientSecret"
             label="Client Secret"
-            rules={[{ required: true, message: "Client Secret is required" }]}
+            extra="Leave blank to keep the existing secret."
           >
-            <Input.Password />
+            <Input.Password autoComplete="new-password" placeholder="••••••••" />
           </Form.Item>
 
           <Form.Item name="callbackUrl" label="Callback URL">

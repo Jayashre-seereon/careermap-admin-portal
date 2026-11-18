@@ -13,7 +13,7 @@ export default function SmsConfigPage() {
 
   const handleSubmit = (values) => {
     saveSmsConfig({ ...values, method });
-    message.success("SMS configuration saved successfully.");
+    message.success("SMS configuration saved. Secret keys are kept for this session only and are not stored in the browser.");
   };
 
   const handleCancel = () => {

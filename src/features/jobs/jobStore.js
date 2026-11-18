@@ -120,3 +120,24 @@ export function getTodayLabel() {
 
   return formatter.format(new Date()).replace(/ /g, " ");
 }
+
+// Newest first by a date-like label (for example "28 Apr 2026"); ties and unparsable dates keep reverse insertion order.
+export function sortNewestFirstByDate(items, field) {
+  if (!Array.isArray(items)) return [];
+  return items
+    .map((item, index) => {
+      const time = Date.parse(item?.[field]);
+      return { item, index, time: Number.isNaN(time) ? null : time };
+    })
+    .sort((a, b) => {
+      if (a.time !== b.time) {
+        if (a.time === null) return 1;
+        if (b.time === null) return -1;
+        return b.time - a.time;
+      }
+      return b.index - a.index;
+    })
+    .map(({ item }) => item);
+}
+
+export const APPLICATION_STATUSES = ["New", "Reviewed", "Shortlisted", "Rejected"];
