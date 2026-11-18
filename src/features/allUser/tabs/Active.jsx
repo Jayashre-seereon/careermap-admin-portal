@@ -6,23 +6,18 @@ import {
   StopOutlined,
 } from "@ant-design/icons";
 import{Tag,Popconfirm,message} from "antd";
-import { useState } from "react";
+import useUsersPage from "../useUsersPage";
 import { useOutletContext } from "react-router-dom";
 import { banUser } from "../../../api/allusers";
 
 
 export default function Active() {
-  const [search, setSearch] = useState("");
- 
- const { users, setSelectedUser, fetchUsers } = useOutletContext();
-const filteredData = users
-  .filter((u) => u.status === "active") // ✅ small change
-  .filter((u) =>
-    u.user.toLowerCase().includes(search.toLowerCase())
-  );
+  const { setSelectedUser } = useOutletContext();
+  const { search, setSearch, rows, loading, reload, reset, tablePagination, onTableChange, emptyText } =
+    useUsersPage("active");
 const handleBan = async (id) => {
   if (!id) {
-    console.log("ID missing ❌");
+    if (import.meta.env.DEV) console.warn("ID missing");
     return;
   }
 
@@ -30,12 +25,12 @@ const handleBan = async (id) => {
     await banUser(id);
     message.success("User banned");
 
-    await fetchUsers(); // ✅ REFRESH FROM BACKEND
+    reload();
   } catch (err) {
     message.error("Ban failed");
   }
 };
-  const handleReset = () => setSearch("");
+  const handleReset = () => reset();
 
   const columns = [
     {
@@ -134,8 +129,11 @@ const handleBan = async (id) => {
       {/* TABLE */}
       <Table
         columns={columns}
-        dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
-        pagination={{ pageSize: 5 }}
+        dataSource={rows}
+        loading={loading}
+        pagination={tablePagination}
+        onChange={onTableChange}
+        locale={{ emptyText }}
         rowClassName="hover:bg-gray-50"
         scroll={{ x: "max-content" }}
       />

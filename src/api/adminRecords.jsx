@@ -1,7 +1,7 @@
 import api from "./axios";
 
-export const getAdminMentorBookings = async () => {
-  const response = await api.get("/api/admin/mentor-bookings");
+export const getAdminMentorBookings = async (params) => {
+  const response = await api.get("/api/admin/mentor-bookings", params ? { params } : undefined);
   return response.data;
 };
 
@@ -30,7 +30,7 @@ export const getAdminBookedMentorSlots = async (mentorId, date) => {
   return response.data;
 };
 
-export const getAdminTransactions = async () => {
-  const response = await api.get("/api/admin/transactions");
+export const getAdminTransactions = async (params) => {
+  const response = await api.get("/api/admin/transactions", params ? { params } : undefined);
   return response.data;
 };

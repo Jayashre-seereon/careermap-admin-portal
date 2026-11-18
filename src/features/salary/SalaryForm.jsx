@@ -1,3 +1,4 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import React, { useEffect } from "react";
 import { Form, Select, Input, Button } from "antd";
 import { validationRules } from "../../utils/formValidation";
@@ -20,14 +21,14 @@ function SalaryForm({ onSubmit, initialValues, viewMode }) {
   const handleFinish = (values) => {
     onSubmit(values);
     form.resetFields();
-    console.log(form.getFieldValue("subcategory"));
   };
 
+  const [guardedSubmit, submitting] = useSubmitGuard(handleFinish);
   return (
     <Form
       layout="vertical"
       form={form}
-      onFinish={handleFinish}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
       className="grid grid-cols-1 md:grid-cols-2 gap-4"
     >
@@ -138,7 +139,7 @@ function SalaryForm({ onSubmit, initialValues, viewMode }) {
       {!viewMode && (
         <div className="md:col-span-2 text-right">
           <Button
-            htmlType="submit"
+            htmlType="submit" loading={submitting}
             block
             style={{ background: "#9a2119", borderColor: "#9a2119" }}
             className="text-white"

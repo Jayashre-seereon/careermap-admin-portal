@@ -74,7 +74,6 @@ import {
   CAREER_CLUSTER_FACET_GROUPS,
   CAREER_CLUSTER_FACETS_LIST,
   CAREER_CLUSTER_FACET_MAP,
-  INITIAL_CAREER_CLUSTERS,
 } from "./psychometricConstants";
 import { validationRules } from "../../utils/formValidation";
 import { getSerialNumber } from "../../utils/slNo";
@@ -160,14 +159,11 @@ export default function CareerClusterPage() {
       else if (Array.isArray(res?.clusters)) list = res.clusters;
       else if (Array.isArray(res?.rows)) list = res.rows;
 
-      if (list.length > 0) {
-        setClusters(list);
-      } else {
-        setClusters(INITIAL_CAREER_CLUSTERS);
-      }
+      setClusters(list);
     } catch (err) {
-      console.warn("Using fallback career clusters:", err);
-      setClusters(INITIAL_CAREER_CLUSTERS);
+      console.warn("Failed to load career clusters:", err);
+      setClusters([]);
+      messageApi.error(getApiErrorMessage(err, "Failed to load career clusters."));
     } finally {
       setLoading(false);
     }
@@ -186,7 +182,15 @@ export default function CareerClusterPage() {
         c.name?.toLowerCase().includes(query) ||
         c.code?.toLowerCase().includes(query) ||
         c.hollandCode?.toLowerCase().includes(query) ||
-        c.description?.toLowerCase().includes(query)
+        c.description?.toLowerCase().includes(query) ||
+        String(c.category?.name || c.category || "").toLowerCase().includes(query) ||
+        (Array.isArray(c.weights)
+          ? c.weights.some(
+              (w) =>
+                Number(w?.weight) > 0 &&
+                String(w?.facet || w?.facetCode || "").toLowerCase() === query
+            )
+          : false)
       );
     });
   }, [clusters, search]);
@@ -323,29 +327,17 @@ export default function CareerClusterPage() {
       };
 
       if (modalMode === "edit" && currentRecord) {
-        try {
-          await updateCareerCluster(currentRecord.id, payload);
-          messageApi.success(`Career cluster "${payload.name}" updated successfully.`);
-        } catch (apiErr) {
-          console.warn("Backend update cluster error:", apiErr);
-          messageApi.info("Updated career cluster locally.");
-        }
+        await updateCareerCluster(currentRecord.id, payload);
+        messageApi.success(`Career cluster "${payload.name}" updated successfully.`);
         setClusters((prev) =>
           prev.map((c) =>
             c.id === currentRecord.id ? { ...c, ...payload } : c
           )
         );
       } else {
-        try {
-          const res = await createCareerCluster(payload);
-          if (res?.data?.id) payload.id = res.data.id;
-          messageApi.success(`Career cluster "${payload.name}" created successfully.`);
-        } catch (apiErr) {
-          console.warn("Backend create cluster error:", apiErr);
-          messageApi.warning(
-            getApiErrorMessage(apiErr, "Added career cluster locally.")
-          );
-        }
+        const res = await createCareerCluster(payload);
+        if (res?.data?.id) payload.id = res.data.id;
+        messageApi.success(`Career cluster "${payload.name}" created successfully.`);
         const newC = {
           id: payload.id || `cluster-${Date.now()}`,
           ...payload,
@@ -372,8 +364,7 @@ export default function CareerClusterPage() {
       await loadClusters();
     } catch (err) {
       console.warn("Delete cluster API error:", err);
-      messageApi.success("Career cluster removed.");
-      setClusters((prev) => prev.filter((c) => c.id !== record.id));
+      messageApi.error(getApiErrorMessage(err, "Failed to delete career cluster."));
     }
   };
 
@@ -610,7 +601,10 @@ export default function CareerClusterPage() {
       placeholder="Search cluster name, code (e.g. AGR, ITC), RIASEC..."
       prefix={<SearchOutlined className="text-[#9a2119]" />}
       value={search}
-      onChange={(e) => setSearch(e.target.value)}
+      onChange={(e) => {
+        setSearch(e.target.value);
+        setPagination((prev) => ({ ...prev, current: 1 }));
+      }}
       allowClear
       className="h-8 w-full sm:w-80 rounded-lg border-[#9a2119] hover:border-[#7a1a14]"
     />
@@ -641,7 +635,7 @@ export default function CareerClusterPage() {
           columns={columns}
           dataSource={filteredClusters}
           loading={loading}
-          pagination={pagination}
+          pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
           onChange={(pag) => setPagination(pag)}
           scroll={{ x: 900 }}
           className="custom-table"

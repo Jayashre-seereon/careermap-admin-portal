@@ -21,7 +21,7 @@ export default function EntranceExamTable({
   onDelete,
   onAdd,
 }) {
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
   const handleReset = () => onSearch("");
 
   const formatDate = (value) => {
@@ -223,7 +223,7 @@ export default function EntranceExamTable({
           dataSource={data}
           loading={loading}
           rowKey="id"
-          pagination={pagination}
+          pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
           onChange={(pag) => setPagination(pag)}
           rowClassName="hover:bg-gray-50"
           tableLayout="fixed"

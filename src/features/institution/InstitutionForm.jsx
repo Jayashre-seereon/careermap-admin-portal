@@ -1,3 +1,4 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import React, { useState, useEffect } from "react";
 import { Form, Input, Select, Upload, Button, DatePicker } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
@@ -11,6 +12,7 @@ import { getSecondaryCategoriesByCategory } from "../../api/secondaryCategory";
 import { getSubCategoriesBySecondCategory } from "../../api/subcategory";
 
 import dayjs from "dayjs";
+import { createBeforeUpload } from "../../utils/uploadValidation";
 const { Option } = Select;
 
 function InstitutionForm({ onSubmit, initialValues, disabled }) {
@@ -150,11 +152,12 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialValues]);
 
+  const [guardedSubmit, submitting] = useSubmitGuard(onSubmit);
   return (
     <Form
       layout="vertical"
       form={form}
-      onFinish={onSubmit}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
       className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
     >
@@ -322,7 +325,7 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
         valuePropName="fileList"
         getValueFromEvent={normalizeFile}
       >
-        <Upload beforeUpload={() => false} maxCount={1} disabled={disabled}>
+        <Upload beforeUpload={createBeforeUpload("image")} accept="image/*" maxCount={1} disabled={disabled}>
           <Button icon={<UploadOutlined />}>Upload</Button>
         </Upload>
       </Form.Item>
@@ -349,7 +352,7 @@ function InstitutionForm({ onSubmit, initialValues, disabled }) {
       {!disabled && (
         <div className="md:col-span-2 lg:col-span-4">
           <Button
-            htmlType="submit"
+            htmlType="submit" loading={submitting}
             block
             style={{ background: "#9a2119", borderColor: "#9a2119" }}
             className="text-white"

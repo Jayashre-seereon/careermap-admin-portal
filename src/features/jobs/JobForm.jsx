@@ -1,3 +1,4 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import { Button, Checkbox, Form, Input, Select, message, } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { useQuill } from "react-quilljs";
@@ -152,16 +153,17 @@ export default function JobForm({ mode = "add", jobId, onSuccess, onCancel }) {
     onSuccess?.(nextJobs);
   };
 
+  const [guardedSubmit, submitting] = useSubmitGuard(handleSubmit);
   return (
     <div>
-      <Form form={form} layout="vertical" onFinish={handleSubmit}>
+      <Form form={form} layout="vertical" onFinish={guardedSubmit}>
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           <Form.Item
             name="name"
             label={<span className="text-[16px] font-semibold">Name</span>}
             rules={[
               validationRules.required("Name"),
-              validationRules.charactersOnly("Name"),
+              validationRules.nameText("Name"),
             ]}
           >
             <Input className="h-12" disabled={isView} />
@@ -227,7 +229,7 @@ export default function JobForm({ mode = "add", jobId, onSuccess, onCancel }) {
           {!isView && (
             <Button
               type="primary"
-              htmlType="submit"
+              htmlType="submit" loading={submitting}
               style={{ background: "#9a2119", borderColor: "#9a2119" }}
               className="h-10 px-7"
             >

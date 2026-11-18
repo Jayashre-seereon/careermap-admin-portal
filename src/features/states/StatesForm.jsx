@@ -1,3 +1,4 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import { useEffect } from "react";
 import { Form, Input, Select, Button } from "antd";
 import { validationRules } from "../../utils/formValidation";
@@ -17,11 +18,12 @@ export default function StatesForm({
     }
   }, [form, initialValues]);
 
+  const [guardedSubmit, submitting] = useSubmitGuard(onSubmit);
   return (
     <Form
       layout="vertical"
       form={form}
-      onFinish={onSubmit}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
     >
       <h3 className="mb-4 text-lg font-semibold text-[#9a2119]">State Details</h3>
@@ -30,7 +32,7 @@ export default function StatesForm({
       <Form.Item
         name="name"
         label="State Name"
-        rules={[validationRules.required("State name"), validationRules.charactersOnly("State name")]}
+        rules={[validationRules.required("State name"), validationRules.nameText("State name")]}
       >
         <Input disabled={viewMode} />
       </Form.Item>
@@ -45,7 +47,7 @@ export default function StatesForm({
 
       {!viewMode && (
         <Button
-          htmlType="submit"
+          htmlType="submit" loading={submitting}
           block
           className="bg-[#9a2119] text-white"
         >

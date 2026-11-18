@@ -7,6 +7,8 @@ import {
   ReloadOutlined,
 } from "@ant-design/icons";
 import { useState } from "react";
+import useTablePagination from "../../utils/useTablePagination";
+import { getSerialNumber } from "../../utils/slNo";
 
 export default function DistrictsTable({
   data = [],
@@ -23,10 +25,11 @@ export default function DistrictsTable({
 
   const handleReset = () => setSearch("");
 
+  const { pagination, tableProps } = useTablePagination(Array.isArray(filteredData) ? filteredData.length : 0);
   const columns = [
     {
       title: <span className="text-[#9a2119] font-semibold">No.</span>,
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
       width: 80,
     },
     {
@@ -116,7 +119,7 @@ export default function DistrictsTable({
         <Table
           columns={columns}
         dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
-          pagination={{ pageSize: 5 }}
+          {...tableProps}
           rowClassName="hover:bg-gray-50"
           scroll={{ x: "max-content" }}
         />

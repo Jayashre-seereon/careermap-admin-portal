@@ -4,6 +4,7 @@ import { message } from "antd";
 import { ArrowRight, LockKeyhole, Mail } from "lucide-react";
 import { instituteLogin } from "../../api/authApi";
 import { useSessionStore } from "../../store/sessionStore";
+import { resolveRedirectTarget } from "../../utils/authRedirect";
 
 const inputClassName =
   "h-12 w-full rounded-xl border border-[#eadfda] bg-[#fbf9f8] px-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#9a2119] focus:bg-white focus:ring-4 focus:ring-[#9a2119]/10";
@@ -37,7 +38,6 @@ export default function InstituteLoginPage() {
   const setSession = useSessionStore((state) => state.setSession);
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
-  const redirectTo = location.state?.from?.pathname || "/institute/dashboard";
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -72,7 +72,8 @@ export default function InstituteLoginPage() {
       });
 
       messageApi.success("Institute login successful.");
-      navigate(redirectTo, { replace: true });
+      const { loginType, hasPermission } = useSessionStore.getState();
+      navigate(resolveRedirectTarget(location.state?.from, loginType, hasPermission), { replace: true });
     } catch (error) {
       messageApi.error(error.response?.data?.message || error.message || "Login failed.");
     } finally {

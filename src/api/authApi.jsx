@@ -59,6 +59,15 @@ export const changeAdminPassword = async ({ oldPassword, newPassword }) => {
   return res.data;
 };
 
+export const changeStaffPassword = async ({ oldPassword, newPassword }) => {
+  const res = await api.post("/api/staff/change-password", {
+    oldPassword,
+    newPassword,
+  });
+
+  return res.data;
+};
+
 export const instituteLogin = async (email, password) => {
   const res = await authClient.post("/api/institutcreate/login", { email, password });
   return res.data;

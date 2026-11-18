@@ -12,3 +12,9 @@ export const banUser = (id) => {
 export const unbanUser = (id) => {
   return api.put(`/api/user/admin/users/${id}/unban`);
 };
+
+// Server-side paginated list: { page, limit, search, status: "active" | "banned" | "" }
+export const getUsersPage = async (params = {}) => {
+  const res = await api.get("/api/user/admin/users", { params });
+  return res.data;
+};

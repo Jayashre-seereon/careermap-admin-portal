@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Badge,
   Button,
@@ -51,9 +51,6 @@ import {
   ALL_FACETS,
   FACET_GROUPS,
   FACET_MAP,
-  INITIAL_ASSESSMENTS,
-  INITIAL_QUESTIONS,
-  INITIAL_SECTIONS,
   LIKERT5_OPTIONS,
   SECTION_FACETS_MAP,
   generateItemId,
@@ -96,7 +93,11 @@ export default function QuestionBankPage() {
   const [selectedType, setSelectedType] = useState("all");
   const [selectedFacet, setSelectedFacet] = useState("all");
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [loadError, setLoadError] = useState("");
+  const requestIdRef = useRef(0);
   const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
+  const [totalQuestions, setTotalQuestions] = useState(0);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -137,25 +138,22 @@ export default function QuestionBankPage() {
       const normalizedAssessments = normalizeAssessmentsResponse(assessRes);
       const normalizedSections = normalizeSectionsResponse(secRes);
 
-      const finalAssessments =
-        normalizedAssessments.length > 0 ? normalizedAssessments : INITIAL_ASSESSMENTS;
-      const finalSections =
-        normalizedSections.length > 0 ? normalizedSections : INITIAL_SECTIONS;
-
-      setAssessments(finalAssessments);
-      setSections(finalSections);
-      return { assessments: finalAssessments, sections: finalSections };
-    } catch {
-      setAssessments(INITIAL_ASSESSMENTS);
-      setSections(INITIAL_SECTIONS);
-      return { assessments: INITIAL_ASSESSMENTS, sections: INITIAL_SECTIONS };
+      setAssessments(normalizedAssessments);
+      setSections(normalizedSections);
+      return { assessments: normalizedAssessments, sections: normalizedSections };
+    } catch (err) {
+      console.warn("Failed to load assessments/sections:", err);
+      setLoadError(getApiErrorMessage(err, "Failed to load assessments and sections."));
+      return { assessments: [], sections: [] };
     }
   };
 
   // Load Questions from /admin/questions API
   const loadQuestions = async (currentSections = sections, filterOverrides = {}) => {
+    const myRequestId = ++requestIdRef.current;
     try {
       setLoading(true);
+      setLoadError("");
 
       const targetAssessmentId =
         filterOverrides.assessmentId !== undefined
@@ -170,9 +168,14 @@ export default function QuestionBankPage() {
       const targetFacet =
         filterOverrides.facet !== undefined ? filterOverrides.facet : selectedFacet;
       const targetSearch =
-        filterOverrides.search !== undefined ? filterOverrides.search : search;
+        filterOverrides.search !== undefined ? filterOverrides.search : debouncedSearch;
 
-      const params = {};
+      // Server-side paging: ask only for the page the table is showing
+      // (the API defaults to 50 rows, so questions beyond that were unreachable).
+      const params = {
+        page: filterOverrides.page !== undefined ? filterOverrides.page : pagination.current,
+        limit: pagination.pageSize,
+      };
       if (targetAssessmentId && targetAssessmentId !== "all") {
         params.assessmentId = targetAssessmentId;
       }
@@ -193,31 +196,24 @@ export default function QuestionBankPage() {
 
       // Also fetch fresh sections to ensure embedded questions/metadata are up to date
       const secRes = await getSections();
+      if (myRequestId !== requestIdRef.current) return; // stale response
       const freshSections = normalizeSectionsResponse(secRes);
       const effectiveSections =
         freshSections.length > 0 ? freshSections : currentSections;
       setSections(effectiveSections);
 
-      const normalizedQ = normalizeQuestionsResponse(res, effectiveSections);
-
-      if (normalizedQ.length > 0) {
-        setQuestions(normalizedQ);
-      } else {
-        // If server returns empty for specific filters, show empty; otherwise fallback to seeded
-        if (Object.keys(params).length > 0) {
-          setQuestions([]);
-        } else {
-          // Extract embedded questions from sections
-          const extracted = normalizeQuestionsResponse(null, effectiveSections);
-          setQuestions(extracted.length > 0 ? extracted : INITIAL_QUESTIONS);
-        }
-      }
+      const normalizedQuestions = normalizeQuestionsResponse(res, effectiveSections);
+      setQuestions(normalizedQuestions);
+      setTotalQuestions(res?.pagination?.total ?? normalizedQuestions.length);
     } catch (err) {
-      console.warn("Using fallback questions:", err);
-      const extracted = normalizeQuestionsResponse(null, currentSections);
-      setQuestions(extracted.length > 0 ? extracted : INITIAL_QUESTIONS);
+      if (myRequestId !== requestIdRef.current) return;
+      console.warn("Failed to load questions:", err);
+      const msg = getApiErrorMessage(err, "Failed to load questions.");
+      setQuestions([]);
+      setLoadError(msg);
+      messageApi.error(msg);
     } finally {
-      setLoading(false);
+      if (myRequestId === requestIdRef.current) setLoading(false);
     }
   };
 
@@ -254,15 +250,28 @@ export default function QuestionBankPage() {
     if (activeSectionId) setSelectedSectionId(String(activeSectionId));
   }, [assessmentId, activeSectionId]);
 
+  // Debounce the search box (300ms)
   useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  useEffect(() => {
+    setPagination((p) => ({ ...p, current: 1 }));
     loadQuestions(sections, {
+      page: 1,
       assessmentId: selectedAssessmentId,
       sectionId: selectedSectionId,
       type: selectedType,
       facet: selectedFacet,
-      search: search,
+      search: debouncedSearch,
     });
-  }, [selectedAssessmentId, selectedSectionId, selectedType, selectedFacet]);
+  }, [selectedAssessmentId, selectedSectionId, selectedType, selectedFacet, debouncedSearch]);
+
+  // Fetch the requested page when the table page / page size changes
+  useEffect(() => {
+    loadQuestions(sections);
+  }, [pagination.current, pagination.pageSize]);
 
   // Available sections for filtering based on selected assessment
   const availableSections = useMemo(() => {
@@ -477,8 +486,6 @@ export default function QuestionBankPage() {
       }
 
       const targetSection = sections.find((s) => String(s.id) === String(targetSecId));
-      const targetAssessmentId =
-        targetSection?.assessmentId || selectedAssessmentId || 1;
 
       // Validate MCQ options if MCQ
       if (values.type === "mcq" || values.type === "mcq4") {
@@ -519,36 +526,12 @@ export default function QuestionBankPage() {
       };
 
       if (modalMode === "edit" && currentRecord) {
-        try {
-          await updateQuestion(currentRecord.id, payload);
-          messageApi.success("Question updated successfully on server.");
-        } catch (apiErr) {
-          console.warn("Backend update question error:", apiErr);
-          messageApi.info("Updated question locally.");
-        }
-        setQuestions((prev) =>
-          prev.map((q) =>
-            q.id === currentRecord.id ? { ...q, ...payload, sectionId: targetSecId } : q
-          )
-        );
+        // Any API failure propagates to the outer catch (no local-only update)
+        await updateQuestion(currentRecord.id, payload);
+        messageApi.success("Question updated successfully on server.");
       } else {
-        try {
-          const res = await createQuestion(targetSecId, payload);
-          if (res?.data?.id) payload.id = res.data.id;
-          messageApi.success(`Question ${payload.itemId} created successfully on server.`);
-        } catch (apiErr) {
-          console.warn("Backend create question error:", apiErr);
-          messageApi.warning(getApiErrorMessage(apiErr, "Added question locally."));
-        }
-        const newQ = {
-          id: payload.id || Date.now(),
-          sectionId: targetSecId,
-          sectionCode: targetSection?.code,
-          sectionTitle: targetSection?.title,
-          assessmentId: targetAssessmentId,
-          ...payload,
-        };
-        setQuestions((prev) => [newQ, ...prev]);
+        await createQuestion(targetSecId, payload);
+        messageApi.success(`Question ${payload.itemId} created successfully on server.`);
       }
 
       handleCloseModal();
@@ -565,11 +548,10 @@ export default function QuestionBankPage() {
     try {
       await deleteQuestion(record.id);
       messageApi.success("Question deleted successfully.");
+      setQuestions((prev) => prev.filter((q) => q.id !== record.id));
     } catch (err) {
       console.warn("Delete question API error:", err);
-      messageApi.success("Question removed.");
-    } finally {
-      setQuestions((prev) => prev.filter((q) => q.id !== record.id));
+      messageApi.error(getApiErrorMessage(err, "Failed to delete question."));
     }
   };
 
@@ -854,7 +836,24 @@ export default function QuestionBankPage() {
     />
 
     <Button
-      onClick={() => loadQuestions()}
+      onClick={() => {
+        const baseAssessment = assessmentId ? String(assessmentId) : "all";
+        const baseSection = activeSectionId ? String(activeSectionId) : "all";
+        setSearch("");
+        setDebouncedSearch("");
+        setSelectedAssessmentId(baseAssessment);
+        setSelectedSectionId(baseSection);
+        setSelectedType("all");
+        setSelectedFacet("all");
+        setPagination((p) => ({ ...p, current: 1 }));
+        loadQuestions(sections, {
+          assessmentId: baseAssessment,
+          sectionId: baseSection,
+          type: "all",
+          facet: "all",
+          search: "",
+        });
+      }}
       icon={<ReloadOutlined />}
       style={{ backgroundColor: "#9a2119", borderColor: "#9a2119", color: "#fff" }}
       className="h-8 font-semibold shadow-sm"
@@ -959,8 +958,9 @@ export default function QuestionBankPage() {
           columns={columns}
           dataSource={filteredQuestions}
           loading={loading}
-          pagination={pagination}
+          pagination={{ ...pagination, total: totalQuestions, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
           onChange={(pag) => setPagination(pag)}
+          locale={loadError ? { emptyText: loadError } : undefined}
           scroll={{ x: 1000 }}
           className="custom-table"
         />

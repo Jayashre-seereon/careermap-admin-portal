@@ -101,9 +101,11 @@ export default function QuizPage() {
   const [selectedQuizAttempts, setSelectedQuizAttempts] = useState(null);
   const [attemptsLoading, setAttemptsLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [dateRange, setDateRange] = useState(null);
   const [loading, setLoading] = useState(false);
 
-const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
+const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
   const loadQuizzes = async () => {
     try {
       setLoading(true);
@@ -123,12 +125,45 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   const quizCount = useMemo(() => quizzes.length, [quizzes]);
   const filteredQuizzes = useMemo(
     () =>
-      quizzes.filter((quiz) =>
-        `${quiz.title} ${quiz.type} ${quiz.from} ${quiz.to} ${quiz.duration}`
-          .toLowerCase()
-          .includes(search.toLowerCase())
-      ),
-    [quizzes, search]
+      quizzes
+        .filter((quiz) => {
+          const keyword = search.trim().toLowerCase();
+          if (keyword && !String(quiz.title || "").toLowerCase().includes(keyword)) {
+            return false;
+          }
+          if (typeFilter !== "all" && String(quiz.type || "").toLowerCase() !== typeFilter.toLowerCase()) {
+            return false;
+          }
+          if (dateRange?.[0] && dateRange?.[1]) {
+            const rangeStart = dateRange[0].startOf("day");
+            const rangeEnd = dateRange[1].endOf("day");
+            const quizStart = quiz.from ? dayjs(quiz.from) : null;
+            const quizEnd = quiz.to ? dayjs(quiz.to) : quizStart;
+            if (!quizStart) return false;
+            // keep quizzes whose from-to window overlaps the selected range
+            if (quizStart.isAfter(rangeEnd) || (quizEnd || quizStart).endOf("day").isBefore(rangeStart)) {
+              return false;
+            }
+          }
+          return true;
+        })
+        // newest first: explicit sort instead of relying on API order + reverse()
+        .sort((a, b) => {
+          const aTime = Date.parse(a.createdAt) || 0;
+          const bTime = Date.parse(b.createdAt) || 0;
+          if (aTime !== bTime) return bTime - aTime;
+          return (Number(b.id) || 0) - (Number(a.id) || 0);
+        }),
+    [quizzes, search, typeFilter, dateRange]
+  );
+
+  const typeOptions = useMemo(
+    () =>
+      [...new Set(["Live", "Mock", ...quizzes.map((quiz) => quiz.type).filter(Boolean)])].map((value) => ({
+        value,
+        label: value,
+      })),
+    [quizzes]
   );
 
   const resetForm = () => {
@@ -343,8 +378,31 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
               placeholder="Search quiz..."
               className="w-full sm:w-64 h-8 rounded-md border-[#9a2119]"
             />
+            <Select
+              value={typeFilter}
+              onChange={(value) => {
+                setTypeFilter(value);
+                setPagination((prev) => ({ ...prev, current: 1 }));
+              }}
+              options={[{ value: "all", label: "All Types" }, ...typeOptions]}
+              className="w-full sm:w-36"
+            />
+            <DatePicker.RangePicker
+              value={dateRange}
+              onChange={(value) => {
+                setDateRange(value);
+                setPagination((prev) => ({ ...prev, current: 1 }));
+              }}
+              format="DD-MM-YYYY"
+              className="w-full sm:w-64"
+            />
             <Button
-              onClick={() => setSearch("")}
+              onClick={() => {
+                setSearch("");
+                setTypeFilter("all");
+                setDateRange(null);
+                setPagination((prev) => ({ ...prev, current: 1 }));
+              }}
               style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
             >
               <ReloadOutlined />
@@ -362,9 +420,9 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
         <Table
           rowKey="id"
           columns={columns}
-          dataSource={Array.isArray(filteredQuizzes) ? [...filteredQuizzes].reverse() : []}
+          dataSource={Array.isArray(filteredQuizzes) ? filteredQuizzes : []}
           loading={loading}
-          pagination={pagination}
+          pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
           onChange={(pag) => setPagination(pag)}
           scroll={{ x: 900 }}
           rowClassName="hover:bg-[#fff8f7]"

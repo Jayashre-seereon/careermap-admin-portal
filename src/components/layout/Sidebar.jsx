@@ -17,6 +17,7 @@ export default function Sidebar({
   const navigate = useNavigate();
   const currentUser = useSessionStore((state) => state.user);
   const hasPermission = useSessionStore((state) => state.hasPermission);
+  const loginType = useSessionStore((state) => state.loginType);
   const [openAccordions, setOpenAccordions] = useState({
     "Email & Notification": true,
     "Psychometric Assessments": true,
@@ -36,7 +37,9 @@ const visibleSections = navSections
   .map((section) => ({
     ...section,
     items: section.items.filter((item) =>
-      hasPermission(item.module)
+      item.adminOnly
+        ? loginType === "admin"
+        : hasPermission(item.module)
     ),
   }))
   .filter((section) => section.items.length > 0);

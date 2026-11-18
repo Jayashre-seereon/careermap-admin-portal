@@ -9,6 +9,7 @@ import {
   updateMentor,
 } from "../../api/mentor";
 import { formatDateDisplay, formatDateForPayload, parseDateValue } from "../../utils/date";
+import { normalizePhone } from "../../utils/formValidation";
 
 const getApiErrorMessage = (error, fallbackMessage) =>
   error.response?.data?.message || error.message || fallbackMessage;
@@ -226,7 +227,7 @@ const buildMentorPayload = ({
   subCategoryId: subcategoryId?.value || "",
     name,
     email: email || "",
-    phone_number: phone_number || "",
+    phone_number: normalizePhone(phone_number),
     dateof_birth: formatDateValue(dateof_birth),
     designation: designation || "",
     education: education || "",
@@ -310,6 +311,7 @@ export default function MentorPage() {
   const [messageApi, contextHolder] = message.useMessage();
   const [mentors, setMentors] = useState([]);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("add");
   const [selected, setSelected] = useState(null);
@@ -337,11 +339,14 @@ export default function MentorPage() {
     availabilitySummary: formatAvailabilitySummary(item.availability),
   }));
 
-  const filteredMentors = tableData.filter((mentor) =>
-    `${mentor.name} ${mentor.email} ${mentor.phone_number} ${mentor.designation} ${mentor.education} ${mentor.availabilitySummary}`
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+  const keyword = search.trim().toLowerCase();
+  const filteredMentors = tableData.filter((mentor) => {
+    if (statusFilter === "active" && mentor.status !== true) return false;
+    if (statusFilter === "inactive" && mentor.status === true) return false;
+    if (!keyword) return true;
+    return [mentor.name, mentor.email, mentor.phone_number, mentor.designation, mentor.education]
+      .some((field) => String(field ?? "").toLowerCase().includes(keyword));
+  });
 
   const handleSubmit = async (values) => {
     try {
@@ -389,6 +394,8 @@ export default function MentorPage() {
         loading={loading}
         search={search}
         onSearch={setSearch}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
         onAddClick={() => {
           setMode("add");
           setSelected(null);

@@ -5,25 +5,13 @@ const getLoginType = () => useSessionStore.getState().loginType;
 const isStaffSession = () => getLoginType() === "staff";
 
 const getCounselingAuthConfig = (config = {}) => {
-  const token =
-    useSessionStore.getState().accessToken ||
-    localStorage.getItem("token") ||
-    localStorage.getItem("staffToken") ||
-    localStorage.getItem("adminToken") ||
-    localStorage.getItem("access_token");
-
-  return {
-    ...config,
-    headers: {
-      ...config.headers,
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-  };
+  // Authorization is supplied by the shared axios request interceptor (always the latest token).
+  return { ...config };
 };
 
 const assertInstituteSession = () => {
   const { loginType, accessToken } = useSessionStore.getState();
-  const token = accessToken || localStorage.getItem("institute_access_token");
+  const token = accessToken;
   if (loginType !== "institute" || !token) {
     throw new Error("Please sign in with your institute account to view counseling reports.");
   }

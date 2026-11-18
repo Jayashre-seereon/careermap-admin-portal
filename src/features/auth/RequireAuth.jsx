@@ -1,5 +1,6 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useSessionStore } from "../../store/sessionStore";
+import { getHomePath } from "../../utils/authRedirect";
 
 export default function RequireAuth({
   allowedLoginTypes = ["admin", "staff"],
@@ -8,6 +9,7 @@ export default function RequireAuth({
   const location = useLocation();
   const isAuthenticated = useSessionStore((state) => state.isAuthenticated);
   const loginType = useSessionStore((state) => state.loginType);
+  const hasPermission = useSessionStore((state) => state.hasPermission);
 
   if (!isAuthenticated) {
     return <Navigate to={loginPath} replace state={{ from: location }} />;
@@ -15,10 +17,7 @@ export default function RequireAuth({
 
   if (!allowedLoginTypes.includes(loginType)) {
     return (
-      <Navigate
-        to={loginType === "institute" ? "/institute/dashboard" : "/dashboard"}
-        replace
-      />
+      <Navigate to={getHomePath(loginType, hasPermission)} replace />
     );
   }
 

@@ -6,6 +6,7 @@ import {
   Input,
   Modal,
   Popconfirm,
+  Select,
   Table,
   Tag,
   message,
@@ -20,6 +21,7 @@ import {
   UserAddOutlined,
 } from "@ant-design/icons";
 import { useSessionStore } from "../../store/sessionStore";
+import { normalizePhone, validationRules } from "../../utils/formValidation";
 import { getInstituteDashboard } from "../../api/instituteDashboard";
 import {
   bulkUploadInstituteStudents,
@@ -52,6 +54,9 @@ export default function InstituteStudentsPage() {
   const [error, setError] = useState("");
   const [seatError, setSeatError] = useState("");
   const [search, setSearch] = useState("");
+  const [classFilter, setClassFilter] = useState("all");
+  const [streamFilter, setStreamFilter] = useState("all");
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
   const [modalOpen, setModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
   const [viewingStudent, setViewingStudent] = useState(null);
@@ -62,9 +67,15 @@ export default function InstituteStudentsPage() {
     if (!modalOpen || !studentRecord) return;
     form.setFieldsValue({
       ...studentRecord,
-      mobile: String(studentRecord.mobile || "").replace(/\D/g, "").slice(-10),
+      mobile: normalizePhone(studentRecord.mobile),
     });
   }, [editingStudent, form, modalOpen, viewingStudent]);
+
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
   const refreshData = useCallback(async () => {
     setLoading(true);
@@ -74,27 +85,45 @@ export default function InstituteStudentsPage() {
         getInstituteStudents(),
         getInstituteDashboard(),
       ]);
+      if (!mountedRef.current) return;
       if (studentsResponse?.success === false) throw new Error(messageFrom(studentsResponse, "Could not load students."));
       if (dashboardResponse?.success === false) throw new Error(messageFrom(dashboardResponse, "Could not load seat information."));
       setStudents(rowsFrom(studentsResponse));
       setSeatInfo(dashboardResponse?.data || dashboardResponse || {});
     } catch (err) {
-      setError(err?.response?.data?.message || err.message || "Could not load institute student information.");
+      if (mountedRef.current) setError(err?.response?.data?.message || err.message || "Could not load institute student information.");
     } finally {
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
     }
   }, []);
 
   useEffect(() => { refreshData(); }, [refreshData]);
 
   const totalStudents = Number(seatInfo?.totalStudents ?? seatInfo?.studentCount ?? students.length);
-  const studentLimit = Number(seatInfo?.studentLimit ?? 0);
-  const availableSeats = Number(seatInfo?.availableSeats ?? Math.max(0, studentLimit - totalStudents));
-  const limitReached = availableSeats === 0;
+  const rawLimit = seatInfo?.studentLimit;
+  const limitKnown = (rawLimit !== undefined && rawLimit !== null && rawLimit !== "" && Number.isFinite(Number(rawLimit)))
+    || (seatInfo?.availableSeats !== undefined && seatInfo?.availableSeats !== null && Number.isFinite(Number(seatInfo.availableSeats)));
+  const studentLimit = limitKnown && Number.isFinite(Number(rawLimit)) && rawLimit !== null && rawLimit !== "" ? Number(rawLimit) : null;
+  const availableSeats = limitKnown
+    ? Number(seatInfo?.availableSeats ?? Math.max(0, (studentLimit ?? 0) - totalStudents))
+    : null;
+  // An unknown limit (dashboard call failed / no limit returned) is NOT the same as zero seats.
+  const limitReached = limitKnown && availableSeats <= 0;
+
+  const classOptions = useMemo(
+    () => [...new Set(students.map((s) => String(s.class ?? "").trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })),
+    [students]
+  );
+  const streamOptions = useMemo(
+    () => [...new Set(students.map((s) => String(s.stream ?? "").trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b)),
+    [students]
+  );
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
-    return students.filter((student) => !query || [
+    return students.filter((student) => (classFilter === "all" || String(student.class ?? "").trim() === classFilter)
+      && (streamFilter === "all" || String(student.stream ?? "").trim() === streamFilter)
+      && (!query || [
       student.firstName,
       student.lastName,
       student.fullName,
@@ -103,8 +132,15 @@ export default function InstituteStudentsPage() {
       student.mobile,
       student.class,
       student.stream,
-    ].filter(Boolean).join(" ").toLowerCase().includes(query));
-  }, [students, search]);
+    ].filter(Boolean).join(" ").toLowerCase().includes(query)));
+  }, [students, search, classFilter, streamFilter]);
+
+  const currentPageSize = pagination.pageSize;
+  // Keep the current page valid when the filtered list shrinks (search/filter/delete).
+  useEffect(() => {
+    const maxPage = Math.max(1, Math.ceil(filtered.length / currentPageSize));
+    setPagination((prev) => (prev.current > maxPage ? { ...prev, current: maxPage } : prev));
+  }, [filtered.length, currentPageSize]);
 
   const startAdd = () => {
     setEditingStudent(null);
@@ -141,7 +177,7 @@ export default function InstituteStudentsPage() {
     form.setFields([{ name: "email", errors: [] }]);
     const payload = {
       ...values,
-      mobile: String(values.mobile || "").replace(/\D/g, "").slice(-10),
+      mobile: normalizePhone(values.mobile),
     };
     delete payload.instituteId;
     delete payload.password;
@@ -297,7 +333,7 @@ export default function InstituteStudentsPage() {
     {contextHolder}
     <div className="flex flex-wrap items-start justify-between gap-4">
       <div><h2 className="text-2xl font-bold text-[#8f2218]">Psychometric Students</h2><p className="mt-1 text-sm text-slate-500">Manage students registered with your institute.</p></div>
-      <Tag color={limitReached ? "red" : "processing"} className="!m-0 !rounded-full !px-4 !py-2 !text-sm !font-semibold">{totalStudents} / {studentLimit} students used</Tag>
+      <Tag color={limitReached ? "red" : "processing"} className="!m-0 !rounded-full !px-4 !py-2 !text-sm !font-semibold">{totalStudents} / {studentLimit ?? "—"} students used</Tag>
     </div>
 
     {limitReached && <Alert type="warning" showIcon message="Student limit reached. Contact admin to increase the limit." />}
@@ -306,16 +342,18 @@ export default function InstituteStudentsPage() {
 
     <div className="rounded-2xl border border-[#eaded8] bg-white p-4 shadow-sm sm:p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="font-semibold text-slate-700">{students.length} students</div>
+        <div className="font-semibold text-slate-700">{filtered.length === students.length ? `${students.length} students` : `${filtered.length} of ${students.length} students`}</div>
         <div className="flex flex-wrap items-center gap-2">
-          <Input allowClear prefix={<SearchOutlined />} placeholder="Search students" value={search} onChange={(event) => setSearch(event.target.value)} className="sm:w-56" />
+          <Input allowClear prefix={<SearchOutlined />} placeholder="Search students" value={search} onChange={(event) => { setSearch(event.target.value); setPagination((prev) => ({ ...prev, current: 1 })); }} className="sm:w-56" />
+          <Select value={classFilter} onChange={(value) => { setClassFilter(value); setPagination((prev) => ({ ...prev, current: 1 })); }} className="w-32" options={[{ value: "all", label: "All Classes" }, ...classOptions.map((value) => ({ value, label: value }))]} />
+          <Select value={streamFilter} onChange={(value) => { setStreamFilter(value); setPagination((prev) => ({ ...prev, current: 1 })); }} className="w-36" options={[{ value: "all", label: "All Streams" }, ...streamOptions.map((value) => ({ value, label: value }))]} />
           <Button icon={<DownloadOutlined />} onClick={downloadTemplate}>Download sample template</Button>
           <input ref={fileInputRef} type="file" accept=".xlsx" className="hidden" onChange={handleBulkFile} />
           <Button icon={<UploadOutlined />} loading={bulkLoading} disabled={limitReached || bulkLoading} onClick={() => fileInputRef.current?.click()}>Bulk Upload</Button>
           <Button type="primary" icon={<UserAddOutlined />} className="!bg-[#8f2218]" disabled={limitReached} onClick={startAdd}>Add Student</Button>
         </div>
       </div>
-      <Table rowKey="id" columns={columns} dataSource={filtered} loading={loading} pagination={{ pageSize: 10, showSizeChanger: true }} scroll={{ x: 1000 }} />
+      <Table rowKey="id" columns={columns} dataSource={filtered} loading={loading} pagination={{ ...pagination, showSizeChanger: true }} onChange={(pag) => setPagination({ current: pag.current, pageSize: pag.pageSize })} scroll={{ x: 1000 }} />
     </div>
 
     {bulkResult && <div className="rounded-2xl border border-[#eaded8] bg-white p-4 shadow-sm sm:p-5">
@@ -337,10 +375,10 @@ export default function InstituteStudentsPage() {
             <Form.Item key={name} name={name} label={label} rules={[
               ...(required ? [{ required: true, message: `${label} is required.` }] : []),
               ...(name === "email" ? [{ type: "email", message: "Enter a valid email address." }] : []),
-              ...(name === "mobile" ? [{ pattern: /^\d{10}$/, message: "Enter a valid 10-digit mobile number." }] : []),
+              ...(name === "mobile" ? [validationRules.phone("Mobile")] : []),
             ]}>
               {name === "mobile"
-                ? <Input addonBefore="+91" maxLength={10} readOnly={name === "email" && Boolean(editingStudent)} />
+                ? <Input maxLength={16} placeholder="e.g. +919876543210" />
                 : <Input readOnly={name === "email" && Boolean(editingStudent)} />}
             </Form.Item>
           ))}

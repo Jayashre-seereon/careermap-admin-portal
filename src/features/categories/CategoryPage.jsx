@@ -143,27 +143,6 @@ const buildCategoryPayload = ({
     config: { headers: { "Content-Type": "multipart/form-data" } },
   };
 };
-const handleTogglePreview = async (
-  record,
-  checked
-) => {
-  try {
-    await updateCategoryPreviewAccess(
-      record.id,
-      checked
-    );
-
-    messageApi.success(
-      "Preview access updated successfully."
-    );
-
-    loadCategories();
-  } catch (error) {
-    messageApi.error(
-      "Failed to update preview access."
-    );
-  }
-};
 const mapCategory = (item = {}) => ({
   id: item.id,
   stream: item.streamId || item.stream?.id || item.stream || undefined,
@@ -220,6 +199,28 @@ export default function CategoryPage() {
       messageApi.error(getApiErrorMessage(error, "Failed to load categories."));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleTogglePreview = async (
+    record,
+    checked
+  ) => {
+    try {
+      await updateCategoryPreviewAccess(
+        record.id,
+        checked
+      );
+
+      messageApi.success(
+        "Preview access updated successfully."
+      );
+
+      loadCategories();
+    } catch (error) {
+      messageApi.error(
+        "Failed to update preview access."
+      );
     }
   };
 

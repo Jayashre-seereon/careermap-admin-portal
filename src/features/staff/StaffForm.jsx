@@ -1,9 +1,10 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Form, Input, Select, Button, Switch, message } from "antd";
 import { validationRules } from "../../utils/formValidation";
 
 function StaffForm({ roles = [], onSubmit, initialValues, disabled, mode }) {
   const [form] = Form.useForm();
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (initialValues) {
@@ -14,7 +15,9 @@ function StaffForm({ roles = [], onSubmit, initialValues, disabled, mode }) {
   }, [initialValues, form]);
 
   const handleFinish = async (values) => {
+    if (submitting) return;
     try {
+      setSubmitting(true);
       const payload = { ...values };
       // Don't overwrite the existing password with a blank one on edit
       if (mode === "edit" && !payload.password) {
@@ -38,6 +41,8 @@ function StaffForm({ roles = [], onSubmit, initialValues, disabled, mode }) {
           },
         ]);
       }
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -68,7 +73,14 @@ function StaffForm({ roles = [], onSubmit, initialValues, disabled, mode }) {
         <Form.Item
           name="password"
           label={mode === "edit" ? "Password (leave blank to keep current)" : "Password"}
-          rules={mode === "edit" ? [] : [validationRules.required("Password")]}
+          rules={
+            mode === "edit"
+              ? [{ min: 8, message: "Password must be at least 8 characters." }]
+              : [
+                  validationRules.required("Password"),
+                  { min: 8, message: "Password must be at least 8 characters." },
+                ]
+          }
         >
           <Input.Password placeholder="Enter password" disabled={disabled} />
         </Form.Item>
@@ -91,6 +103,8 @@ function StaffForm({ roles = [], onSubmit, initialValues, disabled, mode }) {
           type="primary"
           htmlType="submit"
           block
+          loading={submitting}
+          disabled={submitting}
           style={{ background: "#9a2119", borderColor: "#9a2119" }}
         >
           Submit

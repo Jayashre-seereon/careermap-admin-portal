@@ -1,13 +1,16 @@
 import React from "react";
 import { Table, Button, Popconfirm, Input } from "antd";
 import { EyeOutlined, EditOutlined, DeleteOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
+import useTablePagination from "../../utils/useTablePagination";
+import { getSerialNumber } from "../../utils/slNo";
 
 function JobScopeTable({ data, onAdd, onView, onEdit, onDelete, onSearch, search }) {
   const handleReset = () => onSearch("");
+  const { pagination, tableProps } = useTablePagination(Array.isArray(data) ? data.length : 0);
   const columns = [
     {
       title: "SL",
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
       width: 60,
     },
     { title: "Stream", dataIndex: "stream", width: 140 },
@@ -85,7 +88,7 @@ function JobScopeTable({ data, onAdd, onView, onEdit, onDelete, onSearch, search
         columns={columns}
         dataSource={Array.isArray(data) ? [...data].reverse() : []}
         rowKey="id"
-        pagination={{ pageSize: 5 }}
+        {...tableProps}
         scroll={{ x: "max-content" }}
       />
     </div>

@@ -1,11 +1,8 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import { useEffect } from "react";
-import { Form, Input, Select, Button } from "antd";
+import { Form, Input, InputNumber, Select, Button } from "antd";
 import RichTextEditor from "../../components/ui/RichTextEditor";
-import {
-  getValueFromInput,
-  inputSanitizers,
-  validationRules,
-} from "../../utils/formValidation";
+import { validationRules } from "../../utils/formValidation";
 
 export default function PlansForm({
   onSubmit,
@@ -19,6 +16,8 @@ export default function PlansForm({
     if (initialValues) {
       form.setFieldsValue({
         ...initialValues,
+        price: initialValues.price === "" || initialValues.price == null ? undefined : Number(initialValues.price),
+        validity: initialValues.validity === "" || initialValues.validity == null ? undefined : Number(initialValues.validity),
         moduleIds: initialValues.moduleIds || [],
       });
     } else {
@@ -26,11 +25,12 @@ export default function PlansForm({
     }
   }, [form, initialValues]);
 
+  const [guardedSubmit, submitting] = useSubmitGuard(onSubmit);
   return (
     <Form
       layout="vertical"
       form={form}
-      onFinish={onSubmit}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
       className="grid grid-cols-1 md:grid-cols-2 gap-4"
     >
@@ -49,9 +49,26 @@ export default function PlansForm({
       <Form.Item
         name="price"
         label="Price"
-        rules={[validationRules.required("Price")]}
+        rules={[
+          validationRules.required("Price"),
+          {
+            validator: (_, value) =>
+              value === undefined || value === null || value === "" || Number(value) >= 0
+                ? Promise.resolve()
+                : Promise.reject(new Error("Price cannot be negative.")),
+          },
+        ]}
       >
-        <Input disabled={disabled} />
+        <InputNumber
+          disabled={disabled}
+          min={0}
+          max={10000000}
+          precision={2}
+          controls={false}
+          prefix="₹"
+          placeholder="e.g. 999.00"
+          style={{ width: "100%" }}
+        />
       </Form.Item>
 
       <Form.Item name="plan_type" label="Plan Type">
@@ -64,18 +81,25 @@ export default function PlansForm({
       <Form.Item
         name="validity"
         label="Validity (in days)"
-        getValueFromEvent={getValueFromInput(inputSanitizers.trim)}
         rules={[
           validationRules.required("Validity"),
           {
             validator: (_, value) =>
-              !value || /^\d+$/.test(String(value))
+              value === undefined || value === null || value === "" ||
+              (Number.isInteger(Number(value)) && Number(value) >= 1 && Number(value) <= 3650)
                 ? Promise.resolve()
-                : Promise.reject(new Error("Enter valid no.")),
+                : Promise.reject(new Error("Validity must be a whole number between 1 and 3650 days.")),
           },
         ]}
       >
-        <Input disabled={disabled} placeholder="e.g. 12" inputMode="numeric" />
+        <InputNumber
+          disabled={disabled}
+          min={1}
+          max={3650}
+          precision={0}
+          placeholder="e.g. 365"
+          style={{ width: "100%" }}
+        />
       </Form.Item>
 
       <Form.Item
@@ -121,7 +145,7 @@ export default function PlansForm({
 
       {!disabled && (
         <Button
-          htmlType="submit"
+          htmlType="submit" loading={submitting}
           className="md:col-span-2 bg-[#9a2119] text-white"
         >
           {initialValues ? "Update Plan" : "Add Plan"}

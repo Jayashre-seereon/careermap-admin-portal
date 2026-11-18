@@ -1,5 +1,6 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import React, { useEffect } from "react";
-import { Button, Form, Input, message } from "antd";
+import { Button, Form, Input } from "antd";
 import { validationRules } from "../../utils/formValidation";
 
 function RoleForm({ onSubmit, initialValues, disabled }) {
@@ -17,18 +18,17 @@ function RoleForm({ onSubmit, initialValues, disabled }) {
     try {
       await onSubmit(values);
       form.resetFields();
-    } catch (err) {
-      const errMsg =
-        err?.response?.data?.message || err?.message || "Something went wrong. Please try again.";
-      message.error(errMsg);
+    } catch {
+      // RolePage already shows the error toast; keep the user's input so they can retry.
     }
   };
 
+  const [guardedSubmit, submitting] = useSubmitGuard(handleFinish);
   return (
     <Form
       layout="vertical"
       form={form}
-      onFinish={handleFinish}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
     >
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -56,7 +56,7 @@ function RoleForm({ onSubmit, initialValues, disabled }) {
       {!disabled && (
         <Button
           type="primary"
-          htmlType="submit"
+          htmlType="submit" loading={submitting}
           block
           style={{ background: "#9a2119", borderColor: "#9a2119" }}
         >

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Modal, message } from "antd";
 import InstitutionTable from "./InstitutionTable";
 import InstitutionForm from "./InstitutionForm";
@@ -163,12 +163,17 @@ const getApiErrorMessage = (error, fallbackMessage, action = "default") => {
   const statusCode = error.response?.status;
   const backendMessage = error.response?.data?.message;
 
+  const errorCode = error.response?.data?.code;
+  const rawText = String(backendMessage || "");
+
+  // Friendly text only for known constraint failures; every other 400
+  // (validation, bad file, invalid date...) shows the real backend message.
   if (statusCode === 400) {
-    if (action === "delete") {
+    if (action === "delete" && (errorCode === "P2003" || /foreign key|P2003/i.test(rawText))) {
       return "Institute is linked to another module and cannot be deleted.";
     }
 
-    if (action === "save") {
+    if (action === "save" && (errorCode === "P2002" || /unique constraint|P2002/i.test(rawText))) {
       return "This Institute already exists";
     }
   }
@@ -185,21 +190,34 @@ export default function InstitutionPage() {
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [stateFilter, setStateFilter] = useState("all");
+  const mountedRef = useRef(true);
+  const importTimerRef = useRef(null);
 
   const loadInstitutes = async () => {
     try {
-      setLoading(true);
+      if (mountedRef.current) setLoading(true);
       const response = await getInstitutes();
+      if (!mountedRef.current) return;
       setInstitutes(normalizeList(response).map(mapInstitute));
     } catch (error) {
-      messageApi.error(getApiErrorMessage(error, "Failed to load institutes."));
+      if (mountedRef.current) {
+        messageApi.error(getApiErrorMessage(error, "Failed to load institutes."));
+      }
     } finally {
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
     }
   };
 
   useEffect(() => {
+    mountedRef.current = true;
     loadInstitutes();
+    return () => {
+      mountedRef.current = false;
+      if (importTimerRef.current) clearTimeout(importTimerRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleAdd = async (values) => {
@@ -244,11 +262,19 @@ export default function InstitutionPage() {
     }
   };
 
-  const filteredInstitutes = institutes.filter((item) =>
-    `${item.name} ${item.address} ${item.city} ${item.state} ${item.countruy} ${item.about} ${item.courses_offered}`
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+  const typeOptions = [...new Set(institutes.map((item) => item.institute_type).filter(Boolean))]
+    .sort((a, b) => String(a).localeCompare(String(b)));
+  const stateOptions = [...new Set(institutes.map((item) => item.state).filter(Boolean))]
+    .sort((a, b) => String(a).localeCompare(String(b)));
+
+  const keyword = search.trim().toLowerCase();
+  const filteredInstitutes = institutes.filter((item) => {
+    if (typeFilter !== "all" && item.institute_type !== typeFilter) return false;
+    if (stateFilter !== "all" && item.state !== stateFilter) return false;
+    if (!keyword) return true;
+    return [item.name, item.address, item.city, item.district, item.state, item.countruy]
+      .some((field) => String(field ?? "").toLowerCase().includes(keyword));
+  });
 
   return (
     <div className="space-y-5">
@@ -258,6 +284,12 @@ export default function InstitutionPage() {
         data={filteredInstitutes}
         search={search}
         onSearch={setSearch}
+        typeFilter={typeFilter}
+        onTypeFilterChange={setTypeFilter}
+        typeOptions={typeOptions}
+        stateOptions={stateOptions}
+        stateFilter={stateFilter}
+        onStateFilterChange={setStateFilter}
         onAddClick={() => {
           setMode("add");
           setSelected(null);
@@ -310,7 +342,8 @@ export default function InstitutionPage() {
           // imported rows may not be in the DB the instant this fires.
           // Refresh now, and again after a short delay to catch the rest.
           loadInstitutes();
-          setTimeout(loadInstitutes, 4000);
+          if (importTimerRef.current) clearTimeout(importTimerRef.current);
+          importTimerRef.current = setTimeout(loadInstitutes, 4000);
         }}
       />
     </div>

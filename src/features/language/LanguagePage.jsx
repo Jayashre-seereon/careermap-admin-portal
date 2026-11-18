@@ -21,6 +21,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import { createLanguageId, getLanguages, saveLanguages } from "./languageStore";
 import { validationRules } from "../../utils/formValidation";
+import useTablePagination from "../../utils/useTablePagination";
+import { getSerialNumber } from "../../utils/slNo";
 
 const initialFormValues = {
   name: "",
@@ -46,7 +48,7 @@ export default function LanguagePage() {
 
     return languages.filter((language) =>
       [language.name, language.code, language.type].some((value) =>
-        value.toLowerCase().includes(query)
+        String(value ?? "").toLowerCase().includes(query)
       )
     );
   }, [languages, search]);
@@ -148,11 +150,12 @@ export default function LanguagePage() {
     form.resetFields();
   };
 
+  const { pagination, tableProps } = useTablePagination(Array.isArray(filteredLanguages) ? filteredLanguages.length : 0);
   const columns = [
     {
       title: <span className="font-semibold text-[#9a2119]">SL</span>,
       width: 70,
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => getSerialNumber(index, pagination),
     },
     {
       title: <span className="font-semibold text-[#9a2119]">Language Name</span>,
@@ -257,7 +260,7 @@ export default function LanguagePage() {
             rowKey="key"
             columns={columns}
             dataSource={Array.isArray(filteredLanguages) ? [...filteredLanguages].reverse() : []}
-            pagination={{ pageSize: 6 }}
+            {...tableProps}
             scroll={{ x: 760 }}
             
           />
@@ -289,7 +292,7 @@ export default function LanguagePage() {
             label="Language Code"
             name="code"
             rules={[
-              validationRules.charactersOnly("Language Code")
+              validationRules.nameText("Language Code")
             ]}
           >
             <Input placeholder="Example: en" />

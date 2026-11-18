@@ -1,3 +1,4 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import React, { useEffect } from "react";
 import {
   Button,
@@ -48,11 +49,12 @@ function SectionForm({
     });
   };
 
+  const [guardedSubmit, submitting] = useSubmitGuard(handleFinish);
   return (
     <Form
       form={form}
       layout="vertical"
-      onFinish={handleFinish}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
     >
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -134,7 +136,7 @@ function SectionForm({
       {!disabled && (
         <Button
           type="primary"
-          htmlType="submit"
+          htmlType="submit" loading={submitting}
           block
           style={{
             background: "#9a2119",

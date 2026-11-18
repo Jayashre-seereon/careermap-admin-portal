@@ -78,6 +78,7 @@ export default function StudyAbroadConsultPage() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   // Modal detail states
   const [open, setOpen] = useState(false);
@@ -101,26 +102,38 @@ export default function StudyAbroadConsultPage() {
     loadConsults();
   }, []);
 
+  const normalizeStatus = (value) => String(value || "pending").trim().toLowerCase();
+
+  const statusOptions = [
+    ...new Set(["pending", "approved", "rejected", ...data.map((item) => normalizeStatus(item.status))]),
+  ].map((value) => ({ value, label: value.charAt(0).toUpperCase() + value.slice(1) }));
+
   const filteredData = data.filter((item) => {
-    const userName = item.user
-      ? [item.user.firstName, item.user.lastName, item.user.email].filter(Boolean).join(" ").toLowerCase()
-      : `id: ${item.userId || ""}`.toLowerCase();
-    
+    if (statusFilter !== "all" && normalizeStatus(item.status) !== statusFilter) {
+      return false;
+    }
+
+    const keyword = search.trim().toLowerCase();
+    if (!keyword) {
+      return true;
+    }
+
+    // Search only name / email / mobile / country (not status or free-text message).
     const searchString = [
-      userName,
+      item.user?.firstName,
+      item.user?.lastName,
+      item.user?.email,
       item.fullName,
       item.email,
       item.mobileNumber,
       item.preferredCountries,
-      item.preferredCourseProgramme,
-      item.intendedStudyLevel,
-      item.totalEducationBudget,
-      item.preferredIntake,
-      item.status,
-      item.message,
-    ].filter(Boolean).join(" ").toLowerCase();
+    ]
+      .flat()
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
 
-    return searchString.includes(search.toLowerCase());
+    return searchString.includes(keyword);
   });
 
   const handleView = async (record) => {
@@ -168,6 +181,9 @@ export default function StudyAbroadConsultPage() {
         loading={loading}
         search={search}
         onSearch={setSearch}
+        statusFilter={statusFilter}
+        onStatusFilter={setStatusFilter}
+        statusOptions={statusOptions}
         onView={handleView}
       />
 

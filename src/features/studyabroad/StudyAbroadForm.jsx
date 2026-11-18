@@ -1,3 +1,4 @@
+import useSubmitGuard from "../../hooks/useSubmitGuard";
 import { useEffect } from "react";
 import { Button, Form, Input, Select } from "antd";
 import RichTextEditor from "../../components/ui/RichTextEditor";
@@ -37,11 +38,12 @@ export default function StudyAbroadForm({ onSubmit, initialValues, mode }) {
     form.resetFields();
   }, [form, initialValues]);
 
+  const [guardedSubmit, submitting] = useSubmitGuard(onSubmit);
   return (
     <Form
       layout="vertical"
       form={form}
-      onFinish={onSubmit}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
       className="grid grid-cols-1 md:grid-cols-2 gap-4"
     >
@@ -159,7 +161,7 @@ export default function StudyAbroadForm({ onSubmit, initialValues, mode }) {
 
       {!isView && (
         <Button
-          htmlType="submit"
+          htmlType="submit" loading={submitting}
           className="md:col-span-2 bg-[#9a2119] text-white"
         >
           {mode === "edit" ? "Update" : "Submit"}

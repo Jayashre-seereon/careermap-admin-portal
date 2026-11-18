@@ -171,6 +171,10 @@ export default function TicketDetails() {
   };
 
   const handleAddAttachment = (file) => {
+    if (file.size && file.size > 2 * 1024 * 1024) {
+      showError(`${file.name} exceeds the 2MB upload limit.`);
+      return Upload.LIST_IGNORE;
+    }
     setAttachments((prev) => {
       if (prev.includes(file.name)) {
         showError(`${file.name} is already added.`);

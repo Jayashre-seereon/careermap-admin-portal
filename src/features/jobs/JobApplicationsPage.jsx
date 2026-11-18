@@ -1,26 +1,57 @@
 import { useMemo, useState } from "react";
-import { Button, Input, message, Table } from "antd";
+import { Button, DatePicker, Input, message, Select, Table } from "antd";
 import { EyeOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
-import { getJobApplications } from "./jobStore";
+import { APPLICATION_STATUSES, getJobApplications, saveJobApplications, sortNewestFirstByDate } from "./jobStore";
+import useTablePagination from "../../utils/useTablePagination";
 
 export default function JobApplicationsPage() {
-  const [applications] = useState(getJobApplications);
+  const [applications, setApplications] = useState(getJobApplications);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [jobFilter, setJobFilter] = useState("all");
+  const [dateRange, setDateRange] = useState(null);
+
+  const getStatus = (application) => application.status || "New";
+
+  const jobOptions = useMemo(
+    () => [...new Set(applications.map((application) => application.job).filter(Boolean))],
+    [applications]
+  );
 
   const filteredApplications = useMemo(() => {
     const query = search.trim().toLowerCase();
+    const from = dateRange?.[0] ? dateRange[0].startOf("day").valueOf() : null;
+    const to = dateRange?.[1] ? dateRange[1].endOf("day").valueOf() : null;
 
-    if (!query) {
-      return applications;
-    }
+    const matched = applications.filter((application) => {
+      if (statusFilter !== "all" && (application.status || "New") !== statusFilter) return false;
+      if (jobFilter !== "all" && application.job !== jobFilter) return false;
+      if (from !== null || to !== null) {
+        const applied = Date.parse(application.appliedOn);
+        if (Number.isNaN(applied)) return false;
+        if (from !== null && applied < from) return false;
+        if (to !== null && applied > to) return false;
+      }
+      return (
+        !query ||
+        String(application.job ?? "").toLowerCase().includes(query) ||
+        String(application.name ?? "").toLowerCase().includes(query) ||
+        String(application.email ?? "").toLowerCase().includes(query)
+      );
+    });
+    return sortNewestFirstByDate(matched, "appliedOn");
+  }, [applications, search, statusFilter, jobFilter, dateRange]);
 
-    return applications.filter(
-      (application) =>
-        application.job.toLowerCase().includes(query) ||
-        application.name.toLowerCase().includes(query) ||
-        application.email.toLowerCase().includes(query)
+  const { tableProps } = useTablePagination(filteredApplications.length);
+
+  const handleStatusChange = (record, status) => {
+    const updated = applications.map((application) =>
+      application.id === record.id ? { ...application, status } : application
     );
-  }, [applications, search]);
+    setApplications(updated);
+    saveJobApplications(updated);
+    message.success("Application status updated.");
+  };
 
   const openCv = (url) => {
     window.open(url, "_blank", "noopener,noreferrer");
@@ -57,6 +88,19 @@ export default function JobApplicationsPage() {
     {
       title: <span className="text-[#9a2119] font-semibold">Applied On</span>,
       dataIndex: "appliedOn",
+    },
+    {
+      title: <span className="text-[#9a2119] font-semibold">Status</span>,
+      width: 150,
+      render: (_, record) => (
+        <Select
+          size="small"
+          value={getStatus(record)}
+          onChange={(value) => handleStatusChange(record, value)}
+          options={APPLICATION_STATUSES.map((status) => ({ value: status, label: status }))}
+          style={{ width: 120 }}
+        />
+      ),
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Note</span>,
@@ -108,8 +152,24 @@ export default function JobApplicationsPage() {
                onChange={(e) => setSearch(e.target.value)}
             />
 
+            <Select
+              value={jobFilter}
+              onChange={setJobFilter}
+              className="w-full sm:w-48"
+              options={[{ value: "all", label: "All Jobs" }, ...jobOptions.map((job) => ({ value: job, label: job }))]}
+            />
+
+            <Select
+              value={statusFilter}
+              onChange={setStatusFilter}
+              className="w-full sm:w-36"
+              options={[{ value: "all", label: "All Status" }, ...APPLICATION_STATUSES.map((status) => ({ value: status, label: status }))]}
+            />
+
+            <DatePicker.RangePicker value={dateRange} onChange={setDateRange} className="w-full sm:w-64" />
+
             <Button
-              onClick={() => setSearch("")}
+              onClick={() => { setSearch(""); setStatusFilter("all"); setJobFilter("all"); setDateRange(null); }}
               style={{ background: "#9a2119", borderColor: "#9a2119" ,color:"white"}}  >
               <ReloadOutlined />
               Reset
@@ -119,8 +179,9 @@ export default function JobApplicationsPage() {
 
         <Table
           columns={columns}
-          dataSource={Array.isArray(filteredApplications) ? [...filteredApplications].reverse() : []}
-          pagination={{ pageSize: 5 }}
+          dataSource={filteredApplications}
+          rowKey={(record) => record.id ?? record.key}
+          {...tableProps}
           rowClassName="hover:bg-gray-50"
           scroll={{ x: true }}
         />

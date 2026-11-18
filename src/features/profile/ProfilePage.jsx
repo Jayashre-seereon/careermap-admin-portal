@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Avatar, Button, Card, Form, Input, Modal, Row, Col, message, Tag, Typography } from "antd";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
-import { changeAdminPassword } from "../../api/authApi";
+import { changeAdminPassword, changeStaffPassword } from "../../api/authApi";
 import { useSessionStore } from "../../store/sessionStore";
 
 const { Text, Title } = Typography;
@@ -17,6 +17,10 @@ const infoItems = [
 export default function ProfilePage() {
   const [messageApi, contextHolder] = message.useMessage();
   const currentUser = useSessionStore((state) => state.user);
+  const loginType = useSessionStore((state) => state.loginType);
+  // Admin and staff each have their own change-password endpoint; institute
+  // accounts have none, so the button is hidden for them.
+  const canChangePassword = loginType === "admin" || loginType === "staff";
   const [passwordForm] = Form.useForm();
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -47,7 +51,8 @@ export default function ProfilePage() {
     try {
       const values = await passwordForm.validateFields();
       setSubmitting(true);
-      const response = await changeAdminPassword({
+      const changePasswordApi = loginType === "staff" ? changeStaffPassword : changeAdminPassword;
+      const response = await changePasswordApi({
         oldPassword: values.oldPassword,
         newPassword: values.newPassword,
       });
@@ -84,14 +89,16 @@ export default function ProfilePage() {
           <Text type="secondary">View your admin details and update your password.</Text>
         </div>
 
-        <Button
-          type="primary"
-          icon={<LockOutlined />}
-          onClick={handleOpenPasswordModal}
-          className="!h-10 !rounded-xl !border-none !bg-[#9a2119] hover:!bg-[#b5261d]"
-        >
-          Change Password
-        </Button>
+        {canChangePassword && (
+          <Button
+            type="primary"
+            icon={<LockOutlined />}
+            onClick={handleOpenPasswordModal}
+            className="!h-10 !rounded-xl !border-none !bg-[#9a2119] hover:!bg-[#b5261d]"
+          >
+            Change Password
+          </Button>
+        )}
       </div>
 
       <Card className="overflow-hidden rounded-2xl border border-gray-200 shadow-sm">

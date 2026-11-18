@@ -19,7 +19,7 @@ export default function CareerPathTable({
   onSearch,
 }) {
   const handleReset = () => onSearch("");
-    const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
+    const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
   const columns = [
     {
       title: <span className="text-[#9a2119] font-semibold">SL</span>,
@@ -160,10 +160,10 @@ export default function CareerPathTable({
 
       <Table
         columns={columns}
-        dataSource={Array.isArray(data) ? [...data].reverse() : []}
+        dataSource={Array.isArray(data) ? data : []}
         loading={loading}
         rowKey="id"
-        pagination={pagination}
+        pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
         onChange={(pag) => setPagination(pag)}
         rowClassName="hover:bg-gray-50"
         tableLayout="fixed"

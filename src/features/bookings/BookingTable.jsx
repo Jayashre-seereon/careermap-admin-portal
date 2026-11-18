@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo } from "react";
-import { Table, Input, Tag, Modal, Button, Alert, message, DatePicker, TimePicker, Input as AntInput } from "antd";
+import React, { useEffect } from "react";
+import { Table, Input, Tag, Modal, Button, Alert, message, DatePicker, TimePicker, Select, Input as AntInput } from "antd";
 import {
   SendOutlined,
   SearchOutlined,
@@ -9,6 +9,35 @@ import { useState } from "react";
 import { getSerialNumber } from "../../utils/slNo";
 import { getAdminMentorBookings, saveAndEmailMentorMeetingLink, cancelAdminMentorBooking, rescheduleAdminMentorBooking } from "../../api/adminRecords";
 import dayjs from "dayjs";
+import { formatCurrency } from "../../utils/format";
+import { isPaidStatus } from "../../utils/paymentStatus";
+import useDebouncedValue from "../../hooks/useDebouncedValue";
+
+const IST = "Asia/Kolkata";
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+// Calendar date (YYYY-MM-DD) of a value in Asia/Kolkata, never UTC.
+const toIstDateKey = (value) => {
+  if (value instanceof Date || (typeof value === "string" && !DATE_ONLY.test(value.trim()))) {
+    const parsed = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(parsed.getTime())) return String(value || "").trim().slice(0, 10);
+    return parsed.toLocaleDateString("en-CA", { timeZone: IST });
+  }
+  return String(value || "").trim().slice(0, 10);
+};
+const { RangePicker } = DatePicker;
+const BOOKING_STATUS_OPTIONS = [
+  { value: "all", label: "All Status" },
+  { value: "pending", label: "Pending" },
+  { value: "confirmed", label: "Confirmed" },
+  { value: "rescheduled", label: "Rescheduled" },
+  { value: "cancelled", label: "Cancelled" },
+];
+const PAYMENT_STATUS_OPTIONS = [
+  { value: "all", label: "All Payments" },
+  { value: "paid", label: "Paid" },
+  { value: "pending", label: "Payment Pending" },
+  { value: "failed", label: "Payment Failed" },
+];
 
 const rowsFrom = (response) => {
   const rows = Array.isArray(response) ? response : response?.data ?? response?.bookings ?? response?.mentorBookings ?? [];
@@ -22,9 +51,9 @@ const getBookingChangeErrorMessage = (error, fallback) => {
   return serverMessage || fallback;
 };
 const firstValue = (...values) => values.find((value) => value !== undefined && value !== null && value !== "");
-const displayValue = (value, fallback = "NA") => value === undefined || value === null || value === "" ? fallback : value;
+const displayValue = (value, fallback = "—") => value === undefined || value === null || value === "" ? fallback : value;
 const getMeetingStart = (dateValue, timeSlot) => {
-  const dateKey = dateValue instanceof Date ? dateValue.toISOString().slice(0, 10) : String(dateValue || "").trim().slice(0, 10);
+  const dateKey = toIstDateKey(dateValue);
   const match = String(timeSlot || "").trim().split("-")[0].trim().match(/^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$/i);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey) || !match) return null;
   let hours = Number(match[1]);
@@ -53,14 +82,14 @@ const mapBooking = (item, index) => {
     bookingTimeValue: firstValue(item.timeSlot, item.time, item.bookingTime),
     user: typeof user === "object" ? firstValue(user.name, user.fullName, user.email) : displayValue(user),
     member: typeof mentor === "object" ? firstValue(mentor.name, mentor.fullName, mentor.email) : displayValue(mentor),
-    date: date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString("en-IN") : displayValue(dateValue),
-    time: displayValue(item.time ?? item.timeSlot ?? item.bookingTime ?? (date && !Number.isNaN(date.getTime()) ? date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : null)),
-    receivedPayment: displayValue(firstValue(item.receivedPayment, item.amount, item.paymentAmount)),
+    date: date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString("en-IN", { timeZone: IST }) : displayValue(dateValue),
+    time: displayValue(item.time ?? item.timeSlot ?? item.bookingTime ?? (date && !Number.isNaN(date.getTime()) ? date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", timeZone: IST }) : null)),
+    receivedPayment: formatCurrency(firstValue(item.receivedPayment, item.amount, item.paymentAmount)),
     transactionId: displayValue(firstValue(item.transactionId, item.txnId, item.paymentIntentId)),
     paymentConfirmationId: firstValue(item.paymentConfirmationId, item.confirmationId, item.razorpayPaymentId),
     meetingLinkStatus: item.meetingLinkStatus || (item.meetingUrl ? "Link sent" : "Link required"),
-    status: firstValue(item.bookingStatus, "pending"),
-    paymentStatus: firstValue(item.paymentStatus, item.payment?.status, "pending"),
+    status: String(firstValue(item.bookingStatus, item.status, "pending")).trim().toLowerCase(),
+    paymentStatus: String(firstValue(item.paymentStatus, item.payment?.status, "pending")).trim().toLowerCase(),
     mentorId: item.mentorId ?? item.mentor?.id,
   };
 };
@@ -70,7 +99,13 @@ export default function BookingTable() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
- const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
+  const [total, setTotal] = useState(0);
+  const [dateRange, setDateRange] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [paymentFilter, setPaymentFilter] = useState("all");
+  const [refreshKey, setRefreshKey] = useState(0);
+  const debouncedSearch = useDebouncedValue(search.trim(), 400);
   // Modal state
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(null);
@@ -91,23 +126,46 @@ export default function BookingTable() {
     return () => window.clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    getAdminMentorBookings()
-      .then((response) => setData(rowsFrom(response).map(mapBooking)))
-      .catch((err) => setError(err?.response?.data?.message || err?.message || "Could not load mentor bookings."))
-      .finally(() => setLoading(false));
-  }, []);
+  const { current: currentPage, pageSize: currentPageSize } = pagination;
+  const dateFrom = dateRange?.[0] ? dateRange[0].format("YYYY-MM-DD") : "";
+  const dateTo = dateRange?.[1] ? dateRange[1].format("YYYY-MM-DD") : "";
 
-  const filteredData = useMemo(() => data.filter((item) =>
-    [item.user, item.member, item.transactionId, item.status].join(" ").toLowerCase().includes(search.toLowerCase())
-  ), [data, search]);
+  useEffect(() => {
+    let cancelled = false;
+    const params = { page: currentPage, limit: currentPageSize };
+    if (debouncedSearch) params.search = debouncedSearch;
+    if (dateFrom) params.dateFrom = dateFrom;
+    if (dateTo) params.dateTo = dateTo;
+    if (statusFilter !== "all") params.status = statusFilter;
+    if (paymentFilter !== "all") params.paymentStatus = paymentFilter;
+    setLoading(true);
+    getAdminMentorBookings(params)
+      .then((response) => {
+        if (cancelled) return;
+        const rows = rowsFrom(response).map(mapBooking);
+        setData(rows);
+        setTotal(Number(response?.pagination?.total ?? rows.length));
+        setError("");
+      })
+      .catch((err) => { if (!cancelled) setError(err?.response?.data?.message || err?.message || "Could not load mentor bookings."); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [currentPage, currentPageSize, debouncedSearch, dateFrom, dateTo, statusFilter, paymentFilter, refreshKey]);
+
+  const goToFirstPage = () => setPagination((p) => ({ ...p, current: 1 }));
 
   const canRescheduleBooking = (record) => ["confirmed", "rescheduled"].includes(String(record.status).toLowerCase())
-    && String(record.paymentStatus).toLowerCase() === "paid";
+    && isPaidStatus(record.paymentStatus);
   const canCancelBooking = (record) => canRescheduleBooking(record)
     && !["Expired", "Schedule invalid"].includes(meetingStatusAt(record, now));
 
-  const handleReset = () => setSearch("");
+  const handleReset = () => {
+    setSearch("");
+    setDateRange(null);
+    setStatusFilter("all");
+    setPaymentFilter("all");
+    goToFirstPage();
+  };
 
   const handleSaveMeetingUrl = async () => {
     const bookingId = selected?.id ?? selected?.key;
@@ -133,8 +191,7 @@ export default function BookingTable() {
   };
 
   const reloadBookings = async () => {
-    const response = await getAdminMentorBookings();
-    setData(rowsFrom(response).map(mapBooking));
+    setRefreshKey((key) => key + 1);
   };
 
   const handleCancelBooking = async () => {
@@ -258,7 +315,7 @@ export default function BookingTable() {
       title: "Send",
       align: "center",
       width: 80,
-      render: (_, record) => String(record.status).toLowerCase() === "confirmed" && String(record.paymentStatus).toLowerCase() === "paid" && !record.meetingUrl && meetingStatusAt(record, now) !== "Expired" && meetingStatusAt(record, now) !== "Schedule invalid"
+      render: (_, record) => String(record.status).toLowerCase() === "confirmed" && isPaidStatus(record.paymentStatus) && !record.meetingUrl && meetingStatusAt(record, now) !== "Expired" && meetingStatusAt(record, now) !== "Schedule invalid"
         ? <Button title="Send meeting link" onClick={() => { setSelected({ ...record, meetingLinkStatus: meetingStatusAt(record, new Date()) }); setMeetingUrl(record.meetingUrl || ""); setOpen(true); }} className="!flex !h-8 !w-8 !items-center !justify-center !border !border-[#9a2119] !text-[#9a2119] !opacity-100 !visible"><SendOutlined /></Button>
         : null,
     },
@@ -283,12 +340,32 @@ export default function BookingTable() {
 
           <div className="flex flex-wrap items-center gap-3">
             <Input
-              placeholder="Search user..."
+              placeholder="Search user, mentor, txn, status..."
               value={search}
               prefix={<SearchOutlined className="text-[#9a2119]" />}
               className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
              
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => { setSearch(e.target.value); goToFirstPage(); }}
+            />
+
+            <RangePicker
+              value={dateRange}
+              onChange={(value) => { setDateRange(value); goToFirstPage(); }}
+              allowClear
+            />
+
+            <Select
+              value={statusFilter}
+              options={BOOKING_STATUS_OPTIONS}
+              onChange={(value) => { setStatusFilter(value); goToFirstPage(); }}
+              style={{ width: 150 }}
+            />
+
+            <Select
+              value={paymentFilter}
+              options={PAYMENT_STATUS_OPTIONS}
+              onChange={(value) => { setPaymentFilter(value); goToFirstPage(); }}
+              style={{ width: 160 }}
             />
 
             <Button
@@ -304,10 +381,10 @@ export default function BookingTable() {
         {error && <Alert className="mb-4" type="error" showIcon message={error} />}
         <Table
           columns={columns}
-        dataSource={filteredData}
+        dataSource={data}
           loading={loading}
-          pagination={pagination}
-          onChange={(pag) => setPagination(pag)}
+          pagination={{ current: pagination.current, pageSize: pagination.pageSize, total, showSizeChanger: true, pageSizeOptions: [5, 10, 20, 50] }}
+          onChange={(pag) => setPagination({ current: pag.current, pageSize: pag.pageSize })}
           scroll={{ x: "max-content" }}
         />
       </div>
@@ -339,7 +416,7 @@ export default function BookingTable() {
             )}
             <p>
               <b>Status:</b>{" "}
-              <Tag color={String(selected.status).toLowerCase() === "confirmed" ? "green" : String(selected.status).toLowerCase() === "cancelled" ? "red" : "orange"}>
+              <Tag color={String(selected.status).toLowerCase() === "confirmed" ? "green" : String(selected.status).toLowerCase() === "cancelled" ? "red" : "orange"} style={{ textTransform: "capitalize" }}>
                 {selected.status}
               </Tag>
             </p>

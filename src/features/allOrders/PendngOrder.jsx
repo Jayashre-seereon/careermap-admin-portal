@@ -32,7 +32,8 @@ export default function PendingOrder({ setSelectedUser }) {
   const [search, setSearch] = useState("");
 
  const filteredData = data.filter((item) =>
-  (item.User || "").toLowerCase().includes(search.toLowerCase())
+  [item.User, item.OrderNo, item.ServiceName, item.OrderDate]
+    .some((v) => String(v || "").toLowerCase().includes(search.trim().toLowerCase()))
 );
 
   const handleReset = () => setSearch("");
@@ -96,7 +97,7 @@ export default function PendingOrder({ setSelectedUser }) {
 
         <div className="flex flex-wrap items-center gap-3">
           <Input
-            placeholder="Search user..."
+            placeholder="Search user, order no, service..."
             value={search}
             prefix={<SearchOutlined className="text-[#9a2119]" />}
             className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
@@ -117,7 +118,7 @@ export default function PendingOrder({ setSelectedUser }) {
       <Table
         columns={columns}
         dataSource={Array.isArray(filteredData) ? [...filteredData].reverse() : []}
-        pagination={{ pageSize: 5 }}
+        pagination={{ pageSize: 10, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
         rowClassName="hover:bg-gray-50"
         scroll={{ x: "max-content" }}
       />

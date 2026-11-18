@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import useSubmitGuard from "../../hooks/useSubmitGuard";
+import React, { useEffect, useRef, useState } from "react";
 import dayjs from "dayjs";
 import { Button, DatePicker, Form, Input, TimePicker, Upload,Select } from "antd";
 import { MinusCircleOutlined, PlusOutlined, UploadOutlined } from "@ant-design/icons";
@@ -14,6 +15,7 @@ import {
   validationRules,
 } from "../../utils/formValidation";
 import { DATE_DISPLAY_FORMAT, parseDateValue } from "../../utils/date";
+import { createBeforeUpload } from "../../utils/uploadValidation";
 
 const normalizeFile = (event) => {
   if (Array.isArray(event)) {
@@ -247,30 +249,48 @@ const fetchCategories = async () => {
   const res = await getCategories();
   setCategories(res.data || []);
 };
+const secondReqRef = useRef(0);
+const subReqRef = useRef(0);
+
 const handleCategoryChange = async (categoryId, isInit = false) => {
+  const reqId = ++secondReqRef.current;
   if (!isInit) {
     form.setFieldsValue({
       secondcategoryId: undefined,
       subcategoryId: undefined,
     });
+    subReqRef.current += 1;
     setSubCategories([]);
   }
+  setSecondaryCategories([]);
 
   if (!categoryId) return;
 
-  const res = await getSecondaryCategoriesByCategory(categoryId);
-  setSecondaryCategories(res.data || []);
+  try {
+    const res = await getSecondaryCategoriesByCategory(categoryId);
+    if (reqId !== secondReqRef.current) return; // stale response
+    setSecondaryCategories(res.data || []);
+  } catch {
+    if (reqId === secondReqRef.current) setSecondaryCategories([]);
+  }
 };
 
 const handleSecondCategoryChange = async (secondCategoryId, isInit = false) => {
+  const reqId = ++subReqRef.current;
   if (!isInit) {
     form.setFieldsValue({ subcategoryId: undefined });
   }
+  setSubCategories([]);
 
   if (!secondCategoryId) return;
 
-  const res = await getSubCategoriesBySecondCategory(secondCategoryId);
-  setSubCategories(res.data || []);
+  try {
+    const res = await getSubCategoriesBySecondCategory(secondCategoryId);
+    if (reqId !== subReqRef.current) return; // stale response
+    setSubCategories(res.data || []);
+  } catch {
+    if (reqId === subReqRef.current) setSubCategories([]);
+  }
 };
 useEffect(() => {
   const init = async () => {
@@ -453,11 +473,12 @@ const renderAvailabilityTimeSlots = (dateIndex, timeFields, addTimeSlot, removeT
 );
 
 
+  const [guardedSubmit, submitting] = useSubmitGuard(onSubmit);
   return (
     <Form
       layout="vertical"
       form={form}
-      onFinish={onSubmit}
+      onFinish={guardedSubmit}
       validateTrigger={["onChange", "onBlur"]}
       initialValues={{ status: true, availability: [{ date: null, timeSlots: [[null, null]] }] }}
     >
@@ -535,10 +556,36 @@ const renderAvailabilityTimeSlots = (dateIndex, timeFields, addTimeSlot, removeT
           <Input disabled={disabled} placeholder="Enter phone number" />
         </Form.Item>
 
-        <Form.Item name="dateof_birth" label="Date of Birth">
+        <Form.Item
+          name="dateof_birth"
+          label="Date of Birth"
+          rules={[
+            {
+              validator: (_, value) => {
+                if (!value) return Promise.resolve();
+                const dob = dayjs(value);
+                if (dob.isAfter(dayjs(), "day")) {
+                  return Promise.reject(new Error("Date of birth cannot be in the future."));
+                }
+                if (dob.isBefore(dayjs().subtract(100, "year"), "day")) {
+                  return Promise.reject(new Error("Please enter a valid date of birth."));
+                }
+                // Minimum age of 18 for newly entered/changed dates only, so
+                // existing mentors can still be edited.
+                const original = initialValues?.dateof_birth ? toDateValue(initialValues.dateof_birth) : null;
+                const unchanged = original && dayjs(original).isSame(dob, "day");
+                if (!unchanged && dob.isAfter(dayjs().subtract(18, "year"), "day")) {
+                  return Promise.reject(new Error("Mentor must be at least 18 years old."));
+                }
+                return Promise.resolve();
+              },
+            },
+          ]}
+        >
          <DatePicker
   className="w-full"
   disabled={disabled}
+  disabledDate={(current) => current && current.isAfter(dayjs(), "day")}
   format={DATE_DISPLAY_FORMAT}
   placeholder="DD-MM-YYYY"
   onChange={() => {
@@ -602,7 +649,10 @@ const renderAvailabilityTimeSlots = (dateIndex, timeFields, addTimeSlot, removeT
         <Form.Item
           name="experience"
           label="Experience (Years)"
-          rules={[validationRules.numbersOnly("Experience")]}
+          rules={[
+            validationRules.numbersOnly("Experience"),
+            { validator: (_, value) => !value || (Number(value) >= 0 && Number(value) <= 70) ? Promise.resolve() : Promise.reject(new Error("Experience must be between 0 and 70 years.")) },
+          ]}
         >
           <Input disabled={disabled} placeholder="Enter years of experience" />
         </Form.Item>
@@ -614,6 +664,7 @@ const renderAvailabilityTimeSlots = (dateIndex, timeFields, addTimeSlot, removeT
             validationRules.required("Mentor fees"),
             validationRules.decimal("Mentor fees"),
             { validator: (_, value) => !value || Number(value) > 0 ? Promise.resolve() : Promise.reject(new Error("Mentor fees must be greater than zero.")) },
+            { validator: (_, value) => !value || Number(value) <= 10000000 ? Promise.resolve() : Promise.reject(new Error("Mentor fees cannot exceed 1,00,00,000.")) },
           ]}
         >
           <Input disabled={disabled} placeholder="Enter mentor fees" />
@@ -630,7 +681,10 @@ const renderAvailabilityTimeSlots = (dateIndex, timeFields, addTimeSlot, removeT
         <Form.Item
           name="year"
           label="Year"
-          rules={[validationRules.numbersOnly("Year")]}
+          rules={[
+            validationRules.numbersOnly("Year"),
+            { validator: (_, value) => !value || (Number(value) >= 1900 && Number(value) <= dayjs().year() + 1) ? Promise.resolve() : Promise.reject(new Error(`Year must be between 1900 and ${dayjs().year() + 1}.`)) },
+          ]}
         >
           <Input disabled={disabled} placeholder="Enter year" />
         </Form.Item>
@@ -641,7 +695,7 @@ const renderAvailabilityTimeSlots = (dateIndex, timeFields, addTimeSlot, removeT
           valuePropName="fileList"
           getValueFromEvent={normalizeFile}
         >
-          <Upload beforeUpload={() => false} maxCount={1} disabled={disabled}>
+          <Upload beforeUpload={createBeforeUpload("image")} accept="image/*" maxCount={1} disabled={disabled}>
             <Button icon={<UploadOutlined />} className="w-full">
               Upload Image
             </Button>
@@ -654,7 +708,7 @@ const renderAvailabilityTimeSlots = (dateIndex, timeFields, addTimeSlot, removeT
           valuePropName="fileList"
           getValueFromEvent={normalizeFile}
         >
-          <Upload beforeUpload={() => false} maxCount={1} disabled={disabled}>
+          <Upload beforeUpload={createBeforeUpload("document")} accept=".pdf,.doc,.docx" maxCount={1} disabled={disabled}>
             <Button icon={<UploadOutlined />} className="w-full">
               Upload Resume
             </Button>
@@ -782,13 +836,19 @@ const renderAvailabilityTimeSlots = (dateIndex, timeFields, addTimeSlot, removeT
                         )}
                       </Form.List>
 
-                      {!disabled && dateFields.length > 1 && (
+                      {!disabled && (dateFields.length > 1 || Boolean(form.getFieldValue(["availability", name, "date"]))) && (
                         <Button
                           danger
                           type="text"
                           className="mt-8 justify-self-start md:mt-10"
                           icon={<MinusCircleOutlined />}
-                          onClick={() => removeDate(name)}
+                          onClick={() => {
+                            const onlyOne = dateFields.length === 1;
+                            removeDate(name);
+                            if (onlyOne) {
+                              addDate({ date: null, timeSlots: [[null, null]] });
+                            }
+                          }}
                         >
                           Remove
                         </Button>
@@ -816,7 +876,7 @@ const renderAvailabilityTimeSlots = (dateIndex, timeFields, addTimeSlot, removeT
       {!disabled && (
         <Button
           type="primary"
-          htmlType="submit"
+          htmlType="submit" loading={submitting}
           block
           style={{ background: "#9a2119", borderColor: "#9a2119" }}
           className="mt-4"
