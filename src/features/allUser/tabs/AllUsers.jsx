@@ -2,7 +2,6 @@ import React from "react";
 import { useEffect, useState } from "react";
 import { Table, Input ,Button} from "antd";
 import {
-  EyeOutlined,
   SearchOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
@@ -13,7 +12,7 @@ import { Tag } from "antd";
 
 export default function AllUsers() {
   const [data, setData] = useState([]);
-  const { users, setSelectedUser } = useOutletContext();
+  const { users } = useOutletContext();
   const [search, setSearch] = useState("");
  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
   const filteredData = users.filter((item) =>
@@ -55,24 +54,6 @@ export default function AllUsers() {
     );
   },
 },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Action</span>,
-      render: (_, record) => (
-        <div className="flex gap-2">
-          <Button
-            onClick={() => setSelectedUser(record)} // ✅ pass full user object
-            className="w-8 h-8 flex items-center justify-center rounded-md 
-                       border border-[#9a2119] 
-                       text-[#9a2119]
-                       hover:border-[#e57373]
-                       hover:text-[#e57373]
-                      "
-          >
-            <EyeOutlined />
-          </Button>
-        </div>
-      ),
-    },
   ];
 
   return (
@@ -107,6 +88,7 @@ export default function AllUsers() {
     </div>
   );
 }
+
 
 
 
