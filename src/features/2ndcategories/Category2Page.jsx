@@ -173,6 +173,7 @@ export default function Category2Page() {
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
   const [institutes, setInstitutes] = useState([]);
+  const [optionsLoading, setOptionsLoading] = useState(true);
 
   const loadSecondaryCategories = async () => {
     try {
@@ -189,6 +190,7 @@ export default function Category2Page() {
   };
 
   const loadDropdowns = async () => {
+    setOptionsLoading(true);
     try {
       const [categoryResponse, instituteResponse] = await Promise.all([
         getCategories(),
@@ -204,6 +206,8 @@ export default function Category2Page() {
           "Failed to load category and institute options."
         )
       );
+    } finally {
+      setOptionsLoading(false);
     }
   };
 
@@ -351,6 +355,7 @@ export default function Category2Page() {
         }
       >
         <Category2Form
+          optionsLoading={optionsLoading}
           onSubmit={handleSubmit}
           initialValues={selected}
           mode={mode}

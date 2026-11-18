@@ -165,6 +165,8 @@ export default function SubCategoryPage() {
   const [institutes, setInstitutes] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [secondCategoryFilter, setSecondCategoryFilter] = useState("all");
+  const [optionsLoading, setOptionsLoading] = useState(true);
+  const [secondOptionsLoading, setSecondOptionsLoading] = useState(false);
 
   const loadSubCategories = async () => {
     try {
@@ -179,6 +181,7 @@ export default function SubCategoryPage() {
   };
 
   const loadDropdowns = async () => {
+    setOptionsLoading(true);
     try {
       const [categoryResponse, instituteResponse] = await Promise.all([
         getCategories(),
@@ -191,6 +194,8 @@ export default function SubCategoryPage() {
       messageApi.error(
         getApiErrorMessage(error, "Failed to load subcategory form options.")
       );
+    } finally {
+      setOptionsLoading(false);
     }
   };
 
@@ -207,10 +212,15 @@ export default function SubCategoryPage() {
       return;
     }
 
-    const response = await getSecondaryCategoriesByCategory(categoryId);
-    if (reqId !== secondCategoryReqRef.current) return;
-    const items = normalizeList(response);
-    setSecondCategories(items.map(mapSecondCategory));
+    setSecondOptionsLoading(true);
+    try {
+      const response = await getSecondaryCategoriesByCategory(categoryId);
+      if (reqId !== secondCategoryReqRef.current) return;
+      const items = normalizeList(response);
+      setSecondCategories(items.map(mapSecondCategory));
+    } finally {
+      if (reqId === secondCategoryReqRef.current) setSecondOptionsLoading(false);
+    }
   };
 
   const getCategoryName = (id, fallbackName = "") => {
@@ -389,6 +399,8 @@ export default function SubCategoryPage() {
         }
       >
         <SubCategoryForm
+          optionsLoading={optionsLoading}
+          secondOptionsLoading={secondOptionsLoading}
           onSubmit={handleSubmit}
           initialValues={selected}
           mode={mode}

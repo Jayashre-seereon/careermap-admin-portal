@@ -5,6 +5,7 @@ import { MinusCircleOutlined, PlusOutlined, UploadOutlined } from "@ant-design/i
 import StatusSwitch from "../../components/ui/StatusSwitch";
 import RichTextEditor from "../../components/ui/RichTextEditor";
 import { validationRules } from "../../utils/formValidation";
+import { selectLoadingProps } from "../../utils/selectLoading";
 import { DATE_DISPLAY_FORMAT, parseDateValue } from "../../utils/date";
 import { createBeforeUpload } from "../../utils/uploadValidation";
 
@@ -53,25 +54,25 @@ function renderCommonFields(viewMode, options, onStreamChange, onCategoryChange,
       </div>
 
       <Form.Item name="stream" label="Stream" rules={[validationRules.required("Stream")]}>
-        <Select disabled={viewMode} placeholder="Select stream" onChange={(v) => onStreamChange?.(v)}>
+        <Select disabled={viewMode} placeholder="Select stream" {...selectLoadingProps(options.loading?.stream)} onChange={(v) => onStreamChange?.(v)}>
           {renderOptions(options.streamOptions)}
         </Select>
       </Form.Item>
 
       <Form.Item name="category" label="Category" rules={[validationRules.required("Category")]}>
-        <Select disabled={viewMode} placeholder="Select category" onChange={(v) => onCategoryChange?.(v)}>
+        <Select disabled={viewMode} placeholder="Select category" {...selectLoadingProps(options.loading?.category)} onChange={(v) => onCategoryChange?.(v)}>
           {renderOptions(options.categoryOptions)}
         </Select>
       </Form.Item>
 
       <Form.Item name="secondCategory" label="Secondary Category">
-        <Select disabled={viewMode} placeholder="Select secondary category" allowClear onChange={(v) => onSecondCategoryChange?.(v)}>
+        <Select disabled={viewMode} placeholder="Select secondary category" allowClear {...selectLoadingProps(options.loading?.secondary)} onChange={(v) => onSecondCategoryChange?.(v)}>
           {renderOptions(options.secondaryCategoryOptions)}
         </Select>
       </Form.Item>
 
       <Form.Item name="subcategory" label="Subcategory">
-        <Select disabled={viewMode} placeholder="Select subcategory" allowClear>
+        <Select disabled={viewMode} placeholder="Select subcategory" allowClear {...selectLoadingProps(options.loading?.sub)}>
           {renderOptions(options.subcategoryOptions)}
         </Select>
       </Form.Item>
@@ -370,6 +371,7 @@ function renderCareerPathFields(viewMode, options, onAutoFill, filteredPathOptio
                    <Select
   disabled={viewMode}
   placeholder="Select path"
+  {...selectLoadingProps(options.loading?.path)}
   showSearch
   optionFilterProp="children"
   filterOption={(input, option) =>
@@ -449,6 +451,7 @@ function renderEntranceExamFields(viewMode, options, onAutoFill) {
                   <Select
   disabled={viewMode}
   placeholder="Select exam"
+  {...selectLoadingProps(options.loading?.exam)}
   showSearch
   optionFilterProp="children"
   filterOption={(input, option) =>
@@ -592,6 +595,7 @@ function renderInstitutionFields(viewMode, options, normalizeUpload, onAutoFill)
                     <Select
                      disabled={viewMode} 
                     placeholder="Select institution" 
+                    {...selectLoadingProps(options.loading?.institution)}
                      showSearch
  optionFilterProp="label"
   filterOption={(input, option) =>

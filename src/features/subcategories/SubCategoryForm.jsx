@@ -5,6 +5,7 @@ import { UploadOutlined } from "@ant-design/icons";
 import RichTextEditor from "../../components/ui/RichTextEditor";
 import { validationRules } from "../../utils/formValidation";
 import { checkUpload } from "../../utils/uploadValidation";
+import { selectLoadingProps } from "../../utils/selectLoading";
 
 const { Option } = Select;
 
@@ -39,6 +40,8 @@ export default function SubCategoryForm({
   secondCategoryOptions = [],
   institutionOptions = [],
   onCategoryChange,
+  optionsLoading = false,
+  secondOptionsLoading = false,
 }) {
   const [form] = Form.useForm();
   const pickedCoverRef = useRef(null);
@@ -99,6 +102,7 @@ export default function SubCategoryForm({
           <Select
             disabled={isView}
             placeholder="Select category"
+            {...selectLoadingProps(optionsLoading)}
             onChange={(value) => {
               form.setFieldsValue({ secondcategoryId: undefined });
               onCategoryChange?.(value);
@@ -117,7 +121,7 @@ export default function SubCategoryForm({
           label="2nd Category"
           rules={[validationRules.required("2nd category")]}
         >
-          <Select disabled={isView || !selectedCategoryId} placeholder="Select 2nd category">
+          <Select disabled={isView || !selectedCategoryId} placeholder="Select 2nd category" {...selectLoadingProps(secondOptionsLoading)}>
             {filteredSecondCategories.map((item) => (
               <Option key={item.id} value={item.id}>
                 {item.name || item.title}
