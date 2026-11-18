@@ -59,7 +59,6 @@ function CounselingTable({
   onSearch,
   onReset,
   onDownload,
-  staffView = false,
 }) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -134,7 +133,7 @@ function CounselingTable({
     {
       title: "Actions",
       fixed: "right",
-      width: staffView ? 110 : 200,
+      width: 200,
       render: (_, record) => (
         <Space>
           <Button
@@ -143,11 +142,11 @@ function CounselingTable({
             onClick={() => onView(record)}
           />
 
-          {!staffView && <Button
+          <Button
             className="w-8 h-8 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
             icon={<EditOutlined />}
             onClick={() => onEdit(record)}
-          />}
+          />
 
           <Button
             className="w-8 h-8 flex items-center justify-center rounded-md border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
@@ -155,12 +154,12 @@ function CounselingTable({
             onClick={() => onDownload(record)}
           />
 
-          {!staffView && <Popconfirm
+          <Popconfirm
             title="Are you sure you want to delete this counseling?"
             onConfirm={() => onDelete(record)}
           >
             <Button danger icon={<DeleteOutlined />} />
-          </Popconfirm>}
+          </Popconfirm>
         </Space>
       ),
     },

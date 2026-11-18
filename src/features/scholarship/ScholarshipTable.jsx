@@ -27,7 +27,6 @@ export default function ScholarshipTable({
     onSearch("");
     filters?.setType?.("all");
     filters?.setCategory?.("all");
-    filters?.setPricing?.("all");
   };
 
   const stripHtml = (text = "") => {
@@ -195,16 +194,6 @@ const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
                   showSearch
                   optionFilterProp="label"
                   className="w-full sm:w-44"
-                />
-                <Select
-                  value={filters.pricing}
-                  onChange={filters.setPricing}
-                  options={[
-                    { value: "all", label: "Free & Paid" },
-                    { value: "free", label: "Free" },
-                    { value: "paid", label: "Paid" },
-                  ]}
-                  className="w-full sm:w-32"
                 />
               </>
             )}
