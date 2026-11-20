@@ -9,54 +9,33 @@ import {
   Drawer,
   Empty,
   Input,
-  Progress,
   Row,
   Select,
   Space,
   Spin,
   Table,
-  Tabs,
-  Tag,
   Tooltip,
   message,
 } from "antd";
 import {
   AimOutlined,
   AuditOutlined,
-  CalculatorOutlined,
-  CheckCircleFilled,
   ClockCircleOutlined,
-  CloseCircleFilled,
   EyeOutlined,
   FilePdfOutlined,
   PrinterOutlined,
   ReloadOutlined,
   SearchOutlined,
-  TrophyOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
-  ResponsiveContainer,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip as RechartsTooltip,
-} from "recharts";
-import {
   getAttemptDetails,
   getStudentAttempts,
-  recalculateAttempt,
   getApiErrorMessage,
 } from "../../api/psychometricAssessmentApi";
 import { FACET_MAP } from "./psychometricConstants";
+import { buildAttemptAnswerRows } from "./attemptAnswers";
 import { getSerialNumber } from "../../utils/slNo";
 import useDebouncedValue from "../../hooks/useDebouncedValue";
 
@@ -125,7 +104,7 @@ export default function StudentAttemptsPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedAttempt, setSelectedAttempt] = useState(null);
   const [drawerLoading, setDrawerLoading] = useState(false);
-  const [recalculating, setRecalculating] = useState(false);
+  const [answerSection, setAnswerSection] = useState("all");
 
   const loadAttempts = () => setRefreshKey((key) => key + 1);
 
@@ -173,6 +152,7 @@ export default function StudentAttemptsPage() {
   // Open Attempt Details Drawer
   const handleOpenAudit = async (record) => {
     setSelectedAttempt(normalizeAttemptItem(record));
+    setAnswerSection("all");
     setDrawerOpen(true);
     try {
       setDrawerLoading(true);
@@ -190,63 +170,31 @@ export default function StudentAttemptsPage() {
     }
   };
 
-  // Recalculate Scores Engine
-  const handleRecalculate = async () => {
-    if (!selectedAttempt) return;
-    try {
-      setRecalculating(true);
-      const res = await recalculateAttempt(selectedAttempt.id);
+  // Read-only list of what the candidate answered (built from the attempt's answers)
+  const answerAudit = useMemo(() => buildAttemptAnswerRows(selectedAttempt), [selectedAttempt]);
 
-      // Scores only ever come from the server. If the recalculate response has no
-      // attempt payload, re-fetch the attempt instead of inventing a number.
-      let fresh = res?.data;
-      if (!fresh) {
-        const details = await getAttemptDetails(selectedAttempt.id);
-        fresh = details?.data;
-      }
-      if (!fresh) {
-        throw new Error("Recalculation finished but no updated result was returned.");
-      }
+  // Section dropdown (with "answered/total" per section) and the rows for the chosen section
+  const answerSectionOptions = useMemo(() => {
+    const bySection = new Map();
+    answerAudit.rows.forEach((r) => {
+      const s = bySection.get(r.sectionTitle) || { total: 0, answered: 0 };
+      s.total += 1;
+      if (r.answered) s.answered += 1;
+      bySection.set(r.sectionTitle, s);
+    });
+    return [...bySection.entries()].map(([title, s]) => ({
+      value: title,
+      label: `${title} (${s.answered}/${s.total})`,
+    }));
+  }, [answerAudit]);
 
-      const normalized = normalizeAttemptItem(fresh);
-      setSelectedAttempt(normalized);
-      setAttempts((prev) =>
-        prev.map((a) => (a.id === selectedAttempt.id ? normalized : a))
-      );
-      messageApi.success("Psychometric engine re-evaluated and scores updated.");
-    } catch (err) {
-      messageApi.error(getApiErrorMessage(err, "Recalculation failed. Scores were not changed."));
-    } finally {
-      setRecalculating(false);
-    }
-  };
-
-  // RIASEC Radar Chart Data in Drawer
-  const riasecRadarData = useMemo(() => {
-    if (!selectedAttempt?.domainScores?.riasec) return [];
-    const riasec = selectedAttempt.domainScores.riasec;
-    return [
-      { subject: "R - Realistic", score: riasec.R || 1, fullMark: 5 },
-      { subject: "I - Investigative", score: riasec.I || 1, fullMark: 5 },
-      { subject: "A - Artistic", score: riasec.A || 1, fullMark: 5 },
-      { subject: "S - Social", score: riasec.S || 1, fullMark: 5 },
-      { subject: "E - Enterprising", score: riasec.E || 1, fullMark: 5 },
-      { subject: "C - Conventional", score: riasec.C || 1, fullMark: 5 },
-    ];
-  }, [selectedAttempt]);
-
-  // Big Five Bar Chart Data in Drawer
-  const oceanBarData = useMemo(() => {
-    if (!selectedAttempt?.domainScores?.ocean) return [];
-    const ocean = selectedAttempt.domainScores.ocean;
-    return [
-      { name: "Openness", score: ocean.O || 1 },
-      { name: "Conscientious", score: ocean.Cn || 1 },
-      { name: "Extraversion", score: ocean.Ex || 1 },
-      { name: "Agreeable", score: ocean.Ag || 1 },
-      { name: "Emotional Stab", score: ocean.ES || 1 },
-    ];
-  }, [selectedAttempt]);
+  const visibleAnswerRows = useMemo(
+    () =>
+      answerSection === "all"
+        ? answerAudit.rows
+        : answerAudit.rows.filter((r) => r.sectionTitle === answerSection),
+    [answerAudit, answerSection]
+  );
 
   const columns = [
     {
@@ -274,12 +222,7 @@ export default function StudentAttemptsPage() {
             </Avatar>
             <div>
               <div className="flex items-center gap-2">
-                <span
-                  onClick={() => handleOpenAudit(record)}
-                  className="font-bold text-gray-900 hover:text-[#9a2119] cursor-pointer text-sm"
-                >
-                  {name}
-                </span>
+                <span className="font-bold text-gray-900 text-sm">{name}</span>
              
               </div>
               <div className="text-xs text-gray-400 font-mono">
@@ -300,9 +243,19 @@ export default function StudentAttemptsPage() {
       title: <span className="text-[#9a2119] font-semibold">Actions</span>,
       key: "actions",
       fixed: "right",
-      width: 220,
+      width: 270,
       render: (_, record) => (
         <div className="flex items-center gap-2">
+          <Tooltip title="View questions & answers">
+            <Button
+              aria-label="View questions and answers"
+              icon={<EyeOutlined style={{ fontSize: "16px" }} />}
+              onClick={() => handleOpenAudit(record)}
+              style={{ height: "32px", width: "36px", borderRadius: "6px" }}
+              className="!text-[#9a2119] !border-[#9a2119] hover:!bg-rose-50 cursor-pointer"
+            />
+          </Tooltip>
+
           <Button
             type="primary"
             size="small"
@@ -415,13 +368,8 @@ export default function StudentAttemptsPage() {
               >
                 {selectedAttempt?.studentName?.charAt(0)?.toUpperCase()}
               </Avatar>
-              <div>
-                <div className="text-base font-bold text-gray-900">
-                  {selectedAttempt?.studentName} — Psychometric Report
-                </div>
-                <div className="text-xs text-gray-500 font-mono">
-                  {selectedAttempt?.studentEmail} | Attempt ID: {selectedAttempt?.id}
-                </div>
+              <div className="text-base font-bold text-gray-900">
+                {selectedAttempt?.studentName} — Psychometric Report
               </div>
             </div>
 
@@ -434,14 +382,6 @@ export default function StudentAttemptsPage() {
               >
                 View 31-Page Report
               </Button>
-              <Button
-                icon={<CalculatorOutlined />}
-                loading={recalculating}
-                onClick={handleRecalculate}
-                className="font-semibold border-rose-300 text-[#9a2119] hover:bg-rose-50"
-              >
-                Recalculate Scores
-              </Button>
             </div>
           </div>
         }
@@ -450,229 +390,71 @@ export default function StudentAttemptsPage() {
       >
         <Spin spinning={drawerLoading}>
           {selectedAttempt && (
-            <div className="space-y-6">
-              {/* Summary Profile Header Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-200">
-                  <div className="text-xs font-semibold text-blue-700 uppercase tracking-wider">
-                    Holland Profile Code
-                  </div>
-                  <div className="text-2xl font-black text-blue-900 mt-1 font-mono">
-                    {selectedAttempt.hollandCode || "RIC"}
-                  </div>
-                  <div className="text-xs text-blue-600 mt-1">
-                    Primary interest triad based on 6 RIASEC domains.
-                  </div>
+            <div className="space-y-4">
+              {/* Read-only answers: summary + section filter */}
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-gray-700">
+                  <span>
+                    Answered:{" "}
+                    <b>
+                      {answerAudit.summary.answered} of {answerAudit.summary.total}
+                    </b>
+                  </span>
+                  <span className="text-gray-400">View only</span>
                 </div>
-
-                <div className="p-4 rounded-xl bg-rose-50/70 border border-rose-200 sm:col-span-2">
-                  <div className="text-xs font-semibold text-[#9a2119] uppercase tracking-wider">
-                    Top Recommended Career Cluster
-                  </div>
-                  <div className="text-lg font-bold text-[#9a2119] mt-1">
-                    {selectedAttempt.topClusterName || "Engineering, Robotics & Advanced Tech"}
-                  </div>
-                  <div className="flex items-center gap-3 mt-2">
-                    <Progress
-                      percent={selectedAttempt.fitScore || 0}
-                      size="small"
-                      strokeColor="#9a2119"
-                      className="flex-1 mb-0"
-                    />
-                    <span className="font-extrabold text-sm text-[#9a2119]">
-                      {selectedAttempt.fitScore || 0}% Fit
-                    </span>
-                  </div>
-                </div>
+                <Select
+                  value={answerSection}
+                  onChange={setAnswerSection}
+                  style={{ width: 340, maxWidth: "100%" }}
+                  options={[
+                    { value: "all", label: `All sections (${answerAudit.summary.total})` },
+                    ...answerSectionOptions,
+                  ]}
+                />
               </div>
 
-              {/* Multi-Domain Diagnostics Tabs */}
-              <Tabs
-                defaultActiveKey="diagnostics"
-                items={[
+              <Table
+                rowKey="key"
+                size="small"
+                pagination={{
+                  pageSize: 20,
+                  showSizeChanger: true,
+                  pageSizeOptions: [20, 50, 100, 200],
+                  hideOnSinglePage: true,
+                }}
+                dataSource={visibleAnswerRows}
+                locale={{
+                  emptyText: drawerLoading ? "Loading answers…" : "No answers recorded for this attempt.",
+                }}
+                columns={[
                   {
-                    key: "diagnostics",
-                    label: <span className="font-semibold text-sm">📊 Domain Diagnostics</span>,
-                    children: (
-                      <div className="space-y-6 pt-2">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {/* RIASEC Radar */}
-                          <div className="p-4 rounded-xl border border-gray-200 bg-white shadow-sm">
-                            <h4 className="font-bold text-xs uppercase text-gray-700 mb-2 text-center">
-                              RIASEC Vocational Interest Profile
-                            </h4>
-                            <div className="h-56 w-full">
-                              <ResponsiveContainer width="100%" height="100%">
-                                <RadarChart data={riasecRadarData}>
-                                  <PolarGrid stroke="#e2e8f0" />
-                                  <PolarAngleAxis dataKey="subject" tick={{ fontSize: 9, fill: "#475569" }} />
-                                  <PolarRadiusAxis angle={30} domain={[0, 5]} tick={false} />
-                                  <Radar
-                                    name="Score"
-                                    dataKey="score"
-                                    stroke="#2563eb"
-                                    fill="#2563eb"
-                                    fillOpacity={0.4}
-                                  />
-                                </RadarChart>
-                              </ResponsiveContainer>
-                            </div>
-                          </div>
-
-                          {/* Big Five Bar Chart */}
-                          <div className="p-4 rounded-xl border border-gray-200 bg-white shadow-sm">
-                            <h4 className="font-bold text-xs uppercase text-gray-700 mb-2 text-center">
-                              Big Five Personality Dimensions (OCEAN)
-                            </h4>
-                            <div className="h-56 w-full">
-                              <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={oceanBarData}>
-                                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                                  <XAxis dataKey="name" tick={{ fontSize: 9 }} />
-                                  <YAxis domain={[0, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fontSize: 9 }} />
-                                  <RechartsTooltip />
-                                  <Bar dataKey="score" fill="#7c3aed" radius={[4, 4, 0, 0]} />
-                                </BarChart>
-                              </ResponsiveContainer>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Cognitive Aptitude & VARK breakdown cards */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="p-4 rounded-xl border border-gray-200 bg-white">
-                            <div className="text-xs font-bold uppercase text-red-800 mb-2">
-                              🧠 Cognitive Aptitude Breakdown
-                            </div>
-                            <div className="flex items-center justify-between py-1 border-b border-gray-100">
-                              <span className="text-xs text-gray-600">Total Questions:</span>
-                              <span className="font-bold text-xs">{selectedAttempt.domainScores?.aptitude?.total || 10}</span>
-                            </div>
-                            <div className="flex items-center justify-between py-1 border-b border-gray-100">
-                              <span className="text-xs text-gray-600">Correct Answers:</span>
-                              <span className="font-bold text-xs text-emerald-700">{selectedAttempt.domainScores?.aptitude?.correct || 9}</span>
-                            </div>
-                            <div className="flex items-center justify-between py-1">
-                              <span className="text-xs text-gray-600">Accuracy Rate:</span>
-                              <span className="font-bold text-xs text-[#9a2119]">{selectedAttempt.domainScores?.aptitude?.accuracyPercent || 90}%</span>
-                            </div>
-                          </div>
-
-                          <div className="p-4 rounded-xl border border-gray-200 bg-white">
-                            <div className="text-xs font-bold uppercase text-amber-800 mb-2">
-                              📚 VARK Learning Preference
-                            </div>
-                            <div className="space-y-1.5 text-xs">
-                              <div className="flex justify-between">
-                                <span className="text-gray-600">Visual (V):</span>
-                                <span className="font-bold">{selectedAttempt.domainScores?.vark?.V || 4.5} / 5</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-600">Reading/Writing (Rd):</span>
-                                <span className="font-bold">{selectedAttempt.domainScores?.vark?.Rd || 4.2} / 5</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-600">Kinesthetic (K):</span>
-                                <span className="font-bold">{selectedAttempt.domainScores?.vark?.K || 4.0} / 5</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-600">Auditory (A):</span>
-                                <span className="font-bold">{selectedAttempt.domainScores?.vark?.A || 2.6} / 5</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Top Career Cluster Rankings */}
-                        <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-3">
-                          <h4 className="font-bold text-gray-900 text-sm flex items-center gap-2">
-                            <TrophyOutlined className="text-amber-500" />
-                            <span>Matched Career Cluster Rankings</span>
-                          </h4>
-                          <div className="space-y-2">
-                            {(selectedAttempt.clusterRecommendations || []).map((rec, i) => (
-                              <div
-                                key={i}
-                                className="flex items-center justify-between p-2.5 rounded-lg bg-gray-50 border border-gray-200"
-                              >
-                                <div className="flex items-center gap-2.5">
-                                  <span className="w-6 h-6 rounded-full bg-gray-200 font-bold text-xs flex items-center justify-center text-gray-700">
-                                    #{i + 1}
-                                  </span>
-                                  <div>
-                                    <div className="font-bold text-gray-900 text-xs">{rec.clusterName}</div>
-                                    <div className="text-[10px] text-gray-400 font-mono">{rec.code}</div>
-                                  </div>
-                                </div>
-                                <span className="font-extrabold text-sm text-[#9a2119]">
-                                  {rec.matchPercent}% Match
-                                </span>
-                              </div>
-                            ))}
-                          </div>
+                    title: <span className="text-[#9a2119] font-semibold text-xs">#</span>,
+                    dataIndex: "no",
+                    width: 50,
+                    render: (n) => <span className="text-xs text-gray-500">{n}</span>,
+                  },
+                  {
+                    title: <span className="text-[#9a2119] font-semibold text-xs">Question</span>,
+                    dataIndex: "prompt",
+                    render: (text, rec) => (
+                      <div>
+                        <span className="text-xs text-gray-800">{text}</span>
+                        <div className="text-[10px] text-gray-400">
+                          {rec.sectionTitle} · <span className="font-mono">{rec.itemId}</span>
                         </div>
                       </div>
                     ),
                   },
                   {
-                    key: "responses",
-                    label: <span className="font-semibold text-sm">📝 Item-by-Item Audit Key</span>,
-                    children: (
-                      <div className="pt-2">
-                        <Table
-                          rowKey="itemId"
-                          pagination={false}
-                          dataSource={selectedAttempt.responses || []}
-                          locale={{ emptyText: "No specific question logs recorded for this attempt." }}
-                          columns={[
-                            {
-                              title: <span className="text-[#9a2119] font-semibold text-xs">Item</span>,
-                              dataIndex: "itemId",
-                              width: 100,
-                              render: (code) => <span className="font-mono text-xs font-bold">{code}</span>,
-                            },
-                            {
-                              title: <span className="text-[#9a2119] font-semibold text-xs">Prompt</span>,
-                              dataIndex: "prompt",
-                              render: (text) => <span className="text-xs text-gray-800">{text}</span>,
-                            },
-                            {
-                              title: <span className="text-[#9a2119] font-semibold text-xs">Selected</span>,
-                              key: "selected",
-                              width: 140,
-                              render: (_, rec) => (
-                                <span className="text-xs font-semibold text-gray-900">
-                                  {rec.selected}
-                                </span>
-                              ),
-                            },
-                            {
-                              title: <span className="text-[#9a2119] font-semibold text-xs">Score / Status</span>,
-                              key: "eval",
-                              width: 110,
-                              render: (_, rec) => {
-                                if (rec.type === "mcq") {
-                                  return rec.isCorrect ? (
-                                    <Tag color="success" icon={<CheckCircleFilled />}>
-                                      Correct (+{rec.score})
-                                    </Tag>
-                                  ) : (
-                                    <Tag color="error" icon={<CloseCircleFilled />}>
-                                      Incorrect
-                                    </Tag>
-                                  );
-                                }
-                                return (
-                                  <Tag color="blue" className="font-mono font-bold">
-                                    {rec.score} / 5 pts
-                                  </Tag>
-                                );
-                              },
-                            },
-                          ]}
-                        />
-                      </div>
-                    ),
+                    title: <span className="text-[#9a2119] font-semibold text-xs">Candidate's Answer</span>,
+                    key: "selected",
+                    width: 200,
+                    render: (_, rec) =>
+                      rec.answered ? (
+                        <span className="text-xs font-semibold text-gray-900">{rec.selected}</span>
+                      ) : (
+                        <span className="text-xs italic text-gray-400">Not answered</span>
+                      ),
                   },
                 ]}
               />
