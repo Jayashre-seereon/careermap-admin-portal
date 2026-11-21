@@ -422,7 +422,7 @@ const personalityNotes = {
   Ex: "Extraversion reflects your social energy — a higher score means you feel energised around people and are comfortable in groups.",
   Ag: "Agreeableness reflects warmth and cooperation — a higher score means you are empathetic, trusting and good at teamwork.",
 };
-const goalOrientationSummary = shortPct >= longPct ? "Short-Term Achiever" : "Long-Term Visionary";
+const goalOrientationSummary = shortPct >= longPct ? "Short-Term" : "Long-Term";
 const bandLabelFor = (arr, facet, fallback = "Moderate") => {
   const found = (arr || []).find((x) => x.facet === facet);
   return (found?.bandLabel || fallback).toUpperCase();
