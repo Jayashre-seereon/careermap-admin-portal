@@ -37,8 +37,7 @@ export default function InstituteAttemptsPage() {
     { title: "Assessment", dataIndex: "assessmentTitle", key: "assessment" },
     { title: "Status", dataIndex: "status", key: "status", render: (value) => <Tag color={value === "completed" ? "green" : "blue"}>{value || "Unknown"}</Tag> },
     { title: "Completed", dataIndex: "completedAt", key: "completed", render: (value) => value ? new Date(value).toLocaleString() : "—" },
-    { title: "Result", key: "result", render: (_, row) => row.result ? <div><div>{row.result.hollandCode || "—"} · {row.result.topCareerCluster || "—"}</div><div className="text-xs text-slate-500">{row.result.topCareerMatch != null ? `${row.result.topCareerMatch}% match` : ""}</div></div> : "—" },
-    { title: "Report", key: "report", render: (_, row) => row.status === "completed" ? <Button type="primary" icon={<FilePdfOutlined />} onClick={() => navigate(`/institute/psychometric-attempts/${row.attemptId}/report`, { state: { attempt: row } })} className="!bg-[#8f2218]">View report</Button> : "—" },
+     { title: "Report", key: "report", render: (_, row) => row.status === "completed" ? <Button type="primary" icon={<FilePdfOutlined />} onClick={() => navigate(`/institute/psychometric-attempts/${row.attemptId}/report`, { state: { attempt: row } })} className="!bg-[#8f2218]">View report</Button> : "—" },
   ];
 
   return <section className="space-y-5">
