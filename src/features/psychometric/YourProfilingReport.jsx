@@ -218,7 +218,7 @@ export default function YourProfilingReport({
         {/* ============================================================
             BLOCK 2 & 3 & 6: STAGE TRACK + RISK BADGE + CRI SCORE
         ============================================================ */}
-        <div className="rounded-xl border border-[#E5E7EB] bg-gradient-to-br from-[#FAFCFD] to-[#F4F7FA] p-2 shadow-xs">
+        <div className="profiling-stage-card rounded-xl border border-[#E5E7EB] bg-gradient-to-br from-[#FAFCFD] to-[#F4F7FA] p-2 shadow-xs">
           {/* Top Row: Track Title & Badges */}
           <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#E5E7EB]">
             <div className="flex items-center gap-2">

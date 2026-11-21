@@ -54,8 +54,6 @@ export default function InstituteStudentsPage() {
   const [error, setError] = useState("");
   const [seatError, setSeatError] = useState("");
   const [search, setSearch] = useState("");
-  const [classFilter, setClassFilter] = useState("all");
-  const [streamFilter, setStreamFilter] = useState("all");
   const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
   const [modalOpen, setModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
@@ -110,20 +108,9 @@ export default function InstituteStudentsPage() {
   // An unknown limit (dashboard call failed / no limit returned) is NOT the same as zero seats.
   const limitReached = limitKnown && availableSeats <= 0;
 
-  const classOptions = useMemo(
-    () => [...new Set(students.map((s) => String(s.class ?? "").trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })),
-    [students]
-  );
-  const streamOptions = useMemo(
-    () => [...new Set(students.map((s) => String(s.stream ?? "").trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b)),
-    [students]
-  );
-
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
-    return students.filter((student) => (classFilter === "all" || String(student.class ?? "").trim() === classFilter)
-      && (streamFilter === "all" || String(student.stream ?? "").trim() === streamFilter)
-      && (!query || [
+    return students.filter((student) => !query || [
       student.firstName,
       student.lastName,
       student.fullName,
@@ -132,8 +119,8 @@ export default function InstituteStudentsPage() {
       student.mobile,
       student.class,
       student.stream,
-    ].filter(Boolean).join(" ").toLowerCase().includes(query)));
-  }, [students, search, classFilter, streamFilter]);
+    ].filter(Boolean).join(" ").toLowerCase().includes(query));
+  }, [students, search]);
 
   const currentPageSize = pagination.pageSize;
   // Keep the current page valid when the filtered list shrinks (search/filter/delete).
@@ -345,8 +332,6 @@ export default function InstituteStudentsPage() {
         <div className="font-semibold text-slate-700">{filtered.length === students.length ? `${students.length} students` : `${filtered.length} of ${students.length} students`}</div>
         <div className="flex flex-wrap items-center gap-2">
           <Input allowClear prefix={<SearchOutlined />} placeholder="Search students" value={search} onChange={(event) => { setSearch(event.target.value); setPagination((prev) => ({ ...prev, current: 1 })); }} className="sm:w-56" />
-          <Select value={classFilter} onChange={(value) => { setClassFilter(value); setPagination((prev) => ({ ...prev, current: 1 })); }} className="w-32" options={[{ value: "all", label: "All Classes" }, ...classOptions.map((value) => ({ value, label: value }))]} />
-          <Select value={streamFilter} onChange={(value) => { setStreamFilter(value); setPagination((prev) => ({ ...prev, current: 1 })); }} className="w-36" options={[{ value: "all", label: "All Streams" }, ...streamOptions.map((value) => ({ value, label: value }))]} />
           <Button icon={<DownloadOutlined />} onClick={downloadTemplate}>Download sample template</Button>
           <input ref={fileInputRef} type="file" accept=".xlsx" className="hidden" onChange={handleBulkFile} />
           <Button icon={<UploadOutlined />} loading={bulkLoading} disabled={limitReached || bulkLoading} onClick={() => fileInputRef.current?.click()}>Bulk Upload</Button>
