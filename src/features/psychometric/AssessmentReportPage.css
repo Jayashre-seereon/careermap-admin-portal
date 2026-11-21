@@ -132,6 +132,47 @@
   flex-shrink: 0;
 }
 
+.profiling-report-page .pdf-page-body {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.profiling-report-page .profiling-guidance {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+/* Compact the profiling cards so the guidance block fits above the footer
+   instead of being clipped by the fixed-height page. */
+.profiling-report-page .pdf-page-body > * + * {
+  margin-top: 0.35rem !important;
+}
+
+.profiling-report-page .profiling-stage-card {
+  padding: 6px !important;
+}
+
+.profiling-report-page .profiling-stage-descriptions {
+  margin-top: 0.25rem !important;
+  padding-top: 0.25rem !important;
+  gap: 0.15rem 0.6rem !important;
+}
+
+.profiling-report-page .profiling-meaning-card,
+.profiling-report-page .profiling-area-list > div,
+.profiling-report-page .profiling-guidance {
+  padding: 5px 8px !important;
+}
+
+.profiling-report-page .profiling-area-list > * + * {
+  margin-top: 0.15rem !important;
+}
+
+.profiling-report-page .pdf-footer {
+  margin-top: 8px;
+  padding-top: 8px;
+}
+
 .pdf-footer-line {
   height: 1px;
   background: #D1D5DB;

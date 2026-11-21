@@ -6,7 +6,7 @@ import {
   LoadingOutlined,
   PrinterOutlined,
 } from "@ant-design/icons";
-import { Button, Select, Spin, message } from "antd";
+import { Button, Spin, message } from "antd";
 import { getAttemptDetails, getAttemptResult, getInstitutePsychometricAttemptDetails } from "../../api/psychometricAssessmentApi";
 import { useSessionStore } from "../../store/sessionStore";
 import {
@@ -186,12 +186,6 @@ export default function AssessmentReportPage() {
     }
   }
 
-  function scrollToPage(pageId) {
-    const el = document.getElementById(pageId);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }
 
   if (loading) {
     return (
@@ -590,45 +584,6 @@ const bandLabelFor = (arr, facet, fallback = "Moderate") => {
             >
               Candidate Attempts
             </Button>
-            <Select
-              defaultValue="page-1"
-              style={{ width: 250 }}
-              onChange={scrollToPage}
-              options={[
-                { value: "page-1", label: "Page 1: YOUR PROFILING" },
-                { value: "page-2", label: "Page 2: Declaration" },
-                { value: "page-3", label: "Page 3: YOUR PROFILING" },
-                { value: "page-4", label: "Page 4: Introduction" },
-                { value: "page-5", label: "Page 5: Interest Overview" },
-                { value: "page-6", label: "Page 6: Interest Details (01-03)" },
-                { value: "page-7", label: "Page 7: Interest Details (04-06)" },
-                { value: "page-8", label: "Page 8: Interest Scores" },
-                { value: "page-9", label: "Page 9: Personality Overview" },
-                { value: "page-10", label: "Page 10: Personality Suggestions" },
-                { value: "page-11", label: "Page 11: Personality Scores" },
-                { value: "page-12", label: "Page 12: Learning Styles" },
-                { value: "page-13", label: "Page 13: Learning Details (01-02)" },
-                { value: "page-14", label: "Page 14: Learning Details (03-04)" },
-                { value: "page-15", label: "Page 15: Learning Style Scores" },
-                { value: "page-16", label: "Page 16: Work Values" },
-                { value: "page-17", label: "Page 17: Work Values Suggestions" },
-                { value: "page-18", label: "Page 18: Work Values Scores" },
-                { value: "page-19", label: "Page 19: Goal Orientation (Short)" },
-                { value: "page-20", label: "Page 20: Goal Orientation (Long)" },
-                { value: "page-21", label: "Page 21: Aptitude Overview" },
-                { value: "page-22", label: "Page 22: Aptitude (Numerical)" },
-                { value: "page-23", label: "Page 23: Aptitude (Logical/Verbal)" },
-                { value: "page-24", label: "Page 24: Aptitude (Voc/Mech)" },
-                { value: "page-25", label: "Page 25: Aptitude (Spatial)" },
-                { value: "page-26", label: "Page 26: Aptitude Scores" },
-                { value: "page-27", label: "Page 27: Top Cluster #1" },
-                { value: "page-28", label: "Page 28: Clusters #2 & #3" },
-                { value: "page-29", label: "Page 29: Clusters #4 & #5" },
-                { value: "page-30", label: "Page 30: Study & Pathway Advice" },
-                { value: "page-31", label: "Page 31: Complete Career Map" },
-                { value: "page-32", label: "Page 32: About Career Map" },
-              ]}
-            />
           </div>
 
           <div className="flex items-center gap-2.5">
