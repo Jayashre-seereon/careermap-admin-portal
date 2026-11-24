@@ -6,8 +6,6 @@ import { validationRules } from "../../utils/formValidation";
 
 const TARGET_OPTIONS = [
   { label: "All Users", value: "All Users" },
-  { label: "Students", value: "Students" },
-  { label: "Admin", value: "Admin" },
 ];
 
 const isMessageEmpty = (html) => {
