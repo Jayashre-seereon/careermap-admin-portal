@@ -1,8 +1,6 @@
 import React,{useState} from "react";
-import { Button, DatePicker, Input, Popconfirm, Select, Table, Tag } from "antd";
+import { Button, DatePicker, Input, Select, Table, Tag } from "antd";
 import {
-  DeleteOutlined,
-  EditOutlined,
   EyeOutlined,
   ReloadOutlined,
   SearchOutlined,
@@ -39,9 +37,7 @@ export default function NotificationsTable({
   onDateRange,
   onAdd,
   onView,
-  onEdit,
-  onDelete,
-}) 
+})
 {
   const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
   const resetPage = () => setPagination((prev) => ({ ...prev, current: 1 }));
@@ -90,7 +86,7 @@ export default function NotificationsTable({
    
     {
       title: <span className="text-[#9a2119] font-semibold">Action</span>,
-      width: 150,
+      width: 90,
       fixed: "right",
       render: (_, record) => (
         <div className="flex items-center justify-end gap-2">
@@ -99,19 +95,6 @@ export default function NotificationsTable({
             icon={<EyeOutlined />}
             onClick={() => onView(record)}
           />
-          {!record.isComputed ? <>
-            <Button
-              className="border border-[#9a2119] text-[#9a2119] hover:border-[#e57373] hover:text-[#e57373]"
-              icon={<EditOutlined />}
-              onClick={() => onEdit(record)}
-            />
-            <Popconfirm
-              title="Are you sure you want to delete this notification?"
-              onConfirm={() => onDelete(record)}
-            >
-              <Button danger icon={<DeleteOutlined />} />
-            </Popconfirm>
-          </> : null}
         </div>
       ),
     },
