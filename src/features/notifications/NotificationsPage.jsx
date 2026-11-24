@@ -4,10 +4,8 @@ import NotificationsForm from "./NotificationsForm";
 import NotificationsTable from "./NotificationsTable";
 import {
   createNotification,
-  deleteNotification,
   getAdminNotification,
   getNotifications,
-  updateNotification,
 } from "../../api/notification";
 
 const getApiErrorMessage = (error, fallbackMessage) =>
@@ -139,38 +137,14 @@ export default function NotificationsPage() {
 
   const handleSubmit = async (values) => {
     try {
-      const payload = buildNotificationPayload(values);
-
-      if (mode === "edit" && selected) {
-        await updateNotification(selected.id, payload);
-        messageApi.success("Notification updated successfully.");
-      } else {
-        await createNotification(payload);
-        messageApi.success("Notification created successfully.");
-      }
+      await createNotification(buildNotificationPayload(values));
+      messageApi.success("Notification created successfully.");
 
       setOpen(false);
       setSelected(null);
       await loadNotifications();
     } catch (error) {
-      messageApi.error(
-        getApiErrorMessage(
-          error,
-          mode === "edit"
-            ? "Failed to update notification."
-            : "Failed to create notification."
-        )
-      );
-    }
-  };
-
-  const handleDelete = async (record) => {
-    try {
-      await deleteNotification(record.id);
-      messageApi.success("Notification deleted successfully.");
-      await loadNotifications();
-    } catch (error) {
-      messageApi.error(getApiErrorMessage(error, "Failed to delete notification."));
+      messageApi.error(getApiErrorMessage(error, "Failed to create notification."));
     }
   };
 
@@ -200,12 +174,6 @@ export default function NotificationsPage() {
           setMode("view");
           setOpen(true);
         }}
-        onEdit={(item) => {
-          setSelected(item);
-          setMode("edit");
-          setOpen(true);
-        }}
-        onDelete={handleDelete}
       />
 
       <Modal
@@ -217,13 +185,7 @@ export default function NotificationsPage() {
         footer={null}
         width={900}
         destroyOnClose
-        title={
-          mode === "add"
-            ? "Add Notification"
-            : mode === "edit"
-              ? "Edit Notification"
-              : "View Notification"
-        }
+        title={mode === "add" ? "Add Notification" : "View Notification"}
       >
         <NotificationsForm
           onSubmit={handleSubmit}
