@@ -1,3 +1,4 @@
+import { parseCategoryList } from "./counselingUtils";
 import React, { useState } from "react";
 import { Button, Input, Popconfirm, Space, Table } from "antd";
 import {
@@ -114,7 +115,10 @@ function CounselingTable({
   dataIndex: "category",
   width: 260,
   ellipsis: true,
-  render: (value) => (value ? <span title={value}>{getPreviewText(value, 40)}</span> : "-"),
+  render: (value) => {
+    const text = parseCategoryList(value).join("; ");
+    return text ? <span title={text}>{getPreviewText(text, 40)}</span> : "-";
+  },
 },
     {
       title: "Counselor",

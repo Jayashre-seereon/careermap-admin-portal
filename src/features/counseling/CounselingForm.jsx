@@ -1,6 +1,7 @@
+import { parseCategoryList } from "./counselingUtils";
 import useSubmitGuard from "../../hooks/useSubmitGuard";
 import React from "react";
-import { Button, Form, Input, Select, DatePicker, Radio, InputNumber, Divider } from "antd";
+import { Button, Form, Input, Select, DatePicker, Radio, InputNumber, Divider, Checkbox } from "antd";
 import RichTextEditor from "../../components/ui/RichTextEditor";
 import { validationRules } from "../../utils/formValidation";
 import dayjs from "dayjs";
@@ -46,11 +47,13 @@ const normalizeMarks = (marks, subjects = []) => {
   return source;
 };
 
+// Total percentage is free text (e.g. "85", "85.5%", "A+ / 92"), shown exactly as saved.
 const normalizePercentage = (value) => {
-  if (value === null || value === undefined || value === "") return undefined;
-  const parsed = Number(String(value).replace(/%/g, "").trim());
-  return Number.isFinite(parsed) ? parsed : undefined;
+  if (value === null || value === undefined) return undefined;
+  const text = String(value).trim();
+  return text || undefined;
 };
+
 function getSubjectsFor(classValue, streamValue) {
   if (streamValue === "Not Decided") return SUBJECTS_9_10;
   if (classValue === "9th" || classValue === "10th") {
@@ -81,7 +84,6 @@ function CounselingForm({ onSubmit, initialValues, disabled, instituteDisabled =
 
   const classValue = Form.useWatch("class", form);
   const streamValue = Form.useWatch("stream", form);
-  const hasClass = Boolean(classValue);
   const storedMarks = normalizeMarks(initialValues?.marks, initialValues?.subjects);
   // Keep the same generic subject fields in add, edit, and view modes.
   const subjects = getSubjectsFor(classValue, streamValue);
@@ -98,6 +100,7 @@ function CounselingForm({ onSubmit, initialValues, disabled, instituteDisabled =
         initialValues.totalPercentage ?? initialValues.total_percentage ?? initialValues.percentage
       ),
       marks: normalizeMarks(initialValues.marks, initialValues.subjects),
+      category: parseCategoryList(initialValues.category),
       counselingDate: initialValues.counselingDate
         ? dayjs(initialValues.counselingDate)
         : undefined,
@@ -109,7 +112,9 @@ function CounselingForm({ onSubmit, initialValues, disabled, instituteDisabled =
         ...values,
         school: institutes.find((institute) => Number(institute.id) === Number(values.instituteId))?.name || initialValues?.school || null,
         instituteId: values.instituteId ? Number(values.instituteId) : null,
-        totalPercentage: values.totalPercentage ?? null,
+        totalPercentage: String(values.totalPercentage ?? "").trim() || null,
+        stream: String(values.stream ?? "").trim() || null,
+        category: parseCategoryList(values.category),
         counselingDate: values.counselingDate ? values.counselingDate.toISOString() : null,
       };
       await onSubmit(payload);
@@ -119,10 +124,7 @@ function CounselingForm({ onSubmit, initialValues, disabled, instituteDisabled =
     }
   };
 
-  const handleClassChange = () => {
-    // Class changed -> stream and marks are no longer valid, clear them
-    form.setFieldsValue({ stream: undefined });
-  };
+
 
 
 
@@ -152,7 +154,7 @@ function CounselingForm({ onSubmit, initialValues, disabled, instituteDisabled =
           label="Class"
           rules={[validationRules.required("Class")]}
         >
-          <Select placeholder="Select class" disabled={disabled} onChange={handleClassChange}>
+          <Select placeholder="Select class" disabled={disabled}>
             <Option value="9th">9th</Option>
             <Option value="10th">10th</Option>
             <Option value="11th">11th</Option>
@@ -160,20 +162,13 @@ function CounselingForm({ onSubmit, initialValues, disabled, instituteDisabled =
           </Select>
         </Form.Item>
 
-        {hasClass && (
-          <Form.Item
-            name="stream"
-            label={`Desired Stream (${classValue})`}
-            rules={[validationRules.required("Stream")]}
-          >
-            <Select placeholder="Select stream" disabled={disabled} >
-              <Option value="Science">Science</Option>
-              <Option value="Commerce">Commerce</Option>
-              <Option value="Humanities">Humanities</Option>
-              <Option value="Not Decided">Not Decided</Option>
-            </Select>
-          </Form.Item>
-        )}
+        <Form.Item
+          name="stream"
+          label="Desired Stream"
+          rules={[validationRules.required("Stream")]}
+        >
+          <Input placeholder="Enter desired stream (e.g. Science, Commerce, Arts)" disabled={disabled} maxLength={100} />
+        </Form.Item>
 
         <Form.Item name="instituteId" label="School / Institute" rules={[validationRules.required("School / Institute")]}>
           <Select showSearch optionFilterProp="label" placeholder="Select institute" disabled={disabled || (instituteDisabled && Boolean(initialInstituteId))} options={institutes.map((institute) => ({ value: institute.id, label: institute.name }))} />
@@ -248,31 +243,11 @@ function CounselingForm({ onSubmit, initialValues, disabled, instituteDisabled =
 <Form.Item
   name="totalPercentage"
   label="Total Percentage (%)"
-  validateTrigger={["onChange", "onBlur"]}
-  rules={[
-    {
-      validator: (_, value) => {
-        if (value === null || value === undefined || value === "") {
-          return Promise.resolve();
-        }
-        const percentage = Number(value);
-        if (!Number.isFinite(percentage)) {
-          return Promise.reject(new Error("Enter a valid number"));
-        }
-        if (percentage < 0 || percentage > 100) {
-          return Promise.reject(new Error("Percentage cannot be greater than 100"));
-        }
-        return Promise.resolve();
-      },
-    },
-  ]}
 >
-  <InputNumber
-    className="w-full"
-    step={0.01}
-    precision={2}
-    placeholder="Enter total percentage"
+  <Input
+    placeholder="Enter total percentage (e.g. 85, 85.5%)"
     disabled={disabled}
+    maxLength={50}
   />
 </Form.Item>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
@@ -315,18 +290,18 @@ function CounselingForm({ onSubmit, initialValues, disabled, instituteDisabled =
       <Divider />
     <Form.Item
   name="category"
-  label="Which category does your counselee belong to?"
-  rules={[validationRules.required("Category")]}
+  label="Which category does your counselee belong to? (select all that apply)"
+  rules={[{ required: true, type: "array", min: 1, message: "Please select at least one category" }]}
 >
-  <Radio.Group disabled={disabled} className="w-full">
+  <Checkbox.Group disabled={disabled} className="w-full">
     <div className="flex flex-col gap-2">
       {CATEGORY_OPTIONS.map((option) => (
-        <Radio key={option.value} value={option.label}>
+        <Checkbox key={option.value} value={option.label}>
           <span className="font-semibold">({option.value})</span> {option.label}
-        </Radio>
+        </Checkbox>
       ))}
     </div>
-  </Radio.Group>
+  </Checkbox.Group>
 </Form.Item>
 
       <Form.Item name="observation" label="Observation & Recommendation / Suggestion">
