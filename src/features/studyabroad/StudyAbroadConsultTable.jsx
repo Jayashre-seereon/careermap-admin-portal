@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Table, Input, Tag, Button, Space, Tooltip, Select } from "antd";
+import { Table, Input, Button, Space, Tooltip } from "antd";
 import {
   EyeOutlined,
   SearchOutlined,
@@ -35,9 +35,6 @@ export default function StudyAbroadConsultTable({
   loading,
   search,
   onSearch,
-  statusFilter = "all",
-  onStatusFilter,
-  statusOptions = [],
   onView,
 }) {
   const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
@@ -47,25 +44,6 @@ export default function StudyAbroadConsultTable({
       <span className="block max-w-[200px] truncate">{stripHtml(text) || "-"}</span>
     </Tooltip>
   );
-
-  const getStatusColor = (status) => {
-    switch (String(status).toLowerCase()) {
-      case "pending":
-        return "gold";
-      case "approved":
-      case "completed":
-      case "success":
-        return "green";
-      case "rejected":
-      case "cancelled":
-        return "red";
-      case "in-progress":
-      case "processing":
-        return "blue";
-      default:
-        return "default";
-    }
-  };
 
   const columns = [
     {
@@ -123,12 +101,6 @@ export default function StudyAbroadConsultTable({
       render: ellipsis,
     },
     {
-      title: "Status",
-      dataIndex: "status",
-      width: 110,
-      render: (status) => <Tag color={getStatusColor(status)}>{String(status || "pending").toUpperCase()}</Tag>,
-    },
-    {
       title: "Message",
       dataIndex: "message",
       width: 200,
@@ -174,20 +146,8 @@ export default function StudyAbroadConsultTable({
               className="h-8 w-full rounded-md border-[#9a2119] sm:w-64"
               onChange={(e) => onSearch(e.target.value)}
             />
-            <Select
-              value={statusFilter}
-              onChange={(value) => {
-                onStatusFilter?.(value);
-                setPagination((prev) => ({ ...prev, current: 1 }));
-              }}
-              options={[{ value: "all", label: "All Status" }, ...statusOptions]}
-              className="w-full sm:w-40"
-            />
             <Button
-              onClick={() => {
-                onSearch("");
-                onStatusFilter?.("all");
-              }}
+              onClick={() => onSearch("")}
               style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
             >
               <ReloadOutlined /> Reset
@@ -202,7 +162,7 @@ export default function StudyAbroadConsultTable({
           rowKey="id"
           pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
           onChange={(pag) => setPagination(pag)}
-          scroll={{ x: 1300 }}
+          scroll={{ x: 1200 }}
         />
       </div>
     </div>
