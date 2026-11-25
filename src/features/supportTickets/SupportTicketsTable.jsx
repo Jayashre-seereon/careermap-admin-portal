@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Button, Form, Input, Modal, Select, Table, message } from "antd";
 import { EditOutlined, EyeOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
-import { useNavigate, useOutletContext } from "react-router-dom";
+import { useOutletContext } from "react-router-dom";
 import { formatStatusClasses, formatStatusLabel, normalizeStatus } from "./supportTicketsUtils";
 import { getSerialNumber } from "../../utils/slNo";
 const STATUS_OPTIONS = [
@@ -12,11 +12,10 @@ const STATUS_OPTIONS = [
 const STATUS_FILTER_OPTIONS = [
   { label: "All statuses", value: "all" },
   ...STATUS_OPTIONS,
-  { label: "Other", value: "other" },
+  
 ];
 
 export default function SupportTicketsTable({ title, data, loading, onUpdateStatus, showStatusFilter = false }) {
-  const navigate = useNavigate();
   // Search / page / status filter are lifted into the SupportTickets parent
   // (via Outlet context) so they survive switching between status tabs.
   const shared = useOutletContext();
@@ -32,6 +31,7 @@ export default function SupportTicketsTable({ title, data, loading, onUpdateStat
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
   const [editOpen, setEditOpen] = useState(false);
+  const [viewOnly, setViewOnly] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const filteredData = useMemo(() => {
@@ -49,24 +49,33 @@ export default function SupportTicketsTable({ title, data, loading, onUpdateStat
 
   const resetPage = () => setPagination((prev) => ({ ...prev, current: 1 }));
 
-  const openStatusModal = (record) => {
+  const openStatusModal = (record, readOnly = false) => {
     setSelectedTicket(record);
+    setViewOnly(readOnly);
     const current = normalizeStatus(record.status);
-    form.setFieldsValue({ status: STATUS_OPTIONS.some((option) => option.value === current) ? current : undefined });
+    form.setFieldsValue({
+      message: record.message || "",
+      status: STATUS_OPTIONS.some((option) => option.value === current) ? current : undefined,
+    });
     setEditOpen(true);
   };
 
+  const closeModal = () => {
+    setEditOpen(false);
+    setSelectedTicket(null);
+    setViewOnly(false);
+    form.resetFields();
+  };
+
   const handleStatusUpdate = async (values) => {
-    if (!selectedTicket) {
+    if (!selectedTicket || viewOnly) {
       return;
     }
 
     try {
       setSubmitting(true);
       await onUpdateStatus?.(selectedTicket.id, values.status);
-      setEditOpen(false);
-      setSelectedTicket(null);
-      form.resetFields();
+      closeModal();
     } catch (error) {
       messageApi.error(error.response?.data?.message || error.message || "Failed to update ticket status.");
     } finally {
@@ -109,7 +118,7 @@ export default function SupportTicketsTable({ title, data, loading, onUpdateStat
       render: (_, record) => (
         <div className="flex justify-end gap-2">
           <Button
-            onClick={() => navigate(`/support_tickets/${record.id}`)}
+            onClick={() => openStatusModal(record, true)}
             className="w-8 h-8 border border-[#9a2119] text-[#9a2119] rounded-md"
           >
             <EyeOutlined />
@@ -170,45 +179,47 @@ export default function SupportTicketsTable({ title, data, loading, onUpdateStat
       />
 
       <Modal
-        title="Update Ticket Status"
+        title={viewOnly ? "View Ticket" : "Update Ticket Status"}
         open={editOpen}
-        onCancel={() => {
-          setEditOpen(false);
-          setSelectedTicket(null);
-          form.resetFields();
-        }}
+        onCancel={closeModal}
         destroyOnClose
-        footer={[
-          <Button
-            key="cancel"
-            onClick={() => {
-              setEditOpen(false);
-              setSelectedTicket(null);
-              form.resetFields();
-            }}
-          >
-            Cancel
-          </Button>,
-          <Button
-            key="update"
-            type="primary"
-            loading={submitting}
-            onClick={() => form.submit()}
-            style={{ background: "#9a2119", borderColor: "#9a2119" }}
-          >
-            Update
-          </Button>,
-        ]}
+        footer={
+          viewOnly
+            ? [
+                <Button key="close" onClick={closeModal}>
+                  Close
+                </Button>,
+              ]
+            : [
+                <Button key="cancel" onClick={closeModal}>
+                  Cancel
+                </Button>,
+                <Button
+                  key="update"
+                  type="primary"
+                  loading={submitting}
+                  onClick={() => form.submit()}
+                  style={{ background: "#9a2119", borderColor: "#9a2119" }}
+                >
+                  Update
+                </Button>,
+              ]
+        }
       >
         <Form layout="vertical" form={form} onFinish={handleStatusUpdate}>
+          <Form.Item name="message" label="Message">
+            {/* The message is written by the user, so it is read-only in both view and edit. */}
+            <Input.TextArea disabled autoSize={{ minRows: 3, maxRows: 10 }} placeholder="No message" />
+          </Form.Item>
           <Form.Item
             name="status"
             label="Status"
-            rules={[{ required: true, message: "Please select a status." }]}
+            rules={viewOnly ? [] : [{ required: true, message: "Please select a status." }]}
           >
             <Select
               placeholder="Select status"
               options={STATUS_OPTIONS}
+              disabled={viewOnly}
             />
           </Form.Item>
         </Form>
