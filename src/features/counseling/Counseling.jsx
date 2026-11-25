@@ -15,6 +15,12 @@ import {
 import { getInstitutes } from "../../api/institutions";
 
 const ALL_ID = "__all__";
+// A counseling record has two different links:
+//  - instituteId / institute        -> partner institute (Institutes table, the cards on this page)
+//  - schoolInstitutionId / schoolInstitution -> the student's school from the big Institutions catalogue
+// Only the partner institute decides which card a student belongs to. Mixing the two made
+// catalogue ids (e.g. 13 = Kakatiya University) look like partner-institute ids.
+const getPartnerInstituteId = (record) => record?.instituteId ?? record?.institute?.id ?? null;
 const UNASSIGNED_ID = "__unassigned__";
 
 function Counseling() {
@@ -32,12 +38,12 @@ function Counseling() {
   const [addInitialValues, setAddInitialValues] = useState(null);
 
   const instituteCounts = sections.reduce((counts, section) => {
-    const instituteId = section.instituteId ?? section.schoolInstitutionId ?? section.schoolInstitution?.id;
+    const instituteId = getPartnerInstituteId(section);
     if (instituteId === null || instituteId === undefined || instituteId === "") return counts;
     const key = String(instituteId);
     const current = counts.get(key) || {
       id: key,
-      name: section.schoolInstitution?.name || section.school || `Institute ${key}`,
+      name: section.institute?.name || `Institute ${key}`,
       count: 0,
     };
     current.count += 1;
@@ -48,12 +54,17 @@ function Counseling() {
     id: String(institute.id),
     name: institute.name || institute.instituteName || `Institute ${institute.id}`,
     count: instituteCounts.get(String(institute.id))?.count || 0,
-  })).sort((a, b) => a.name.localeCompare(b.name));
+  }));
+  // Keep students whose partner institute is missing from the list (e.g. inactive) visible as a card.
+  instituteCounts.forEach((entry, key) => {
+    if (!institutes.some((institute) => institute.id === key)) institutes.push(entry);
+  });
+  institutes.sort((a, b) => a.name.localeCompare(b.name));
   const institutePageSize = 20;
 
   const filteredSections = sections.filter((section) => {
     const keyword = search.trim().toLowerCase();
-    const instituteId = section.instituteId ?? section.schoolInstitutionId ?? section.schoolInstitution?.id;
+    const instituteId = getPartnerInstituteId(section);
     const instituteKey = String(instituteId ?? "");
     if (selectedInstituteId === null) {
       // Card grid: only show global matches when the admin is searching.
@@ -71,6 +82,7 @@ function Counseling() {
       section.email,
       section.inquiryFor,
       section.school,
+      section.institute?.name,
       section.schoolInstitution?.name,
     ].some((field) => String(field ?? "").toLowerCase().includes(keyword));
   });
@@ -81,7 +93,7 @@ function Counseling() {
   const pageCount = Math.max(1, Math.ceil(visibleInstitutes.length / institutePageSize));
   const pagedInstitutes = visibleInstitutes.slice((institutePage - 1) * institutePageSize, institutePage * institutePageSize);
   const unassignedCount = sections.filter((section) => {
-    const instituteId = section.instituteId ?? section.schoolInstitutionId ?? section.schoolInstitution?.id;
+    const instituteId = getPartnerInstituteId(section);
     return String(instituteId ?? "") === "";
   }).length;
 

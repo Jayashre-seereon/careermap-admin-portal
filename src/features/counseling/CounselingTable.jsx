@@ -68,8 +68,8 @@ function CounselingTable({
     { title: "Class", dataIndex: "class", width: 90 },
     { title: "Stream", dataIndex: "stream", width: 110, render: (value) => value || "-" },
     { title: "School / Institute", key: "school", width: 180, ellipsis: true, render: (_, record) => {
-      const instituteId = record.instituteId ?? record.schoolInstitutionId;
-      return <span title={`Institute ID: ${instituteId ?? "-"}`}>{record.schoolInstitution?.name || record.school || "-"}{instituteId ? ` (ID ${instituteId})` : ""}</span>;
+      const name = record.institute?.name || record.schoolInstitution?.name || record.school || "-";
+      return <span title={name}>{name}</span>;
     } },
     { title: "Phone", dataIndex: "phoneNumber", width: 130, ellipsis: true },
     { title: "Email", dataIndex: "email", width: 200, ellipsis: true },
