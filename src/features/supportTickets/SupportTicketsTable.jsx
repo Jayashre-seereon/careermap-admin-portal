@@ -41,7 +41,7 @@ export default function SupportTicketsTable({ title, data, loading, onUpdateStat
     return (Array.isArray(data) ? data : []).filter((item) => {
       if (activeStatus !== "all" && normalizeStatus(item.status) !== activeStatus) return false;
       if (!normalizedSearch) return true;
-      return [item.id, item.subject, item.email, item.openedBy].some((field) =>
+      return [item.id, item.subject, item.message, item.email, item.openedBy].some((field) =>
         String(field ?? "").toLowerCase().includes(normalizedSearch)
       );
     });
@@ -54,6 +54,7 @@ export default function SupportTicketsTable({ title, data, loading, onUpdateStat
     setViewOnly(readOnly);
     const current = normalizeStatus(record.status);
     form.setFieldsValue({
+      subject: record.subject || "",
       message: record.message || "",
       status: STATUS_OPTIONS.some((option) => option.value === current) ? current : undefined,
     });
@@ -92,8 +93,15 @@ export default function SupportTicketsTable({ title, data, loading, onUpdateStat
     {
       title: <span className="text-[#9a2119] font-semibold">Subject</span>,
       dataIndex: "subject",
+      width: 220,
+      ellipsis: { showTitle: true },
+    },
+    {
+      title: <span className="text-[#9a2119] font-semibold">Message</span>,
+      dataIndex: "message",
       width: 320,
-      ellipsis: true,
+      ellipsis: { showTitle: true },
+      render: (value) => value || "-",
     },
     {
       title: <span className="text-[#9a2119] font-semibold">Opened By</span>,
@@ -207,8 +215,11 @@ export default function SupportTicketsTable({ title, data, loading, onUpdateStat
         }
       >
         <Form layout="vertical" form={form} onFinish={handleStatusUpdate}>
+          {/* Subject and message are written by the user, so they are read-only in both view and edit. */}
+          <Form.Item name="subject" label="Subject">
+            <Input disabled placeholder="No subject" />
+          </Form.Item>
           <Form.Item name="message" label="Message">
-            {/* The message is written by the user, so it is read-only in both view and edit. */}
             <Input.TextArea disabled autoSize={{ minRows: 3, maxRows: 10 }} placeholder="No message" />
           </Form.Item>
           <Form.Item
