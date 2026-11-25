@@ -78,7 +78,6 @@ export default function StudyAbroadConsultPage() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
 
   // Modal detail states
   const [open, setOpen] = useState(false);
@@ -102,17 +101,7 @@ export default function StudyAbroadConsultPage() {
     loadConsults();
   }, []);
 
-  const normalizeStatus = (value) => String(value || "pending").trim().toLowerCase();
-
-  const statusOptions = [
-    ...new Set(["pending", "approved", "rejected", ...data.map((item) => normalizeStatus(item.status))]),
-  ].map((value) => ({ value, label: value.charAt(0).toUpperCase() + value.slice(1) }));
-
   const filteredData = data.filter((item) => {
-    if (statusFilter !== "all" && normalizeStatus(item.status) !== statusFilter) {
-      return false;
-    }
-
     const keyword = search.trim().toLowerCase();
     if (!keyword) {
       return true;
@@ -181,9 +170,6 @@ export default function StudyAbroadConsultPage() {
         loading={loading}
         search={search}
         onSearch={setSearch}
-        statusFilter={statusFilter}
-        onStatusFilter={setStatusFilter}
-        statusOptions={statusOptions}
         onView={handleView}
       />
 
