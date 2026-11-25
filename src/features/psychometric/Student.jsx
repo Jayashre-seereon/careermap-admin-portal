@@ -482,12 +482,7 @@ export default function Student() {
               options={[{ value: "all", label: "All institutions" }, ...institutes.map((institute) => ({ value: institute.id, label: institute.name }))]}
               className="min-w-[190px]"
             />
-            <Select
-              value={genderFilter}
-              onChange={setGenderFilter}
-              options={[{ value: "all", label: "All genders" }, ...genderOptions.map((value) => ({ value, label: value }))]}
-              className="min-w-[130px]"
-            />
+           
             <Button
               onClick={() => { setSearch(""); setInstituteFilter("all"); setGenderFilter("all"); }}
               style={{ background: "#9a2119", borderColor: "#9a2119", color: "white" }}
