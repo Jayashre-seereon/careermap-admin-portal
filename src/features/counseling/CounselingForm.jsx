@@ -4,8 +4,7 @@ import { Button, Form, Input, Select, DatePicker, Radio, InputNumber, Divider } 
 import RichTextEditor from "../../components/ui/RichTextEditor";
 import { validationRules } from "../../utils/formValidation";
 import dayjs from "dayjs";
-import { useEffect, useState } from "react";
-import { getInstitutes } from "../../api/institutions";
+import { useMemo } from "react";
 
 const { Option } = Select;
 
@@ -63,15 +62,22 @@ function getSubjectsFor(classValue, streamValue) {
   return [];
 }
 
-function CounselingForm({ onSubmit, initialValues, disabled, instituteDisabled = false }) {
+function CounselingForm({ onSubmit, initialValues, disabled, instituteDisabled = false, instituteOptions = [] }) {
   const [form] = Form.useForm();
-  const [institutes, setInstitutes] = useState([]);
-  useEffect(() => {
-    getInstitutes().then((response) => {
-      const rows = Array.isArray(response) ? response : response?.data || response?.institutes || [];
-      setInstitutes(rows);
-    }).catch((error) => console.error("Could not load institutes", error));
-  }, []);
+  // Partner institute of the record being viewed/edited (not the catalogue school).
+  const initialInstituteId = initialValues?.instituteId ?? initialValues?.institute?.id ?? null;
+  // Options come from the parent (already loaded), so the select never shows a bare id while
+  // a second request is in flight. The record's own institute is added if it is not in the list.
+  const institutes = useMemo(() => {
+    const list = instituteOptions.map((institute) => ({ id: Number(institute.id), name: institute.name }));
+    if (initialInstituteId && !list.some((institute) => institute.id === Number(initialInstituteId))) {
+      list.push({
+        id: Number(initialInstituteId),
+        name: initialValues?.institute?.name || `Institute ${initialInstituteId}`,
+      });
+    }
+    return list;
+  }, [instituteOptions, initialInstituteId, initialValues]);
 
   const classValue = Form.useWatch("class", form);
   const streamValue = Form.useWatch("stream", form);
@@ -87,7 +93,7 @@ function CounselingForm({ onSubmit, initialValues, disabled, instituteDisabled =
 
     form.setFieldsValue({
       ...initialValues,
-      instituteId: initialValues.instituteId ?? initialValues.schoolInstitutionId ?? initialValues.schoolInstitution?.id,
+      instituteId: initialValues.instituteId ?? initialValues.institute?.id ?? undefined,
       totalPercentage: normalizePercentage(
         initialValues.totalPercentage ?? initialValues.total_percentage ?? initialValues.percentage
       ),
@@ -170,7 +176,7 @@ function CounselingForm({ onSubmit, initialValues, disabled, instituteDisabled =
         )}
 
         <Form.Item name="instituteId" label="School / Institute" rules={[validationRules.required("School / Institute")]}>
-          <Select showSearch optionFilterProp="label" placeholder="Select institute" disabled={disabled || instituteDisabled} options={institutes.map((institute) => ({ value: institute.id, label: institute.name }))} />
+          <Select showSearch optionFilterProp="label" placeholder="Select institute" disabled={disabled || (instituteDisabled && Boolean(initialInstituteId))} options={institutes.map((institute) => ({ value: institute.id, label: institute.name }))} />
         </Form.Item>
 
       <Form.Item name="counselingDate" label="Date" rules={[validationRules.required("Date")]}>
