@@ -114,7 +114,11 @@ function CounselingForm({ onSubmit, initialValues, disabled, instituteDisabled =
         instituteId: values.instituteId ? Number(values.instituteId) : null,
         totalPercentage: String(values.totalPercentage ?? "").trim() || null,
         stream: String(values.stream ?? "").trim() || null,
-        category: parseCategoryList(values.category),
+        // `category` is a String column: send the selected options as a JSON array string so the
+        // request is valid even on a backend build that does not serialize arrays itself.
+        category: parseCategoryList(values.category).length
+          ? JSON.stringify(parseCategoryList(values.category))
+          : null,
         counselingDate: values.counselingDate ? values.counselingDate.toISOString() : null,
       };
       await onSubmit(payload);
