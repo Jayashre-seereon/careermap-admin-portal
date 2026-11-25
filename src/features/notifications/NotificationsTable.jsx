@@ -71,12 +71,7 @@ export default function NotificationsTable({
       width: 120,
       render: (value) => (value ? <Tag color="blue">{value}</Tag> : "-"),
     },
-    {
-      title: <span className="text-[#9a2119] font-semibold">Status</span>,
-      dataIndex: "status",
-      width: 110,
-      render: (value) => (value ? <Tag color={getTagColor(value)}>{value}</Tag> : "-"),
-    },
+   
     {
       title: <span className="text-[#9a2119] font-semibold">Date</span>,
       dataIndex: "createdAt",
