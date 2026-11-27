@@ -220,7 +220,7 @@ function CounselingForm({ onSubmit, initialValues, disabled, instituteDisabled =
         <Form.Item
           name="email"
           label="Email Id"
-          rules={[validationRules.required("Email"), validationRules.email("Email")]}
+          rules={[validationRules.email("Email")]}
         >
           <Input placeholder="Enter email" disabled={disabled} />
         </Form.Item>
